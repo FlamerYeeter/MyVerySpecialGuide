@@ -1,53 +1,99 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- Hero Section -->
-<section class="relative bg-gradient-to-b from-orange-200 to-white py-16">
-    <div class="container mx-auto flex flex-col md:flex-row items-center px-6">
-        <div class="flex-1 mb-8 md:mb-0">
-            <h1 class="text-5xl font-bold text-blue-800 mb-4">WELCOME to <br><span class="text-blue-500">MyVerySpecialGuide</span></h1>
-            <p class="text-lg text-gray-700 mb-6">We believe everyone deserves the chance to work, grow, and shine. At the Down Syndrome Work Society, we open doors for people with Down syndrome to share their talents and build brighter futures.</p>
-            <a href="#" class="bg-blue-400 hover:bg-blue-500 text-white px-6 py-3 rounded text-lg font-semibold">Get Started</a>
-        </div>
-        <div class="flex-1 flex justify-center">
-            <div class="flex flex-wrap gap-4">
-                <img src="/mascot1.png" alt="Mascot" class="w-20 h-20 rounded-full shadow-lg">
-                <img src="/mascot2.png" alt="Mascot" class="w-20 h-20 rounded-full shadow-lg">
-                <img src="/mascot3.png" alt="Mascot" class="w-20 h-20 rounded-full shadow-lg">
-                <img src="/mascot4.png" alt="Mascot" class="w-20 h-20 rounded-full shadow-lg">
-            </div>
-        </div>
+  
+   <!-- Hero Section -->
+   <section 
+    class="w-full relative overflow-hidden"
+    style="background-image: url('image/herobg.png'); background-size: cover; background-position: center;"
+   >
+     <div class="flex flex-col md:flex-row items-center justify-between px-8 md:px-20 lg:px-32 pt-12 md:pt-16 lg:pt-20">
+    
+    <!-- Left Text -->
+    <div class="flex-1 max-w-xl text-center md:text-left mb-12 md:mb-0">
+      <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-blue-800 leading-tight mb-8 drop-shadow-lg">
+        WELCOME to<br>
+        <span class="text-blue-600">MyVerySpecialGuide</span>
+      </h1>
+      <button class="bg-blue-500 hover:bg-blue-600 text-white px-10 py-4 rounded-xl text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
+        Get Started
+      </button>
     </div>
+
+    <!-- Right Object -->
+    <div class="flex-1 flex justify-center md:justify-end">
+      <img src="image/obj1.png" alt="Object1" class="w-72 md:w-96 lg:w-[28rem] object-contain drop-shadow-xl">
+    </div>
+
+  </div>
 </section>
 
-<!-- Info Card Section -->
-<section class="container mx-auto px-6 py-12 flex flex-col md:flex-row items-center gap-8">
-    <div class="md:w-1/2">
-        <img src="/down-syndrome-group.jpg" alt="Group" class="rounded-lg shadow-lg w-full object-cover h-64">
-    </div>
-    <div class="md:w-1/2 bg-white rounded-lg shadow p-8 relative">
-        <h2 class="text-2xl font-bold mb-4">What is Down Syndrome?</h2>
-        <p class="text-gray-700 mb-4">
-            Down syndrome (or Trisomy 21) is a naturally occurring chromosomal arrangement that has always been a part of the human condition.
-        </p>
-        <p class="text-gray-700 mb-6">
-            This difference may affect learning, growth, and development, but it does not define a person's potential.
-        </p>
-        <a href="#" class="bg-blue-400 hover:bg-blue-500 text-white px-5 py-2 rounded font-medium">Learn More</a>
-        <img src="/flower-mascot.png" alt="Mascot" class="absolute top-4 right-4 w-12 h-12">
-    </div>
+  <!-- About Section -->
+<section class="w-full bg-white py-20">
+  <div class="max-w-5xl mx-auto px-6 text-center">
+    <p class="text-xl text-gray-700 leading-relaxed mb-12">
+      We believe everyone deserves the chance to work, grow, and shine. At the 
+      <span class="font-semibold text-blue-600">Down Syndrome Work Society</span>, we open doors for people with Down syndrome 
+      to share their talents and build brighter futures.
+    </p>
+  </div>
+
+  <div class="relative w-full">
+    <!-- Main background image -->
+    <img src="image/img1.png" 
+         alt="Child with painting" 
+         class="w-full h-[500px] object-cover">
+
+    <!-- Top border-->
+    <img src="image/border1.png" 
+         alt="Top border decoration"
+         class="absolute -top-4 left-0 w-full h-16 object-cover">
+
+    <!-- Bottom border-->
+    <img src="image/border2.png" 
+     alt="Bottom border decoration"
+     class="absolute bottom-0 left-0 w-full h-16 object-cover translate-y-16">
+  </div>
 </section>
 
-<!-- Colorful Mascots Section -->
-<section class="bg-yellow-200 py-8">
-    <div class="container mx-auto flex flex-wrap justify-center gap-6">
-        <img src="/mascot-square.png" alt="Mascot" class="w-16 h-16">
-        <img src="/mascot-circle.png" alt="Mascot" class="w-16 h-16">
-        <img src="/mascot-triangle.png" alt="Mascot" class="w-16 h-16">
-        <img src="/mascot-flower.png" alt="Mascot" class="w-16 h-16">
-        <img src="/mascot-oval.png" alt="Mascot" class="w-16 h-16">
+  <!-- Info Section -->
+  <section class="w-full py-20 bg-gray-50">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center gap-12">
+      <!-- Image -->
+      <div class="md:w-1/2">
+        <img src="image/img2.png" 
+             alt="b&w img" 
+             class="rounded-lg shadow-xl w-full h-80 object-cover">
+      </div>
+      
+      <!-- Text Content -->
+      <div class="md:w-1/2 bg-white rounded-xl shadow-lg p-10 relative">
+        <div class="absolute -top-6 -right-6">
+          <img src="image/obj2.png" alt="Pink Flower Mascot" class="w-20 h-20 object-contain">
+        </div>
+        
+        <h2 class="text-3xl font-bold mb-6 text-gray-800">What is Down Syndrome?</h2>
+        <p class="text-gray-700 mb-4 leading-relaxed">
+          Down syndrome (or Trisomy 21) is a naturally occurring chromosomal arrangement that has always been a part of the human condition.
+        </p>
+        <p class="text-gray-700 mb-8 leading-relaxed">
+          This difference may affect learning, growth, and development, but it does not define a person’s full potential.
+        </p>
+        <button class="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105">
+          Learn More
+        </button>
+      </div>
     </div>
-</section>
+  </section>
+
+  <!-- Mascots Row -->
+  <section class="w-full py-8">
+    <div class="flex justify-center items-center gap-10">
+      <img src="image/obj3.png" alt="Blue Circle Mascot" class="w-16 h-16 object-contain">
+      <img src="image/obj5.png" alt="Green Square Mascot" class="w-16 h-16 object-contain">
+      <img src="image/obj4.png" alt="Yellow Sad Mascot" class="w-16 h-16 object-contain">
+    </div>
+  </section>
 @endsection
 </body>
 </html>

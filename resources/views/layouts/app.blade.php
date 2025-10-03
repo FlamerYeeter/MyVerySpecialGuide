@@ -1,49 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MyVerySpecialGuide</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyVerySpecialGuide</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { margin: 0; padding: 0; min-height: 100vh; }
+  </style>
 </head>
-<body class="bg-gray-50 font-sans antialiased">
 
-    <!-- Header -->
-    <nav class="bg-white shadow-md">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <!-- Logo and Title -->
-            <div class="flex flex-col items-start">
-                <div class="flex items-center space-x-3">
-                    <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-14 w-14">
-                    <span class="font-bold text-3xl text-[#2C2C2C] drop-shadow" style="font-family: 'Comic Sans MS', 'Comic Sans', cursive;">
-                        <span class="text-[#FF5E5B]">M</span><span class="text-[#FFD600]">i</span><span class="text-[#00C2FF]">n</span><span class="text-[#43D86E]">d</span><span class="text-[#FF5E5B]">f</span><span class="text-[#FFD600]">u</span><span class="text-[#00C2FF]">l</span>
-                        <span class="ml-2 text-[#43D86E]">T</span><span class="text-[#FF5E5B]">o</span><span class="text-[#FFD600]">t</span><span class="text-[#00C2FF]">s</span>
-                    </span>
-                </div>
-                <span class="text-xs text-[#4A90E2] font-semibold tracking-wide mt-1 ml-1">GROWTH IN PROGRESS</span>
-            </div>
-            <!-- Navigation Links -->
-            <div class="flex items-center space-x-12">
-                <a href="/" class="text-gray-700 hover:text-blue-600 font-medium text-lg">Home</a>
-                <a href="/about-mvsg" class="text-gray-700 hover:text-blue-600 font-medium text-lg">About MVSG</a>
-                <a href="/about-down-syndrome" class="text-gray-700 hover:text-blue-600 font-medium text-lg">About Down Syndrome</a>
-            </div>
-        </div>
+<body class="bg-gray-50 font-sans antialiased flex flex-col min-h-screen">
+    <!-- Navigation -->
+    <nav class="w-full px-8 py-4 flex items-center justify-between bg-white/80 backdrop-blur-md shadow-md">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3">
+        <img src="image/logo.png" alt="MyVerySpecialGuide Logo" class="w-16 h-16 object-contain">
+        <span class="text-2xl font-bold text-blue-700">MyVerySpecialGuide</span>
+      </div>
+      <!-- Links -->
+      <div class="flex items-center space-x-8">
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium text-lg">Home</a>
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium text-lg">About MVSG</a>
+        <a href="#" class="text-gray-700 hover:text-blue-600 font-medium text-lg">About Down Syndrome</a>
+      </div>
     </nav>
 
     <!-- Page Content -->
-    <main class="max-w-7xl mx-auto px-6 py-8">
+    <main class="flex-grow w-full">
         @yield('content')
     </main>
 
-    <!-- Footer -->
-    <footer class="bg-white border-t mt-12">
-        <div class="container mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-center">
-            <div class="flex items-center space-x-2 mb-4 md:mb-0">
-                <img src="{{ asset('images/logo.png') }}" alt="Logo" class="h-10 w-10">
-                <span class="text-xl font-bold text-blue-700">Mindful Tots</span>
-            </div>
+   <!-- Footer -->
+<footer class="bg-white border-t mt-12">
+  <div class="container mx-auto px-6 py-8 flex flex-col md:flex-row justify-between items-start md:items-center">
+    
+    <div class="flex items-center space-x-3 mb-6 md:mb-0">
+      <img src="{{ asset('image/orglogo.png') }}" alt="Logo" class="h-28 w-28 object-contain">
+    </div>
+
             <div class="flex flex-col md:flex-row md:space-x-16 text-center md:text-left">
                 <div class="mb-4 md:mb-0">
                     <h3 class="font-semibold text-gray-800 mb-1">Address</h3>
@@ -59,10 +54,9 @@
                 </div>
             </div>
         </div>
-        <div class="bg-blue-400 text-white text-center py-2 text-sm">
+        <div class="bg-blue-400 text-black text-center py-2 text-sm">
             © 2025 EmpowerPath
         </div>
     </footer>
-
 </body>
 </html>
