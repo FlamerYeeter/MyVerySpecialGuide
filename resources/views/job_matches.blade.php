@@ -86,7 +86,7 @@
         </div>
         <br>
         <div class="flex items-center gap-3 mt-4 md:mt-0">
-          <button class="bg-blue-500 text-white px-4 py-2 rounded-lg">All Matches (2)</button>
+          <button class="bg-blue-500 text-white px-4 py-2 rounded-lg">All Matches</button>
         </div>
     </div>
 
@@ -95,9 +95,9 @@
         <!-- Pet Care Assistant -->
         <div class="bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-center">
             <div>
-                <h3 class="text-lg font-bold">Pet Care Assistant</h3>
-                <p class="text-gray-600">iPet Club</p>
-                <p class="text-sm text-gray-500">Taguig City, Metro Manila</p>
+                <h3 class="text-lg font-bold">[[Placeholder Job Title]]</h3>
+                <p class="text-gray-600">[[Placeholder Company]]</p>
+                <p class="text-sm text-gray-500">[[Address]]/p>
                 <div class="flex gap-2 text-xs mt-2">
                     <span class="bg-gray-100 px-2 py-1 rounded">Healthcare</span>
                     <span class="bg-gray-100 px-2 py-1 rounded">Quiet</span>
@@ -118,9 +118,9 @@
         <!-- Kitchen Helper -->
         <div class="bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-center">
             <div>
-                <h3 class="text-lg font-bold">Kitchen Helper</h3>
-                <p class="text-gray-600">KFC</p>
-                <p class="text-sm text-gray-500">Makati City, Metro Manila</p>
+                <h3 class="text-lg font-bold">[[Placeholder Job Title]]</h3>
+                <p class="text-gray-600">[[Placeholder Company]]</p>
+                <p class="text-sm text-gray-500">[[Address]]</p>
                 <div class="flex gap-2 text-xs mt-2">
                     <span class="bg-gray-100 px-2 py-1 rounded">Hospitality</span>
                     <span class="bg-gray-100 px-2 py-1 rounded">Busy</span>
