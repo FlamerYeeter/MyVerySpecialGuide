@@ -14,10 +14,14 @@ Route::get('/', function () {
 
 Route::get('/register', function () {
     return view('ds_register_1');
-});
+})->name('register');
 
 Route::get('/registeradminapprove', function () {
     return view('ds_register_adminapprove');
+});
+
+Route::get('/registereducation', function () {
+    return view('ds_register_education');
 });
 
 Route::get('/registerpersonalinfo', function () {
@@ -42,8 +46,42 @@ Route::get('/registerskills2', function () {
 
 Route::get('/registersupportneed', function () {
     return view('ds_register_supportneed');
-});
+})->name('registersupportneed');
 
 Route::get('/registerworkplace', function () {
     return view('ds_register_workplace');
-});
+})->name('registerworkplace');
+
+
+// Job application routes
+Route::get('/job-application', function () {
+    return view('job-application-1');
+})->name('job.application.1');
+
+Route::get('/job-application-step2', function () {
+    return view('job-application-2');
+})->name('job.application.2');
+
+Route::get('/job-application-review1', function () {
+    return view('job-application-review1');
+})->name('job.application.review1');
+
+Route::get('/job-application-review2', function () {
+    return view('job-application-review2');
+})->name('job.application.review2');
+
+Route::get('/job-application-submit', function () {
+    return view('job-application-submit');
+})->name('job.application.submit');
+
+Route::get('/job-matches', function () {
+    return view('job-matches');
+})->name('job.matches');
+
+Route::get('/my-job-applications', function () {
+    return view('my-job-applications');
+})->name('my.job.applications');
+
+Route::get('/job-details', function () {
+    return view('job-details');
+})->name('job.details');
