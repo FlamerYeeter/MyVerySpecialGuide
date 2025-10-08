@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Registration: Support Need</title>
+  <title>Registration: Education</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -47,17 +47,17 @@
 
         <!-- Description -->
         <div class="mt-4">
-           <h2 class= "text-xl font-semibold" >Support I Need</h2> 
-          <p class="mt-4 text-base font-medium leading-snug flex items-center gap-2">
-            What kind of support would help you at work? (Select all that apply)
-            <button class="text-gray-500 text-xl hover:scale-110 transition-transform">
-              🔊
-            </button>
-          </p>
-          <p class="mt-1 text-[13px] text-gray-500 italic leading-snug">
-            (Ano klaseng tulong ang makakatulong sa iyo sa trabaho? Piliin lahat ng naaangkop na kakayahan na meron ka)
-          </p>
-        </div>
+            <h2 class= "text-xl font-semibold" >Education</h2> 
+            <p class="mt-4 text-base font-medium leading-snug flex items-center gap-1.5">
+                 <span>What is your highest education?</span>
+                 <button class="text-gray-500 text-lg hover:scale-110 transition-transform">
+                    🔊
+                </button>
+            </p>
+            <p class="mt-2 text-[13px] text-gray-500 italic leading-snug">
+                 (Ano ang pinakamataas mong natapos na edukasyon?)
+                </p>
+            </div>
 
         <div class="flex items-center gap-2 mt-8">
           <p class="font-medium">Choose from the pictures provided and click your answer.</p>
@@ -73,22 +73,29 @@
           <!-- Card 1 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/support1.png" alt="job coach" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">Job coach/guide to guide me</h3>
+            <img src="image/educ1.png" alt="elementary" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">Elementary</h3>
           </div>
 
             <!-- Card 2 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/support2.png" alt="written instruction" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">Written instructions</h3>
+            <img src="image/educ3.png" alt="highschool" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">Highschool</h3>
           </div>
 
-            <!-- Card 3 -->
+          <!-- Card 3 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/support3.png" alt="work independtly" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">I can work independtly</h3>
+            <img src="image/educ2.png" alt="college" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">College</h3>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+            <img src="image/educ4.png" alt="vocational" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">Vocational/Tranining</h3>
           </div>
 
           <!-- Other -->
@@ -112,7 +119,7 @@
                 Next →
             </button>
             <p class="text-gray-600 text-sm mt-2 text-center">
-                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Working Environment<br>
+                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Your Qualifications<br>
                  <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
                 </p>
         </div>

@@ -12,7 +12,7 @@
   <img src="image/obj4.png" alt="Yellow Mascot"
     class="fixed left-2 sm:left-6 lg:left-8 top-1/3 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-slow z-0">
 
-  <img src="image/obj7.png" alt="Yellow Mascot"
+  <img src="image/obj7.png" alt="Triangle Mascot"
     class="fixed left-2 sm:left-6 lg:left-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0">
 
   <img src="image/obj3.png" alt="Blue Mascot"
@@ -118,7 +118,7 @@
                 Next →
             </button>
             <p class="text-gray-600 text-sm mt-2 text-center">
-                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Working Environment<br>
+                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Your Skills<br>
                  <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
                 </p>
         </div>

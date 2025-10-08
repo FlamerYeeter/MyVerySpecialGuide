@@ -16,6 +16,26 @@ Route::get('/register', function () {
     return view('ds_register_1');
 });
 
+Route::get('/registeradminapprove', function () {
+    return view('ds_register_adminapprove');
+});
+
+Route::get('/registereducation', function () {
+    return view('ds_register_education');
+});
+
+Route::get('/registersupportneed', function () {
+    return view('ds_register_supportneed');
+});
+
+Route::get('/registerworkplace', function () {
+    return view('ds_register_workplace');
+});
+
+Route::get('/registerskills2', function () {
+    return view('ds_register_skills-2');
+});
+
 Route::get('/registerjobpreference1', function () {
     return view('ds_register_job-preference-1');
 });
@@ -28,10 +48,5 @@ Route::get('/registerskills1', function () {
     return view('ds_register_skills-1');
 });
 
-Route::get('/registersupportneed', function () {
-    return view('ds_register_supportneed');
-});
 
-Route::get('/registerworkplace', function () {
-    return view('ds_register_workplace');
-});
+
