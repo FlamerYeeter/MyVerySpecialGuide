@@ -114,7 +114,8 @@
 
         <!-- Next Button -->
         <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-            <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
+            <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
+                    onclick="window.location.href='{{ route('registerskills1') }}'">
                 Next →
             </button>
             <p class="text-gray-600 text-sm mt-2 text-center">
