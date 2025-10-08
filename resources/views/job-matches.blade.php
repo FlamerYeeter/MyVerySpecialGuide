@@ -97,7 +97,7 @@
             <div>
                 <h3 class="text-lg font-bold">[[Placeholder Job Title]]</h3>
                 <p class="text-gray-600">[[Placeholder Company]]</p>
-                <p class="text-sm text-gray-500">[[Address]]/p>
+                <p class="text-sm text-gray-500">[[Address]]</p>
                 <div class="flex gap-2 text-xs mt-2">
                     <span class="bg-gray-100 px-2 py-1 rounded">Healthcare</span>
                     <span class="bg-gray-100 px-2 py-1 rounded">Quiet</span>
