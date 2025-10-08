@@ -41,20 +41,21 @@
       <!-- Section Header -->
       <div class="flex flex-col items-start text-left max-w-xl mx-auto">
         <h2 class="text-xl font-semibold text-blue-500 border-b-2 border-blue-500 w-full mb-2 flex items-center gap-2">
-          Your Skills <span class="text-xl text-gray-600 italic">(Iyong Kakayanan)</span>
+          Your Qualification <span class="text-xl text-gray-600 italic">(Iyong Kwalipikasyon)</span>
           <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
         </h2>
 
         <!-- Description -->
         <div class="mt-4">
-          <p class="text-base font-medium leading-snug flex items-center gap-2">
-            What skills do you have? (Select all that apply)
+           <h2 class= "text-xl font-semibold" >Support I Need</h2> 
+          <p class="mt-4 text-base font-medium leading-snug flex items-center gap-2">
+            What kind of support would help you at work? (Select all that apply)
             <button class="text-gray-500 text-xl hover:scale-110 transition-transform">
               🔊
             </button>
           </p>
           <p class="mt-1 text-[13px] text-gray-500 italic leading-snug">
-            (Ano ang kakayahan na meron ka? Piliin lahat ng naaangkop na kakayahan na meron ka)
+            (Ano klaseng tulong ang makakatulong sa iyo sa trabaho? Piliin lahat ng naaangkop na kakayahan na meron ka)
           </p>
         </div>
 
@@ -72,9 +73,22 @@
           <!-- Card 1 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/skill7.png" alt="attention to details" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">Attention to details</h3>
-            <p class="text-[13px] text-gray-500 italic text-center">(Pagbibigay pansin sa mga detalye)</p>
+            <img src="image/support1.png" alt="job coach" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">Job coach/guide to guide me</h3>
+          </div>
+
+            <!-- Card 2 -->
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+            <img src="image/support2.png" alt="written instruction" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">Written instructions</h3>
+          </div>
+
+            <!-- Card 3 -->
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+            <img src="image/support3.png" alt="work independtly" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">I can work independtly</h3>
           </div>
 
           <!-- Other -->
@@ -98,11 +112,10 @@
                 Next →
             </button>
             <p class="text-gray-600 text-sm mt-2 text-center">
-                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Job Preferences<br>
+                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Working Environment<br>
                  <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
                 </p>
         </div>
-
 
      </div>
 </body>

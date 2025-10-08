@@ -69,7 +69,7 @@
     <div class="flex items-start gap-1 mt-10">
       <div>
         <p class="text-base font-medium leading-snug">
-          Choose your job preferences from the pictures provided. Click your answers and you can select up to 3–5 options only.
+          Choose your job preferences from the pictures provided and click your answers and you can select up to 3–5 options only.
         </p>
         <p class="mt-2 text-[13px] text-gray-500 italic leading-snug">
           (Piliin ang mga trabahong gusto mo mula sa mga larawang ibinigay. I-click ang iyong sagot.

@@ -28,6 +28,10 @@ Route::get('/registerskills1', function () {
     return view('ds_register_skills-1');
 });
 
-Route::get('/registerskills2', function () {
-    return view('ds_register_skills-2');
+Route::get('/registersupportneed', function () {
+    return view('ds_register_supportneed');
+});
+
+Route::get('/registerworkplace', function () {
+    return view('ds_register_workplace');
 });

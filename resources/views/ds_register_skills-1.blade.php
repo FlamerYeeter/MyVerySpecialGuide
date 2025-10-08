@@ -59,7 +59,7 @@
         </div>
 
         <div class="flex items-center gap-2 mt-8">
-          <p class="font-medium">Choose from the pictures provided, click your answer.</p>
+          <p class="font-medium">Choose from the pictures provided and click your answer.</p>
           <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
         </div>
         <p class="mt-2 text-[13px] text-gray-500 italic">
@@ -72,7 +72,7 @@
           <!-- Card 1 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/skill1.png" alt="Good at talking to people" class="w-full rounded-md mb-4">
+            <img src="image/skill1.png" alt="talking to people" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Good at talking to people</h3>
             <p class="text-[13px] text-gray-500 italic text-center">(Magaling makipag-usap sa tao)</p>
           </div>
@@ -80,7 +80,7 @@
           <!-- Card 2 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/skill2.png" alt="Using computer" class="w-full rounded-md mb-4">
+            <img src="image/skill2.png" alt="using computer" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Using Computer</h3>
             <p class="text-[13px] text-gray-500 italic text-center">(Paggamit ng computer)</p>
           </div>
@@ -88,7 +88,7 @@
           <!-- Card 3 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/skill3.png" alt="Organizing things" class="w-full rounded-md mb-4">
+            <img src="image/skill3.png" alt="organize" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Organizing things</h3>
             <p class="text-[13px] text-gray-500 italic text-center">(Pag-ayos ng mga bagay)</p>
           </div>
@@ -96,7 +96,7 @@
           <!-- Card 4 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/skill4.png" alt="Working with others" class="w-full rounded-md mb-4">
+            <img src="image/skill4.png" alt="work with others" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Working with others</h3>
             <p class="text-[13px] text-gray-500 italic text-center">(Pakikipagtulungan sa iba)</p>
           </div>
@@ -104,7 +104,7 @@
           <!-- Card 5 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/skill5.png" alt="Art and creativity" class="w-full rounded-md mb-4">
+            <img src="image/skill5.png" alt="creativity" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Art and creativity</h3>
             <p class="text-[13px] text-gray-500 italic text-center">(Sining at pagiging malikhain)</p>
           </div>
@@ -112,7 +112,7 @@
           <!-- Card 6 -->
           <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/skill6.png" alt="Helping people" class="w-full rounded-md mb-4">
+            <img src="image/skill6.png" alt="help people" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Helping people</h3>
             <p class="text-[13px] text-gray-500 italic text-center">(Pagtulong sa kapwa)</p>
           </div>

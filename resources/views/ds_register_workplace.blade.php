@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Registration: Skills</title>
+  <title>Registration: Working Environment</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -41,22 +41,34 @@
       <!-- Section Header -->
       <div class="flex flex-col items-start text-left max-w-xl mx-auto">
         <h2 class="text-xl font-semibold text-blue-500 border-b-2 border-blue-500 w-full mb-2 flex items-center gap-2">
-          Your Skills <span class="text-xl text-gray-600 italic">(Iyong Kakayanan)</span>
+          Working Environment <span class="text-xl text-gray-600 italic">(Kapaligiran sa Trabaho)</span>
           <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
         </h2>
 
         <!-- Description -->
-        <div class="mt-4">
-          <p class="text-base font-medium leading-snug flex items-center gap-2">
-            What skills do you have? (Select all that apply)
-            <button class="text-gray-500 text-xl hover:scale-110 transition-transform">
-              🔊
-            </button>
-          </p>
-          <p class="mt-1 text-[13px] text-gray-500 italic leading-snug">
-            (Ano ang kakayahan na meron ka? Piliin lahat ng naaangkop na kakayahan na meron ka)
-          </p>
-        </div>
+        <div class="mt-2">
+            <p class="mt-4 text-base font-medium leading-snug flex items-center gap-1.5">
+                 <span>What kind of working environment feels comfortable for you? (Select all that apply)</span>
+                 <button class="text-gray-500 text-lg hover:scale-110 transition-transform translate-y-[-8px]">
+                    🔊
+                </button>
+            </p>
+            <p class="mt-2 text-[13px] text-gray-500 italic leading-snug">
+                 (Ano klaseng lugar ng trabaho ang komportable para sa iyo? Piliin lahat ng naaangkop na kakayahan na meron ka)
+                </p>
+            </div>
+            
+            <div class="mt-4">
+                <p class="mt-4 text-base leading-snug flex items-center gap-1.5">
+                    <span>Working environment means how your workplace feels. It is about what is like around you when you are working.</span>
+                    <button class="text-gray-500 text-lg hover:scale-110 transition-transform translate-y-[-8px]">
+                        🔊
+                    </button>
+                </p>
+                <p class="mt-2 text-[13px] text-gray-500 italic leading-snug">
+                    (Ang working environment ay nangangahulugang kung paano ang pakiramdam ng iyong lugar ng trabaho. Ito ay tungkol sa kung ano ang paligid mo kapag ikaw ay nagtatrabaho.)
+                </p>
+            </div>
 
         <div class="flex items-center gap-2 mt-8">
           <p class="font-medium">Choose from the pictures provided and click your answer.</p>
@@ -70,11 +82,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
           <!-- Card 1 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[400px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/skill7.png" alt="attention to details" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">Attention to details</h3>
-            <p class="text-[13px] text-gray-500 italic text-center">(Pagbibigay pansin sa mga detalye)</p>
+            <img src="image/workplc1.png" alt="quietplace" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">The place is quiet and calm</h3>
+            <p class="mt-2 text-[13px] text-gray-500 italic text-center">(Tahimik at kalmado ang lugar)</p>
+          </div>
+
+            <!-- Card 2 -->
+          <div class="bg-white p-4 rounded-xl shadow h-[400px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+            <img src="image/workplc2.png" alt="busyplace" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-600 font-semibold text-center">There are many people and many things happening</h3>
+            <p class="mt-2 text-[13px] text-gray-500 italic text-center">(Maraming tao at maraming ginagawa)</p>
           </div>
 
           <!-- Other -->
@@ -98,11 +118,10 @@
                 Next →
             </button>
             <p class="text-gray-600 text-sm mt-2 text-center">
-                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Job Preferences<br>
+                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Working Environment<br>
                  <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
                 </p>
         </div>
-
 
      </div>
 </body>

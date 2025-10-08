@@ -112,7 +112,7 @@
             🔊
         </button>
         <img src="image/creativework.png" alt="Cleaning Work" class="w-full rounded-md mb-4" />
-        <h3 class="text-blue-600 font-semibold text-center">Cleaning Work</h3>
+        <h3 class="text-blue-600 font-semibold text-center">Creative Work</h3>
         <p class="text-sm mt-2 text-justify">
           This job lets you make simple art or crafts, decorate for events, and use safe tools with guidance.
         </p>
