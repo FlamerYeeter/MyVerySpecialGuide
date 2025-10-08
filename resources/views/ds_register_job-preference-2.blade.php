@@ -137,15 +137,15 @@
       </div>
 
     <!-- Next Button -->
-<div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-  <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
-    Next →
-  </button>
-  <p class="text-gray-600 text-sm mt-2 text-center">
-    Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Review Your Profile<br>
-    <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
-  </p>
-</div>
+    <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
+        <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
+            Next →
+        </button>
+        <p class="text-gray-600 text-sm mt-2 text-center">
+            Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Review Your Profile<br>
+            <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
+        </p>
+    </div>
 
 
 </body>

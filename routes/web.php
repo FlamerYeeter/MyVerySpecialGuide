@@ -23,3 +23,11 @@ Route::get('/registerjobpreference1', function () {
 Route::get('/registerjobpreference2', function () {
     return view('ds_register_job-preference-2');
 });
+
+Route::get('/registerskills1', function () {
+    return view('ds_register_skills-1');
+});
+
+Route::get('/registerskills2', function () {
+    return view('ds_register_skills-2');
+});
