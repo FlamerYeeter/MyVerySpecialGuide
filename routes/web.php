@@ -14,6 +14,10 @@ Route::get('/register', function () {
     return view('ds_register_1');
 });
 
-Route::get('/registerjobpreference', function () {
+Route::get('/registerjobpreference1', function () {
     return view('ds_register_job-preference-1');
+});
+
+Route::get('/registerjobpreference2', function () {
+    return view('ds_register_job-preference-2');
 });
