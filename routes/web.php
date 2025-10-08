@@ -14,24 +14,28 @@ Route::get('/', function () {
 
 Route::get('/register', function () {
     return view('ds_register_1');
-});
+})->name('register');
 
 Route::get('/registerjobpreference1', function () {
     return view('ds_register_job-preference-1');
-});
+})->name('registerjobpreference1');
 
 Route::get('/registerjobpreference2', function () {
     return view('ds_register_job-preference-2');
-});
+})->name('registerjobpreference2');
 
 Route::get('/registerskills1', function () {
     return view('ds_register_skills-1');
-});
+})->name('registerskills1');
+
+Route::get('/registerskills2', function () {
+    return view('ds_register_skills-2');
+})->name('registerskills2');
 
 Route::get('/registersupportneed', function () {
     return view('ds_register_supportneed');
-});
+})->name('registersupportneed');
 
 Route::get('/registerworkplace', function () {
     return view('ds_register_workplace');
-});
+})->name('registerworkplace');
