@@ -16,6 +16,14 @@ Route::get('/register', function () {
     return view('ds_register_1');
 });
 
+Route::get('/registeradminapprove', function () {
+    return view('ds_register_adminapprove');
+});
+
+Route::get('/registerpersonalinfo', function () {
+    return view('ds_register_personalinfo');
+});
+
 Route::get('/registerjobpreference1', function () {
     return view('ds_register_job-preference-1');
 })->name('registerjobpreference1');

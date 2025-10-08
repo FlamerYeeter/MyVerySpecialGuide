@@ -51,7 +51,7 @@
       <!-- Instruction -->
       <p class="mt-6 text-gray-700 text-[14px] leading-snug flex items-start gap-2">
         Please type your information inside the box. The boxes with a ⭐ star must be filled in.
-        <button class="text-gray-500 text-lg hover:scale-110 transition-transform">🔊</button>
+        <button class="text-gray-500 text-xl hover:scale-110 transition-transform">🔊</button>
       </p>
       
       <p class="mt-1 text-[13px] text-gray-500 italic border-b-2 border-blue-500 pb-1 w-full">
@@ -68,7 +68,7 @@
         <div>
           <label class="font-semibold text-sm flex items-center gap-1">
             First Name <span>⭐</span>
-            <button class="text-gray-500 text-lg hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
+            <button class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Unang Pangalan</p>
           <input type="text" placeholder="First name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
@@ -79,7 +79,7 @@
         <div>
           <label class="font-semibold text-sm flex items-center gap-1">
             Last Name <span>⭐</span>
-            <button class="text-gray-500 text-lg hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
+            <button class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Apelyido</p>
           <input type="text" placeholder="Last name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"/>
@@ -91,7 +91,7 @@
       <div class="max-w-xl mx-auto mt-8 text-left">
          <label class="font-semibold text-sm flex items-center gap-1">
            Email Address <span>⭐</span>
-           <button class="text-gray-500 text-lg hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
+           <button class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Email Address</p>
           <input type="email" placeholder="Email Address" class="mt-1 w-full border border-gray-300 rounded-md px-3 
