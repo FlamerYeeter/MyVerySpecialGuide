@@ -1,26 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Create an Account</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
 
-  <!-- Floating Mascots (Responsive + Animated) -->
-  <img src="image/obj4.png" alt="Mascot"
+  <!-- Floating Mascots -->
+  <img src="image/obj4.png" alt="Yellow Mascot"
     class="fixed left-2 sm:left-6 lg:left-8 top-1/3 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-slow z-0">
 
-  <img src="image/obj7.png" alt="Mascot"
+  <img src="image/obj7.png" alt="Yellow Mascot"
     class="fixed left-2 sm:left-6 lg:left-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0">
 
-  <img src="image/obj3.png" alt="Mascot"
+  <img src="image/obj3.png" alt="Blue Mascot"
     class="fixed right-2 sm:right-6 lg:right-8 top-1/4 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-fast z-0">
 
-  <img src="image/obj8.png" alt="Mascot"
+  <img src="image/obj8.png" alt="Blue Mascot"
     class="fixed right-2 sm:right-6 lg:right-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0">
 
-  <!-- Back Button (Responsive Padding + Font) -->
+  <!-- Back Button -->
   <button
     class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -31,7 +32,8 @@
   </button>
 
   <div class="bg-yellow-100 max-w-3xl w-full rounded-2xl shadow-lg p-8 relative z-10">
-<!-- Header -->
+
+    <!-- Header -->
 <div class="text-center mt-8">
   <h1 class="text-2xl font-semibold text-black mb-4">Create An Account</h1>
   <img src="image/obj6.png" alt="Pink Stone Object" class="mx-auto w-24 h-24 mb-4">
@@ -163,6 +165,5 @@
         </p>
       </div>
 
-    </div>
 </body>
 </html>

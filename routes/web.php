@@ -9,3 +9,11 @@ Route::get('/', function () {
 Route::get('/', function () {
     return view('job_application_2');
 })->name('job_application_2');
+
+Route::get('/register', function () {
+    return view('ds_register_1');
+});
+
+Route::get('/registerjobpreference', function () {
+    return view('ds_register_job-preference-1');
+});
