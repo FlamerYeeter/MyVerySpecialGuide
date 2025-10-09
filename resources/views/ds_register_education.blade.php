@@ -62,7 +62,7 @@
           <span>What is your highest education?</span>
           <button class="text-gray-500 text-lg hover:scale-110 transition-transform">🔊</button>
         </p>
-        <p class="text-gray-500 italic text-[13px] mt-1">(Ano ang pinakamataas mong natapos na edukasyon?)</p>
+        <p class="text-gray-500 italic text-[13px] mt-1">(Ano ang pinakamataas mong natapos na grade o taon sa school?)</p>
       </div>
 
       <!-- Instruction -->

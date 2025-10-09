@@ -55,7 +55,7 @@
     <div class="bg-yellow-100 max-w-3xl w-full rounded-2xl shadow-lg p-8 relative z-10">
 
       <!-- Header -->
-      <div class="flex flex-col items-start text-left max-w-xl mx-auto">
+      <div class="mt-4 flex flex-col items-start text-left max-w-xl mx-auto">
         <h2 class="text-xl font-semibold text-blue-500 flex items-center gap-2 border-b-2 border-blue-500 pb-1 w-full">
           Review Your Profile
           <span class="text-gray-600 italic text-base">(Suriin ang Iyong Profile)</span>
@@ -148,7 +148,7 @@
           </p>
           <button type="button"
             class="bg-blue-500 text-white font-semibold text-lg px-8 sm:px-12 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center w-full mx-auto shadow-md">
-            ✏️ Edit Personal Information
+            ✏️ Click to Edit Personal Information
           </button>
         </div>
 
@@ -227,7 +227,7 @@
           </div>
         </div>
 
-        <!-- Relationship Field -->
+        <!-- Relationship -->
         <div class="mt-8">
           <label class="font-semibold text-sm flex items-center gap-1">
             Relationship to Applicant
@@ -241,9 +241,9 @@
           <button type="button"
               class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
         </p>
-        <!-- Relationship image -->
+      
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-            <!-- Card 1 -->
+            <!-- Guardian relationship answer -->
         <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/guardian1.png" alt="parent" class="w-full rounded-md mb-4">
@@ -259,7 +259,7 @@
           </p>
           <button type="button"
             class="bg-blue-500 text-white font-semibold text-lg px-8 sm:px-12 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center w-full mx-auto shadow-md">
-            ✏️ Edit Parent/Guardian Information
+            ✏️ Click to  Edit Parent/Guardian Information
           </button>
         </div>
 
