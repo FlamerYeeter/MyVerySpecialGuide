@@ -113,7 +113,7 @@
             (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
           </p>
           <input type="text" placeholder="Type your answer here"
-                 class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                 class="sw-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
         </div>
       </div>
 
