@@ -121,7 +121,7 @@
           <label class="font-semibold text-sm flex items-center gap-1">Phone Number <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
             🔊</button></label>
           <p class="text-gray-500 italic text-[13px]">Telepono</p>
-          <input type="text" placeholder="Phone Number" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input type="text" placeholder="+63 9XX XXX XXXX" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">
             Type your phone number (example: <span class="font-semibold">+63 917 123 4567</span>). This is optional.
           </p>
