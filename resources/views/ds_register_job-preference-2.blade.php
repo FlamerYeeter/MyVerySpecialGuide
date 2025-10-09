@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <title>Registration: Job Preference</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+    /* Floating animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-float-slow { animation: float 5s ease-in-out infinite; }
+    .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
+    .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+  </style>
 </head>
 
 <body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
@@ -146,7 +157,6 @@
             <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
         </p>
     </div>
-
 
 </body>
 </html>

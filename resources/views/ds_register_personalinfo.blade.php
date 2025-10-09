@@ -4,6 +4,17 @@
   <meta charset="UTF-8">
   <title>Registration: Personal Information</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+    /* Floating animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-float-slow { animation: float 5s ease-in-out infinite; }
+    .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
+    .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+  </style>
 </head>
 
 <body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
@@ -50,12 +61,12 @@
 
       <!-- Instruction -->
       <p class="mt-6 text-gray-700 text-[14px] leading-snug flex items-start gap-2">
-        Please type your information inside the box. The boxes with a ⭐ star must be filled in.
-        <button class="text-gray-500 text-xl hover:scale-110 transition-transform">🔊</button>
+        Please type your information inside the box. The text with a ⭐ star must be filled in.
+        <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
       </p>
       
       <p class="mt-1 text-[13px] text-gray-500 italic border-b-2 border-blue-500 pb-1 w-full">
-        (Isulat ang iyong impormasyon sa loob ng kahon. Ang mga kahon na may ⭐ bituin ay dapat sagutan.)
+        (Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may ⭐ bituin ay dapat sagutan.)
       </p>
     </div>
 
@@ -98,7 +109,7 @@
           py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-2">
             Type your email (example: <span class="font-semibold">john@gmail.com</span>). 
-            The confirmation will be sent to your email.
+            The account confirmation will be sent to your email.<br>
             <span class="italic text-gray-500">(Ang kumpirmasyon ay ipapadala sa iyong email.)</span>
           </p>
         </div>
@@ -107,7 +118,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 text-left mt-8">
         <!-- Phone -->
         <div>
-          <label class="font-semibold text-sm flex items-center gap-1">Phone Number <button class="text-xl">🔊</button></label>
+          <label class="font-semibold text-sm flex items-center gap-1">Phone Number <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
+            🔊</button></label>
           <p class="text-gray-500 italic text-[13px]">Telepono</p>
           <input type="text" placeholder="Phone Number" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">
@@ -117,7 +129,8 @@
 
         <!-- Age -->
         <div>
-          <label class="font-semibold text-sm flex items-center gap-1">Age <button class="text-xl">🔊</button></label>
+          <label class="font-semibold text-sm flex items-center gap-1">Age <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
+            🔊</button></label>
           <p class="text-gray-500 italic text-[13px]">Edad</p>
           <input type="number" placeholder="Age" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">Type your age (example: <span class="font-semibold">20 years old</span>).</p>
@@ -126,7 +139,8 @@
 
       <!-- Create Password -->
       <div>
-        <label class="font-semibold text-sm flex items-center mt-8 gap-1">Create Password ⭐ <button class="text-xl">🔊</button></label>
+        <label class="font-semibold text-sm flex items-center mt-8 gap-1">Create Password ⭐ <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
+          🔊</button></label>
         <p class="text-gray-500 italic text-[13px]">Gumawa ng Password</p>
         <input type="password" placeholder="Password" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         <p class="text-gray-500 text-xs mt-1">
@@ -150,7 +164,7 @@
       English 
       <button class="text-gray-600 text-lg hover:scale-110 transition-transform" title="Play audio">🔊</button>
     </p>
-    <p>Password must have:</p>
+    <p class="mb-2">Password must have:</p>
     <ul class="list-disc list-inside space-y-1">
       <li>One big letter (A, B, C)</li>
       <li>One small letter (a, b, c)</li>
@@ -166,7 +180,7 @@
       Tagalog 
       <button class="text-gray-600 text-lg hover:scale-110 transition-transform" title="Play audio">🔊</button>
     </p>
-    <p>Ang password dapat ay may:</p>
+    <p class="mb-2">Ang password dapat ay may:</p>
     <ul class="list-disc list-inside space-y-1">
       <li>Isang malaking letra (A, B, C)</li>
       <li>Isang maliit na letra (a, b, c)</li>
@@ -180,7 +194,8 @@
 
       <!-- Confirm Password -->
       <div>
-        <label class="font-semibold text-sm flex items-center mt-8 gap-1">Type Password Again ⭐ <button class="text-xl">🔊</button></label>
+        <label class="font-semibold text-sm flex items-center mt-8 gap-1">Type Password Again ⭐ <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
+          🔊</button></label>
         <p class="text-gray-500 italic text-[13px]">I-type muli ang password</p>
         <input type="password" placeholder="Password" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         <p class="text-gray-500 text-xs mt-1">
