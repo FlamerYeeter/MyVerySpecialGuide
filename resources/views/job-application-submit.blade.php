@@ -3,7 +3,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 font-sans">
     <!-- Header Navigation -->
-    <header class="bg-white shadow-sm py-4">
+    {{-- <header class="bg-white shadow-sm py-4">
         <div class="container mx-auto flex flex-col md:flex-row items-center justify-between px-4">
             <div class="flex items-center space-x-2">
                 <img src="image/logo.png" alt="Logo" class="w-16 h-16 object-contain">
@@ -19,13 +19,13 @@
                 <button class="border px-3 py-1 rounded-full text-sm">Profile ▾</button>
             </div>
         </div>
-    </header>
+    </header> --}}
 
     <!-- Info -->
-    <div class="text-center mt-3 text-sm underline text-gray-600">
+    {{-- <div class="text-center mt-3 text-sm underline text-gray-600">
         <a href="#" class="hover:text-blue-600 font-medium">Click to know about the navigation buttons above</a>
         <p class="italic text-xs">(pindutin upang malaman ang tungkol sa navigation buttons sa taas)</p>
-    </div>
+    </div> --}}
 
     <!-- Back Button -->
   <div class="bg-yellow-400 mt-6 py-4">
@@ -76,12 +76,47 @@
 
     <!-- Submit Button -->
     <div class="flex justify-end mt-8">
-      <button type="submit"
-        class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition font-medium">
+      <button id="finalSubmit" class="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 transition font-medium">
         Submit Application
       </button>
     </div>
   </section>
 
 </div>
+
+<script type="module">
+import { submitJobApplication } from '/js/job-application-firebase.js';
+
+document.getElementById('finalSubmit').addEventListener('click', async function() {
+    const btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Submitting...';
+
+    const step1 = JSON.parse(sessionStorage.getItem('jobApplication_step1') || '{}');
+    const step2 = JSON.parse(sessionStorage.getItem('jobApplication_step2') || '{}');
+
+    // combine
+    const payload = {
+      submitted_at: new Date().toISOString(),
+      ...step1,
+      ...step2,
+      job_id: "{{ request('job_id') ?? '' }}",
+      source: 'web'
+    };
+
+    try {
+      await submitJobApplication(payload);
+      // clear saved steps
+      sessionStorage.removeItem('jobApplication_step1');
+      sessionStorage.removeItem('jobApplication_step2');
+      // redirect to matches or a confirmation page
+      window.location.href = "{{ route('job.matches') }}";
+    } catch (err) {
+      console.error(err);
+      alert('Failed to submit application. Please try again.');
+      btn.disabled = false;
+      btn.textContent = 'Submit Application';
+    }
+});
+</script>
 @endsection

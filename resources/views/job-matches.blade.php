@@ -3,35 +3,69 @@
 @section('content')
 
 
-    <!-- Job Recommendations -->
+    <!-- Filter Form -->
     <section class="bg-yellow-400 py-10 mt-4">
         <div class="container mx-auto px-4">
-            <div class="flex items-center justify-center space-x-4 mb-6">
-                <img src="{{ asset('images/job-search.png') }}" class="w-20 h-20"> <!-- will export the image -->
-                <div>
-                    <h2 class="text-3xl font-bold text-gray-800">Job Recommended For You</h2>
-                    <p class="text-sm text-gray-600 italic">(Mga Trabahong Para sa Iyo)</p>
+            <form method="GET" action="{{ route('job.matches') }}">
+                <div class="flex items-center justify-center space-x-4 mb-6">
+                    <img src="{{ asset('images/job-search.png') }}" class="w-20 h-20">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Job Recommended For You</h2>
+                        <p class="text-sm text-gray-600 italic">(Mga Trabahong Para sa Iyo)</p>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Filters -->
-            <div class="flex flex-wrap justify-center gap-3">
-                <select class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
-                    <option>Industry</option>
-                </select>
-                <select class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
-                    <option>Job Fit Level</option>
-                </select>
-                <select class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
-                    <option>Growth Potential</option>
-                </select>
-                <select class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
-                    <option>Work Environment</option>
-                </select>
-            </div>
-
-
-            <p class="text-center text-xs mt-3 italic text-gray-600">(i-click ang dropdown arrow sa itaas...)</p>
+                <div class="flex flex-wrap justify-center gap-3">
+                    <select name="industry" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
+                        <option value="">Industry</option>
+                        <option value="Healthcare" {{ request('industry') == 'Healthcare' ? 'selected' : '' }}>Healthcare
+                        </option>
+                        <option value="Retail" {{ request('industry') == 'Retail' ? 'selected' : '' }}>Retail</option>
+                        <option value="Food Service" {{ request('industry') == 'Food Service' ? 'selected' : '' }}>Food Service
+                        </option>
+                        <option value="Education" {{ request('industry') == 'Education' ? 'selected' : '' }}>Education
+                        </option>
+                        <option value="Hospitality" {{ request('industry') == 'Hospitality' ? 'selected' : '' }}>Hospitality
+                        </option>
+                        <option value="Manufacturing" {{ request('industry') == 'Manufacturing' ? 'selected' : '' }}>Manufacturing
+                        </option>
+                        <option value="Transportation" {{ request('industry') == 'Transportation' ? 'selected' : '' }}>Transportation
+                        </option>
+                        <option value="Cleaning" {{ request('industry') == 'Cleaning' ? 'selected' : '' }}>Cleaning
+                        </option>
+                        <option value="Office" {{ request('industry') == 'Office' ? 'selected' : '' }}>Office
+                        </option>
+                        <option value="Construction" {{ request('industry') == 'Construction' ? 'selected' : '' }}>Construction
+                        </option>
+                        <option value="Creative" {{ request('industry') == 'Creative' ? 'selected' : '' }}>Creative
+                        </option>
+                        <option value="Packing" {{ request('industry') == 'Packing' ? 'selected' : '' }}>Packing
+                        </option>
+                        <option value="Other" {{ request('industry') == 'Other' ? 'selected' : '' }}>Other
+                        </option>
+                    </select>
+                    <select name="fit_level" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
+                        <option value="">Job Fit Level</option>
+                        <option value="Excellent Fit" {{ request('fit_level') == 'Excellent Fit' ? 'selected' : '' }}>
+                            Excellent Fit</option>
+                        <option value="Good Fit" {{ request('fit_level') == 'Good Fit' ? 'selected' : '' }}>Good Fit
+                        </option>
+                    </select>
+                    <select name="growth_potential" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
+                        <option value="">Growth Potential</option>
+                        <option value="High Potential" {{ request('growth_potential') == 'High Potential' ? 'selected' : '' }}>
+                            High Potential</option>
+                        <option value="Medium Potential" {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>
+                            Medium Potential</option>
+                    </select>
+                    <select name="work_environment" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
+                        <option value="">Work Environment</option>
+                        <option value="Quiet" {{ request('work_environment') == 'Quiet' ? 'selected' : '' }}>Quiet</option>
+                        <option value="Busy" {{ request('work_environment') == 'Busy' ? 'selected' : '' }}>Busy</option>
+                    </select>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2">Filter</button>
+                </div>
+                <p class="text-center text-xs mt-3 italic text-gray-600">(i-click ang dropdown arrow sa itaas...)</p>
+            </form>
         </div>
     </section>
 
@@ -66,52 +100,146 @@
     </div>
 
     <!-- Job Cards -->
-    <div class="container mx-auto mt-8 px-4 space-y-6">
-        <!-- Pet Care Assistant -->
-        <div class="bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-center">
-            <div>
-                <h3 class="text-lg font-bold">[[Placeholder Job Title]]</h3>
-                <p class="text-gray-600">[[Placeholder Company]]</p>
-                <p class="text-sm text-gray-500">[[Address]]</p>
-                <div class="flex gap-2 text-xs mt-2">
-                    <span class="bg-gray-100 px-2 py-1 rounded">Healthcare</span>
-                    <span class="bg-gray-100 px-2 py-1 rounded">Quiet</span>
-                </div>
-                <p class="text-sm mt-3">Help feed animals, clean spaces, and provide companionship.</p>
-                <div class="flex gap-2 mt-2">
-                    <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Excellent Fit</span>
-                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">High Potential</span>
-                </div>
-                <p class="text-xs text-gray-400 mt-1">4d ago</p>
-            </div>
-            <div class="flex items-center gap-3 mt-4 md:mt-0">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">View Details</button>
-                <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Saved</button>
-            </div>
-        </div>
+    @php
+        // Try to load precomputed recommendations (generated by tools/generate_recommendations.py)
+        $json_path = public_path('recommendations.json');
+        $recommendations = [];
+        if (file_exists($json_path)) {
+            $json = file_get_contents($json_path);
+            $decoded = json_decode($json, true);
+            if (is_array($decoded)) {
+                // Use computed_score if available and preserve structure expected by view
+                foreach ($decoded as $row) {
+                    $recommendations[] = [
+                        'job_description' => $row['job_description'] ?? '',
+                        'resume' => $row['resume'] ?? '',
+                        'match_score' => $row['match_score'] ?? ($row['computed_score'] ?? 0),
+                        'computed_score' => $row['computed_score'] ?? null,
+                        'industry' => $row['industry'] ?? '',
+                        'fit_level' => $row['fit_level'] ?? '',
+                        'growth_potential' => $row['growth_potential'] ?? '',
+                        'work_environment' => $row['work_environment'] ?? '',
+                    ];
+                }
+            }
+        } else {
+            // Fallback: read CSV as before
+            $csv_path = public_path('resume_job_matching_dataset.csv');
+            if (file_exists($csv_path)) {
+                if (($handle = fopen($csv_path, 'r')) !== false) {
+                    $header = fgetcsv($handle);
+                    while (($row = fgetcsv($handle)) !== false) {
+                        $job = [
+                            'job_description' => $row[0],
+                            'resume' => $row[1],
+                            'match_score' => $row[2],
+                            'industry' => $row[3] ?? '',
+                            'fit_level' => $row[4] ?? '',
+                            'growth_potential' => $row[5] ?? '',
+                            'work_environment' => $row[6] ?? '',
+                        ];
+                        $recommendations[] = $job;
+                    }
+                    fclose($handle);
+                }
+            }
+        }
 
-        <!-- Kitchen Helper -->
-        <div class="bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-center">
-            <div>
-                <h3 class="text-lg font-bold">[[Placeholder Job Title]]</h3>
-                <p class="text-gray-600">[[Placeholder Company]]</p>
-                <p class="text-sm text-gray-500">[[Address]]</p>
-                <div class="flex gap-2 text-xs mt-2">
-                    <span class="bg-gray-100 px-2 py-1 rounded">Hospitality</span>
-                    <span class="bg-gray-100 px-2 py-1 rounded">Busy</span>
-                </div>
-                <p class="text-sm mt-3">Supports the cooks and staff by keeping the kitchen clean and organized.</p>
-                <div class="flex gap-2 mt-2">
-                    <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Good Fit</span>
-                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">Medium Potential</span>
-                </div>
-                <p class="text-xs text-gray-400 mt-1">23h ago</p>
+        // Apply keyword-based filtering (if any filters selected)
+        $filtered = [];
+        foreach ($recommendations as $job) {
+            $show = true;
+            if (request('industry')) {
+                $keyword = strtolower(request('industry'));
+                if (strpos(strtolower($job['job_description']), $keyword) === false &&
+                    strpos(strtolower($job['resume']), $keyword) === false) {
+                    $show = false;
+                }
+            }
+            if (request('fit_level') && (!isset($job['fit_level']) || !strlen($job['fit_level']) || strtolower($job['fit_level']) != strtolower(request('fit_level')))) {
+                $show = false;
+            }
+            if (request('growth_potential') && (!isset($job['growth_potential']) || !strlen($job['growth_potential']) || strtolower($job['growth_potential']) != strtolower(request('growth_potential')))) {
+                $show = false;
+            }
+            if (request('work_environment') && (!isset($job['work_environment']) || !strlen($job['work_environment']) || strtolower($job['work_environment']) != strtolower(request('work_environment')))) {
+                $show = false;
+            }
+            if ($show) $filtered[] = $job;
+        }
+
+        // Sort by computed_score if available, else by match_score desc
+        usort($filtered, function($a, $b) {
+            $aScore = isset($a['computed_score']) && $a['computed_score'] !== null ? $a['computed_score'] : floatval($a['match_score'] ?? 0);
+            $bScore = isset($b['computed_score']) && $b['computed_score'] !== null ? $b['computed_score'] : floatval($b['match_score'] ?? 0);
+            return $bScore <=> $aScore;
+        });
+
+        // Pagination logic (10 jobs per page)
+        $page = max(1, intval(request('page', 1)));
+        $perPage = 10;
+        $total = count($filtered);
+        $recommendations = array_slice($filtered, ($page - 1) * $perPage, $perPage);
+        $lastPage = ceil($total / $perPage);
+    @endphp
+
+    <div class="container mx-auto mt-8 px-4 space-y-6">
+        @if(empty($recommendations))
+            <div class="bg-yellow-100 p-6 rounded-xl text-center text-gray-600">
+                No job recommendations found. Please upload <b>resume_job_matching_dataset.csv</b> to <b>public/</b> folder and run the recommendation script.
             </div>
-            <div class="flex items-center gap-3 mt-4 md:mt-0">
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">View Details</button>
-                <button class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Saved</button>
+        @else
+            @foreach($recommendations as $idx => $job)
+                <div class="bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-bold">{{ $job['job_description'] }}</h3>
+                        <p class="text-gray-600">{{ $job['resume'] }}</p>
+                        <div class="flex gap-2 text-xs mt-2">
+                            @if($job['industry'])
+                                <span class="bg-gray-100 px-2 py-1 rounded">{{ $job['industry'] }}</span>
+                            @endif
+                            @if($job['work_environment'])
+                                <span class="bg-gray-100 px-2 py-1 rounded">{{ $job['work_environment'] }}</span>
+                            @endif
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            @if($job['fit_level'])
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">{{ $job['fit_level'] }}</span>
+                            @endif
+                            @if($job['growth_potential'])
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">{{ $job['growth_potential'] }}</span>
+                            @endif
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">
+                            Match Score: {{ $job['match_score'] ?? '-' }}
+                            @if(isset($job['computed_score'])) • Computed: {{ $job['computed_score'] }} @endif
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3 mt-4 md:mt-0">
+                        <a href="{{ route('job.details', ['job_id' => ($page - 1) * $perPage + $idx]) }}"
+                           class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                            View Details
+                        </a>
+                        <form method="POST" action="{{ route('my.job.applications') }}">
+                            @csrf
+                            <input type="hidden" name="job_id" value="{{ ($page - 1) * $perPage + $idx }}">
+                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Saved</button>
+                        </form>
+                    </div>
+                </div>
+            @endforeach
+
+            <!-- Pagination -->
+            <div class="flex justify-center mt-8">
+                @if($page > 1)
+                    <a href="{{ request()->fullUrlWithQuery(['page' => $page - 1]) }}" class="px-4 py-2 bg-blue-100 rounded-l hover:bg-blue-200">Previous</a>
+                @endif
+                <span class="px-4 py-2 bg-white border-t border-b">{{ $page }} / {{ $lastPage }}</span>
+                @if($page < $lastPage)
+                    <a href="{{ request()->fullUrlWithQuery(['page' => $page + 1]) }}" class="px-4 py-2 bg-blue-100 rounded-r hover:bg-blue-200">Next</a>
+                @endif
             </div>
-        </div>
+        @endif
     </div>
 </div>
 @endsection

@@ -37,7 +37,9 @@
       Fill out the form below to apply for this position. All required fields are marked with an asterisk (<span class="text-red-500">*</span>).
     </p>
 
-    <form action="#" method="POST" class="space-y-8">
+    <form id="jobApplicationForm" class="space-y-8">
+      @csrf
+      <input type="hidden" id="user_id" value="user1234">
 
       <!-- Personal Information -->
       <div class="border-t pt-4">
@@ -45,31 +47,31 @@
         <div class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">First Name <span class="text-red-500">*</span></label>
-            <input type="text" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="text" id="first_name" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Last Name <span class="text-red-500">*</span></label>
-            <input type="text" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="text" id="last_name" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Email Address <span class="text-red-500">*</span></label>
-            <input type="email" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="email" id="email" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Phone Number <span class="text-red-500">*</span></label>
-            <input type="tel" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="tel" id="phone_number" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700">Complete Address <span class="text-red-500">*</span></label>
-            <textarea class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400"></textarea>
+            <textarea id="address" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400"></textarea>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Date of Birth <span class="text-red-500">*</span></label>
-            <input type="date" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="date" id="date_of_birth" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Gender</label>
-            <select class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <select id="gender" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
               <option>Select</option>
               <option>Male</option>
               <option>Female</option>
@@ -85,23 +87,23 @@
         <div class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Job Title</label>
-            <input type="text" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="text" id="job_title" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Company/Employer</label>
-            <input type="text" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="text" id="company_employer" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Start Date</label>
-            <input type="date" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="date" id="start_date" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">End Date</label>
-            <input type="date" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="date" id="end_date" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div class="md:col-span-2">
             <label class="block text-sm font-medium text-gray-700">Job Description</label>
-            <textarea class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400" placeholder="Describe your responsibilities, skills, and achievements"></textarea>
+            <textarea id="job_description" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400" placeholder="Describe your responsibilities, skills, and achievements"></textarea>
           </div>
         </div>
         <div class="flex justify-center">
@@ -119,7 +121,54 @@
       </div>
 
     </form>
-  </section>
 
-</div>
+    {{-- Replaced the previous module-based script with a plain script that always runs --}}
+    <script>
+		(function () {
+			// Helper: safely read request('job_id') from blade into JS
+			const jobId = "{{ request('job_id') ?? '' }}";
+
+			// attach handler when DOM is ready
+			document.addEventListener('DOMContentLoaded', function () {
+				const form = document.getElementById('jobApplicationForm');
+				if (!form) return;
+
+				form.addEventListener('submit', function (e) {
+					e.preventDefault(); // stop default POST that adds _token to URL
+
+					// collect form values (keep in sync with your inputs)
+					const data = {
+						user_id: document.getElementById('user_id') ? document.getElementById('user_id').value : 'user1234',
+						first_name: (document.getElementById('first_name') || {}).value || '',
+						last_name: (document.getElementById('last_name') || {}).value || '',
+						email: (document.getElementById('email') || {}).value || '',
+						phone_number: (document.getElementById('phone_number') || {}).value || '',
+						address: (document.getElementById('address') || {}).value || '',
+						date_of_birth: (document.getElementById('date_of_birth') || {}).value || '',
+						gender: (document.getElementById('gender') || {}).value || '',
+						job_title: (document.getElementById('job_title') || {}).value || '',
+						company_employer: (document.getElementById('company_employer') || {}).value || '',
+						start_date: (document.getElementById('start_date') || {}).value || '',
+						end_date: (document.getElementById('end_date') || {}).value || '',
+						job_description: (document.getElementById('job_description') || {}).value || ''
+					};
+
+					// Save to sessionStorage so page 2 / review pages can access it
+					try {
+						sessionStorage.setItem('jobApplication_step1', JSON.stringify(data));
+					} catch (err) {
+						// storage may be disabled; ignore but still redirect
+						console.warn('sessionStorage not available', err);
+					}
+
+					// Build next URL and redirect to Job Application 2 with job_id preserved
+					const base = "{{ route('job.application.2') }}";
+					const nextUrl = jobId ? base + '?job_id=' + encodeURIComponent(jobId) : base;
+					window.location.href = nextUrl;
+				});
+			});
+		})();
+	</script>
+
+	<!-- ...existing code... -->
 @endsection

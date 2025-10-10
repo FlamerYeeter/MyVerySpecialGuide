@@ -37,7 +37,7 @@
       Fill out the form below to apply for this position. All required fields are marked with an asterisk (<span class="text-red-500">*</span>).
     </p>
 
-    <form action="#" method="POST" enctype="multipart/form-data" class="space-y-8">
+    <form id="jobApplicationForm2" class="space-y-8">
 
       <!-- Education -->
       <div class="border-t pt-4">
@@ -45,7 +45,7 @@
         <div class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Highest Educational Attainment <span class="text-red-500">*</span></label>
-            <select class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <select id="education_attainment" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
               <option>Select</option>
               <option>High School Graduate</option>
               <option>Vocational/Technical</option>
@@ -56,15 +56,15 @@
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">School Name</label>
-            <input type="text" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="text" id="school_name" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Course/Program (if applicable)</label>
-            <input type="text" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="text" id="course_program" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Year Graduated</label>
-            <input type="text" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
+            <input type="text" id="year_graduated" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
           </div>
         </div>
       </div>
@@ -75,12 +75,12 @@
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Relevant Skills</label>
-            <textarea class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400"
+            <textarea id="relevant_skills" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400"
               placeholder="List skills relevant to this job (e.g. animal care, cleaning, customer service)"></textarea>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700">Certifications</label>
-            <textarea class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400"
+            <textarea id="certifications" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400"
               placeholder="List any certifications, training programs, you've completed (e.g. Pet First Aid and CPR Certification – American Red Cross, 2023)"></textarea>
           </div>
         </div>
@@ -91,15 +91,7 @@
         <h3 class="font-semibold text-gray-800 mb-4">Required Documents</h3>
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">Resume/CV <span class="text-red-500">*</span></label>
-          <label class="w-full border-2 border-dashed rounded-lg flex flex-col items-center justify-center py-10 cursor-pointer hover:bg-gray-100 transition">
-            <svg class="w-8 h-8 text-gray-400 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-              stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-8m0 0l-4 4m4-4l4 4m5 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2" />
-            </svg>
-            <p class="text-gray-600 text-sm">Click to upload your resume</p>
-            <p class="text-xs text-gray-400">PDF, DOC, or DOCX (Max 5MB)</p>
-            <input type="file" name="resume" class="hidden" accept=".pdf,.doc,.docx">
-          </label>
+          <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" class="w-full">
         </div>
       </div>
 
@@ -111,6 +103,32 @@
       </div>
 
     </form>
+    <script>
+document.getElementById('jobApplicationForm2').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const data = {
+      education_attainment: document.getElementById('education_attainment').value,
+      school_name: document.getElementById('school_name').value,
+      course_program: document.getElementById('course_program').value,
+      year_graduated: document.getElementById('year_graduated').value,
+      relevant_skills: document.getElementById('relevant_skills').value,
+      certifications: document.getElementById('certifications').value,
+      // resume file handling can be implemented later
+    };
+
+    try {
+      sessionStorage.setItem('jobApplication_step2', JSON.stringify(data));
+    } catch (err) {
+      console.warn('sessionStorage not available', err);
+    }
+
+    // preserve job_id when redirecting
+    let jobId = "{{ request('job_id') }}";
+    let nextUrl = jobId ? "{{ route('job.application.review1') }}?job_id=" + encodeURIComponent(jobId) : "{{ route('job.application.review1') }}";
+    window.location.href = nextUrl;
+});
+</script>
   </section>
 
 </div>

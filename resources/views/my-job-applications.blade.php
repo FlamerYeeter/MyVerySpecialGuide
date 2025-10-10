@@ -171,5 +171,80 @@
     </div>
   </div>
 
+  @php
+    $csv_path = public_path('resume_job_matching_dataset.csv');
+    $savedJobs = $savedJobs ?? [];
+    $jobs = [];
+    if (file_exists($csv_path)) {
+        if (($handle = fopen($csv_path, 'r')) !== false) {
+            $header = fgetcsv($handle);
+            $i = 0;
+            while (($row = fgetcsv($handle)) !== false) {
+                if (in_array($i, $savedJobs)) {
+                    $jobs[] = [
+                        'id' => $i,
+                        'job_description' => $row[0],
+                        'resume' => $row[1],
+                        'match_score' => $row[2],
+                        'industry' => $row[3] ?? '',
+                        'fit_level' => $row[4] ?? '',
+                        'growth_potential' => $row[5] ?? '',
+                        'work_environment' => $row[6] ?? '',
+                    ];
+                }
+                $i++;
+            }
+            fclose($handle);
+        }
+    }
+  @endphp
+
+  <div class="max-w-5xl mx-auto mt-10 px-4">
+    <h2 class="text-2xl font-bold text-blue-600 mb-6">Saved Jobs</h2>
+    @if(empty($jobs))
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded text-center">
+            You have no saved jobs yet.
+        </div>
+    @else
+        @foreach($jobs as $job)
+            <div class="border rounded-lg bg-white shadow-sm mb-8">
+                <div class="p-4 flex flex-col md:flex-row justify-between items-center">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-800">{{ $job['job_description'] }}</h3>
+                        <p class="text-sm text-gray-600">{{ $job['resume'] }}</p>
+                        <div class="flex gap-2 text-xs mt-2">
+                            @if($job['industry'])
+                                <span class="bg-gray-100 px-2 py-1 rounded">{{ $job['industry'] }}</span>
+                            @endif
+                            @if($job['work_environment'])
+                                <span class="bg-gray-100 px-2 py-1 rounded">{{ $job['work_environment'] }}</span>
+                            @endif
+                        </div>
+                        <div class="flex gap-2 mt-2">
+                            @if($job['fit_level'])
+                                <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">{{ $job['fit_level'] }}</span>
+                            @endif
+                            @if($job['growth_potential'])
+                                <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">{{ $job['growth_potential'] }}</span>
+                            @endif
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Match Score: {{ $job['match_score'] }}</p>
+                    </div>
+                    <div class="flex flex-col gap-2 mt-4 md:mt-0">
+                        <a href="{{ route('job.details', ['job_id' => $job['id']]) }}"
+                           class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 text-center">
+                            View Details
+                        </a>
+                        <form method="POST" action="{{ route('my.job.applications.remove') }}">
+                            @csrf
+                            <input type="hidden" name="job_id" value="{{ $job['id'] }}">
+                            <button type="submit" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-center">Remove</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    @endif
+  </div>
 </div>
 @endsection

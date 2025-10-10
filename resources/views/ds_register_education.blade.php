@@ -30,12 +30,9 @@
 
   <!-- Back Button -->
   <button
-    class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-5 py-2 sm:px-6 sm:py-3 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition z-10 shadow-md active:scale-95">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-      stroke-width="3" stroke="white" class="w-5 h-5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-    </svg>
-    <span class="text-base font-medium">Back</span>
+    class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
+    onclick="window.location.href='{{ route('registerguardianinfo') }}'">
+    Back
   </button>
 
   <!-- Main Card -->
@@ -117,7 +114,8 @@
       
         <!-- Next Button -->
         <div class="flex flex-col items-center justify-center mt-12 mb-8 space-y-4">
-        <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow">
+        <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
+        onclick="window.location.href='{{ route('registerschoolworkinfo') }}'">
           Next →
         </button>
 
@@ -128,5 +126,7 @@
       </div>
     </div>
   </div>
+</body>
+</html>
 </body>
 </html>
