@@ -1,92 +1,169 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="font-sans bg-white text-gray-700">
+    <div class="font-sans bg-white text-gray-700">
+
+        <!-- HERO / ABOUT SECTION -->
+        <section class="relative bg-cover bg-center py-16 px-8 md:px-16 overflow-hidden"
+            style="background-image: url('{{ asset('image/herobg.png') }}');">
+
+            <!-- Overlay -->
+            <div class="absolute inset-0"></div>
+
+            <!-- Content -->
+            <div class="relative z-10 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-blue-700 mb-6 leading-tight drop-shadow-sm">
+                        About Us
+                    </h2>
+                    <div class="text-justify text-base md:text-lg text-gray-700 leading-relaxed space-y-4">
+                        <p>
+                            Welcome to <span class="font-semibold text-blue-600">MyVerySpecialGuide (MVSG)</span> —
+                            an inclusive digital platform dedicated to empowering individuals with
+                            <span class="font-semibold text-blue-700">Down Syndrome</span> by guiding them toward
+                            meaningful and fulfilling careers.
+                        </p>
+
+                        <p>
+                            At MVSG, we believe everyone deserves more than limited opportunities —
+                            they deserve <span class="text-blue-600 font-medium">careers that match their strengths, skills,
+                                and aspirations.</span>
+                        </p>
+
+                        <p>
+                            By combining <span class="font-medium text-blue-700">therapeutic insights</span> with
+                            <span class="font-medium text-blue-700">smart job-matching technology</span>,
+                            we help create personalized career pathways that open real possibilities.
+                        </p>
+
+                        <p>
+                            Our mission is to empower individuals to thrive, gain independence,
+                            and work side by side with everyone else — because inclusion is not just a goal,
+                            it’s a shared responsibility.
+                        </p>
+
+                        <p class="font-medium italic">
+                            Together, we are building a future where inclusion means opportunity, dignity, and fairness for
+                            all.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Image -->
+                <div class="flex justify-center">
+                    <img src="image/logo.png" alt="MVSG Logo"
+                        class="w-72 sm:w-80 md:w-96 drop-shadow-xl hover:scale-105 transition-transform duration-300">
+                </div>
+            </div>
+        </section>
 
 
-  <!-- HERO / ABOUT SECTION -->
-  <section class="relative bg-[url('/images/background-pattern.png')] bg-cover bg-center py-16 px-8 md:px-16">
-    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-      <div>
-        <h2 class="text-4xl md:text-5xl font-bold text-blue-700 mb-6">About us</h2>
-        <p class="leading-relaxed text-gray-700 mb-4">
-          Welcome to <span class="font-semibold">MyVerySpecialGuide (MVSG)</span> an inclusive platform dedicated to empowering individuals with Down Syndrome by guiding them toward meaningful and fulfilling careers.
-        </p>
-        <p class="leading-relaxed mb-4">
-          At MVSG, we believe people with Down Syndrome deserve more than limited opportunities they deserve careers that match their true strengths.
-        </p>
-        <p class="leading-relaxed mb-4">
-          By combining therapy insights with smart job matching tools, we create personalized career pathways that go beyond traditional roles.
-        </p>
-        <p class="leading-relaxed">
-          Our platform empowers individuals to thrive, achieve independence, and work side by side with everyone else.
-        </p>
-        <p class="leading-relaxed mt-4">
-          Together, we are building a future where inclusion means opportunity, dignity, and fairness for all.
-        </p>
-      </div>
-      <div class="flex justify-center">
-        <img src="image/logo.png" alt="MVSG Logo" class="w-80 md:w-96 drop-shadow-lg">
-      </div>
-    </div>
-  </section>
+        <!-- WHAT WE DO SECTION -->
+        <section class="relative py-16 sm:py-20 bg-white overflow-hidden">
 
-  <!-- WHAT WE DO SECTION -->
-  <section class="py-16 bg-white relative text-center">
-    <div class="max-w-4xl mx-auto px-6">
-      <h3 class="text-2xl font-bold text-blue-700 mb-4">WHAT WE DO</h3>
-      <p class="text-gray-600 leading-relaxed">
-        MVSG is built to assist both users and their guardians in navigating the journey toward employment and personal development.
-        By analyzing strengths, aspirations, and evolving abilities, our system provides tailored job insights and training suggestions
-        that open doors to brighter futures.
-      </p>
-    </div>
-  </section>
+            <!-- Floating Mascots -->
+            <img src="image/obj3.png" alt="Blue Circle Mascot"
+                class="absolute top-4 sm:top-8 left-4 sm:left-8 w-8 sm:w-12 md:w-16 opacity-90" />
+            <img src="image/obj9.png" alt="Yellow Dark Mascot"
+                class="absolute top-6 sm:top-10 right-4 sm:right-10 w-8 sm:w-12 md:w-16 opacity-90" />
+            <img src="image/obj4.png" alt="Yellow Circle Mascot"
+                class="absolute bottom-4 sm:bottom-10 left-6 sm:left-16 w-12 sm:w-16 md:w-20 opacity-90" />
+            <img src="image/obj10.png" alt="Pink Mascot"
+                class="absolute top-12 sm:top-16 md:top-12 left-1/2 transform -translate-x-1/2 w-8 sm:w-12 md:w-16 opacity-90" />
+            <img src="image/obj11.png" alt="Green Mascot"
+                class="absolute bottom-2 sm:bottom-4 right-2 sm:right-6 md:right-10 w-12 sm:w-16 md:w-20 opacity-90" />
 
-  <!-- MISSION / VISION SECTION -->
-  <section class="py-10 px-8 md:px-16 bg-white">
-    <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-10">
-      
-      <!-- Mission -->
-      <div class="bg-[url('/images/paint-red.png')] bg-cover bg-center rounded-2xl text-black p-8 shadow-lg"> <!--Change niyo nlang na orange bg dyan -->
-        <h3 class="text-2xl font-bold mb-4">MISSION</h3>
-        <p class="leading-relaxed">
-          Our mission is to bridge the gap between potential and opportunity by using the power of machine learning 
-          to deliver personalized job recommendations. We believe that every individual deserves a career path that 
-          not only matches their skills and interests but also nurtures growth, confidence, and independence.
-        </p>
-      </div>
+            <!-- Content -->
+            <div class="relative z-10 max-w-6xl mx-auto px-4 sm:px-8 md:px-16 text-left">
+                <h3 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-700 mb-6">
+                    WHAT WE DO
+                </h3>
+                <p class="text-gray-700 leading-relaxed text-justify text-sm sm:text-base md:text-lg">
+                    MVSG is built to assist both users and their guardians in navigating the journey toward employment and
+                    personal development.
+                    By analyzing strengths, aspirations, and evolving abilities, our system provides tailored job insights
+                    and training suggestions
+                    that open doors to brighter futures.
+                </p>
+            </div>
+        </section>
 
-      <!-- Vision -->
-      <div class="bg-[url('/images/paint-yellow.png')] bg-cover bg-center rounded-2xl text-gray-800 p-8 shadow-lg"> <!--Change niyo nlang na yellow bg dyan -->
-        <h3 class="text-2xl font-bold mb-4">VISION</h3>
-        <p class="leading-relaxed">
-          MVSG envisions a world where neurodivergent individuals thrive in careers tailored to their unique strengths and potential. 
-          Through innovation, compassion, and inclusivity, we aim to create not just a recommendation system—but a personalized guide 
-          that nurtures lifelong growth.
-        </p>
-      </div>
+        <!-- MISSION / VISION SECTION -->
+        <section class="relative py-16 sm:py-20 px-4 sm:px-8 md:px-16 bg-blue-50 overflow-hidden">
 
-    </div>
-  </section>
+            <!-- Mascots -->
+            <img src="image/obj2.png" alt="Pink Mascot"
+                class="absolute bottom-2 sm:bottom-6 left-[10%] sm:left-[18%] w-10 sm:w-16 md:w-20 opacity-90">
+            <img src="image/obj4.png" alt="Yellow Mascot"
+                class="absolute bottom-2 sm:bottom-6 right-[10%] sm:right-[16%] w-10 sm:w-16 md:w-20 opacity-90">
 
-  <!-- SIGN UP SECTION -->
-  <section class="bg-blue-50 py-16 px-8 text-center">
-    <div class="max-w-5xl mx-auto">
-      <h3 class="text-3xl md:text-4xl font-bold text-blue-700 mb-4">
-        Sign up to hear from the MyVerySpecialGuide team and discover how you can be part of the journey.
-      </h3>
-      <p class="text-gray-600 mb-4 leading-relaxed">
-        Together, we are building a digital platform to support individuals with Down Syndrome in finding meaningful employment.
-      </p>
-      <p class="text-gray-600 mb-8 leading-relaxed">
-        With the right support and inclusive workplaces, they can thrive, contribute, and work side by side with everyone else.
-      </p>
-      <button class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium shadow-md transition">
-        Sign Up
-      </button>
-    </div>
-  </section>
+            <!-- Section Header -->
+            <div class="text-center mb-12 sm:mb-16 relative z-10 px-2">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-700 mb-4">
+                    OUR MISSION AND VISION
+                </h2>
+            </div>
 
-  
-@endsection
+            <!-- Mission / Vision Cards -->
+            <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 items-stretch relative z-10">
+
+                <!-- Mission -->
+                <div
+                    class="relative bg-[url('/image/border6.png')] bg-cover bg-center text-gray-800 rounded-2xl shadow-lg px-10 sm:px-12 md:px-16 pt-20 sm:pt-32 pb-10 flex flex-col justify-start min-h-[450px] sm:min-h-[500px]">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold mb-3 sm:mb-4 text-black drop-shadow-sm">MISSION</h3>
+                    <p class="leading-relaxed text-justify text-base sm:text-lg">
+                        Our mission is to bridge the gap between potential and opportunity by using the power of
+                        machine learning to deliver personalized job recommendations. We believe that every individual
+                        deserves a career path that not only matches their skills and interests but also nurtures growth,
+                        confidence, and independence.
+                    </p>
+                </div>
+
+                <!-- Vision -->
+                <div
+                    class="relative bg-[url('/image/border7.png')] bg-cover bg-center text-gray-800 rounded-2xl shadow-lg px-10 sm:px-12 md:px-16 pt-20 sm:pt-32 pb-10 flex flex-col justify-start min-h-[450px] sm:min-h-[500px]">
+                    <!-- Mascot on top of Vision card -->
+                    <img src="image/obj12.png" alt="Mascot above Vision"
+                        class="absolute -top-8 sm:-top-10 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 md:w-24">
+
+                    <h3 class="text-2xl sm:text-3xl font-extrabold mb-3 sm:mb-4 text-black drop-shadow-sm">VISION</h3>
+                    <p class="leading-relaxed text-justify text-base sm:text-lg">
+                        MVSG envisions a world where neurodivergent individuals thrive in careers tailored to their
+                        unique strengths and potential. Through innovation, compassion, and inclusivity, we aim to create
+                        not just a recommendation system—but a personalized guide that nurtures lifelong growth.
+                    </p>
+                </div>
+
+            </div>
+        </section>
+
+
+
+        <!-- Sign Up Section -->
+        <section class="py-12 sm:py-16 md:py-20 px-4 sm:px-8 md:px-12">
+            <div class="max-w-5xl mx-auto text-left md:px-6">
+                <h3 class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-700 mb-6 leading-snug">
+                    Sign up to hear from the MyVerySpecialGuide team and discover how you can be part of the journey.
+                </h3>
+
+                <p class="text-blue-400 mb-8 text-sm sm:text-base md:text-lg leading-relaxed" style="text-align: justify;">
+                    Together, we are building a digital platform to support individuals with Down Syndrome
+                    in finding meaningful employment. With the right support and inclusive workplaces, they
+                    can thrive, contribute, and work side by side with everyone else.
+                </p>
+
+                <!-- Button -->
+                <div class="text-center">
+                    <button
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-10 sm:px-12 md:px-14 py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105">
+                        Sign Up
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Violet Border -->
+        <div class="relative w-full -mb-14 z-10">
+            <img src="image/border5.png" alt="Violet Border" class="w-full object-cover h-16 md:h-20 block relative z-10">
+        </div>
+    @endsection
