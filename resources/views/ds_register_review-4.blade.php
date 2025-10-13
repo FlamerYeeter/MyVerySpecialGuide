@@ -149,29 +149,83 @@
 
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', async function () {
-        if (!window.firebase || !window.firebase.auth || !window.firebase.firestore) return;
-        try {
-          const auth = firebase.auth();
-          const db = firebase.firestore();
-          let user = auth.currentUser;
-          if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-          if (!user) return;
-          const doc = await db.collection('users').doc(user.uid).get();
-          if (!doc.exists) return;
-          const data = doc.data();
-          // Skills
-          if (Array.isArray(data.skills)) {
-            document.getElementById('review_skills_list').textContent = data.skills.join(', ');
-            // Optionally, highlight cards matching skills
+      // Exhaustive loader for skills and other review fields
+      document.addEventListener('DOMContentLoaded', async () => {
+        if (!window.__mvsg_flatten) {
+          window.__mvsg_flatten = function flatten(obj, out = {}, prefix = '') {
+            if (!obj || typeof obj !== 'object') return out;
+            for (const k of Object.keys(obj)) {
+              const v = obj[k];
+              const p = prefix ? `${prefix}.${k}` : k;
+              if (v && typeof v === 'object' && !Array.isArray(v)) window.__mvsg_flatten(v, out, p);
+              else out[p] = v;
+            }
+            return out;
+          };
+        }
+        if (!window.__mvsg_findFirstMatching) {
+          window.__mvsg_findFirstMatching = function findFirstMatching(obj, subs) {
+            const flat = window.__mvsg_flatten(obj || {});
+            for (const sub of (subs || [])) {
+              const s = sub.toLowerCase();
+              for (const k of Object.keys(flat)) {
+                if (k.toLowerCase().includes(s) && flat[k]) return flat[k];
+              }
+            }
+            return '';
+          };
+        }
+        const flatten = window.__mvsg_flatten;
+        const findFirstMatching = window.__mvsg_findFirstMatching;
+
+        // Exhaustive loader for skills and other review fields
+        document.addEventListener('DOMContentLoaded', async () => {
+          const safeSet = (id, value) => { const el=document.getElementById(id); if(!el) return; if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.value = value ?? ''; else el.textContent = value ?? ''; };
+          const tryParse = s => { try{ return typeof s==='string' ? JSON.parse(s) : s; }catch(e){ return null; } };
+          const keysToCheck = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data'];
+          const scanAll = () => { const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); out.push({key:k,parsed:tryParse(localStorage.getItem(k))}); } }catch(e){} try{ for(let i=0;i<sessionStorage.length;i++){ const k=sessionStorage.key(i); out.push({key:k,parsed:tryParse(sessionStorage.getItem(k)),session:true}); } }catch(e){} return out; };
+          const merge = (acc,obj) => { if(!obj||typeof obj!=='object') return acc; for(const k of Object.keys(obj)) acc[k] = { ...(acc[k]||{}), ...(obj[k]||{}) }; return acc; };
+          const getDraft = async ()=> {
+            if(window.registrationDraft){ const p=tryParse(window.registrationDraft); if(p) return p; }
+            if(window.__REGISTRATION_DRAFT__){ const p=tryParse(window.__REGISTRATION_DRAFT__); if(p) return p; }
+            for(const k of keysToCheck){ try{ const s=sessionStorage.getItem(k); if(s){ const p=tryParse(s); if(p) return p; } const l=localStorage.getItem(k); if(l){ const p=tryParse(l); if(p) return p; } }catch(e){} }
+            const all = scanAll(); let agg={}; for(const e of all){ if(!e.parsed) continue; const keysLower = Object.keys(e.parsed).map(x=>x.toLowerCase()); const any = keysLower.some(k=>['skills','skill','selectedskills','skilllist'].some(s=>k.includes(s))) || keysLower.some(k=>['first_name','email','guardian','education'].some(s=>k.includes(s))); if(any) agg = merge(agg,e.parsed); }
+            if(Object.keys(agg).length) return agg;
+            const el=document.getElementById('registrationDraftJson'); if(el){ const p=tryParse(el.textContent||el.value||el.innerText); if(p) return p; }
+            if(window.firebase && firebase.auth && firebase.firestore){ try{ const a=firebase.auth(), db=firebase.firestore(); let user=a.currentUser; if(!user) user = await new Promise(res=>firebase.auth().onAuthStateChanged(res)); if(user){ const doc = await db.collection('users').doc(user.uid).get(); if(doc.exists) return doc.data(); } }catch(e){} }
+            return null;
+          };
+
+          try {
+            const data = await getDraft();
+            console.debug('[review-4] merged', data);
+            // Debug dump: flattened keys/object for mapping
+            try {
+              const flat = (typeof flatten === 'function') ? flatten(data) : (function _f(o, out = {}, p = '') { if (!o || typeof o !== 'object') return out; for (const k of Object.keys(o)) { const v = o[k]; const np = p ? p + '.' + k : k; if (v && typeof v === 'object' && !Array.isArray(v)) _f(v, out, np); else out[np] = v; } return out; })(data);
+              console.debug('[review-4] flattened keys:', Object.keys(flat).sort());
+              console.debug('[review-4] flattened object:', flat);
+            } catch (e) { console.warn('[review-4] flatten debug failed', e); }
+            if(!data){ console.warn('[review-4] no data'); return; }
+            // common fields
+            const p = data.personalInfo || data.personal || data; safeSet('review_fname', p.first_name||p.firstName||''); safeSet('review_lname', p.last_name||p.lastName||'');
+            // skills (with fallback)
+            const skillsRaw = data.skills || data.skillList || data.selectedSkills || data.skillsPage1 || (typeof findFirstMatching === 'function' ? findFirstMatching(data, ['skills','skill','selectedskills','skilllist']) : []);
+            const skillArray = Array.isArray(skillsRaw) ? skillsRaw : (typeof skillsRaw === 'string' ? [skillsRaw] : []);
+            if(skillArray.length) safeSet('review_skills_list', skillArray.join(', '));
+            // explicit education/school fallback if present somewhere
+            if (data.schoolWorkInfo) {
+              safeSet('review_school_name', data.schoolWorkInfo.school_name || '');
+              safeSet('review_certs', data.schoolWorkInfo.certs || '');
+            }
+            if (data.educationInfo) {
+              safeSet('review_education_level', data.educationInfo.edu_level || data.educationInfo.edu_level || '');
+            }
             document.querySelectorAll('.selectable-card').forEach(card => {
               const title = card.querySelector('h3')?.textContent?.trim();
-              if (title && data.skills.includes(title)) card.classList.add('selected');
-              else card.classList.remove('selected');
+              if(title && skills.includes(title)) card.classList.add('selected'); else card.classList.remove('selected');
             });
-          }
-        } catch (e) { console.warn('Preview load failed', e); }
-      });
+          } catch(err){ console.error('[review-4] loader error', err); }
+        });
     </script>
   </body>
 </html>

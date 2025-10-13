@@ -108,7 +108,8 @@
             </label>
             <p class="text-gray-500 italic text-[13px]">Unang Pangalan</p>
             <input id="review_fname" type="text" placeholder="First name"
-              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+              readonly />
           </div>
 
           <div>
@@ -118,7 +119,8 @@
             </label>
             <p class="text-gray-500 italic text-[13px]">Apelyido</p>
             <input id="review_lname" type="text" placeholder="Last name"
-              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+              readonly />
           </div>
         </div>
 
@@ -131,7 +133,8 @@
             </label>
             <p class="text-gray-500 italic text-[13px]">Email</p>
             <input id="review_email" type="email" placeholder="Email"
-              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+              readonly />
           </div>
 
           <div>
@@ -141,7 +144,8 @@
             </label>
             <p class="text-gray-500 italic text-[13px]">Telepono</p>
             <input id="review_phone" type="tel" placeholder="+63 9XX XXX XXXX"
-              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+              readonly />
           </div>
         </div>
 
@@ -153,7 +157,8 @@
           </label>
           <p class="text-gray-500 italic text-[13px]">Edad</p>
           <input id="review_age" type="number" placeholder="Age"
-            class="mt-1 w-full md:w-1/2 border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+            class="mt-1 w-full md:w-1/2 border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+            readonly />
         </div>
 
         <!-- Edit Button -->
@@ -201,8 +206,9 @@
                 class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
             </label>
             <p class="text-gray-500 italic text-[13px]">Unang Pangalan</p>
-            <input type="text" placeholder="First name"
-              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+            <input id="review_guardian_fname" type="text" placeholder="First name"
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+              readonly />
           </div>
 
           <div>
@@ -212,8 +218,9 @@
                 class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
             </label>
             <p class="text-gray-500 italic text-[13px]">Apelyido</p>
-            <input type="text" placeholder="Last name"
-              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+            <input id="review_guardian_lname" type="text" placeholder="Last name"
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+              readonly />
           </div>
         </div>
 
@@ -226,8 +233,9 @@
                 class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
             </label>
             <p class="text-gray-500 italic text-[13px]">Email</p>
-            <input type="email" placeholder="Email"
-              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+            <input id="review_guardian_email" type="email" placeholder="Email"
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+              readonly />
           </div>
 
           <div>
@@ -237,8 +245,9 @@
                 class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
             </label>
             <p class="text-gray-500 italic text-[13px]">Telepono</p>
-            <input type="tel" placeholder="+63 9XX XXX XXXX"
-              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+            <input id="review_guardian_phone" type="tel" placeholder="+63 9XX XXX XXXX"
+              class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"
+              readonly />
           </div>
         </div>
 
@@ -256,10 +265,11 @@
           <button type="button"
               class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
         </p>
-      
+        <input id="review_guardian_relationship" type="hidden" value="" />
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             <!-- Guardian relationship answer -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500 selectable-card">
+        <div id="guardian_card_parent" class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500 selectable-card">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/guardian1.png" alt="parent" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Parent</h3>
@@ -306,35 +316,165 @@
         <p class="text-gray-500 italic text-[13px]">(Pindutin ang “Continue” upang magpatuloy)</p>
       </div>
     <script src="{{ asset('js/register.js') }}"></script>
-   <script>
-     // Preview personal and guardian info from Firestore
-     document.addEventListener('DOMContentLoaded', async function () {
-       if (!window.firebase || !window.firebase.auth || !window.firebase.firestore) return;
-       try {
-         const auth = firebase.auth();
-         const db = firebase.firestore();
-         // Wait for auth restoration
-         let user = auth.currentUser;
-         if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-         if (!user) return;
-         const doc = await db.collection('users').doc(user.uid).get();
-         if (!doc.exists) return;
-         const data = doc.data();
-         // Personal Info
-         if (data.personalInfo) {
-           document.getElementById('review_fname').value = data.personalInfo.first_name || '';
-           document.getElementById('review_lname').value = data.personalInfo.last_name || '';
-           document.getElementById('review_email').value = data.personalInfo.email || '';
-           document.getElementById('review_phone').value = data.personalInfo.phone || '';
-           document.getElementById('review_age').value = data.personalInfo.age || '';
-         }
-         // Guardian Info
-         if (data.guardianInfo) {
-           // If you have inputs for guardian info, fill them here
-           // Example: document.getElementById('review_guardian_fname').value = data.guardianInfo.first_name || '';
-         }
-       } catch (e) { console.warn('Preview load failed', e); }
-     });
-   </script>
+    <script>
+      // Expanded exhaustive preview loader with explicit Firestore-field mappings (guardian_first_name, guardian_choice, jobPref1.jobpref1)
+      document.addEventListener('DOMContentLoaded', async () => {
+        // fallback utilities: flatten and find first matching key substring
+        const flatten = (obj, out = {}, prefix = '') => {
+          if (!obj || typeof obj !== 'object') return out;
+          for (const k of Object.keys(obj)) {
+            const val = obj[k];
+            const path = prefix ? `${prefix}.${k}` : k;
+            if (val && typeof val === 'object' && !Array.isArray(val)) flatten(val, out, path);
+            else out[path] = val;
+          }
+          return out;
+        };
+        const findFirstMatching = (obj, substrings) => {
+          const flat = flatten(obj);
+          const lowered = Object.keys(flat).map(k => [k, String(flat[k])]);
+          for (const substr of substrings) {
+            const s = substr.toLowerCase();
+            for (const [k, v] of lowered) {
+              if (k.toLowerCase().includes(s) && v && v.trim()) return v;
+            }
+          }
+          return '';
+        };
+
+        const safeSet = (id, value) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = value ?? '';
+          else el.textContent = value ?? '';
+        };
+
+        const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch (e) { return null; } };
+        const keysToCheck = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data'];
+
+        const scanStorageAll = () => {
+          const found = [];
+          try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); const v = localStorage.getItem(k); found.push({key:k,parsed:tryParse(v)}); } } catch(e){}
+          try { for (let i = 0; i < sessionStorage.length; i++) { const k = sessionStorage.key(i); const v = sessionStorage.getItem(k); found.push({key:k,parsed:tryParse(v),session:true}); } } catch(e){}
+          return found;
+        };
+
+        const mergeSections = (acc, obj) => {
+          if (!obj || typeof obj !== 'object') return acc;
+          const sectionNames = ['personalInfo','guardianInfo','educationInfo','skills','jobPreferences','supportNeed','workplace','workExperience','schoolWorkInfo','skillsPage1','jobPref1','jobPref2'];
+          for (const k of Object.keys(obj)) {
+            if (sectionNames.includes(k) || k.toLowerCase().includes('personal') || k.toLowerCase().includes('guardian')) {
+              acc[k] = { ...(acc[k] || {}), ...(obj[k] || {}) };
+            } else {
+              acc[k] = acc[k] || obj[k];
+            }
+          }
+          const personalKeys = ['first_name','firstName','last_name','lastName','email','phone','age','school_name'];
+          for (const pk of personalKeys) if (obj[pk] !== undefined) { acc.personalInfo = acc.personalInfo || {}; acc.personalInfo[pk] = obj[pk]; }
+          return acc;
+        };
+
+        const getDraft = async () => {
+          if (window.registrationDraft) { console.debug('[review-1] window.registrationDraft'); const p = tryParse(window.registrationDraft); if (p) return p; }
+          if (window.__REGISTRATION_DRAFT__) { console.debug('[review-1] window.__REGISTRATION_DRAFT__'); const p = tryParse(window.__REGISTRATION_DRAFT__); if (p) return p; }
+          for (const k of keysToCheck) {
+            try {
+              const s = sessionStorage.getItem(k); if (s) { const p = tryParse(s); console.debug('[review-1] session key', k, p); if (p) return p; }
+              const l = localStorage.getItem(k); if (l) { const p = tryParse(l); console.debug('[review-1] local key', k, p); if (p) return p; }
+            } catch (e) {}
+          }
+          const all = scanStorageAll(); console.debug('[review-1] scanned entries', all.length);
+          let aggregate = {};
+          for (const entry of all) {
+            if (!entry.parsed) continue;
+            const obj = entry.parsed;
+            const keys = Object.keys(obj).map(x => x.toLowerCase());
+            const anyPersonal = keys.some(k => ['first_name','firstname','last_name','lastname','email','phone','age'].includes(k));
+            const anySection = keys.some(k => ['guardian','personal','education','skills','job','workplace','support','schoolwork','jobpref','skillspage'].some(s => k.includes(s)));
+            if (anyPersonal || anySection) { console.debug('[review-1] merging candidate', entry.key, obj); aggregate = mergeSections(aggregate, obj); }
+          }
+          if (Object.keys(aggregate).length) return aggregate;
+          const el = document.getElementById('registrationDraftJson');
+          if (el) { const p = tryParse(el.textContent || el.value || el.innerText); if (p) { console.debug('[review-1] DOM draft'); return p; } }
+          if (window.firebase && firebase.auth && firebase.firestore) {
+            try {
+              const auth = firebase.auth(), db = firebase.firestore();
+              let user = auth.currentUser;
+              if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+              if (user) {
+                const doc = await db.collection('users').doc(user.uid).get();
+                if (doc.exists) { console.debug('[review-1] Firestore user doc'); return doc.data(); }
+                const regDoc = await db.collection('registrations').doc(user.uid).get().catch(()=>null);
+                if (regDoc && regDoc.exists) { console.debug('[review-1] Firestore registrations doc'); return regDoc.data(); }
+              }
+            } catch (e) { console.warn('[review-1] Firestore attempt failed', e); }
+          }
+          return null;
+        };
+
+        try {
+          const data = await getDraft();
+          console.debug('[review-1] merged data:', data);
+          // Debug: print flattened keys/object so we can see exact field names from storage/Firestore
+          try {
+            const flat = (typeof flatten === 'function') ? flatten(data) : (function _f(o, out = {}, p = '') { if (!o || typeof o !== 'object') return out; for (const k of Object.keys(o)) { const v = o[k]; const np = p ? p + '.' + k : k; if (v && typeof v === 'object' && !Array.isArray(v)) _f(v, out, np); else out[np] = v; } return out; })(data);
+            console.debug('[review-1] flattened keys:', Object.keys(flat).sort());
+            console.debug('[review-1] flattened object:', flat);
+          } catch (e) { console.warn('[review-1] flatten debug failed', e); }
+          if (!data) { console.warn('[review-1] no registration data found'); return; }
+
+          // Personal
+          const p = data.personalInfo || data.personal_info || data.personal || data.personalDetails || data;
+          safeSet('review_fname', p.first_name || p.firstName || p.fname || p.first || '');
+          safeSet('review_lname', p.last_name || p.lastName || p.lname || p.last || '');
+          safeSet('review_email', p.email || p.emailAddress || p.email_address || '');
+          safeSet('review_phone', p.phone || p.telephone || p.mobile || '');
+          safeSet('review_age', p.age || p.years || '');
+
+          // Guardian - support both guardianInfo.* and flat guardian_* fields (as in your screenshot)
+          const g = data.guardianInfo || data.guardian_info || data.guardian || {};
+          // Firestore screenshot shows fields like guardian_first_name / guardian_choice
+          const guardianFirst = g.guardian_first_name || g.guardianFirstName || g.first_name || g.firstName || g.fname || data.guardian_first_name || '';
+          const guardianLast = g.guardian_last_name || g.guardianLastName || g.last_name || g.lastName || g.lname || data.guardian_last_name || '';
+          const guardianEmail = g.guardian_email || g.guardianEmail || g.email || data.guardian_email || '';
+          const guardianPhone = g.guardian_phone || g.guardianPhone || g.phone || data.guardian_phone || '';
+          const guardianChoice = g.guardian_choice || g.guardianChoice || g.relationship || g.relation || data.guardian_choice || '';
+          safeSet('review_guardian_fname', guardianFirst);
+          safeSet('review_guardian_lname', guardianLast);
+          safeSet('review_guardian_email', guardianEmail);
+          safeSet('review_guardian_phone', guardianPhone);
+          safeSet('review_guardian_relationship', guardianChoice);
+          console.debug('[review-1] guardian mapped:', { guardianFirst, guardianLast, guardianEmail, guardianPhone, guardianChoice });
+          const parentCard = document.getElementById('guardian_card_parent');
+          if (parentCard) { if ((guardianChoice || '').toString().toLowerCase().includes('parent')) parentCard.classList.add('selected'); else parentCard.classList.remove('selected'); }
+
+          // Education fields (with fallback search)
+          const edu = data.educationInfo || data.education_info || data.education || data.schoolWorkInfo || {};
+          safeSet('review_education_level', edu.edu_level || edu.eduLevel || edu.level || data.edu_level || findFirstMatching(data, ['education','edu_level','level','school','school_name']));
+          safeSet('review_school_name', edu.school_name || edu.school || data.school_name || findFirstMatching(data, ['school','school_name','schoolname']));
+          safeSet('review_certs', edu.certs || edu.certificates || data.certs || findFirstMatching(data, ['cert','certificate','training']));
+
+          // Explicit exact-key fallbacks from Firestore screenshot (schoolWorkInfo, educationInfo)
+          if (data.schoolWorkInfo) {
+            safeSet('review_school_name', data.schoolWorkInfo.school_name || data.schoolWorkInfo.school || document.getElementById('review_school_name')?.value || '');
+            safeSet('review_certs', data.schoolWorkInfo.certs || data.schoolWorkInfo.certificate || document.getElementById('review_certs')?.value || '');
+            // some flows store work_type or edu level under schoolWorkInfo
+            if (!document.getElementById('review_education_level')?.textContent?.trim()) {
+              safeSet('review_education_level', data.schoolWorkInfo.edu_level || data.schoolWorkInfo.work_type || document.getElementById('review_education_level')?.textContent || '');
+            }
+          }
+          if (data.educationInfo) {
+            safeSet('review_education_level', data.educationInfo.edu_level || data.educationInfo.edu_level || document.getElementById('review_education_level')?.textContent || '');
+          }
+
+          // Exact workplace mapping shown in screenshot
+          if (data.workplace && (data.workplace.workplace_choice !== undefined)) {
+            safeSet('review_workplace_choice', data.workplace.workplace_choice);
+          }
+        } catch (err) {
+          console.error('[review-1] Preview loader error', err);
+        }
+      });
+    </script>
   </body>
 </html>

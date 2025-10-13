@@ -177,26 +177,86 @@
 
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', async function () {
-        if (!window.firebase || !window.firebase.auth || !window.firebase.firestore) return;
+      // Exhaustive loader (same as review-1) for support, workplace and other IDs
+      document.addEventListener('DOMContentLoaded', async () => {
+        if (!window.__mvsg_flatten) {
+          window.__mvsg_flatten = function flatten(obj, out = {}, prefix = '') {
+            if (!obj || typeof obj !== 'object') return out;
+            for (const k of Object.keys(obj)) {
+              const v = obj[k];
+              const p = prefix ? `${prefix}.${k}` : k;
+              if (v && typeof v === 'object' && !Array.isArray(v)) window.__mvsg_flatten(v, out, p);
+              else out[p] = v;
+            }
+            return out;
+          };
+        }
+        if (!window.__mvsg_findFirstMatching) {
+          window.__mvsg_findFirstMatching = function findFirstMatching(obj, subs) {
+            const flat = window.__mvsg_flatten(obj || {});
+            for (const sub of (subs || [])) {
+              const s = sub.toLowerCase();
+              for (const k of Object.keys(flat)) {
+                if (k.toLowerCase().includes(s) && flat[k]) return flat[k];
+              }
+            }
+            return '';
+          };
+        }
+        const flatten = window.__mvsg_flatten;
+        const findFirstMatching = window.__mvsg_findFirstMatching;
+
+        const safeSet = (id, value) => { const el=document.getElementById(id); if(!el) return; if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.value = value ?? ''; else el.textContent = value ?? ''; };
+        const tryParse = s => { try{ return typeof s==='string' ? JSON.parse(s) : s; }catch(e){ return null; } };
+        const keysToCheck = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data'];
+        const scan = () => { const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); out.push({key:k,parsed:tryParse(localStorage.getItem(k))}); } }catch(e){} try{ for(let i=0;i<sessionStorage.length;i++){ const k=sessionStorage.key(i); out.push({key:k,parsed:tryParse(sessionStorage.getItem(k)),session:true}); } }catch(e){} return out; };
+        const merge = (acc,obj)=>{ if(!obj||typeof obj!=='object') return acc; for(const k of Object.keys(obj)) acc[k] = { ...(acc[k]||{}), ...(obj[k]||{}) }; const personalKeys=['first_name','email','phone','age','school_name']; for(const pk of personalKeys) if(obj[pk]!==undefined){ acc.personalInfo = acc.personalInfo||{}; acc.personalInfo[pk]=obj[pk]; } return acc; };
+        const getDraft = async ()=> {
+          if(window.registrationDraft){ const p=tryParse(window.registrationDraft); if(p) return p; }
+          if(window.__REGISTRATION_DRAFT__){ const p=tryParse(window.__REGISTRATION_DRAFT__); if(p) return p; }
+          for(const k of keysToCheck){ try{ const s=sessionStorage.getItem(k); if(s){ const p=tryParse(s); if(p) return p; } const l=localStorage.getItem(k); if(l){ const p=tryParse(l); if(p) return p; } }catch(e){} }
+          const all = scan(); let agg={}; for(const e of all){ if(!e.parsed) continue; const keys=Object.keys(e.parsed).map(x=>x.toLowerCase()); const any=keys.some(k=>['support','workplace','personal','guardian','education','skills','job'].some(s=>k.includes(s))) || keys.some(k=>['first_name','email','phone'].includes(k)); if(any) agg = merge(agg,e.parsed); }
+          if(Object.keys(agg).length) return agg;
+          const el=document.getElementById('registrationDraftJson'); if(el){ const p=tryParse(el.textContent||el.value||el.innerText); if(p) return p; }
+          if(window.firebase && firebase.auth && firebase.firestore){ try{ const a=firebase.auth(), db=firebase.firestore(); let user=a.currentUser; if(!user) user = await new Promise(res=>firebase.auth().onAuthStateChanged(res)); if(user){ const doc = await db.collection('users').doc(user.uid).get(); if(doc.exists) return doc.data(); const reg = await db.collection('registrations').doc(user.uid).get().catch(()=>null); if(reg && reg.exists) return reg.data(); } }catch(e){ console.warn('[review-3] firestore fail', e); } }
+          return null;
+        };
+
         try {
-          const auth = firebase.auth();
-          const db = firebase.firestore();
-          let user = auth.currentUser;
-          if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-          if (!user) return;
-          const doc = await db.collection('users').doc(user.uid).get();
-          if (!doc.exists) return;
-          const data = doc.data();
-          // Support Need
-          if (data.supportNeed) {
-            document.getElementById('review_support_choice').textContent = data.supportNeed.support_type || '';
+          const data = await getDraft();
+          console.debug('[review-3] merged', data);
+          // Debug: show flattened keys/object to inspect exact stored field names
+          try {
+            const flat = (typeof flatten === 'function') ? flatten(data) : (function _f(o, out = {}, p = '') { if (!o || typeof o !== 'object') return out; for (const k of Object.keys(o)) { const v = o[k]; const np = p ? p + '.' + k : k; if (v && typeof v === 'object' && !Array.isArray(v)) _f(v, out, np); else out[np] = v; } return out; })(data);
+            console.debug('[review-3] flattened keys:', Object.keys(flat).sort());
+            console.debug('[review-3] flattened object:', flat);
+          } catch (e) { console.warn('[review-3] flatten debug failed', e); }
+          if(!data){ console.warn('[review-3] no data'); return; }
+          // populate common fields
+          const p = data.personalInfo || data.personal || data; safeSet('review_fname', p.first_name||p.firstName||''); safeSet('review_lname', p.last_name||p.lastName||'');
+          // guardian
+          const g = data.guardianInfo || data.guardian || {};
+          safeSet('review_guardian_fname', g.guardian_first_name || g.first_name || data.guardian_first_name || '');
+          safeSet('review_guardian_lname', g.guardian_last_name || g.last_name || data.guardian_last_name || '');
+          safeSet('review_guardian_email', g.guardian_email || g.email || '');
+          safeSet('review_guardian_phone', g.guardian_phone || g.phone || '');
+          safeSet('review_guardian_relationship', g.guardian_choice || g.relationship || data.guardian_choice || '');
+          // support & workplace
+          const support = data.supportNeed || data.support || {};
+          safeSet('review_support_choice', support.support_type || support.type || data.supportChoice || findFirstMatching ? findFirstMatching(data, ['support','support_type','supportChoice']) : '');
+          const workplace = data.workplace || data.workplaceInfo || {};
+          // exact key from your screenshot
+          if (workplace && workplace.workplace_choice !== undefined) {
+            safeSet('review_workplace_choice', workplace.workplace_choice);
+          } else {
+            safeSet('review_workplace_choice', workplace.workplace_type || workplace.type || data.workplaceType || (findFirstMatching ? findFirstMatching(data, ['workplace','work_place','work']) : ''));
           }
-          // Workplace
-          if (data.workplace) {
-            document.getElementById('review_workplace_choice').textContent = data.workplace.workplace_type || '';
+          // also check schoolWorkInfo (some flows put certs/school/work_type there)
+          if (data.schoolWorkInfo) {
+            safeSet('review_certs', data.schoolWorkInfo.certs || '');
+            safeSet('review_school_name', data.schoolWorkInfo.school_name || '');
           }
-        } catch (e) { console.warn('Preview load failed', e); }
+        } catch(err){ console.error('[review-3] loader error', err); }
       });
     </script>
   </body>

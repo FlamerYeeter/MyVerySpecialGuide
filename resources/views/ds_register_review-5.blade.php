@@ -164,28 +164,87 @@
 
     <script src="{{ asset('js/register.js') }}"></script>
    <script>
-     document.addEventListener('DOMContentLoaded', async function () {
-       if (!window.firebase || !window.firebase.auth || !window.firebase.firestore) return;
+     // Exhaustive loader for job preferences (includes nested jobPref1.jobpref1 and flat fields)
+     document.addEventListener('DOMContentLoaded', async () => {
++      if (!window.__mvsg_flatten) {
++        window.__mvsg_flatten = function flatten(obj, out = {}, prefix = '') {
++          if (!obj || typeof obj !== 'object') return out;
++          for (const k of Object.keys(obj)) {
++            const v = obj[k]; const p = prefix ? `${prefix}.${k}` : k;
++            if (v && typeof v === 'object' && !Array.isArray(v)) window.__mvsg_flatten(v, out, p); else out[p] = v;
++          }
++          return out;
++        };
++      }
++      if (!window.__mvsg_findFirstMatching) {
++        window.__mvsg_findFirstMatching = function findFirstMatching(obj, substrings) {
++          const flat = window.__mvsg_flatten(obj || {});
++          for (const sub of (substrings || [])) {
++            for (const k of Object.keys(flat)) {
++              if (k.toLowerCase().includes(sub.toLowerCase()) && flat[k]) return flat[k];
++            }
++          }
++          return '';
++        };
++      }
++      const flatten = window.__mvsg_flatten;
++      const findFirstMatching = window.__mvsg_findFirstMatching;
+       const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
+       const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data'];
+       const scanAll = () => { const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); out.push({k,parsed:tryParse(localStorage.getItem(k))}); } }catch(e){} try{ for(let i=0;i<sessionStorage.length;i++){ const k=sessionStorage.key(i); out.push({k,parsed:tryParse(sessionStorage.getItem(k)),session:true}); } }catch(e){} return out; };
+       const merge=(acc,obj)=>{ if(!obj||typeof obj!=='object') return acc; for(const k of Object.keys(obj)) acc[k] = { ...(acc[k]||{}), ...(obj[k]||{}) }; return acc; };
+       const getDraft = async ()=> {
+         if(window.registrationDraft){ const p=tryParse(window.registrationDraft); if(p) return p; }
+         if(window.__REGISTRATION_DRAFT__){ const p=tryParse(window.__REGISTRATION_DRAFT__); if(p) return p; }
+         for(const k of keys){ try{ const s=sessionStorage.getItem(k); if(s){ const p=tryParse(s); if(p) return p; } const l=localStorage.getItem(k); if(l){ const p=tryParse(l); if(p) return p; } }catch(e){} }
+         const all = scanAll(); let agg={}; for(const e of all){ if(!e.parsed) continue; const keysLower=Object.keys(e.parsed).map(x=>x.toLowerCase()); const any = keysLower.some(k=>['jobpreferences','job','job_prefs','jobpref','jobpref1'].some(s=>k.includes(s))) || keysLower.some(k=>['skills','personal','guardian','education'].some(s=>k.includes(s))); if(any) agg = merge(agg,e.parsed); }
+         if(Object.keys(agg).length) return agg;
+         const el = document.getElementById('registrationDraftJson'); if(el){ const p=tryParse(el.textContent||el.value||el.innerText); if(p) return p; }
+         if(window.firebase && firebase.auth && firebase.firestore){ try{ const a=firebase.auth(), db=firebase.firestore(); let user=a.currentUser; if(!user) user = await new Promise(res=>firebase.auth().onAuthStateChanged(res)); if(user){ const doc = await db.collection('users').doc(user.uid).get(); if(doc.exists) return doc.data(); } }catch(e){} }
+         return null;
+       };
+
        try {
-         const auth = firebase.auth();
-         const db = firebase.firestore();
-         let user = auth.currentUser;
-         if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-         if (!user) return;
-         const doc = await db.collection('users').doc(user.uid).get();
-         if (!doc.exists) return;
-         const data = doc.data();
-         // Job Preferences
-         if (Array.isArray(data.jobPreferences)) {
-           document.getElementById('review_jobprefs').textContent = data.jobPreferences.join(', ');
-           // Optionally, highlight cards matching job preferences
+         const data = await getDraft();
+         console.debug('[review-5] merged', data);
+        // Debug: flattened dump to inspect job preference keys/shapes
+        try {
+          const flat = (typeof flatten === 'function') ? flatten(data) : (function _f(o, out = {}, p = '') { if (!o || typeof o !== 'object') return out; for (const k of Object.keys(o)) { const v = o[k]; const np = p ? p + '.' + k : k; if (v && typeof v === 'object' && !Array.isArray(v)) _f(v, out, np); else out[np] = v; } return out; })(data);
+          console.debug('[review-5] flattened keys:', Object.keys(flat).sort());
+          console.debug('[review-5] flattened object:', flat);
+        } catch (e) { console.warn('[review-5] flatten debug failed', e); }
+         if(!data){ console.warn('[review-5] no data'); return; }
+         // collect prefs from many possible shapes
+         let prefs = [];
+         if (Array.isArray(data.jobPreferences)) prefs = data.jobPreferences;
+         else if (Array.isArray(data.job_preferences)) prefs = data.job_preferences;
+         else if (Array.isArray(data.jobPrefs)) prefs = data.jobPrefs;
+         else if (Array.isArray(data.jobpref1)) prefs = data.jobpref1;
+         else if (Array.isArray(data.jobPref1?.jobpref1)) prefs = data.jobPref1.jobpref1;
+         else if (Array.isArray(data.jobPref1?.jobPref1)) prefs = data.jobPref1.jobPref1;
+         else if (Array.isArray(data.jobPref)) prefs = data.jobPref;
+         // fallback: collect from jobPref1/jobPref2 nested arrays
+         if(!prefs.length){
+           const collected = [];
+           if(data.jobPref1 && Array.isArray(data.jobPref1.jobpref1)) collected.push(...data.jobPref1.jobpref1);
+           if(data.jobPref2 && Array.isArray(data.jobPref2.jobpref2)) collected.push(...data.jobPref2.jobpref2);
+           if(collected.length) prefs = collected;
+         }
+         if(!prefs.length){
+           // fallback: try to pick up any job-pref-like value from the merged object
+           const fallback = findFirstMatching(data, ['jobpreferences','job_prefs','jobpref','job','preference']);
+           if (fallback) {
+             prefs = Array.isArray(fallback) ? fallback : (typeof fallback === 'string' ? [fallback] : []);
+           }
+         }
+         if(prefs.length){
+           const el = document.getElementById('review_jobprefs'); if(el) el.textContent = prefs.join(', ');
            document.querySelectorAll('.selectable-card').forEach(card => {
              const title = card.querySelector('h3')?.textContent?.trim();
-             if (title && data.jobPreferences.includes(title)) card.classList.add('selected');
-             else card.classList.remove('selected');
+             if(title && prefs.includes(title)) card.classList.add('selected'); else card.classList.remove('selected');
            });
          }
-       } catch (e) { console.warn('Preview load failed', e); }
+       } catch(err){ console.error('[review-5] loader error', err); }
      });
    </script>
   </body>
