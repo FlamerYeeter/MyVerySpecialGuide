@@ -14,6 +14,12 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    .skills-card.selected {
+      border-color: #2563eb;
+      box-shadow: 0 8px 20px rgba(37,99,235,0.12);
+      transform: translateY(-4px);
+    }
   </style>
 </head>
 
@@ -82,7 +88,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
           <!-- Card 1 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative skills-card" data-value="Attention to details" onclick="toggleSkills2Choice(this,'Attention to details')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/skill7.png" alt="attention to details" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Attention to details</h3>
@@ -90,24 +96,26 @@
           </div>
 
           <!-- Other -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
-          <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-          <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
-          <p class="mt-6 text-sm text-justify">
-            Type your answer inside the box if not in the choices
-          </p>
-          <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
-            (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
-          </p>
-          <input type="text" placeholder="Type your answer here"
-                 class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative skills-card" data-value="other" onclick="toggleSkills2Choice(this,'other')">
+            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+            <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
+            <p class="mt-6 text-sm text-justify">
+              Type your answer inside the box if not in the choices
+            </p>
+            <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
+              (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
+            </p>
+            <input id="skills2_other_text" type="text" placeholder="Type your answer here"
+                   class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+          </div>
         </div>
-      </div>
+
+        <input id="skills_page2" type="hidden" value="[]" />
 
         <!-- Next Button -->
         <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-            <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-                    onclick="window.location.href='{{ route('registerjobpreference1') }}'">
+            <div id="skills2Error" class="text-red-600 text-sm mb-2"></div>
+            <button id="skills2Next" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
                 Next →
             </button>
             <p class="text-gray-600 text-sm mt-2 text-center">
@@ -116,7 +124,35 @@
                 </p>
         </div>
 
+    <!-- ensure shared register logic is available so the Next button is handled and skills are saved -->
+    <script src="{{ asset('js/register.js') }}"></script>
 
-     </div>
+    <script>
+      // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_skills-2.blade.php
+      function toggleSkills2Choice(el, value) {
+        try {
+          const hidden = document.getElementById('skills_page2');
+          if (!hidden) return;
+          let arr = [];
+          try { arr = JSON.parse(hidden.value || '[]'); } catch (e) { arr = []; }
+          const idx = arr.indexOf(value);
+          if (idx === -1) {
+            arr.push(value);
+            if (el && el.classList) el.classList.add('selected');
+          } else {
+            arr.splice(idx, 1);
+            if (el && el.classList) el.classList.remove('selected');
+          }
+          hidden.value = JSON.stringify(arr);
+          if (value === 'other') {
+            const other = document.getElementById('skills2_other_text');
+            if (other && arr.indexOf('other') !== -1) other.focus();
+          }
+          const err = document.getElementById('skills2Error');
+          if (err) err.textContent = '';
+        } catch (e) { console.error('toggleSkills2Choice error', e); }
+      }
+    </script>
+  </div>
 </body>
 </html>

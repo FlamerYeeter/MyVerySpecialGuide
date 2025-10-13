@@ -123,22 +123,70 @@
                 }
             }
         } else {
-            // Fallback: read CSV as before
-            $csv_path = public_path('resume_job_matching_dataset.csv');
+            // Fallback: read CSV using header names from "data job posts.csv"
+            $csv_path = public_path('data job posts.csv');
             if (file_exists($csv_path)) {
                 if (($handle = fopen($csv_path, 'r')) !== false) {
                     $header = fgetcsv($handle);
+                    // normalize header keys (trim)
+                    $cols = array_map(function($h){ return trim($h); }, $header ?: []);
+
+                    // inference helpers
+                    $infer_fit_level = function(string $text) {
+                        $t = strtolower($text);
+                        $excellent = ['excellent', 'perfect', 'highly suitable', 'highly qualified', 'strong match', 'ideal'];
+                        foreach ($excellent as $k) { if (strpos($t, $k) !== false) return 'Excellent Fit'; }
+                        $good = ['good fit', 'good', 'suitable', 'appropriate', 'fit'];
+                        foreach ($good as $k) { if (strpos($t, $k) !== false) return 'Good Fit'; }
+                        return '';
+                    };
+
+                    $infer_growth_potential = function(string $text) {
+                        $t = strtolower($text);
+                        $high = ['promotion', 'career growth', 'growth', 'advance', 'development', 'opportunity', 'career advancement', 'leadership'];
+                        foreach ($high as $k) { if (strpos($t, $k) !== false) return 'High Potential'; }
+                        $medium = ['entry level', 'entry-level', 'trainee', 'starter', 'mid-level'];
+                        foreach ($medium as $k) { if (strpos($t, $k) !== false) return 'Medium Potential'; }
+                        return '';
+                    };
+
+                    $infer_work_environment = function(string $text) {
+                        $t = strtolower($text);
+                        $quiet = ['quiet', 'calm', 'low noise', 'private', 'peaceful', 'indoor quiet'];
+                        foreach ($quiet as $k) { if (strpos($t, $k) !== false) return 'Quiet'; }
+                        $busy = ['busy', 'fast-paced', 'high energy', 'crowd', 'bustling', 'active environment'];
+                        foreach ($busy as $k) { if (strpos($t, $k) !== false) return 'Busy'; }
+                        return '';
+                    };
+
                     while (($row = fgetcsv($handle)) !== false) {
-                        $job = [
-                            'job_description' => $row[0],
-                            'resume' => $row[1],
-                            'match_score' => $row[2],
-                            'industry' => $row[3] ?? '',
-                            'fit_level' => $row[4] ?? '',
-                            'growth_potential' => $row[5] ?? '',
-                            'work_environment' => $row[6] ?? '',
+                        // create associative row by header
+                        $assoc = array_combine($cols, $row) ?: [];
+                        $textForInference = trim(($assoc['JobDescription'] ?? '') . ' ' . ($assoc['JobRequirment'] ?? '') . ' ' . ($assoc['jobpost'] ?? ''));
+                        $inferred_fit = $infer_fit_level($textForInference);
+                        $inferred_growth = $infer_growth_potential($textForInference);
+                        $inferred_env = $infer_work_environment($textForInference);
+                        $recommendations[] = [
+                            // prefer explicit header names, fallback to some common variants
+                            'title' => $assoc['Title'] ?? $assoc['jobpost'] ?? '',
+                            'company' => $assoc['Company'] ?? '',
+                            'job_description' => $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? $assoc['jobpost'] ?? '',
+                            'job_requirement' => $assoc['JobRequirment'] ?? $assoc['RequiredQual'] ?? '',
+                            'location' => $assoc['Location'] ?? '',
+                            'salary' => $assoc['Salary'] ?? '',
+                            'start_date' => $assoc['StartDate'] ?? '',
+                            'deadline' => $assoc['Deadline'] ?? '',
+                            'announcement_code' => $assoc['AnnouncementCode'] ?? '',
+                            // keep legacy keys used later in view
+                            'resume' => $assoc['JobRequirment'] ?? $assoc['RequiredQual'] ?? '',
+                            'match_score' => $assoc['IT'] ?? null,
+                            'computed_score' => null,
+                            'industry' => $assoc['Company'] ?? '',
+                            // prefer CSV-provided fields if present; otherwise use inferred values
+                            'fit_level' => $assoc['fit_level'] ?? $assoc['FitLevel'] ?? $inferred_fit,
+                            'growth_potential' => $assoc['growth_potential'] ?? $assoc['GrowthPotential'] ?? $inferred_growth,
+                            'work_environment' => $assoc['work_environment'] ?? $assoc['WorkEnvironment'] ?? $inferred_env ?? ($assoc['Location'] ?? ''),
                         ];
-                        $recommendations[] = $job;
                     }
                     fclose($handle);
                 }
@@ -186,15 +234,18 @@
     <div class="container mx-auto mt-8 px-4 space-y-6">
         @if(empty($recommendations))
             <div class="bg-yellow-100 p-6 rounded-xl text-center text-gray-600">
-                No job recommendations found. Please upload <b>resume_job_matching_dataset.csv</b> to <b>public/</b> folder and run the recommendation script.
+                No job recommendations found. Please upload <b>data job posts.csv</b> to <b>public/</b> folder (or generate recommendations.json).
             </div>
         @else
             @foreach($recommendations as $idx => $job)
                 <div class="bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-center">
                     <div>
-                        <h3 class="text-lg font-bold">{{ $job['job_description'] }}</h3>
-                        <p class="text-gray-600">{{ $job['resume'] }}</p>
-                        <div class="flex gap-2 text-xs mt-2">
+                        <h3 class="text-lg font-bold">{{ $job['title'] ?: $job['job_description'] }}</h3>
+                        @if(!empty($job['company']))
+                          <p class="text-sm text-gray-700 font-medium">{{ $job['company'] }}</p>
+                        @endif
+                        <p class="text-gray-600 mt-2 text-sm">{{ Str::limit($job['job_description'], 220) }}</p>
+                         <div class="flex gap-2 text-xs mt-2">
                             @if($job['industry'])
                                 <span class="bg-gray-100 px-2 py-1 rounded">{{ $job['industry'] }}</span>
                             @endif
@@ -211,8 +262,7 @@
                             @endif
                         </div>
                         <p class="text-xs text-gray-400 mt-1">
-                            Match Score: {{ $job['match_score'] ?? '-' }}
-                            @if(isset($job['computed_score'])) • Computed: {{ $job['computed_score'] }} @endif
+                            Salary: {{ $job['salary'] ?? '-' }} @if($job['deadline']) • Deadline: {{ $job['deadline'] }} @endif
                         </p>
                     </div>
                     <div class="flex items-center gap-3 mt-4 md:mt-0">

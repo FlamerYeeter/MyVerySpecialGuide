@@ -19,18 +19,18 @@
     <!-- Navigation -->
     <nav class="w-full px-6 md:px-12 py-4 bg-white/80 backdrop-blur-md shadow-md">
         <div class="flex items-center justify-between">
-            <!-- Logo -->
-            <div class="flex items-center space-x-3">
+            <!-- Logo (links to home) -->
+            <a href="{{ route('home') }}" class="flex items-center space-x-3">
                 <img src="image/logo.png" alt="MyVerySpecialGuide Logo" class="w-14 h-14 md:w-16 md:h-16 object-contain">
                 <span class="text-xl md:text-2xl font-bold text-blue-700">MyVerySpecialGuide</span>
-            </div>
+            </a>
 
             <!-- Nav Links -->
             <div class="hidden md:flex items-center space-x-8">
-                <a href="#" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
-                <a href="#" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About
+                <a href="{{ route('home') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
+                <a href="{{ route('about.us') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About
                     MVSG</a>
-                <a href="#" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down
+                <a href="{{ route('about.ds') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down
                     Syndrome</a>
             </div>
 
@@ -43,11 +43,11 @@
             </button>
         </div>
 
-        <!-- Responsice Dropdown Menu -->
+        <!-- Responsive Dropdown Menu -->
         <div id="mobile-menu" class="hidden flex-col mt-4 space-y-3 md:hidden">
-            <a href="#" class="block text-gray-700 hover:text-blue-600 font-medium text-base">Home</a>
-            <a href="#" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About MVSG</a>
-            <a href="#" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down
+            <a href="{{ route('home') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">Home</a>
+            <a href="{{ route('about.us') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About MVSG</a>
+            <a href="{{ route('about.ds') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down
                 Syndrome</a>
         </div>
     </nav>

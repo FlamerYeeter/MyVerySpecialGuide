@@ -2,6 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <!-- Provide Firebase config to the frontend from server env variables.
+       Set these in your .env (FIREBASE_API_KEY, FIREBASE_AUTH_DOMAIN, FIREBASE_PROJECT_ID, etc.)
+  -->
+  <script>
+    // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_personalinfo.blade.php
+    // Use json_encode to emit a valid JS object and avoid quoting/syntax issues.
+    window.FIREBASE_CONFIG = {!! json_encode([
+      'apiKey' => env('FIREBASE_API_KEY',''),
+      'authDomain' => env('FIREBASE_AUTH_DOMAIN',''),
+      'projectId' => env('FIREBASE_PROJECT_ID',''),
+      'storageBucket' => env('FIREBASE_STORAGE_BUCKET',''),
+      'messagingSenderId' => env('FIREBASE_MESSAGING_SENDER_ID',''),
+      'appId' => env('FIREBASE_APP_ID',''),
+    ]) !!};
+    try { console.info('[page] FIREBASE_CONFIG projectId:', window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId); } catch(e){/*ignore*/ }
+  </script>
+
   <title>Registration: Personal Information</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -35,7 +52,7 @@
   <!-- Back Button -->
   <button
     class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
-    onclick="window.location.href='{{ route('register') }}'">
+    onclick="window.location.href='{{ route('registeradminapprove') }}'">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
       stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -83,7 +100,7 @@
             <button class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Unang Pangalan</p>
-          <input type="text" placeholder="First name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="first_name" type="text" placeholder="First name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">Type your first name (example: <span class="font-semibold">John</span>)</p>
         </div>
 
@@ -94,7 +111,7 @@
             <button class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Apelyido</p>
-          <input type="text" placeholder="Last name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"/>
+          <input id="last_name" type="text" placeholder="Last name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"/>
           <p class="text-gray-500 text-xs mt-1">Type your last name (example: <span class="font-semibold">Cruz</span>)</p>
         </div>
       </div>
@@ -106,7 +123,7 @@
            <button class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Email Address</p>
-          <input type="email" placeholder="Email Address" class="mt-1 w-full border border-gray-300 rounded-md px-3 
+          <input id="email" type="email" placeholder="Email Address" class="mt-1 w-full border border-gray-300 rounded-md px-3 
           py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-2">
             Type your email (example: <span class="font-semibold">john@gmail.com</span>). 
@@ -122,7 +139,7 @@
           <label class="font-semibold text-sm flex items-center gap-1">Phone Number <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
             🔊</button></label>
           <p class="text-gray-500 italic text-[13px]">Telepono</p>
-          <input type="text" placeholder="+63 9XX XXX XXXX" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="phone" type="text" placeholder="+63 9XX XXX XXXX" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">
             Type your phone number (example: <span class="font-semibold">+63 917 123 4567</span>). This is optional.
           </p>
@@ -133,7 +150,7 @@
           <label class="font-semibold text-sm flex items-center gap-1">Age <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
             🔊</button></label>
           <p class="text-gray-500 italic text-[13px]">Edad</p>
-          <input type="number" placeholder="Age" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="age" type="number" placeholder="Age" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">Type your age (example: <span class="font-semibold">20 years old</span>).</p>
         </div>
       </div>
@@ -143,13 +160,13 @@
         <label class="font-semibold text-sm flex items-center mt-8 gap-1">Create Password ⭐ <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
           🔊</button></label>
         <p class="text-gray-500 italic text-[13px]">Gumawa ng Password</p>
-        <input type="password" placeholder="Password" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+        <input id="password" type="password" placeholder="Password" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         <p class="text-gray-500 text-xs mt-1">
           Type a strong password to keep your account safe.
           <span class="italic text-gray-500">(Gumawa ng matibay na password para safe ang account mo)</span>
         </p>
         <div class="flex items-center gap-2 mt-2 text-sm text-gray-700">
-          <input type="checkbox" class="accent-blue-500" />
+          <input id="show_password" type="checkbox" class="accent-blue-500" />
           <span>Click the box to show password. 
             <span class="italic text-gray-500">(Pindutin ang box para makita ang password)</span>
           </span>
@@ -198,13 +215,13 @@
         <label class="font-semibold text-sm flex items-center mt-8 gap-1">Type Password Again ⭐ <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">
           🔊</button></label>
         <p class="text-gray-500 italic text-[13px]">I-type muli ang password</p>
-        <input type="password" placeholder="Password" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+        <input id="confirm_password" type="password" placeholder="Password" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         <p class="text-gray-500 text-xs mt-1">
           Type the same password again to make sure it’s correct.
           <span class="italic text-gray-500">(I-type muli ang parehong password para siguradong tama)</span>
         </p>
         <div class="flex items-center gap-2 mt-2 text-sm text-gray-700">
-          <input type="checkbox" class="accent-blue-500" />
+          <input id="show_confirm_password" type="checkbox" class="accent-blue-500" />
           <span>Click the box to show password. 
             <span class="italic text-gray-500">(Pindutin ang box para makita ang password)</span>
           </span>
@@ -213,8 +230,8 @@
 
       <!-- Next Button -->
       <div class="text-center mt-12">
-        <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-          onclick="window.location.href='{{ route('registerguardianinfo') }}'">
+        <div id="regError" class="text-red-600 text-sm mb-3"></div>
+        <button id="nextBtn" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
           Next →
         </button>
         <p class="text-gray-700 text-sm mt-3">
@@ -228,5 +245,31 @@
   </div>
 
 
+  <!-- include shared registration JS -->
+  <script src="{{ asset('js/register.js') }}"></script>
+
+  <!-- Inline fallback: ensure show-password checkboxes always toggle the inputs -->
+  <script>
+    (function () {
+      // run after load; guard in case elements are missing
+      function $(id){ return document.getElementById(id); }
+      function safeToggle(inputId, checkboxId) {
+        const inp = $(inputId), cb = $(checkboxId);
+        if (!inp || !cb) return;
+        // initialize
+        try { inp.type = cb.checked ? 'text' : 'password'; } catch(e){/* ignore */ }
+        // attach listener
+        cb.addEventListener('change', function () {
+          try { inp.type = cb.checked ? 'text' : 'password'; } catch(e){ /* ignore */ }
+        });
+      }
+      // attach for both fields
+      safeToggle('password','show_password');
+      safeToggle('confirm_password','show_confirm_password');
+      // also allow clicking the text container to toggle (optional)
+      const labelSpans = document.querySelectorAll('#show_password, #show_confirm_password');
+      // no-op if NodeList empty
+    })();
+  </script>
 </body>
 </html>

@@ -14,6 +14,13 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    /* visual for selected support card */
+    .support-card.selected {
+      border-color: #2563eb;
+      box-shadow: 0 8px 20px rgba(37,99,235,0.12);
+      transform: translateY(-4px);
+    }
   </style>
 </head>
 
@@ -83,45 +90,71 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
           <!-- Card 1 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
+               onclick="selectSupportChoice(this, 'coach')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/support1.png" alt="job coach" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Job coach/guide to guide me</h3>
           </div>
 
             <!-- Card 2 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
+               onclick="selectSupportChoice(this, 'instructions')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/support2.png" alt="written instruction" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Written instructions</h3>
           </div>
 
             <!-- Card 3 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
+               onclick="selectSupportChoice(this, 'independently')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/support3.png" alt="work independtly" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">I can work independtly</h3>
           </div>
 
           <!-- Other -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
-          <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-          <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
-          <p class="mt-6 text-sm text-justify">
-            Type your answer inside the box if not in the choices
-          </p>
-          <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
-            (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
-          </p>
-          <input type="text" placeholder="Type your answer here"
-                 class="sw-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-        </div>
-      </div>
+          <div class="bg-white p-4 rounded-xl shadow h-[340px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
+             onclick="selectSupportChoice(this, 'other')">
+           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+           <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
+           <p class="mt-6 text-sm text-justify">
+             Type your answer inside the box if not in the choices
+           </p>
+           <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
+             (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
+           </p>
+          <input id="support_other_text" type="text" placeholder="Type your answer here"
+                 class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+         </div>
+       </div>
+
+         <!-- Hidden Input for Support Choice -->
+         <input id="support_choice" type="hidden" value="" />
+
+        <!-- Inline helper to toggle visual selection and set hidden value -->
+        <script>
+          // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_supportneed.blade.php
+          function selectSupportChoice(el, value) {
+            try {
+              document.querySelectorAll('.support-card').forEach(c => c.classList.remove('selected'));
+              if (el && el.classList) el.classList.add('selected');
+              const hidden = document.getElementById('support_choice');
+              if (hidden) hidden.value = value || '';
+              if (value === 'other') {
+                const other = document.getElementById('support_other_text');
+                if (other) other.focus();
+              }
+              const err = document.getElementById('supportError');
+              if (err) err.textContent = '';
+            } catch (e) { console.error('selectSupportChoice error', e); }
+          }
+        </script>
 
         <!-- Next Button -->
         <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-            <button type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-                    onclick="window.location.href='{{ route('registerworkplace') }}'">
+            <div id="supportError" class="text-red-600 text-sm mb-2"></div>
+            <button id="supportNext" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
                 Next →
             </button>
             <p class="text-gray-600 text-sm mt-2 text-center">
@@ -131,5 +164,8 @@
         </div>
 
      </div>
+  </div>
+
+  <script src="{{ asset('js/register.js') }}"></script>
 </body>
 </html>

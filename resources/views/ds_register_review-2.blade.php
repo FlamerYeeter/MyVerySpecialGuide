@@ -13,6 +13,9 @@
       .animate-float-slow { animation: float 5s ease-in-out infinite; }
       .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
       .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+      .selectable-card { border: 2px solid transparent; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+      .selectable-card.selected { border-color: #2563eb; box-shadow: 0 10px 30px rgba(37,99,235,0.14); transform: translateY(-6px); }
     </style>
   </head>
 
@@ -30,7 +33,8 @@
 
     <!-- Back Button -->
     <button
-      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95">
+      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
+      onclick="window.location.href='{{ route('registerreview1') }}'">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -72,12 +76,16 @@
 
         <!-- Education level answer -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500 selectable-card">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
             <img src="image/educ1.png" alt="elementary" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Elementary</h3>
           </div>    
         </div>
+
+        <!-- Hidden Inputs for Review -->
+        <input id="edu_level" type="hidden" value="" />
+        <p class="mt-4">Selected: <span id="review_education_level">—</span></p>
 
         <!-- School Name -->
         <div class="max-w-xl mx-auto mt-8 text-left">
@@ -86,7 +94,7 @@
             <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Pangalan ng iyong paaralan</p>
-          <input type="text" placeholder="School Name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="review_school_name" type="text" placeholder="School Name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         </div>
 
         <!-- Certificates and Training -->
@@ -96,7 +104,7 @@
             <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Mga Certificates or Special Trainings</p>
-          <input type="text" placeholder="Certificates or Trainings" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="review_certs" type="text" placeholder="Certificates or Trainings" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         </div>
 
         <!-- Edit Button -->
@@ -180,7 +188,8 @@
 
       <!-- Continue Button -->
       <div class="text-center mt-12">
-        <button type="button" class="bg-blue-500 text-white font-semibold text-lg px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center mx-auto shadow-md">
+        <button type="button" class="bg-blue-500 text-white font-semibold text-lg px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center mx-auto shadow-md"
+                onclick="window.location.href='{{ route('registerreview3') }}'">
           Continue →
         </button>
         <p class="text-gray-700 text-sm mt-3">
@@ -189,5 +198,36 @@
       </div>
 
     </div>
+
+    <script src="{{ asset('js/register.js') }}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', async function () {
+        if (!window.firebase || !window.firebase.auth || !window.firebase.firestore) return;
+        try {
+          const auth = firebase.auth();
+          const db = firebase.firestore();
+          let user = auth.currentUser;
+          if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+          if (!user) return;
+          const doc = await db.collection('users').doc(user.uid).get();
+          if (!doc.exists) return;
+          const data = doc.data();
+          // Education
+          if (data.educationInfo) {
+            document.getElementById('review_education_level').textContent = data.educationInfo.edu_level || '';
+            document.getElementById('review_school_name').value = data.educationInfo.school_name || '';
+            document.getElementById('review_certs').value = data.educationInfo.certs || '';
+          }
+          // Work Experience
+          if (Array.isArray(data.workExperience)) {
+            // Render first experience (or all, if you want to loop)
+            const exp = data.workExperience[0] || {};
+            // Fill preview fields if present
+            // Example: document.getElementById('review_company_name').value = exp.company || '';
+            // You can loop and render all if you want
+          }
+        } catch (e) { console.warn('Preview load failed', e); }
+      });
+    </script>
   </body>
 </html>

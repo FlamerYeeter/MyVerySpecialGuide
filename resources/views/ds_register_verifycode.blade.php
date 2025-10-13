@@ -33,7 +33,8 @@
 
     <!-- Back Button -->
     <button
-      class="absolute top-6 left-6 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-md transition active:scale-95 z-10">
+      class="absolute top-6 left-6 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-md transition active:scale-95 z-10"
+      onclick="window.location.href='{{ route('registerfinalstep') }}'">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke-width="3" stroke="white" class="w-4 h-4">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -106,7 +107,8 @@
       <!-- Verify Button -->
       <div class="mt-6 space-y-1">
         <button
-          class="bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold px-16 py-3 rounded-xl shadow-md transition active:scale-95">
+          class="bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold px-16 py-3 rounded-xl shadow-md transition active:scale-95"
+          onclick="window.location.href='{{ route('home') }}'">
           Verify
         </button>
         <div class="flex justify-center items-center gap-2 mt-2">

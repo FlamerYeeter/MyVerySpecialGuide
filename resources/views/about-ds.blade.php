@@ -139,10 +139,10 @@
 
                 <!-- Button -->
                 <div class="text-center">
-                    <button
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-10 sm:px-12 md:px-14 py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105">
+                    <a href="{{ route('user.role') }}"
+                       class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-10 sm:px-12 md:px-14 py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105">
                         Sign Up
-                    </button>
+                    </a>
                 </div>
             </div>
         </section>

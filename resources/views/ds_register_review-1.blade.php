@@ -23,6 +23,20 @@
       .animate-float-fast {
         animation: float 2.5s ease-in-out infinite;
       }
+
+      /* selectable card visual (shared style used across review pages) */
+      .selectable-card {
+        border: 2px solid transparent;
+        transition:
+          transform .18s ease,
+          box-shadow .18s ease,
+          border-color .18s ease;
+      }
+      .selectable-card.selected {
+        border-color: #2563eb;
+        box-shadow: 0 10px 30px rgba(37,99,235,0.14);
+        transform: translateY(-6px);
+      }
     </style>
   </head>
 
@@ -43,7 +57,8 @@
 
     <!-- Back Button -->
     <button
-      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95">
+      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
+      onclick="window.location.href='{{ route('registerjobpreference2') }}'">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -92,7 +107,7 @@
               <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
             </label>
             <p class="text-gray-500 italic text-[13px]">Unang Pangalan</p>
-            <input type="text" placeholder="First name"
+            <input id="review_fname" type="text" placeholder="First name"
               class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           </div>
 
@@ -102,7 +117,7 @@
               <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
             </label>
             <p class="text-gray-500 italic text-[13px]">Apelyido</p>
-            <input type="text" placeholder="Last name"
+            <input id="review_lname" type="text" placeholder="Last name"
               class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           </div>
         </div>
@@ -115,7 +130,7 @@
               <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
             </label>
             <p class="text-gray-500 italic text-[13px]">Email</p>
-            <input type="email" placeholder="Email"
+            <input id="review_email" type="email" placeholder="Email"
               class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           </div>
 
@@ -125,7 +140,7 @@
               <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
             </label>
             <p class="text-gray-500 italic text-[13px]">Telepono</p>
-            <input type="tel" placeholder="+63 9XX XXX XXXX"
+            <input id="review_phone" type="tel" placeholder="+63 9XX XXX XXXX"
               class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           </div>
         </div>
@@ -137,7 +152,7 @@
             <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Edad</p>
-          <input type="number" placeholder="Age"
+          <input id="review_age" type="number" placeholder="Age"
             class="mt-1 w-full md:w-1/2 border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         </div>
 
@@ -244,7 +259,7 @@
       
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
             <!-- Guardian relationship answer -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500 selectable-card">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/guardian1.png" alt="parent" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Parent</h3>
@@ -281,12 +296,45 @@
     </div>
     <!-- Continue Button -->
       <div class="text-center mt-12">
-        <button type="button" class="bg-blue-500 text-white font-semibold text-lg px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center mx-auto shadow-md">
+        <button type="button"
+          class="bg-blue-500 text-white font-semibold text-lg px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center mx-auto shadow-md"
+          onclick="window.location.href='{{ route('registerreview2') }}'">
           Continue →
         </button>
         <p class="text-gray-700 text-sm mt-3">
           Click <span class="text-blue-500 font-medium">“Continue”</span> to move to the next page
         <p class="text-gray-500 italic text-[13px]">(Pindutin ang “Continue” upang magpatuloy)</p>
       </div>
+    <script src="{{ asset('js/register.js') }}"></script>
+   <script>
+     // Preview personal and guardian info from Firestore
+     document.addEventListener('DOMContentLoaded', async function () {
+       if (!window.firebase || !window.firebase.auth || !window.firebase.firestore) return;
+       try {
+         const auth = firebase.auth();
+         const db = firebase.firestore();
+         // Wait for auth restoration
+         let user = auth.currentUser;
+         if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+         if (!user) return;
+         const doc = await db.collection('users').doc(user.uid).get();
+         if (!doc.exists) return;
+         const data = doc.data();
+         // Personal Info
+         if (data.personalInfo) {
+           document.getElementById('review_fname').value = data.personalInfo.first_name || '';
+           document.getElementById('review_lname').value = data.personalInfo.last_name || '';
+           document.getElementById('review_email').value = data.personalInfo.email || '';
+           document.getElementById('review_phone').value = data.personalInfo.phone || '';
+           document.getElementById('review_age').value = data.personalInfo.age || '';
+         }
+         // Guardian Info
+         if (data.guardianInfo) {
+           // If you have inputs for guardian info, fill them here
+           // Example: document.getElementById('review_guardian_fname').value = data.guardianInfo.first_name || '';
+         }
+       } catch (e) { console.warn('Preview load failed', e); }
+     });
+   </script>
   </body>
 </html>

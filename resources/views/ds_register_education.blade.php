@@ -13,6 +13,13 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    /* visual for selected education card */
+    .education-card.selected {
+      border-color: #2563eb; /* blue-600 */
+      box-shadow: 0 6px 18px rgba(37,99,235,0.15);
+      transform: translateY(-4px);
+    }
   </style>
 </head>
 
@@ -73,49 +80,50 @@
 
       <!-- Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-
         <!-- Card 1 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative education-card" onclick="selectEducationChoice(this, 'Elementary')">
           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/educ1.png" alt="elementary" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Elementary</h3>
         </div>
 
         <!-- Card 2 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative education-card" onclick="selectEducationChoice(this, 'Highschool')">
           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/educ3.png" alt="highschool" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Highschool</h3>
         </div>
 
         <!-- Card 3 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative education-card" onclick="selectEducationChoice(this, 'College')">
           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/educ2.png" alt="college" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">College</h3>
         </div>
 
         <!-- Card 4 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative education-card" onclick="selectEducationChoice(this, 'Vocational/Training')">
           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/educ4.png" alt="vocational" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Vocational/Training</h3>
         </div>
 
         <!-- Other -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative education-card" onclick="selectEducationChoice(this, 'other')">
           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
           <p class="text-sm text-justify mt-4">Type your answer inside the box if not in the choices</p>
           <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">(Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)</p>
-          <input type="text" placeholder="Type your answer here" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+          <input id="edu_other_text" type="text" placeholder="Type your answer here" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
         </div>
       </div>
-      
-        <!-- Next Button -->
-        <div class="flex flex-col items-center justify-center mt-12 mb-8 space-y-4">
-        <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-        onclick="window.location.href='{{ route('registerschoolworkinfo') }}'">
+
+      <input id="edu_level" type="hidden" value="" />
+
+      <!-- Next Button -->
+      <div class="flex flex-col items-center justify-center mt-12 mb-8 space-y-4">
+        <div id="educError" class="text-red-600 text-sm mb-2"></div>
+        <button id="educNext" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2" >
           Next →
         </button>
 
@@ -126,7 +134,27 @@
       </div>
     </div>
   </div>
-</body>
-</html>
+
+  <script src="{{ asset('js/register.js') }}"></script>
+  <!-- Make selectEducationChoice available globally for inline onclick handlers -->
+  <script>
+    // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_education.blade.php
+    function selectEducationChoice(el, value) {
+      try {
+        document.querySelectorAll('.education-card').forEach(c => c.classList.remove('selected'));
+        if (el && el.classList) el.classList.add('selected');
+        const hidden = document.getElementById('edu_level');
+        if (hidden) hidden.value = value || '';
+        if (value === 'other') {
+          const other = document.getElementById('edu_other_text');
+          if (other) other.focus();
+        }
+        const err = document.getElementById('educError');
+        if (err) err.textContent = '';
+      } catch (e) {
+        console.error('selectEducationChoice error', e);
+      }
+    }
+  </script>
 </body>
 </html>

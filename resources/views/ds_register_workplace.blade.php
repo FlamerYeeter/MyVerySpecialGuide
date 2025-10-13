@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <title>Registration: Working Environment</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* visual for selected workplace card */
+    .workplace-card.selected {
+      border-color: #2563eb;
+      box-shadow: 0 8px 20px rgba(37,99,235,0.12);
+      transform: translateY(-4px);
+    }
+  </style>
 </head>
 
 <body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
@@ -83,7 +91,8 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
           <!-- Card 1 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[400px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[400px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative workplace-card"
+               onclick="selectWorkplaceChoice(this,'quiet')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/workplc1.png" alt="quietplace" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">The place is quiet and calm</h3>
@@ -91,7 +100,8 @@
           </div>
 
             <!-- Card 2 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[400px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[400px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative workplace-card"
+               onclick="selectWorkplaceChoice(this,'busy')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/workplc2.png" alt="busyplace" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">There are many people and many things happening</h3>
@@ -99,34 +109,56 @@
           </div>
 
           <!-- Other -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
-          <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-          <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
-          <p class="mt-6 text-sm text-justify">
-            Type your answer inside the box if not in the choices
-          </p>
-          <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
-            (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
-          </p>
-          <input type="text" placeholder="Type your answer here"
+          <div class="bg-white p-4 rounded-xl shadow h-[340px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative workplace-card" onclick="selectWorkplaceChoice(this,'other')">
+           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+           <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
+           <p class="mt-6 text-sm text-justify">
+             Type your answer inside the box if not in the choices
+           </p>
+           <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
+             (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
+           </p>
+          <input id="workplace_other_text" type="text" placeholder="Type your answer here"
                  class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-        </div>
-      </div>
+         </div>
+       </div>
+
+         <!-- Hidden Input for Workplace Choice -->
+        <input id="workplace_choice" type="hidden" value="" />
+
+        <script>
+          // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workplace.blade.php
+          function selectWorkplaceChoice(el, value) {
+            try {
+              document.querySelectorAll('.workplace-card').forEach(c => c.classList.remove('selected'));
+              if (el && el.classList) el.classList.add('selected');
+              const hidden = document.getElementById('workplace_choice');
+              if (hidden) hidden.value = value || '';
+              if (value === 'other') {
+                const other = document.getElementById('workplace_other_text');
+                if (other) other.focus();
+              }
+              const err = document.getElementById('workplaceError');
+              if (err) err.textContent = '';
+            } catch (e) { console.error('selectWorkplaceChoice error', e); }
+          }
+        </script>
 
         <!-- Next Button -->
         <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-          <div class="flex justify-center w-full">
-            <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-                    onclick="window.location.href='{{ route('registerskills1') }}'">
+            <div id="workplaceError" class="text-red-600 text-sm mb-2"></div>
+            <button id="workplaceNext" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
                 Next →
             </button>
-          </div>
-          <p class="text-gray-600 text-sm mt-2 text-center">
+            <p class="text-gray-600 text-sm mt-2 text-center">
                  Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Your Skills<br>
                  <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
                 </p>
         </div>
 
      </div>
+  </div>
+
+  <script src="{{ asset('js/register.js') }}"></script>
 </body>
 </html>

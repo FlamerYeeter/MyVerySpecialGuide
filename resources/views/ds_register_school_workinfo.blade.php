@@ -14,6 +14,13 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    /* visual for selected work-type card */
+    .workexp-card.selected {
+      border-color: #2563eb;
+      box-shadow: 0 8px 20px rgba(37,99,235,0.12);
+      transform: translateY(-4px);
+    }
   </style>
 </head>
 
@@ -77,7 +84,7 @@
           <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
         </label>
         <p class="text-gray-500 italic text-[13px]">Pangalan ng iyong paaralan</p>
-        <input type="text" placeholder="School Name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+        <input id="school_name" type="text" placeholder="School Name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         <p class="text-gray-500 text-xs mt-2">
           Type your school name (example: <span class="font-semibold">University of Makati</span>).
         </p>
@@ -90,7 +97,7 @@
           <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
         </label>
         <p class="text-gray-500 italic text-[13px]">May mga certificates o special training ka ba?</p>
-        <input type="text" placeholder="Certificates or Trainings" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+        <input id="certs" type="text" placeholder="Certificates or Trainings" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
         <p class="text-gray-500 text-xs mt-2">
           Type your certificate or special training you have (example: <span class="font-semibold">
             Food Safety Training, Computer Skills Certificate</span>).
@@ -120,7 +127,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
         <!-- Card 1 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[380px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[380px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative workexp-card" onclick="selectWorkTypeChoice(this,'paid')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <img src="image/jobexp1.png" alt="paid job" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Yes, I have had a paid job</h3>
@@ -128,7 +135,7 @@
         </div>
 
         <!-- Card 2 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[380px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[380px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative workexp-card" onclick="selectWorkTypeChoice(this,'volunteer')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <img src="image/jobexp2.png" alt="volunteer job" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Yes, I have done volunteer work</h3>
@@ -136,7 +143,7 @@
         </div>
 
         <!-- Card 3 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[380px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[380px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative workexp-card" onclick="selectWorkTypeChoice(this,'internship')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <img src="image/jobexp3.png" alt="internship" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">I have done internship or job training</h3>
@@ -144,7 +151,7 @@
         </div>
 
         <!-- Card 4 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[380px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[380px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative workexp-card" onclick="selectWorkTypeChoice(this,'none')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <img src="image/jobexp4.png" alt="no job experience" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">No, this would be my first time</h3>
@@ -152,13 +159,31 @@
         </div>
       </div>
 
+      <!-- Hidden input for work type (collected by register.js) -->
+      <input id="work_type" type="hidden" value="" />
+
+      <!-- Small inline helper to toggle selection and write the value -->
+      <script>
+        // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_school_workinfo.blade.php
+        function selectWorkTypeChoice(el, value) {
+          try {
+            document.querySelectorAll('.workexp-card').forEach(c => c.classList.remove('selected'));
+            if (el && el.classList) el.classList.add('selected');
+            const hidden = document.getElementById('work_type');
+            if (hidden) hidden.value = value || '';
+            const err = document.getElementById('schoolError');
+            if (err) err.textContent = '';
+          } catch (e) { console.error('selectWorkTypeChoice error', e); }
+        }
+      </script>
+
       <!-- Next Button -->
-      <div class="text-center mt-12">
-        <button type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-          onclick="window.location.href='{{ route('registerworkexpinfo') }}'">
+      <div class="flex flex-col items-center justify-center mt-12 mb-8 space-y-4">
+        <div id="schoolError" class="text-red-600 text-sm mb-2"></div>
+        <button id="schoolNext" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
           Next →
         </button>
-        <p class="text-gray-700 text-sm mt-3">
+        <p class="text-gray-600 text-sm">
           Click <span class="text-blue-500 font-medium">“Next”</span> to move to the next page Your Qualifications
         </p>
         <p class="text-gray-500 italic text-[13px]">(Pindutin ang “Next” upang lumipat sa susunod na pahina)</p>
@@ -166,5 +191,6 @@
     </form>
   </div>
 
+  <script src="{{ asset('js/register.js') }}"></script>
 </body>
 </html>

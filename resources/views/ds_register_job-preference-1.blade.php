@@ -14,6 +14,15 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    /* visual for selected job preference card */
+    .jobpref-card.selected {
+      border-color: #2563eb;
+      box-shadow: 0 10px 30px rgba(37,99,235,0.14);
+      transform: translateY(-6px);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .jobpref-card { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; border: 2px solid transparent; }
   </style>
 </head>
 
@@ -97,63 +106,100 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
         <!-- Office Work -->
-        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+             data-value="Office Work" onclick="toggleJobPref1Choice(this,'Office Work')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <img src="image/officework.png" alt="Office Work" class="w-full rounded-md mb-4" />
           <h3 class="text-blue-600 font-semibold text-center">Office Work</h3>
           <p class="text-sm mt-2 text-justify">
             In this job, you will use the computer for simple tasks, answer the phone politely, and keep papers organized in folders.
           </p>
-          <p class="text-[13px] text-gray-500 italic mt-2 text-justify">
-            (Sa trabahong ito, gagamit ka ng computer para sa simpleng gawain, sasagot ng telepono nang magalang, at aayusin ang mga papeles sa mga folder.)
-          </p>
         </div>
 
         <!-- Store Work -->
-        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+             data-value="Store Work" onclick="toggleJobPref1Choice(this,'Store Work')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <img src="image/storework.png" alt="Store Work" class="w-full rounded-md mb-4" />
           <h3 class="text-blue-600 font-semibold text-center">Store Work</h3>
           <p class="text-sm mt-2 text-justify">
             You will help customers find what they need, place items neatly on shelves, and work at the cashier to take payments.
           </p>
-          <p class="text-[13px] text-gray-500 italic mt-2 text-justify">
-            (Tutulungan mo ang mga customer na hanapin ang kanilang kailangan, maayos na ilalagay ang mga paninda, at magtatrabaho sa cashier para tumanggap ng bayad.)
-          </p>
         </div>
 
         <!-- Cleaning Work -->
-        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+             data-value="Cleaning Work" onclick="toggleJobPref1Choice(this,'Cleaning Work')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <img src="image/cleaningwork.png" alt="Cleaning Work" class="w-full rounded-md mb-4" />
           <h3 class="text-blue-600 font-semibold text-center">Cleaning Work</h3>
           <p class="text-sm mt-2 text-justify">
             You will sweep or mop the floor, wipe tables and windows, and make sure rooms stay neat and tidy.
           </p>
-          <p class="text-[13px] text-gray-500 italic mt-2 text-justify">
-            (Magwawalis o mag-mop ka ng sahig, magpupunas ng mga mesa at bintana, at sisiguraduhing malinis at maayos ang mga silid.)
-          </p>
         </div>
 
         <!-- Hospitality Work -->
-        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+             data-value="Hospitality Work" onclick="toggleJobPref1Choice(this,'Hospitality Work')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <img src="image/hospitalitywork.png" alt="Hospitality Work" class="w-full rounded-md mb-4" />
           <h3 class="text-blue-600 font-semibold text-center">Hospitality Work</h3>
           <p class="text-sm mt-2 text-justify">
             You will greet guests with a smile, help clean and prepare rooms, and carry small items like towels.
           </p>
-          <p class="text-[13px] text-gray-500 italic mt-2 text-justify">
-            (Sasalubungin mo ang mga bisita nang may ngiti, tutulong sa paglilinis at paghahanda ng mga kuwarto, at magdadala ng maliliit na gamit tulad ng tuwalya.)
-          </p>
         </div>
 
       </div>
 
+      <!-- Hidden input for job preference (JSON array) -->
+      <input id="jobpref1" type="hidden" value="[]" />
+
+      <script>
+        // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_job-preference-1.blade.php
+        function toggleJobPref1Choice(el, value) {
+          try {
+            const hidden = document.getElementById('jobpref1');
+            if (!hidden) return;
+            let arr = [];
+            try { arr = JSON.parse(hidden.value || '[]'); } catch (e) { arr = []; }
+            const idx = arr.indexOf(value);
+            if (idx === -1) {
+              arr.push(value);
+              if (el && el.classList) el.classList.add('selected');
+            } else {
+              arr.splice(idx, 1);
+              if (el && el.classList) el.classList.remove('selected');
+            }
+            hidden.value = JSON.stringify(arr);
+            if (value === 'other') {
+              const other = document.getElementById('jobpref1_other_text');
+              if (other && arr.indexOf('other') !== -1) other.focus();
+            }
+            const err = document.getElementById('jobpref1Error');
+            if (err) err.textContent = '';
+          } catch (e) { console.error('toggleJobPref1Choice error', e); }
+        }
+
+        // pre-select on load (if autofill set the hidden value)
+        document.addEventListener('DOMContentLoaded', function () {
+          try {
+            const hidden = document.getElementById('jobpref1');
+            if (!hidden) return;
+            let arr = [];
+            try { arr = JSON.parse(hidden.value || '[]'); } catch (e) { arr = []; }
+            document.querySelectorAll('.jobpref-card[data-value]').forEach(c => {
+              const v = c.getAttribute('data-value');
+              if (v && arr.indexOf(v) !== -1) c.classList.add('selected');
+              else c.classList.remove('selected');
+            });
+          } catch (e) { /* ignore */ }
+        });
+      </script>
+
       <!-- Next Button -->
       <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-        <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md"
-                onclick="window.location.href='{{ route('registerjobpreference2') }}'">
+        <div id="jobpref1Error" class="text-red-600 text-sm mb-2"></div>
+        <button id="jobpref1Next" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
           Next →
         </button>
         <p class="text-gray-600 text-sm mt-2 text-center">
@@ -163,5 +209,7 @@
       </div>
     </div>
   </div>
+
+  <script src="{{ asset('js/register.js') }}"></script>
 </body>
 </html>

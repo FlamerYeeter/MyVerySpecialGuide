@@ -20,7 +20,7 @@ Route::get('/register', function () {
 
 Route::get('/registeradminapprove', function () {
     return view('ds_register_adminapprove');
-});
+})->name('registeradminapprove');
 
 Route::get('/registerpersonalinfo', function () {
     return view('ds_register_personalinfo');
@@ -133,3 +133,37 @@ Route::get('/registerreview4', function () {
 Route::get('/registerreview5', function () {
     return view('ds_register_review-5');
 })->name('registerreview5');
+
+// New pages: About MVSG, About Down Syndrome, and User Role selection
+Route::get('/about-us', function () {
+    return view('about-us');
+})->name('about.us');
+
+Route::get('/about-ds', function () {
+    return view('about-ds');
+})->name('about.ds');
+
+Route::get('/user-role', function () {
+    return view('user_role');
+})->name('user.role');
+
+// Alias routes (common variants) so navbar or external links that use different URIs/names still resolve
+Route::get('/about', function () {
+    return view('about-us');
+})->name('about');
+
+Route::get('/about-mvsg', function () {
+    return view('about-us');
+})->name('about.mvsg');
+
+Route::get('/aboutmvsg', function () {
+    return view('about-us');
+})->name('aboutmvsg');
+
+Route::get('/about-down-syndrome', function () {
+    return view('about-ds');
+})->name('about.down-syndrome');
+
+Route::get('/aboutdownsyndrome', function () {
+    return view('about-ds');
+})->name('aboutdownsyndrome');

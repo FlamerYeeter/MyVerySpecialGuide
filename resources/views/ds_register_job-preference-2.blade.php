@@ -14,6 +14,15 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    /* visual for selected job preference card */
+    .jobpref-card.selected {
+      border-color: #2563eb;
+      box-shadow: 0 10px 30px rgba(37,99,235,0.14);
+      transform: translateY(-6px);
+      transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .jobpref-card { transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; border: 2px solid transparent; }
   </style>
 </head>
 
@@ -84,16 +93,15 @@
     
     <!-- Job Cards Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-
-     <!-- Food Service Work -->
-    <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
-        <!-- Audio Button -->
-        <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">
-            🔊
-        </button>
-        <img src="image/foodservice.png" alt="Office Work" class="w-full rounded-md mb-4" />
-        <h3 class="text-blue-600 font-semibold text-center">Food Service Work</h3>
-        <p class="text-sm mt-2 text-justify">
+      <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+             data-value="Food Service Work" onclick="toggleJobPref2Choice(this,'Food Service Work')">
+         <!-- Audio Button -->
+         <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">
+             🔊
+         </button>
+         <img src="image/foodservice.png" alt="Office Work" class="w-full rounded-md mb-4" />
+         <h3 class="text-blue-600 font-semibold text-center">Food Service Work</h3>
+         <p class="text-sm mt-2 text-justify">
               This job includes serving food and drinks, helping prepare simple meals, and keeping the tables and kitchen clean.
         </p>
         <p class="text-[13px] text-gray-500 text-justify italic mt-2">
@@ -102,7 +110,7 @@
     </div>
 
       <!-- Packing Work -->
-      <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+      <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card" data-value="Packing Packages Work" onclick="toggleJobPref2Choice(this,'Packing Packages Work')">
         <!-- Audio Button -->
         <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">
             🔊
@@ -118,7 +126,7 @@
       </div>
 
       <!-- Creative Work -->
-      <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+      <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card" data-value="Creative Work" onclick="toggleJobPref2Choice(this,'Creative Work')">
         <!-- Audio Button -->
         <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">
             🔊
@@ -134,7 +142,7 @@
       </div>
 
         <!-- Other -->
-        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card" data-value="other" onclick="toggleJobPref2Choice(this,'other')">
           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
           <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
           <p class="mt-6 text-sm text-justify">
@@ -143,21 +151,68 @@
           <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
             (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
           </p>
-          <input type="text" placeholder="Type your answer here"
+          <input id="jobpref2_other_text" type="text" placeholder="Type your answer here"
                  class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
         </div>
-      </div>
+       </div>
+      <input id="jobpref2" type="hidden" value="[]" />
+
+      <script>
+        // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_job-preference-2.blade.php
+        function toggleJobPref2Choice(el, value) {
+          try {
+            const hidden = document.getElementById('jobpref2');
+            if (!hidden) return;
+            let arr = [];
+            try { arr = JSON.parse(hidden.value || '[]'); } catch (e) { arr = []; }
+            const idx = arr.indexOf(value);
+            if (idx === -1) {
+              arr.push(value);
+              if (el && el.classList) el.classList.add('selected');
+            } else {
+              arr.splice(idx, 1);
+              if (el && el.classList) el.classList.remove('selected');
+            }
+            hidden.value = JSON.stringify(arr);
+            if (value === 'other') {
+              const other = document.getElementById('jobpref2_other_text');
+              if (other && arr.indexOf('other') !== -1) other.focus();
+            }
+            const err = document.getElementById('jobpref2Error');
+            if (err) err.textContent = '';
+          } catch (e) { console.error('toggleJobPref2Choice error', e); }
+        }
+
+        // pre-select on load
+        document.addEventListener('DOMContentLoaded', function () {
+          try {
+            const hidden = document.getElementById('jobpref2');
+            if (!hidden) return;
+            let arr = [];
+            try { arr = JSON.parse(hidden.value || '[]'); } catch (e) { arr = []; }
+            document.querySelectorAll('.jobpref-card[data-value]').forEach(c => {
+              const v = c.getAttribute('data-value');
+              if (v && arr.indexOf(v) !== -1) c.classList.add('selected');
+              else c.classList.remove('selected');
+            });
+          } catch (e) { /* ignore */ }
+        });
+      </script>
 
     <!-- Next Button -->
     <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-        <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
+        <div id="jobpref2Error" class="text-red-600 text-sm mb-2"></div>
+        <button id="jobpref2Next" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
             Next →
         </button>
-        <p class="text-gray-600 text-sm mt-2 text-center">
+         <p class="text-gray-600 text-sm mt-2 text-center">
             Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Review Your Profile<br>
             <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
         </p>
     </div>
 
+  </div>
+
+  <script src="{{ asset('js/register.js') }}"></script>
 </body>
 </html>

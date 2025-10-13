@@ -24,14 +24,15 @@
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-6xl w-full px-4 sm:px-8">
     
     <!-- User / Guardian -->
-    <div class="border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
+    <a href="{{ route('register') }}" 
+       class="block border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
       <img src="image/role1.png" alt="User / Guardian" class="mx-auto mb-4 w-20 sm:w-24 md:w-28">
       <h3 class="text-blue-700 font-semibold text-lg mb-2">User / Guardian</h3>
       <p class="text-gray-600 text-sm md:text-base leading-relaxed">
         Individual with Down syndrome seeking employment opportunities, with guardian support 
         for profile setup, career exploration, and job search assistance.
       </p>
-    </div>
+    </a>
 
     <!-- Expert (Therapist) -->
     <div class="border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
@@ -67,16 +68,16 @@
 
   <!-- Back Button -->
   <div class="mt-10 flex justify-center w-full px-4">
-    <button 
-      class="flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 
-             text-white font-bold text-lg sm:text-xl py-3 px-10 sm:px-14 rounded-lg 
-             shadow-md transition-all w-full sm:w-auto max-w-xs sm:max-w-sm">
+    <a href="{{ route('home') }}"
+       class="flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 
+              text-white font-bold text-lg sm:text-xl py-3 px-10 sm:px-14 rounded-lg 
+              shadow-md transition-all w-full sm:w-auto max-w-xs sm:max-w-sm">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
            stroke-width="2.5" stroke="currentColor" class="w-6 h-6 sm:w-7 sm:h-7">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
       </svg>
       <span>Back</span>
-    </button>
+    </a>
   </div>
 
 </body>

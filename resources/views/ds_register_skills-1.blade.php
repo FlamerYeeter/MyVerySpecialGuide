@@ -14,6 +14,12 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    .skills-card.selected {
+      border-color: #2563eb;
+      box-shadow: 0 8px 20px rgba(37,99,235,0.12);
+      transform: translateY(-4px);
+    }
   </style>
 </head>
 
@@ -82,7 +88,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
           <!-- Card 1 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative skills-card" data-value="Good at talking to people" onclick="toggleSkills1Choice(this,'Good at talking to people')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/skill1.png" alt="talking to people" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Good at talking to people</h3>
@@ -90,7 +96,7 @@
           </div>
 
           <!-- Card 2 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative skills-card" data-value="Using Computer" onclick="toggleSkills1Choice(this,'Using Computer')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/skill2.png" alt="using computer" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Using Computer</h3>
@@ -98,7 +104,7 @@
           </div>
 
           <!-- Card 3 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative skills-card" data-value="Organizing things" onclick="toggleSkills1Choice(this,'Organizing things')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/skill3.png" alt="organize" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Organizing things</h3>
@@ -106,7 +112,7 @@
           </div>
 
           <!-- Card 4 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative skills-card" data-value="Working with others" onclick="toggleSkills1Choice(this,'Working with others')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/skill4.png" alt="work with others" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Working with others</h3>
@@ -114,7 +120,7 @@
           </div>
 
           <!-- Card 5 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative skills-card" data-value="Art and creativity" onclick="toggleSkills1Choice(this,'Art and creativity')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/skill5.png" alt="creativity" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Art and creativity</h3>
@@ -122,7 +128,7 @@
           </div>
 
           <!-- Card 6 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative">
+          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative skills-card" data-value="Helping people" onclick="toggleSkills1Choice(this,'Helping people')">
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
             <img src="image/skill6.png" alt="help people" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Helping people</h3>
@@ -130,15 +136,16 @@
           </div>
         </div>
 
-        <!-- Next Section -->
+        <input id="skills_page1" type="hidden" value="[]" />
+
         <div class="w-full flex flex-col justify-center items-center text-center mt-10 mb-8">
             <p class="text-gray-700 font-medium mb-4">
                 More options in the next page
             </p>
             
             <div class="flex flex-col items-center justify-center">
-                <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-        onclick="window.location.href='{{ route('registerskills2') }}'">
+                <div id="skills1Error" class="text-red-600 text-sm mb-2"></div>
+                <button id="skills1Next" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
                     Next →
                 </button>
                 <p class="text-gray-600 text-sm mt-3 max-w-md text-center">
@@ -148,8 +155,67 @@
             </div>
         </div>
 
+        <!-- ensure shared register logic is available so the Next button is handled and autofill runs -->
+        <script src="{{ asset('js/register.js') }}"></script>
 
-     
+        <!-- existing toggleSkills1Choice + init script relies on register.js being present earlier -->
+        <script>
+          // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_skills-1.blade.php
+          // Toggle handler for multi-select skills on page 1
+          function toggleSkills1Choice(el, value) {
+            try {
+              const hidden = document.getElementById('skills_page1');
+              if (!hidden) return;
+              let arr = [];
+              try { arr = JSON.parse(hidden.value || '[]'); } catch (e) { arr = []; }
+              const idx = arr.indexOf(value);
+              if (idx === -1) {
+                arr.push(value);
+                if (el && el.classList) el.classList.add('selected');
+              } else {
+                arr.splice(idx, 1);
+                if (el && el.classList) el.classList.remove('selected');
+              }
+              hidden.value = JSON.stringify(arr);
+              // focus "other" input when selected
+              if (value === 'other') {
+                const other = document.getElementById('skills1_other_text');
+                if (other && arr.indexOf('other') !== -1) other.focus();
+              }
+              const err = document.getElementById('skills1Error');
+              if (err) err.textContent = '';
+            } catch (e) {
+              console.error('toggleSkills1Choice error', e);
+            }
+          }
+
+          // On load: pre-select cards based on hidden input (useful for autofill/local drafts)
+          document.addEventListener('DOMContentLoaded', function () {
+            try {
+              const hidden = document.getElementById('skills_page1');
+              if (!hidden) return;
+              let arr = [];
+              try { arr = JSON.parse(hidden.value || '[]'); } catch (e) { arr = []; }
+              if (!Array.isArray(arr)) arr = [];
+              document.querySelectorAll('.skills-card[data-value]').forEach(c => {
+                try {
+                  const v = c.getAttribute('data-value');
+                  if (v && arr.indexOf(v) !== -1) c.classList.add('selected');
+                  else c.classList.remove('selected');
+                } catch (e) { /* ignore */ }
+              });
+              // if 'other' preselected, focus its input
+              if (arr.indexOf('other') !== -1) {
+                const other = document.getElementById('skills1_other_text');
+                if (other) other.focus();
+              }
+            } catch (e) {
+              console.warn('skills_page1 init failed', e);
+            }
+          });
+        </script>
+      </div>
+    </div>
   </div>
 </body>
 </html>

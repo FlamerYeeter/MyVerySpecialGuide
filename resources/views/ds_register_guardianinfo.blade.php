@@ -13,6 +13,13 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    /* visual for selected guardian card */
+    .guardian-card.selected {
+      border-color: #2563eb; /* blue-600 */
+      box-shadow: 0 6px 18px rgba(37,99,235,0.15);
+      transform: translateY(-4px);
+    }
   </style>
 </head>
 
@@ -79,7 +86,7 @@
             <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Unang Pangalan</p>
-          <input type="text" placeholder="First name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="guardian_first_name" type="text" placeholder="First name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">Type your Parent/Guardian name (example: <span class="font-semibold">John</span>)</p>
         </div>
 
@@ -90,7 +97,7 @@
             <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Apelyido</p>
-          <input type="text" placeholder="Last name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"/>
+          <input id="guardian_last_name" type="text" placeholder="Last name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"/>
           <p class="text-gray-500 text-xs mt-1">Type your Parent/Guardian name (example: <span class="font-semibold">Cruz</span>)</p>
         </div>
       </div>
@@ -104,7 +111,7 @@
             <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Email</p>
-          <input type="email" placeholder="Email" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="guardian_email" type="email" placeholder="Email" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">
             Type your Parent/Guardian email (example: <span class="font-semibold">john@gmail.com</span>).
           </p>
@@ -117,7 +124,7 @@
             <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Telepono</p>
-          <input type="tel" placeholder="+63 9XX XXX XXXX" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="guardian_phone" type="tel" placeholder="+63 9XX XXX XXXX" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">
             Type your Parent/Guardian phone number (example: <span class="font-semibold">+63 917 123 4567</span>).
           </p>
@@ -144,7 +151,8 @@
       <!-- Cards Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
         <!-- Card 1 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative guardian-card"
+             onclick="selectGuardianChoice(this, 'parent')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/guardian1.png" alt="parent" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Parent</h3>
@@ -152,7 +160,8 @@
         </div>
 
         <!-- Card 2 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative guardian-card"
+             onclick="selectGuardianChoice(this, 'sibling')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/guardian2.png" alt="sibling" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Sibling</h3>
@@ -160,7 +169,8 @@
         </div>
 
         <!-- Card 3 -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative guardian-card"
+             onclick="selectGuardianChoice(this, 'guardian')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <img src="image/guardian3.png" alt="guardian" class="w-full rounded-md mb-4">
           <h3 class="text-blue-600 font-semibold text-center">Guardian</h3>
@@ -168,21 +178,25 @@
         </div>
 
         <!-- Other -->
-        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative">
+        <div class="bg-white p-4 rounded-xl shadow h-[340px] hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 transition cursor-pointer relative guardian-card"
+             onclick="selectGuardianChoice(this, 'other')">
           <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
           <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
           <p class="mt-6 text-sm text-justify">Type your answer inside the box if not in the choices</p>
           <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
             (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
           </p>
-          <input type="text" placeholder="Type your answer here" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
+          <input id="guardian_other_text" type="text" placeholder="Type your answer here" class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none">
         </div>
       </div>
 
+      <!-- Hidden input to store chosen guardian type -->
+      <input id="guardian_choice" type="hidden" value="" />
+
       <!-- Next Button -->
       <div class="text-center mt-12">
-        <button type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-          onclick="window.location.href='{{ route('registereducation') }}'">
+        <div id="guardianError" class="text-red-600 text-sm mb-2"></div>
+        <button id="guardianNext" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
           Next →
         </button>
         <p class="text-gray-700 text-sm mt-3">
@@ -192,5 +206,34 @@
       </div>
     </form>
   </div>
+
+  <!-- Make selectGuardianChoice available globally for inline onclick handlers -->
+  <script>
+    function selectGuardianChoice(el, value) {
+      try {
+        // toggle visual selection
+        document.querySelectorAll('.guardian-card').forEach(c => c.classList.remove('selected'));
+        if (el && el.classList) el.classList.add('selected');
+
+        // write the chosen value to hidden input
+        const hidden = document.getElementById('guardian_choice');
+        if (hidden) hidden.value = value || '';
+
+        // if "other" chosen, focus the text input
+        if (value === 'other') {
+          const otherInput = document.getElementById('guardian_other_text');
+          if (otherInput) otherInput.focus();
+        }
+
+        // clear any previous error
+        const err = document.getElementById('guardianError');
+        if (err) err.textContent = '';
+      } catch (e) {
+        console.error('selectGuardianChoice error', e);
+      }
+    }
+  </script>
+
+  <script src="{{ asset('js/register.js') }}"></script>
 </body>
 </html>

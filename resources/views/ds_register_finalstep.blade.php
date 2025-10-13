@@ -30,7 +30,8 @@
 
     <!-- Back Button -->
     <button
-      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95">
+      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
+      onclick="window.location.href='{{ route('registerreview5') }}'">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -79,11 +80,8 @@
           </div>
 
           <!-- Checkbox 1 -->
-          <label
-            class="flex items-start gap-4 bg-white/70 p-4 rounded-xl border border-blue-100 hover:bg-blue-50 transition mb-3 cursor-pointer shadow-sm">
-            <input
-              type="checkbox"
-              class="w-6 h-6 mt-[2px] accent-blue-500 border-2 border-gray-400 rounded-md flex-shrink-0" />
+          <label class="flex items-start gap-4 bg-white/70 p-4 rounded-xl border border-blue-100 hover:bg-blue-50 transition mb-3 cursor-pointer shadow-sm" id="agree1_label">
+            <input id="agree1" type="checkbox" class="w-6 h-6 mt-[2px] accent-blue-500 border-2 border-gray-400 rounded-md flex-shrink-0" />
             <div class="flex flex-col gap-1">
               <div class="flex items-start justify-between gap-2">
                 <p class="text-[15px] font-medium text-gray-800 flex-1">
@@ -98,11 +96,8 @@
           </label>
 
           <!-- Checkbox 2 -->
-          <label
-            class="flex items-start gap-4 bg-white/70 p-4 rounded-xl border border-blue-100 hover:bg-blue-50 transition cursor-pointer shadow-sm">
-            <input
-              type="checkbox"
-              class="w-6 h-6 mt-[2px] accent-blue-500 border-2 border-gray-400 rounded-md flex-shrink-0" />
+          <label class="flex items-start gap-4 bg-white/70 p-4 rounded-xl border border-blue-100 hover:bg-blue-50 transition cursor-pointer shadow-sm" id="agree2_label">
+            <input id="agree2" type="checkbox" class="w-6 h-6 mt-[2px] accent-blue-500 border-2 border-gray-400 rounded-md flex-shrink-0" />
             <div class="flex flex-col gap-1">
               <div class="flex items-start justify-between gap-2">
                 <p class="text-[15px] font-medium text-gray-800 flex-1">
@@ -136,8 +131,8 @@
 
         <!-- Create Account Button -->
         <div class="mt-8 flex flex-col items-center justify-center text-center w-full">
-          <button
-            class="bg-blue-500 text-white font-semibold text-lg px-12 sm:px-20 py-3 rounded-xl hover:bg-blue-600 transition shadow-md">
+          <div id="finalError" class="text-red-600 text-sm mb-2"></div>
+          <button id="createAccountBtn" type="button" class="bg-blue-500 text-white font-semibold text-lg px-12 sm:px-20 py-3 rounded-xl hover:bg-blue-600 transition shadow-md">
             Create My Account
           </button>
           <p class="text-[13px] text-gray-700 mt-3">
@@ -150,5 +145,6 @@
       </div>
     </div>
   
+    <script src="{{ asset('js/register.js') }}"></script>
 </body>
 </html>

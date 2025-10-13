@@ -34,7 +34,8 @@
 
   <!-- Back Button -->
   <button type="button"
-    class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95">
+    class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
+    onclick="window.location.href='{{ route('register2') }}'">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
       stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -82,7 +83,7 @@
             <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Unang Pangalan</p>
-          <input type="text" placeholder="First name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+          <input id="admin_first_name" type="text" placeholder="First name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
           <p class="text-gray-500 text-xs mt-1">
             Type your first name (example: <span class="font-semibold">John</span>)
           </p>
@@ -95,7 +96,7 @@
             <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
           </label>
           <p class="text-gray-500 italic text-[13px]">Apelyido</p>
-          <input type="text" placeholder="Last name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"/>
+          <input id="admin_last_name" type="text" placeholder="Last name" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200"/>
           <p class="text-gray-500 text-xs mt-1">
             Type your last name (example: <span class="font-semibold">Cruz</span>)
           </p>
@@ -104,30 +105,63 @@
 
       <!-- Email Address -->
       <div class="max-w-xl mx-auto mt-8 text-left">
-        <label class="font-semibold text-sm flex items-center gap-1">
-          Email Address <span>⭐</span>
-          <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
-        </label>
-        <p class="text-gray-500 italic text-[13px]">Email Address</p>
-        <input type="email" placeholder="Email Address" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
-        <p class="text-gray-500 text-xs mt-2">
-          Type your email (example: <span class="font-semibold">john@gmail.com</span>).
-          The confirmation will be sent to your email.<br>
-          <span class="italic text-gray-500">(Ang kumpirmasyon ay ipapadala sa iyong email.)</span>
-        </p>
-      </div>
-        
-      <!-- Submit Button -->
-      <div class="text-center mt-20"> 
+         <label class="font-semibold text-sm flex items-center gap-1">
+           Email Address <span>⭐</span>
+           <button type="button" class="text-gray-500 text-xl hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
+          </label>
+          <p class="text-gray-500 italic text-[13px]">Email Address</p>
+          <input id="admin_email" type="email" placeholder="Email Address" class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200" />
+         <p class="text-gray-500 text-xs mt-2">
+           Type your email (example: <span class="font-semibold">john@gmail.com</span>).
+           The confirmation will be sent to your email.<br>
+           <span class="italic text-gray-500">(Ang kumpirmasyon ay ipapadala sa iyong email.)</span>
+         </p>
+       </div>
+
+      <!-- Submit Button: save admin-provided personal info into local draft then navigate -->
+      <div class="text-center mt-20">
         <p class="text-gray-600 text-sm mb-2">
           Pindutin ang <span class="text-blue-500 font-medium">“Click to Submit for Approval”</span>
         </p>
-        <button type="submit"
+        <button id="adminSubmitBtn" type="button"
           class="bg-blue-500 text-white font-semibold text-lg px-16 py-3 rounded-xl hover:bg-blue-600 transition shadow-md">
           Click to Submit for Approval
         </button>
       </div>
-    </form>
+
+      <!-- Save draft script: persist to rpi_personal so register.js autofills personal page -->
+      <script>
+        (function () {
+          const btn = document.getElementById('adminSubmitBtn');
+          if (!btn) return;
+          btn.addEventListener('click', function () {
+            try {
+              const first = (document.getElementById('admin_first_name')?.value || '').trim();
+              const last = (document.getElementById('admin_last_name')?.value || '').trim();
+              const email = (document.getElementById('admin_email')?.value || '').trim();
+              if (!first && !last && !email) {
+                // nothing to save — still navigate
+                window.location.href = '{{ route('registerpersonalinfo') }}';
+                return;
+              }
+              const draft = {
+                firstName: first,
+                lastName: last,
+                email: email,
+                phone: '',
+                age: '',
+                // password intentionally not set — user will create password on personal info page
+              };
+              try { localStorage.setItem('rpi_personal', JSON.stringify(draft)); } catch (e) { console.warn('Could not save admin draft', e); }
+              // navigate to personal info page (register.js will pick up the draft)
+              window.location.href = '{{ route('registerpersonalinfo') }}';
+            } catch (e) {
+              console.error('admin submit failed', e);
+              window.location.href = '{{ route('registerpersonalinfo') }}';
+            }
+          });
+        })();
+      </script>
 
     <!-- Notes -->
     <div class="flex flex-col text-left mt-8 max-w-xl mx-auto">

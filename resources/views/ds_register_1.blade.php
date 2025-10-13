@@ -32,7 +32,8 @@
 
   <!-- Back Button -->
   <button
-    class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-5 sm:px-7 py-2 sm:py-3 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition shadow-md active:scale-95 z-10">
+    class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-5 sm:px-7 py-2 sm:py-3 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition shadow-md active:scale-95 z-10"
+    onclick="window.location.href='{{ route('home') }}'">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
       stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -161,7 +162,8 @@
 
     <!-- Next Button -->
     <div class="flex flex-col items-center mt-12">
-      <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition shadow-md">
+      <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition shadow-md"
+        onclick="window.location.href='{{ route('register2') }}'">
         Next →
       </button>
       <p class="text-gray-600 text-sm mt-2 text-center">

@@ -12,6 +12,8 @@
       .animate-float-slow { animation: float 5s ease-in-out infinite; }
       .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
       .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+      .selectable-card { border: 2px solid transparent; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+      .selectable-card.selected { border-color: #2563eb; box-shadow: 0 10px 30px rgba(37,99,235,0.14); transform: translateY(-6px); }
     </style>
   </head>
 
@@ -29,7 +31,8 @@
 
     <!-- Back Button -->
     <button
-      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95">
+      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
+      onclick="window.location.href='{{ route('registerreview4') }}'">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
         stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -72,12 +75,14 @@
           <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
         </p>
 
+        <p class="mt-2">Selected jobs: <span id="review_jobprefs">—</span></p>
+
         <!-- Job Preferences Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
 
           <!-- Card 1 -->
           <div
-            class="bg-white p-4 rounded-xl shadow relative border-2 border-blue-500 group transition-all duration-300 hover:shadow-lg">
+            class="bg-white p-4 rounded-xl shadow relative border-2 border-blue-500 group transition-all duration-300 hover:shadow-lg selectable-card">
             <!-- Audio button -->
             <button type="button"
               class="absolute top-3 left-10 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
@@ -97,7 +102,7 @@
 
           <!-- Card 2 -->
           <div
-            class="bg-white p-4 rounded-xl shadow relative border-2 border-blue-500 group transition-all duration-300 hover:shadow-lg">
+            class="bg-white p-4 rounded-xl shadow relative border-2 border-blue-500 group transition-all duration-300 hover:shadow-lg selectable-card">
             <!-- Audio button -->
             <button type="button"
               class="absolute top-3 left-10 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
@@ -145,7 +150,8 @@
         <!-- Continue Button -->
         <div class="text-center mt-12">
           <button type="button"
-            class="bg-blue-500 text-white font-semibold text-lg px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center mx-auto shadow-md">
+            class="bg-blue-500 text-white font-semibold text-lg px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center mx-auto shadow-md"
+            onclick="window.location.href='{{ route('registerfinalstep') }}'">
             Continue →
           </button>
           <p class="text-gray-700 text-sm mt-3">
@@ -155,5 +161,32 @@
         </div>
       </form>
     </div>
+
+    <script src="{{ asset('js/register.js') }}"></script>
+   <script>
+     document.addEventListener('DOMContentLoaded', async function () {
+       if (!window.firebase || !window.firebase.auth || !window.firebase.firestore) return;
+       try {
+         const auth = firebase.auth();
+         const db = firebase.firestore();
+         let user = auth.currentUser;
+         if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+         if (!user) return;
+         const doc = await db.collection('users').doc(user.uid).get();
+         if (!doc.exists) return;
+         const data = doc.data();
+         // Job Preferences
+         if (Array.isArray(data.jobPreferences)) {
+           document.getElementById('review_jobprefs').textContent = data.jobPreferences.join(', ');
+           // Optionally, highlight cards matching job preferences
+           document.querySelectorAll('.selectable-card').forEach(card => {
+             const title = card.querySelector('h3')?.textContent?.trim();
+             if (title && data.jobPreferences.includes(title)) card.classList.add('selected');
+             else card.classList.remove('selected');
+           });
+         }
+       } catch (e) { console.warn('Preview load failed', e); }
+     });
+   </script>
   </body>
 </html>

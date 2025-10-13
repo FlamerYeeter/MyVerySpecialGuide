@@ -1,4 +1,4 @@
-  @extends('layouts.app')
+@extends('layouts.app')
 
   @section('content')
       <!-- Hero Section -->
@@ -13,10 +13,10 @@
                       WELCOME to<br>
                       <span class="text-blue-600">MyVerySpecialGuide</span>
                   </h1>
-                  <button
-                      class="bg-blue-500 hover:bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
-                      Get Started
-                  </button>
+                  <a href="{{ route('user.role') }}"
+                     class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
+                     Get Started
+                 </a>
               </div>
 
               <!-- Right Object -->
@@ -35,6 +35,13 @@
                   At the <span class="font-semibold text-blue-600">Down Syndrome Work Society</span>,
                   we open doors for people with Down syndrome to share their talents and build brighter futures.
               </p>
+             <!-- About MVSG button -->
+             <div class="flex justify-center">
+                 <a href="{{ route('about.us') }}"
+                     class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-transform hover:scale-105 text-sm">
+                     About MVSG
+                 </a>
+             </div>
           </div>
 
           <!-- Image with Borders -->
@@ -81,10 +88,10 @@
                       This difference may affect learning, growth, and development, but it does not define a person's full
                       potential.
                   </p>
-                  <button
-                      class="bg-blue-500 hover:bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105 text-sm sm:text-base">
+                  <a href="{{ route('about.ds') }}"
+                      class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105 text-sm sm:text-base">
                       Learn More
-                  </button>
+                  </a>
               </div>
           </div>
       </section>
