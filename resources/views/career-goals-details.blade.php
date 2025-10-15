@@ -1,7 +1,7 @@
 @extends('layouts.includes')
 
 @section('content')
-<div class="bg-yellow-400 mt-6 py-4">
+<div class="bg-green-600 mt-6 py-4">
     <div class="max-w-5xl mx-auto px-4 flex items-center space-x-2">
       <a href="/job-details" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"

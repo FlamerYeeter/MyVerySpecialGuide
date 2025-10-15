@@ -5,7 +5,7 @@
 
   <!-- HEADER BANNER -->
     <br>
-  <section class="bg-yellow-400 flex flex-col md:flex-row items-center justify-center py-10 text-center md:text-left">
+  <section class="bg-green-600 flex flex-col md:flex-row items-center justify-center py-10 text-center md:text-left">
     <img src="/images/target-icon.png" alt="Goals Icon" class="h-24 mx-auto md:mx-8">
     <div>
       <h2 class="text-3xl font-bold text-black">Goals & Progress</h2>
