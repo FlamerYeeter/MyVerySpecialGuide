@@ -191,7 +191,8 @@
 
     <!-- removed global floating preview -->
 
-    <script src="{{ asset('js/register.js') }}"></script>
+  <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  <script src="{{ asset('js/register.js') }}"></script>
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
@@ -221,7 +222,7 @@
           try {
             const container = document.getElementById(`${placeholderId}_container`);
             const ph = document.getElementById(placeholderId);
-            if(!value){ if(container) container.style.display='none'; if(ph) ph.src=''; return; }
+            if (!value) { if (container) container.style.display='none'; if (ph) ph.src=''; return; }
             const target = String(value).trim().toLowerCase();
             const selectors = Array.isArray(cardSelectors) ? cardSelectors : [cardSelectors];
             selectors.forEach(sel => document.querySelectorAll(sel).forEach(n=>n.classList.remove('selected')));
@@ -231,9 +232,9 @@
                 if(title && title === target){ const img = n.querySelector('img'); if(img && ph) ph.src = img.src||''; if(container) container.style.display='block'; n.classList.add('selected'); return; }
               }
             }
-            if(container) container.style.display='none';
-            if(ph) ph.src='';
-          } catch(e){ console.warn(e); }
+            if (container) container.style.display='none';
+            if (ph) ph.src = '';
+          } catch (e) { console.warn('setChoiceImage', e); }
         };
         try {
           const data = await readStored();

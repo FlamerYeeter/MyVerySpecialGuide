@@ -214,13 +214,14 @@
 
     </div>
 
-    <script src="{{ asset('js/register.js') }}"></script>
+  <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  <script src="{{ asset('js/register.js') }}"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener('DOMContentLoaded', async () => {
       const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
       const initFirebase = () => { try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){} };
       const fetchFirestoreDraft = async () => {
-        if (!window.firebase || !firebase.auth || !firebase.firestore) return null;
+        if (!window.firebase) return null;
         initFirebase();
         try {
           const auth = firebase.auth(), db = firebase.firestore();
@@ -246,29 +247,25 @@
           const ph = document.getElementById(placeholderId);
           if(!value){ if(container) container.style.display='none'; if(ph) ph.src=''; return; }
           const target = String(value).trim().toLowerCase();
-          const selectors = Array.isArray(cardSelectors) ? cardSelectors : [cardSelectors];
-          selectors.forEach(sel => document.querySelectorAll(sel).forEach(n => n.classList.remove('selected')));
-          for (const sel of selectors) {
-            for (const n of document.querySelectorAll(sel)) {
+          const selectors = Array.isArray(cardSelectors) ? cardSelectors : (typeof cardSelectors === 'string' ? [cardSelectors] : ['.selectable-card']);
+          selectors.forEach(sel => document.querySelectorAll(sel).forEach(x=>x.classList.remove('selected')));
+          for(const sel of selectors){
+            for(const n of document.querySelectorAll(sel)){
               const title = n.querySelector('h3')?.textContent?.trim()?.toLowerCase();
-              if (title && title === target) { const img = n.querySelector('img'); if (img && ph) ph.src = img.src || ''; if (container) container.style.display = 'block'; n.classList.add('selected'); return; }
+              if(title && title === target){ const img = n.querySelector('img'); if(img && ph) ph.src = img.src||''; if(container) container.style.display='block'; n.classList.add('selected'); return; }
             }
           }
-          if(container) container.style.display='none';
+          if(container) container.style.display='block';
           if(ph) ph.src='';
-        } catch(e){ console.warn(e); }
+        } catch(e){ console.warn('setChoiceImage',e); }
       };
       try {
         const data = await readStored();
         if (!data) return;
-        const edu = data.educationInfo || data.education || findFirstMatching?.(data,['education','edu','edu_level']) || '';
-        safeSet('review_education_level', edu || '');
-        setChoiceImage('review_education_level_img', edu, ['.education-card','.selectable-card']);
-        safeSet('review_school_name', data.schoolWorkInfo?.school_name || data.school_name || '');
-        safeSet('review_certs', data.schoolWorkInfo?.certs || data.certs || '');
-        // work years
-        const workYears = data.workExperience?.[0]?.years || data.work_years || findFirstMatching?.(data,['work_years','workexperience','years']) || '';
-        setChoiceImage('review_work_years_img', workYears, ['.workyr-card','.selectable-card']);
+        const edu = data.educationInfo || data.education || findFirstMatching(data, ['education','edu','edu_level']) || '';
+        if (edu) setChoiceImage('review_education_level_img', edu, ['.education-card','.selectable-card']);
+        const workYears = data.workExperience?.[0]?.years || data.work_years || findFirstMatching(data, ['work_years','workexperience','years']) || '';
+        if (workYears) setChoiceImage('review_work_years_img', workYears, ['.workyr-card','.selectable-card']);
       } catch(e){ console.error('review-2 preview', e); }
     });
     </script>

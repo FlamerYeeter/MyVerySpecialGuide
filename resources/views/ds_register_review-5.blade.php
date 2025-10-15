@@ -169,7 +169,8 @@
       </form>
     </div>
 
-    <script src="{{ asset('js/register.js') }}"></script>
+  <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  <script src="{{ asset('js/register.js') }}"></script>
    <script>
      // Exhaustive loader for job preferences (includes nested jobPref1.jobpref1 and flat fields)
      document.addEventListener('DOMContentLoaded', async () => {
@@ -200,8 +201,22 @@
            if(title && prefs.includes(title)) card.classList.add('selected'); else card.classList.remove('selected');
          });
        }
-+      // also attempt to hydrate from draft if needed (non-blocking)
-+      try {
-+        const data = await getDraft();
-+        if (data && !prefs.length) {
-+          const fallback = Array.is
+      // also attempt to hydrate from draft if needed (non-blocking)
+      try {
+        const data = await getDraft();
+        if (data && !prefs.length) {
+          const fallback = Array.isArray(data.jobPreferences) ? data.jobPreferences : (Array.isArray(data.jobpref1?.jobpref1) ? data.jobpref1.jobpref1 : []);
+          if (fallback && fallback.length) {
+            const el = document.getElementById('review_jobprefs'); if(el) el.textContent = fallback.join(', ');
+            setChoiceImage('review_jobprefs_img', fallback[0], ['.jobpref-card','.selectable-card']);
+            document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card=>{
+              const title = card.querySelector('h3')?.textContent?.trim();
+              if(title && fallback.includes(title)) card.classList.add('selected'); else card.classList.remove('selected');
+            });
+          }
+        }
+      } catch(e){ /* ignore non-fatal */ }
+   });
+   </script>
+  </body>
+</html>

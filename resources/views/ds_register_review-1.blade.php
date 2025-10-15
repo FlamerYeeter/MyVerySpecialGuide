@@ -340,121 +340,120 @@
           Click <span class="text-blue-500 font-medium">“Continue”</span> to move to the next page
         <p class="text-gray-500 italic text-[13px]">(Pindutin ang “Continue” upang magpatuloy)</p>
       </div>
-    <script src="{{ asset('js/register.js') }}"></script>
+  <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  <script src="{{ asset('js/register.js') }}"></script>
     <script>
-+    // unified robust preview loader (tries local/session, registrationDraft globals, then Firestore)
-+    document.addEventListener('DOMContentLoaded', async () => {
-+      const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
-+      const initFirebase = () => {
-+        try {
-+          if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) {
-+            firebase.initializeApp(window.FIREBASE_CONFIG);
-+          }
-+        } catch(e){ console.warn('initFirebase', e); }
-+      };
-+      const fetchFirestoreDraft = async () => {
-+        if (!window.firebase || !firebase.auth || !firebase.firestore) return null;
-+        initFirebase();
-+        try {
-+          const auth = firebase.auth(), db = firebase.firestore();
-+          let user = auth.currentUser;
-+          if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-+          if (!user) return null;
-+          // try common collections where drafts may be stored
-+          const cols = ['registrations','users','registrationDrafts','profiles'];
-+          for (const c of cols) {
-+            try {
-+              const snap = await db.collection(c).doc(user.uid).get().catch(()=>null);
-+              if (snap && snap.exists) return snap.data();
-+            } catch(e){ /* ignore per-collection errors */ }
-+          }
-+        } catch(e){ console.warn('fetchFirestoreDraft', e); }
-+        return null;
-+      };
-+      const readStored = async () => {
-+        // prefer registrationDraft aliases in storage/globals, otherwise try Firestore
-+        const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data','rpi_personal'];
-+        for (const k of keys) {
-+          const s = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k));
-+          if (s && typeof s === 'object') return s;
-+        }
-+        if (window.registrationDraft || window.__REGISTRATION_DRAFT__) {
-+          try { return typeof window.registrationDraft === 'string' ? tryParse(window.registrationDraft) : (window.registrationDraft || window.__REGISTRATION_DRAFT__); } catch(e){}
-+        }
-+        // final attempt: Firestore
-+        return await fetchFirestoreDraft();
-+      };
-+
-+      const flatten = (obj, out = {}, prefix = '') => {
-+        if (!obj || typeof obj !== 'object') return out;
-+        for (const k of Object.keys(obj)) {
-+          const v = obj[k];
-+          const p = prefix ? `${prefix}.${k}` : k;
-+          if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, out, p);
-+          else out[p] = v;
-+        }
-+        return out;
-+      };
-+      const findFirstMatching = (obj, subs=[]) => {
-+        try {
-+          const flat = flatten(obj || {});
-+          for (const sub of subs) {
-+            const s = sub.toLowerCase();
-+            for (const k of Object.keys(flat)) {
-+              if (k.toLowerCase().includes(s) && flat[k]) return flat[k];
-+            }
-+          }
-+        } catch(e){ /* ignore */ }
-+        return '';
-+      };
-+
-+      const safeSet = (id, value) => { const el = document.getElementById(id); if(!el) return; if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.value = value ?? ''; else el.textContent = value ?? ''; };
-+      const setChoiceImage = (placeholderId, value, cardSelectors = ['.guardian-card','.selectable-card']) => {
-+        try {
-+          const container = document.getElementById(`${placeholderId}_container`);
-+          const ph = document.getElementById(placeholderId);
-+          if (!value) { if (container) container.style.display = 'none'; if (ph) ph.src = ''; return; }
-+          const target = String(value).trim().toLowerCase();
-+          const selectors = Array.isArray(cardSelectors) ? cardSelectors : [cardSelectors];
-+          selectors.forEach(sel => document.querySelectorAll(sel).forEach(n => n.classList.remove('selected')));
-+          for (const sel of selectors) {
-+            for (const n of document.querySelectorAll(sel)) {
-+              const title = n.querySelector('h3')?.textContent?.trim()?.toLowerCase();
-+              if (title && title === target) {
-+                const img = n.querySelector('img');
-+                if (img && ph) ph.src = img.src || '';
-+                if (container) container.style.display = 'block';
-+                n.classList.add('selected');
-+                return;
-+              }
-+            }
-+          }
-+          if (container) container.style.display = 'none';
-+          if (ph) ph.src = '';
-+        } catch(e){ console.warn('setChoiceImage', e); }
-+      };
-+
-+      try {
-+        const data = await readStored();
-+        if (!data) return;
-+        // map common guardian fields
-+        const p = data.personalInfo || data.personal || data;
-+        safeSet('review_fname', p?.first_name || p?.firstName || p?.fname || '');
-+        safeSet('review_lname', p?.last_name || p?.lastName || p?.lname || '');
-+        safeSet('review_email', p?.email || p?.emailAddress || '');
-+        safeSet('review_phone', p?.phone || p?.mobile || '');
-+        safeSet('review_age', p?.age || '');
-+
-+        const g = data.guardianInfo || data.guardian || {};
-+        safeSet('review_guardian_fname', g?.guardian_first_name || g?.first_name || data?.guardian_first_name || '');
-+        safeSet('review_guardian_lname', g?.guardian_last_name || g?.last_name || data?.guardian_last_name || '');
-+        safeSet('review_guardian_email', g?.guardian_email || g?.email || '');
-+        safeSet('review_guardian_phone', g?.guardian_phone || g?.phone || '');
-+        const guardianRel = g?.guardian_choice || g?.relationship || data?.guardian_choice || findFirstMatching(data, ['guardian_choice','relationship','guardian']);
-+        safeSet('review_guardian_relationship', guardianRel || '');
-+        setChoiceImage('review_guardian_relationship_img', guardianRel, ['.guardian-card','.selectable-card']);
-+      } catch(e){ console.error('preview loader failed', e); }
-+    });
+    // unified robust preview loader (tries local/session, registrationDraft globals, then Firestore)
+    document.addEventListener('DOMContentLoaded', async () => {
+      const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
+      const initFirebase = () => {
+        try {
+          if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) {
+            firebase.initializeApp(window.FIREBASE_CONFIG);
+          }
+        } catch(e){ console.warn('initFirebase', e); }
+      };
+      const fetchFirestoreDraft = async () => {
+        if (!window.firebase || !firebase.auth || !firebase.firestore) return null;
+        initFirebase();
+        try {
+          const auth = firebase.auth(), db = firebase.firestore();
+          let user = auth.currentUser;
+          if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+          if (!user) return null;
+          // try common collections where drafts may be stored
+          const cols = ['registrations','users','registrationDrafts','profiles'];
+          for (const c of cols) {
+            try {
+              const snap = await db.collection(c).doc(user.uid).get().catch(()=>null);
+              if (snap && snap.exists) return snap.data();
+            } catch(e){ /* ignore per-collection errors */ }
+          }
+        } catch(e){ console.warn('fetchFirestoreDraft', e); }
+        return null;
+      };
+      const readStored = async () => {
+        // prefer registrationDraft aliases in storage/globals, otherwise try Firestore
+        const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data','rpi_personal'];
+        for (const k of keys) {
+          const s = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k));
+          if (s && typeof s === 'object') return s;
+        }
+        if (window.registrationDraft || window.__REGISTRATION_DRAFT__) {
+          try { return typeof window.registrationDraft === 'string' ? tryParse(window.registrationDraft) : (window.registrationDraft || window.__REGISTRATION_DRAFT__); } catch(e){}
+        }
+        // final attempt: Firestore
+        return await fetchFirestoreDraft();
+      };
+      const flatten = (obj, out = {}, prefix = '') => {
+        if (!obj || typeof obj !== 'object') return out;
+        for (const k of Object.keys(obj)) {
+          const v = obj[k];
+          const p = prefix ? `${prefix}.${k}` : k;
+          if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, out, p);
+          else out[p] = v;
+        }
+        return out;
+      };
+      const findFirstMatching = (obj, subs=[]) => {
+        try {
+          const flat = flatten(obj || {});
+          for (const sub of subs) {
+            const s = sub.toLowerCase();
+            for (const k of Object.keys(flat)) {
+              if (k.toLowerCase().includes(s) && flat[k]) return flat[k];
+            }
+          }
+        } catch(e){ /* ignore */ }
+        return '';
+      };
+
+      const safeSet = (id, value) => { const el = document.getElementById(id); if(!el) return; if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.value = value ?? ''; else el.textContent = value ?? ''; };
+      const setChoiceImage = (placeholderId, value, cardSelectors = ['.guardian-card','.selectable-card']) => {
+        try {
+          const container = document.getElementById(`${placeholderId}_container`);
+          const ph = document.getElementById(placeholderId);
+          if (!value) { if (container) container.style.display = 'none'; if (ph) ph.src = ''; return; }
+          const target = String(value).trim().toLowerCase();
+          const selectors = Array.isArray(cardSelectors) ? cardSelectors : [cardSelectors];
+          selectors.forEach(sel => document.querySelectorAll(sel).forEach(n => n.classList.remove('selected')));
+          for (const sel of selectors) {
+            for (const n of document.querySelectorAll(sel)) {
+              const title = n.querySelector('h3')?.textContent?.trim()?.toLowerCase();
+              if (title && title === target) {
+                const img = n.querySelector('img');
+                if (img && ph) ph.src = img.src || '';
+                if (container) container.style.display = 'block';
+                n.classList.add('selected');
+                return;
+              }
+            }
+          }
+          if (container) container.style.display = 'none';
+          if (ph) ph.src = '';
+        } catch(e){ console.warn('setChoiceImage', e); }
+      };
+
+      try {
+        const data = await readStored();
+        if (!data) return;
+        // map common guardian fields
+        const p = data.personalInfo || data.personal || data;
+        safeSet('review_fname', p?.first_name || p?.firstName || p?.fname || '');
+        safeSet('review_lname', p?.last_name || p?.lastName || p?.lname || '');
+        safeSet('review_email', p?.email || p?.emailAddress || '');
+        safeSet('review_phone', p?.phone || p?.mobile || '');
+        safeSet('review_age', p?.age || '');
+        const g = data.guardianInfo || data.guardian || {};
+        safeSet('review_guardian_fname', g?.guardian_first_name || g?.first_name || data?.guardian_first_name || '');
+        safeSet('review_guardian_lname', g?.guardian_last_name || g?.last_name || data?.guardian_last_name || '');
+        safeSet('review_guardian_email', g?.guardian_email || g?.email || '');
+        safeSet('review_guardian_phone', g?.guardian_phone || g?.phone || '');
+        const guardianRel = g?.guardian_choice || g?.relationship || data?.guardian_choice || findFirstMatching(data, ['guardian_choice','relationship','guardian']);
+        safeSet('review_guardian_relationship', guardianRel || '');
+        setChoiceImage('review_guardian_relationship_img', guardianRel, ['.guardian-card','.selectable-card']);
+      } catch(e){ console.error('preview loader failed', e); }
+    });
     </script>
   </body>
 </html>

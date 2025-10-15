@@ -18,6 +18,11 @@ Route::get('/register', function () {
     return view('ds_register_1');
 })->name('register');
 
+// Minimal login page route (user_login.blade.php exists in views)
+Route::get('/login', function () {
+    return view('user_login');
+})->name('login');
+
 Route::get('/registeradminapprove', function () {
     return view('ds_register_adminapprove');
 })->name('registeradminapprove');
@@ -167,3 +172,24 @@ Route::get('/about-down-syndrome', function () {
 Route::get('/aboutdownsyndrome', function () {
     return view('about-ds');
 })->name('aboutdownsyndrome');
+
+// Guardian review pages
+Route::get('/guardianreview-instructions', function () {
+    return view('guardianreview-instructions');
+})->name('guardianreview.instructions');
+
+Route::get('/guardianreview-mode', function () {
+    return view('guardianreview-mode');
+})->name('guardianreview.mode');
+
+Route::get('/guardianreview-pending-review', function () {
+    return view('guardianreview-pending-review');
+})->name('guardianreview.pending');
+
+Route::get('/guardianreview-approved-job', function () {
+    return view('guardianreview-approved-job');
+})->name('guardianreview.approved');
+
+Route::get('/guardianreview-flagged-job', function () {
+    return view('guardianreview-flagged-job');
+})->name('guardianreview.flagged');

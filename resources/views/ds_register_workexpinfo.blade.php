@@ -244,7 +244,8 @@
 
       function syncHiddenFromUI() {
         const arr = [];
-        container.querySelectorAll('> div').forEach(block => {
+        // select direct child entry blocks reliably (avoid invalid selectors like "> div")
+        Array.from(container.children).forEach(block => {
           const title = block.querySelector('.job_title')?.value?.trim() || '';
           const description = block.querySelector('.job_description')?.value?.trim() || '';
           const company = block.querySelector('.company_name')?.value?.trim() || '';

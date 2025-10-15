@@ -155,7 +155,8 @@
 
     <!-- removed global floating preview -->
 
-    <script src="{{ asset('js/register.js') }}"></script>
+  <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  <script src="{{ asset('js/register.js') }}"></script>
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
       const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };

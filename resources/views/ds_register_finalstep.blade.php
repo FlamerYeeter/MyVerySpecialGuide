@@ -132,6 +132,14 @@
         <!-- Create Account Button -->
         <div class="mt-8 flex flex-col items-center justify-center text-center w-full">
           <div id="finalError" class="text-red-600 text-sm mb-2"></div>
+
+          <!-- Hidden: server-provided email used for verification only -->
+          <input type="hidden" id="emailFromServer" value="{{ $email ?? old('email') ?? session('email') ?? '' }}" />
+          <!-- Hidden inputs so register.js can validate/create the user automatically -->
+          <input type="hidden" id="email" name="email" value="" />
+          <input type="hidden" id="password" name="password" value="" />
+          <input type="hidden" id="confirm_password" name="confirm_password" value="" />
+
           <button id="createAccountBtn" type="button" class="bg-blue-500 text-white font-semibold text-lg px-12 sm:px-20 py-3 rounded-xl hover:bg-blue-600 transition shadow-md">
             Create My Account
           </button>
@@ -146,5 +154,182 @@
     </div>
   
     <script src="{{ asset('js/register.js') }}"></script>
+    <!-- Email verification modal (shown after account creation on final step) -->
+    <div id="emailVerifyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+      <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 mx-4">
+        <div class="flex items-start justify-between">
+          <h3 class="text-lg font-semibold text-blue-600">Verify your email</h3>
+          <button id="emailVerifyClose" class="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <div class="mt-4">
+          <p class="text-gray-700">We've sent a verification email to:</p>
+          <p id="verificationEmail" class="font-medium text-gray-900 mt-2"></p>
+          <p class="text-sm text-gray-600 mt-3">Please open your email and follow the instructions. When ready, continue to the verification screen to enter the code or confirm.</p>
+        </div>
+        <div class="mt-6 flex items-center justify-end gap-3">
+          <button id="emailVerifyProceed" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Proceed to verification</button>
+          <button id="emailVerifyCancel" class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg">Close</button>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function(){
+        const modal = document.getElementById('emailVerifyModal');
+        const close = document.getElementById('emailVerifyClose');
+        const cancel = document.getElementById('emailVerifyCancel');
+        const proceed = document.getElementById('emailVerifyProceed');
+        function hide(){ if(modal) modal.classList.add('hidden'); }
+        function show(email){ if(!modal) return; document.getElementById('verificationEmail').textContent = email || ''; modal.classList.remove('hidden'); }
+        if (close) close.addEventListener('click', hide);
+        if (cancel) cancel.addEventListener('click', hide);
+        if (proceed) proceed.addEventListener('click', function(){ window.location.href = '{{ route('registerverifycode') }}'; });
+        // expose for register.js to call
+        window.mvsgShowEmailVerificationModal = show;
+      })();
+    </script>
+    <script>
+      (function(){
+        const createBtn = document.getElementById('createAccountBtn');
+        const agree1 = document.getElementById('agree1');
+        const agree2 = document.getElementById('agree2');
+        const finalError = document.getElementById('finalError');
+        const emailField = document.getElementById('emailFromServer');
+
+        function clearErrors(){
+          finalError.textContent = '';
+          [agree1, agree2].forEach(el => { if(el && el.parentElement) el.parentElement.classList.remove('ring','ring-2','ring-red-300'); });
+        }
+
+        createBtn && createBtn.addEventListener('click', function(e){
+          e.preventDefault();
+          clearErrors();
+
+          const email = (emailField && emailField.value || '').trim();
+          let hasError = false;
+
+          if (!agree1 || !agree1.checked || !agree2 || !agree2.checked) {
+            finalError.textContent = 'Please accept the required agreements.';
+            [agree1, agree2].forEach(el => { if(el && el.parentElement) el.parentElement.classList.add('ring','ring-2','ring-red-300'); });
+            hasError = true;
+          }
+
+          if (!email) {
+            finalError.textContent = 'No email available for verification.';
+            hasError = true;
+          }
+
+          if (hasError) {
+            createBtn.classList.add('animate-pulse');
+            setTimeout(()=> createBtn.classList.remove('animate-pulse'), 350);
+            return;
+          }
+
+          // store email and agreement state for later use; no password collected here
+          window.finalRegistrationData = {
+            email: email,
+            agreements: {
+              agree1: !!(agree1 && agree1.checked),
+              agree2: !!(agree2 && agree2.checked)
+            }
+          };
+
+          // show existing verification modal with the email
+          if (typeof window.mvsgShowEmailVerificationModal === 'function') {
+            window.mvsgShowEmailVerificationModal(email);
+          } else {
+            const modal = document.getElementById('emailVerifyModal');
+            if (modal) {
+              document.getElementById('verificationEmail').textContent = email;
+              modal.classList.remove('hidden');
+            }
+          }
+
+          // optional hook if register.js exposes continuation
+          try {
+            if (typeof window.mvsgFinalizeRegistration === 'function') {
+              window.mvsgFinalizeRegistration(window.finalRegistrationData);
+            }
+          } catch (err) { /* silent */ }
+        });
+      })();
+    </script>
+      <script>
+        // Autofill hidden email/password fields from available drafts or Firestore
+        (function(){
+          const emailField = document.getElementById('email');
+          const emailFromServer = document.getElementById('emailFromServer');
+          const passField = document.getElementById('password');
+          const confirmField = document.getElementById('confirm_password');
+
+          function genRandomPassword() {
+            // simple 12-char password: letters + numbers
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()-_';
+            let p = ''; for (let i=0;i<12;i++) p += chars[Math.floor(Math.random()*chars.length)];
+            return p;
+          }
+
+          async function tryFillFromDrafts() {
+            try {
+              // register.js exposes getDraft() and readStored(); use them if available
+              if (window.getDraft && typeof window.getDraft === 'function') {
+                const d = await window.getDraft();
+                const data = d && (d.data || d) || {};
+                const personal = data.personalInfo || data.personal || data;
+                if (personal && (personal.email || personal.emailAddress)) return personal.email || personal.emailAddress;
+              }
+              // fallback to readStored
+              if (window.readStored && typeof window.readStored === 'function') {
+                const e = window.readStored('email') || window.readStored('emailAddress') || window.readStored('personal.email');
+                if (e) return e;
+              }
+            } catch(e){ /* ignore */ }
+            return null;
+          }
+
+          async function tryFillFromFirestore() {
+            try {
+              // ensure firebase is initialized by register.js ensureFirebase if available
+              if (window.firebase && firebase.auth && firebase.firestore) {
+                let user = firebase.auth().currentUser;
+                if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                if (!user) return null;
+                const doc = await firebase.firestore().collection('users').doc(user.uid).get();
+                if (doc && doc.exists) {
+                  const d = doc.data() || {};
+                  const p = d.personalInfo || d.personal || d;
+                  if (p && (p.email || p.emailAddress)) return p.email || p.emailAddress;
+                }
+              }
+            } catch(e){ console.warn('autofill firestore fail', e); }
+            return null;
+          }
+
+          async function main() {
+            // priority: server-provided hidden value -> drafts -> firestore
+            let e = (emailFromServer && emailFromServer.value && emailFromServer.value.trim()) || '';
+            if (!e) e = (await tryFillFromDrafts()) || '';
+            if (!e) e = (await tryFillFromFirestore()) || '';
+
+            if (e && emailField) {
+              emailField.value = e;
+              if (emailFromServer && !emailFromServer.value) emailFromServer.value = e;
+            }
+
+            // If password fields are empty, generate a random password so create flow validates
+            if (passField && confirmField && !passField.value) {
+              const p = genRandomPassword();
+              passField.value = p; confirmField.value = p;
+              // keep in-memory only; do not persist to server-side templates
+              window.__mvsg_generatedPassword = p;
+            }
+
+            // expose a helper for debugging
+            window.mvsgAutoFilled = { email: emailField && emailField.value, password: passField && passField.value };
+          }
+
+          // run after DOMContentLoaded to ensure register.js may have attached helpers
+          if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', main); else main();
+        })();
+      </script>
 </body>
 </html>

@@ -38,9 +38,25 @@ def preprocess_text(text):
     return ' '.join([w for w in t.split() if w and w not in sw])
 
 def generate(input_csv, output_json, max_features=5000):
-    if not os.path.exists(input_csv):
-        print(f"ERROR: Input CSV not found: {input_csv}", file=sys.stderr)
+    # If the provided path doesn't exist, try a few common filenames used in this project
+    COMMON_INPUTS = [
+        input_csv,
+        'public/data job posts.csv',
+        'public/resume_job_matching_dataset.csv',
+        'resume_job_matching_dataset.csv',
+        'data job posts.csv',
+    ]
+    resolved = None
+    for p in COMMON_INPUTS:
+        if p and os.path.exists(p):
+            resolved = p
+            break
+    if resolved is None:
+        print(f"ERROR: Input CSV not found. Searched: {COMMON_INPUTS}", file=sys.stderr)
         return 1
+    if resolved != input_csv:
+        print(f"Note: using discovered CSV: {resolved}")
+    input_csv = resolved
 
     df = pd.read_csv(input_csv)
     # ensure columns
@@ -109,7 +125,8 @@ def generate(input_csv, output_json, max_features=5000):
     df['clean_resume'] = df['resume'].apply(preprocess_text)
 
     # TF-IDF vectorization (focused features)
-    tfidf = TfidfVectorizer(min_df=5, max_df=0.8, max_features=4000)
+    # Use a small min_df so the script works with small datasets
+    tfidf = TfidfVectorizer(min_df=1, max_df=0.95, max_features=min(max_features, 4000))
     try:
         job_tfidf = tfidf.fit_transform(df['clean_job_description'])
         resume_tfidf = tfidf.transform(df['clean_resume'])
