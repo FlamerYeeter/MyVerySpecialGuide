@@ -16,10 +16,17 @@
 
       .selectable-card { border: 2px solid transparent; transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
       .selectable-card.selected { border-color: #2563eb; box-shadow: 0 10px 30px rgba(37,99,235,0.14); transform: translateY(-6px); }
+
+      /* badge for selected card */
+      .selectable-card.selected::after,
+      .education-card.selected::after,
+      .workyr-card.selected::after { content: ""; position:absolute; right:10px; bottom:10px; width:44px; height:44px; background-image:url('/image/checkmark.png'); background-size:contain; background-repeat:no-repeat; }
+
+      /* no global floating preview; use small per-field preview containers */
     </style>
   </head>
-
-  <body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
+<body>
+    <body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
 
     <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
@@ -77,6 +84,8 @@
         <!-- Education level answer -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
           <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500 selectable-card">
+            <!-- work-years image placeholder nearby -->
+            <div class="mt-3 text-center"><img id="review_work_years_img" src="" alt="Work years image" class="mx-auto w-28 h-28 object-contain rounded-md shadow-sm" /></div>
             <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
             <img src="image/educ1.png" alt="elementary" class="w-full rounded-md mb-4">
             <h3 class="text-blue-600 font-semibold text-center">Elementary</h3>
@@ -87,6 +96,11 @@
         <input id="edu_level" type="hidden" value="" />
 
         <p class="mt-4">Selected: <span id="review_education_level">—</span></p>
+        <div id="review_education_level_img_container" class="mt-3 text-center" style="display:none;">
+          <div class="inline-flex items-center justify-center w-40 h-40 bg-white rounded-xl shadow-md p-2 mx-auto">
+            <img id="review_education_level_img" src="" alt="Education image" class="w-full h-full object-contain rounded-md" />
+          </div>
+        </div>
 
         <!-- School Name -->
         <div class="max-w-xl mx-auto mt-8 text-left">
@@ -202,112 +216,61 @@
 
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
-      // Same exhaustive loader used across review pages (populates personal/guardian/education/skills/jobs/support/workplace/workExperience)
       document.addEventListener('DOMContentLoaded', async () => {
-        // ensure helpers exist globally (no-op if already created)
-        if (!window.__mvsg_flatten) {
-          window.__mvsg_flatten = function flatten(obj, out = {}, prefix = '') {
-            if (!obj || typeof obj !== 'object') return out;
-            for (const k of Object.keys(obj)) {
-              const v = obj[k];
-              const p = prefix ? `${prefix}.${k}` : k;
-              if (v && typeof v === 'object' && !Array.isArray(v)) window.__mvsg_flatten(v, out, p);
-              else out[p] = v;
-            }
-            return out;
-          };
-        }
-        if (!window.__mvsg_findFirstMatching) {
-          window.__mvsg_findFirstMatching = function findFirstMatching(obj, subs) {
-            const flat = window.__mvsg_flatten(obj || {});
-            for (const sub of (subs || [])) {
-              const s = sub.toLowerCase();
-              for (const k of Object.keys(flat)) {
-                if (k.toLowerCase().includes(s) && flat[k]) return flat[k];
-              }
-            }
-            return '';
-          };
-        }
-        // local aliases
-        const flatten = window.__mvsg_flatten;
-        const findFirstMatching = window.__mvsg_findFirstMatching;
-
-        // start loader logic directly in this single DOMContentLoaded handler
-        const safeSet = (id, value) => { const el = document.getElementById(id); if(!el) return; if(el.tagName==='INPUT' || el.tagName==='TEXTAREA') el.value = value ?? ''; else el.textContent = value ?? ''; };
-        const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch (e) { return null; } };
-        const keysToCheck = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data'];
-        const scanStorageAll = () => { const out=[]; try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); out.push({key:k,parsed:tryParse(localStorage.getItem(k))}); } }catch(e){} try{ for(let i=0;i<sessionStorage.length;i++){ const k=sessionStorage.key(i); out.push({key:k,parsed:tryParse(sessionStorage.getItem(k)),session:true}); } }catch(e){} return out; };
-        const mergeSections = (acc,obj) => { if(!obj||typeof obj!=='object') return acc; for(const k of Object.keys(obj)) acc[k] = { ...(acc[k]||{}), ...(obj[k]||{}) }; const personalKeys=['first_name','firstName','last_name','lastName','email','phone','age','school_name']; for(const pk of personalKeys) if(obj[pk]!==undefined){ acc.personalInfo = acc.personalInfo||{}; acc.personalInfo[pk]=obj[pk]; } return acc; };
-        const getDraft = async () => {
-          if(window.registrationDraft){ const p=tryParse(window.registrationDraft); if(p) return p; }
-          if(window.__REGISTRATION_DRAFT__){ const p=tryParse(window.__REGISTRATION_DRAFT__); if(p) return p; }
-          for(const k of keysToCheck){ try{ const s=sessionStorage.getItem(k); if(s){ const p=tryParse(s); if(p) return p; } const l=localStorage.getItem(k); if(l){ const p=tryParse(l); if(p) return p; } }catch(e){} }
-          const all = scanStorageAll(); let agg={}; for(const e of all){ if(!e.parsed) continue; const keys=Object.keys(e.parsed).map(x=>x.toLowerCase()); const anyPersonal = keys.some(k=>['first_name','firstname','last_name','lastname','email','phone','age','school_name'].includes(k)); const anySection = keys.some(k=>['guardian','personal','education','skills','job','workplace','support','workexperience'].some(s=>k.includes(s))); if(anyPersonal||anySection) agg = mergeSections(agg,e.parsed); }
-          if(Object.keys(agg).length) return agg;
-          const el = document.getElementById('registrationDraftJson'); if(el){ const p = tryParse(el.textContent||el.value||el.innerText); if(p) return p; }
-          if(window.firebase && firebase.auth && firebase.firestore){ try{ const auth=firebase.auth(), db=firebase.firestore(); let user=auth.currentUser; if(!user) user = await new Promise(res=>firebase.auth().onAuthStateChanged(res)); if(user){ const doc = await db.collection('users').doc(user.uid).get(); if(doc.exists) return doc.data(); const reg = await db.collection('registrations').doc(user.uid).get().catch(()=>null); if(reg && reg.exists) return reg.data(); } }catch(e){ console.warn('[review-2] firestore failed', e); } }
-          return null;
-        };
-
+      const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
+      const initFirebase = () => { try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){} };
+      const fetchFirestoreDraft = async () => {
+        if (!window.firebase || !firebase.auth || !firebase.firestore) return null;
+        initFirebase();
         try {
-          const data = await getDraft();
-          console.debug('[review-2] merged data:', data);
-          // Debug: flattened dump to reveal exact keys
-          try {
-            const flat = (typeof flatten === 'function') ? flatten(data) : (function _f(o, out = {}, p = '') { if (!o || typeof o !== 'object') return out; for (const k of Object.keys(o)) { const v = o[k]; const np = p ? p + '.' + k : k; if (v && typeof v === 'object' && !Array.isArray(v)) _f(v, out, np); else out[np] = v; } return out; })(data);
-            console.debug('[review-2] flattened keys:', Object.keys(flat).sort());
-            console.debug('[review-2] flattened object:', flat);
-          } catch (e) { console.warn('[review-2] flatten debug failed', e); }
-          if(!data){ console.warn('[review-2] no data'); return; }
-
-          // Personal
-          const p = data.personalInfo || data.personal_info || data.personal || data.personalDetails || data;
-          safeSet('review_fname', p.first_name || p.firstName || p.fname || '');
-          safeSet('review_lname', p.last_name || p.lastName || p.lname || '');
-          safeSet('review_email', p.email || p.emailAddress || '');
-          safeSet('review_phone', p.phone || p.telephone || p.mobile || '');
-          safeSet('review_age', p.age || p.years || '');
-
-          // Guardian (flat fields or nested)
-          const g = data.guardianInfo || data.guardian_info || data.guardian || {};
-          const guardianFirst = g.guardian_first_name || g.first_name || data.guardian_first_name || g.firstName || '';
-          const guardianLast = g.guardian_last_name || g.last_name || data.guardian_last_name || g.lastName || '';
-          safeSet('review_guardian_fname', guardianFirst);
-          safeSet('review_guardian_lname', guardianLast);
-          safeSet('review_guardian_email', g.guardian_email || g.email || data.guardian_email || '');
-          safeSet('review_guardian_phone', g.guardian_phone || g.phone || data.guardian_phone || '');
-          safeSet('review_guardian_relationship', g.guardian_choice || g.relationship || data.guardian_choice || '');
-
-          // Education (with fallback search)
-          const edu = data.educationInfo || data.education_info || data.education || {};
-          safeSet('review_education_level', edu.edu_level || edu.level || data.edu_level || findFirstMatching(data,['edu','education','level','school']));
-          safeSet('review_school_name', edu.school_name || edu.school || data.school_name || findFirstMatching(data,['school','school_name','schoolname']));
-          safeSet('review_certs', edu.certs || edu.certificates || data.certs || findFirstMatching(data,['cert','certificate','training']));
-
-          // Exact-key fallbacks (schoolWorkInfo & educationInfo)
-          if (data.schoolWorkInfo) {
-            safeSet('review_school_name', data.schoolWorkInfo.school_name || data.schoolWorkInfo.school || '');
-            safeSet('review_certs', data.schoolWorkInfo.certs || '');
-            // sometimes work_type stored here indicates training/work category
-            if (!document.getElementById('review_education_level')?.textContent?.trim()) {
-              safeSet('review_education_level', data.schoolWorkInfo.edu_level || data.educationInfo?.edu_level || '');
+          const auth = firebase.auth(), db = firebase.firestore();
+          let user = auth.currentUser; if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+          if (!user) return null;
+          for (const c of ['registrations','users','registrationDrafts','profiles']) {
+            const s = await db.collection(c).doc(user.uid).get().catch(()=>null);
+            if (s && s.exists) return s.data();
+          }
+        } catch(e){ console.warn(e); }
+        return null;
+      };
+      const readStored = async () => {
+        const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data'];
+        for (const k of keys) { const v = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k)); if (v && typeof v === 'object') return v; }
+        if (window.registrationDraft || window.__REGISTRATION_DRAFT__) return typeof window.registrationDraft === 'string' ? tryParse(window.registrationDraft) : (window.registrationDraft || window.__REGISTRATION_DRAFT__);
+        return await fetchFirestoreDraft();
+      };
+      const safeSet = (id, value) => { const el = document.getElementById(id); if(!el) return; if(el.tagName==='INPUT'||el.tagName==='TEXTAREA') el.value = value ?? ''; else el.textContent = value ?? ''; };
+      const setChoiceImage = (placeholderId, value, cardSelectors = ['.education-card','.workyr-card']) => {
+        try {
+          const container = document.getElementById(`${placeholderId}_container`);
+          const ph = document.getElementById(placeholderId);
+          if(!value){ if(container) container.style.display='none'; if(ph) ph.src=''; return; }
+          const target = String(value).trim().toLowerCase();
+          const selectors = Array.isArray(cardSelectors) ? cardSelectors : [cardSelectors];
+          selectors.forEach(sel => document.querySelectorAll(sel).forEach(n => n.classList.remove('selected')));
+          for (const sel of selectors) {
+            for (const n of document.querySelectorAll(sel)) {
+              const title = n.querySelector('h3')?.textContent?.trim()?.toLowerCase();
+              if (title && title === target) { const img = n.querySelector('img'); if (img && ph) ph.src = img.src || ''; if (container) container.style.display = 'block'; n.classList.add('selected'); return; }
             }
           }
-          if (data.educationInfo) {
-            safeSet('review_education_level', data.educationInfo.edu_level || data.educationInfo.edu_level || '');
-          }
-
-          // WorkExperience company fallback
-          if(Array.isArray(data.workExperience) && data.workExperience.length){
-            const exp = data.workExperience[0] || {};
-            safeSet('review_company_name', exp.company || exp.companyName || exp.employer || '');
-          } else {
-            const fallbackCompany = findFirstMatching ? findFirstMatching(data, ['company','employer','organization','org']) : '';
-            if (fallbackCompany) safeSet('review_company_name', fallbackCompany);
-          }
-        } catch(err){ console.error('[review-2] loader error', err); }
-      }); // end single DOMContentLoaded handler
+          if(container) container.style.display='none';
+          if(ph) ph.src='';
+        } catch(e){ console.warn(e); }
+      };
+      try {
+        const data = await readStored();
+        if (!data) return;
+        const edu = data.educationInfo || data.education || findFirstMatching?.(data,['education','edu','edu_level']) || '';
+        safeSet('review_education_level', edu || '');
+        setChoiceImage('review_education_level_img', edu, ['.education-card','.selectable-card']);
+        safeSet('review_school_name', data.schoolWorkInfo?.school_name || data.school_name || '');
+        safeSet('review_certs', data.schoolWorkInfo?.certs || data.certs || '');
+        // work years
+        const workYears = data.workExperience?.[0]?.years || data.work_years || findFirstMatching?.(data,['work_years','workexperience','years']) || '';
+        setChoiceImage('review_work_years_img', workYears, ['.workyr-card','.selectable-card']);
+      } catch(e){ console.error('review-2 preview', e); }
+    });
     </script>
   </body>
 </html>

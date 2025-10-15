@@ -5,7 +5,7 @@
   <title>Registration: Work Experience Information</title>
   <script src="https://cdn.tailwindcss.com"></script>
 
-   <style>
+  <style>
     /* Floating animations */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -169,6 +169,8 @@
 
       <!-- Hidden JSON storing the job experience array -->
       <input id="work_experiences" type="hidden" value="[]" />
+      <!-- Hidden selected work years -->
+      <input id="work_years" type="hidden" value="" />
 
       <!-- Add button -->
       <div class="mt-6 text-center">
@@ -192,7 +194,6 @@
       </p>
     </div>
 
-    </form>
   </div>
 
   <script>
@@ -243,7 +244,6 @@
 
       function syncHiddenFromUI() {
         const arr = [];
-        container.querySelectorAll('.' + tpl.content.firstElementChild.className).forEach(() => {}); // noop for clarity
         container.querySelectorAll('> div').forEach(block => {
           const title = block.querySelector('.job_title')?.value?.trim() || '';
           const description = block.querySelector('.job_description')?.value?.trim() || '';
