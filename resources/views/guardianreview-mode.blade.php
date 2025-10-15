@@ -5,7 +5,7 @@
 <!-- Back Button -->
   <div class="bg-blue-500 mt-6 py-4">
     <div class="max-w-5xl mx-auto px-4 flex items-center space-x-2">
-      <a href="{{ route('job.matches') }}" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
+      <a href="{{ route('job.matches') }}" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline"> <!-- ayusin nlang route neto -->
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
           stroke-width="2" stroke="currentColor" class="w-5 h-5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
