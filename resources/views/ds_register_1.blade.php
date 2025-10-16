@@ -1,13 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Create an Account</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    /* Floating Mascot Animations */
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create an Account</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
@@ -18,160 +16,199 @@
   </style>
 </head>
 
-<body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
+<body class="bg-white flex justify-center items-center min-h-screen p-4 sm:p-6 relative overflow-auto">
 
-  <!-- Floating Mascots -->
-  <img src="image/obj4.png" alt="Yellow Mascot"
-    class="fixed left-2 sm:left-6 lg:left-8 top-1/3 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-slow z-0">
-  <img src="image/obj7.png" alt="Triangle Mascot"
-    class="fixed left-2 sm:left-6 lg:left-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0">
-  <img src="image/obj3.png" alt="Blue Mascot"
-    class="fixed right-2 sm:right-6 lg:right-8 top-1/4 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-fast z-0">
-  <img src="image/obj8.png" alt="Twin Mascot"
-    class="fixed right-2 sm:right-6 lg:right-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0">
+    <!-- Floating Mascots (z-index lower) -->
+    <img src="image/obj4.png" alt="Yellow Mascot"
+        class="fixed left-1 sm:left-4 md:left-10 top-1/3 w-16 sm:w-24 md:w-32 opacity-90 animate-float-slow z-0">
+    <img src="image/obj7.png" alt="Triangle Mascot"
+        class="fixed left-1 sm:left-4 md:left-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-20 md:w-28 opacity-90 animate-float-medium z-0">
+    <img src="image/obj3.png" alt="Blue Mascot"
+        class="fixed right-1 sm:right-4 md:right-10 top-1/4 w-16 sm:w-24 md:w-32 opacity-90 animate-float-fast z-0">
+    <img src="image/obj8.png" alt="Twin Mascot"
+        class="fixed right-1 sm:right-4 md:right-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-24 md:w-36 opacity-90 animate-float-medium z-0">
 
-  <!-- Back Button -->
-  <button
-    class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-5 sm:px-7 py-2 sm:py-3 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition shadow-md active:scale-95 z-10"
-    onclick="window.location.href='{{ route('home') }}'">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-      stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-    </svg>
-    <span class="text-base sm:text-lg font-medium">Back</span>
-  </button>
 
-  <!-- Main Container -->
-  <div class="bg-yellow-100 max-w-3xl w-full rounded-2xl shadow-lg p-8 relative z-10">
+    <!-- Back Button -->
+    <button
+        class="fixed left-4 top-4 bg-blue-600 text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        onclick="window.location.href='{{ route('home') }}'">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
+            class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back
+    </button>
 
-    <!-- Header -->
-    <div class="text-center mt-4">
-      <h1 class="text-2xl font-semibold text-black mb-4">Create An Account</h1>
-      <img src="image/obj6.png" alt="Pink Stone Object" class="mx-auto w-24 h-24 mb-6">
+    <!-- Main Container -->
+    <div
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
-      <div class="max-w-xl mx-auto text-left">
-        <h2 class="text-xl text-blue-500 font-semibold flex items-center gap-2">
-          Let's create your account step by step
-          <button class="text-gray-500 text-xl hover:scale-110 transition-transform">🔊</button>
-        </h2>
-        <p class="mt-2 text-gray-600 italic border-b-2 border-blue-500 pb-1">
-          (Simulan natin ang paglikha ng iyong account sa pagsunod sa bawat hakbang)
-        </p>
-      </div>
-    </div>
+        <!-- Header -->
+        <div class="text-center mt-4">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">
+                Create an Account
+            </h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-28 sm:w-36 mb-6">
 
-    <!-- Info Section -->
-    <div class="mt-6 max-w-xl mx-auto">
-      <div class="flex items-start gap-2">
-        <span class="text-yellow-500 text-3xl mt-1">💡</span>
-        <div class="flex-1">
-          <p class="text-sm text-gray-800 leading-relaxed">
-            We will create your account so we can find jobs that are perfect for you!<br>
-            <span class="text-gray-600 italic text-sm">
-              (Tayo ay gagawa ng iyong account upang makahanap ng mga trabahong para sa iyo!)
-            </span>
-          </p>
-        </div>
-        <button class="text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-      </div>
-    </div>
-
-    <!-- Steps -->
-    <div class="mt-10 max-w-xl mx-auto">
-      <div class="flex items-center gap-3 mb-4">
-        <img src="image/targeticon.png" alt="Target Icon" class="w-7 h-7">
-        <h3 class="text-lg text-blue-500 font-semibold flex items-center gap-2 flex-wrap">
-          Here's what we'll do:
-          <span class="text-gray-600 italic text-sm">(Pagkakasunod-sunod ng paggawa ng account)</span>
-          <button class="text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </h3>
-      </div>
-
-      <!-- Step Cards -->
-      <div class="space-y-4">
-        <!-- Repeatable Step Block -->
-        <div class="bg-white rounded-xl p-5 border border-blue-300 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
-          <img src="image/1icon.png" alt="Step 1" class="w-8 h-8 mt-1">
-          <div class="flex-1">
-            <p class="font-semibold text-gray-800 leading-relaxed">
-              Enter your full name and email, then wait for admin approval to continue setting up your profile.
-              A confirmation will be sent to your email once approved.
+            <h2
+                class="text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-3 flex-wrap">
+                Let's create your account step by step
+                <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform">🔊</button>
+            </h2>
+            <p class="mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+                (Simulan natin ang paglikha ng iyong account sa pagsunod sa bawat hakbang)
             </p>
-            <p class="mt-2 text-gray-600 italic text-sm">
-              (Ilagay ang iyong buong pangalan at email, at hintayin ang kumpirmasyon ng admin sa iyong email matapos maaprubahan upang maituloy ang pag-set up ng iyong profile.)
+        </div>
+
+        <!-- Info Section -->
+        <div class="mt-8 sm:mt-10 max-w-3xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border border-blue-300 shadow-md">
+            <div class="flex flex-col sm:flex-row items-start gap-4">
+                <span class="text-yellow-500 text-4xl sm:text-5xl mt-1">💡</span>
+                <div class="flex-1">
+                    <p class="text-lg sm:text-xl text-gray-800 font-semibold leading-relaxed">
+                        We will create your account so we can find jobs that are perfect for you!
+                    </p>
+                    <p class="text-gray-700 italic text-base sm:text-lg mt-1">
+                        (Tayo ay gagawa ng iyong account upang makahanap ng mga trabahong para sa iyo!)
+                    </p>
+                </div>
+                <button
+                    class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-start sm:self-auto">🔊</button>
+            </div>
+        </div>
+
+        <!-- Steps Section -->
+        <div class="mt-10 sm:mt-12 max-w-4xl mx-auto space-y-8">
+
+            <!-- Section Header -->
+            <div
+                class="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 mb-4 sm:mb-8 text-center sm:text-left">
+                <img src="image/targeticon.png" alt="Target Icon" class="w-10 sm:w-12 mx-auto sm:mx-0">
+                <h3
+                    class="text-xl sm:text-2xl text-blue-600 font-bold flex items-center gap-2 flex-wrap justify-center sm:justify-start">
+                    Here's what we'll do:
+                    <span class="text-gray-700 italic text-base sm:text-lg block sm:inline">
+                        (Pagkakasunod-sunod ng paggawa ng account)
+                    </span>
+                    <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform">🔊</button>
+                </h3>
+            </div>
+
+            <!-- Step Items -->
+            <div class="space-y-6">
+
+                <!-- Step Template -->
+                <div
+                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition">
+                    <img src="image/1icon.png" alt="Step 1" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
+                    <div class="flex-1 text-center sm:text-left">
+                        <p class="font-bold text-lg sm:text-xl text-gray-900 leading-relaxed">
+                            Enter the required information, then wait for admin approval.
+                        </p>
+                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
+                            (Ilagay ang impormasyon na kailangan, at hintayin ang kumpirmasyon ng admin bago
+                            magpatuloy.)
+                        </p>
+                    </div>
+                    <button
+                        class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-start sm:self-center">🔊</button>
+                </div>
+
+                <!-- Step 2 -->
+                <div
+                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition">
+                    <img src="image/2icon.png" alt="Step 2" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
+                    <div class="flex-1 text-center sm:text-left">
+                        <p class="font-bold text-lg sm:text-xl text-gray-900">
+                            Set up your profile, first tell us about your education and work experience
+                        </p>
+                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
+                            (Ayusin ang iyong profile, una ay ibahagi ang iyong pinag-aralan at karanasan sa trabaho)
+                        </p>
+                    </div>
+                    <button
+                        class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-start sm:self-center">🔊</button>
+                </div>
+
+                <!-- Step 3 -->
+                <div
+                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition">
+                    <img src="image/3icon.png" alt="Step 3" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
+                    <div class="flex-1 text-center sm:text-left">
+                        <p class="font-bold text-lg sm:text-xl text-gray-900">
+                            Choose the support you need and the workplace you like
+                        </p>
+                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
+                            (Piliin ang suportang kailangan mo at ang uri ng lugar ng trabaho na gusto mo)
+                        </p>
+                    </div>
+                    <button
+                        class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-start sm:self-center">🔊</button>
+                </div>
+
+                <!-- Step 4 -->
+                <div
+                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition">
+                    <img src="image/4icon.png" alt="Step 4" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
+                    <div class="flex-1 text-center sm:text-left">
+                        <p class="font-bold text-lg sm:text-xl text-gray-900">
+                            Choose your skills
+                        </p>
+                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
+                            (Pumili ng mga kakayahan na meron ka)
+                        </p>
+                    </div>
+                    <button
+                        class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-start sm:self-center">🔊</button>
+                </div>
+
+                <!-- Step 5 -->
+                <div
+                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition">
+                    <img src="image/5icon.png" alt="Step 5" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
+                    <div class="flex-1 text-center sm:text-left">
+                        <p class="font-bold text-lg sm:text-xl text-gray-900">
+                            Select the jobs you like
+                        </p>
+                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
+                            (Piliin ang mga uri ng trabaho na gusto mo)
+                        </p>
+                    </div>
+                    <button
+                        class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-start sm:self-center">🔊</button>
+                </div>
+
+                <!-- Step 6 -->
+                <div
+                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition">
+                    <img src="image/6icon.png" alt="Step 6" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
+                    <div class="flex-1 text-center sm:text-left">
+                        <p class="font-bold text-lg sm:text-xl text-gray-900">
+                            Review your answers and finish
+                        </p>
+                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
+                            (I-review ang impormasyong iyong inilagay at tapusin)
+                        </p>
+                    </div>
+                    <button
+                        class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-start sm:self-center">🔊</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Button -->
+        <div class="flex flex-col items-center mt-14 sm:mt-16">
+            <button
+                class="bg-blue-600 text-white text-2xl sm:text-3xl font-bold px-20 sm:px-28 md:px-32 py-4 sm:py-5 rounded-3xl shadow-lg hover:bg-blue-700 active:scale-95 transition"
+                onclick="window.location.href='{{ route('registereducation') }}'">
+                Next →
+            </button>
+            <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-4 text-center leading-relaxed px-4 sm:px-0">
+                Click <span class="text-blue-600 font-bold">"Next"</span> to continue<br class="hidden sm:block">
+                <span class="italic text-gray-600 block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
             </p>
-          </div>
-          <button class="text-xl hover:scale-110 transition-transform">🔊</button>
         </div>
 
-        <div class="bg-white rounded-xl p-5 border border-blue-300 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
-          <img src="image/2icon.png" alt="Step 2" class="w-8 h-8 mt-1">
-          <div class="flex-1">
-            <p class="font-semibold text-gray-800 leading-relaxed">Tell us about your personal information and parent/guardian information</p>
-            <p class="mt-2 text-gray-600 italic text-sm">(Ibahagi ang iyong personal na impormasyon at impormasyon ng magulang/tagapag-alaga)</p>
-          </div>
-          <button class="text-xl hover:scale-110 transition-transform">🔊</button>
-        </div>
-
-        <div class="bg-white rounded-xl p-5 border border-blue-300 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
-          <img src="image/3icon.png" alt="Step 3" class="w-8 h-8 mt-1">
-          <div class="flex-1">
-            <p class="font-semibold text-gray-800 leading-relaxed">Tell us about your educational background and work experience</p>
-            <p class="mt-2 text-gray-600 italic text-sm">(Ibahagi ang iyong pinag-aralan at karanasan sa trabaho)</p>
-          </div>
-          <button class="text-xl hover:scale-110 transition-transform">🔊</button>
-        </div>
-
-        <div class="bg-white rounded-xl p-5 border border-blue-300 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
-          <img src="image/4icon.png" alt="Step 4" class="w-8 h-8 mt-1">
-          <div class="flex-1">
-            <p class="font-semibold text-gray-800 leading-relaxed">Choose the support you need and preferred work environment</p>
-            <p class="mt-2 text-gray-600 italic text-sm">(Piliin ang suportang kailangan mo at ang uri ng lugar ng trabaho na gusto mo)</p>
-          </div>
-          <button class="text-xl hover:scale-110 transition-transform">🔊</button>
-        </div>
-
-        <div class="bg-white rounded-xl p-5 border border-blue-300 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
-          <img src="image/5icon.png" alt="Step 5" class="w-8 h-8 mt-1">
-          <div class="flex-1">
-            <p class="font-semibold text-gray-800 leading-relaxed">Choose the skills you have</p>
-            <p class="mt-2 text-gray-600 italic text-sm">(Pumili ng mga kakayahan na meron ka)</p>
-          </div>
-          <button class="text-xl hover:scale-110 transition-transform">🔊</button>
-        </div>
-
-        <div class="bg-white rounded-xl p-5 border border-blue-300 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
-          <img src="image/6icon.png" alt="Step 6" class="w-8 h-8 mt-1">
-          <div class="flex-1">
-            <p class="font-semibold text-gray-800 leading-relaxed">Select the types of jobs you like</p>
-            <p class="mt-2 text-gray-600 italic text-sm">(Piliin ang mga uri ng trabaho na gusto mo)</p>
-          </div>
-          <button class="text-xl hover:scale-110 transition-transform">🔊</button>
-        </div>
-
-        <div class="bg-white rounded-xl p-5 border border-blue-300 flex gap-4 items-start shadow-sm hover:shadow-md transition-shadow">
-          <img src="image/7icon.png" alt="Step 7" class="w-8 h-8 mt-1">
-          <div class="flex-1">
-            <p class="font-semibold text-gray-800 leading-relaxed">Review the information you entered and finish</p>
-            <p class="mt-2 text-gray-600 italic text-sm">(I-review ang impormasyong iyong inilagay at tapusin)</p>
-          </div>
-          <button class="text-xl hover:scale-110 transition-transform">🔊</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Next Button -->
-    <div class="flex flex-col items-center mt-12">
-      <button class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition shadow-md"
-        onclick="window.location.href='{{ route('register2') }}'">
-        Next →
-      </button>
-      <p class="text-gray-600 text-sm mt-2 text-center">
-        Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page<br>
-        <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
-      </p>
-    </div>
-
-  </div>
 </body>
 </html>

@@ -173,23 +173,6 @@ Route::get('/aboutdownsyndrome', function () {
     return view('about-ds');
 })->name('aboutdownsyndrome');
 
-// Guardian review pages
-Route::get('/guardianreview-instructions', function () {
-    return view('guardianreview-instructions');
-})->name('guardianreview.instructions');
-
-Route::get('/guardianreview-mode', function () {
-    return view('guardianreview-mode');
-})->name('guardianreview.mode');
-
-Route::get('/guardianreview-pending-review', function () {
-    return view('guardianreview-pending-review');
-})->name('guardianreview.pending');
-
-Route::get('/guardianreview-approved-job', function () {
-    return view('guardianreview-approved-job');
-})->name('guardianreview.approved');
-
-Route::get('/guardianreview-flagged-job', function () {
-    return view('guardianreview-flagged-job');
-})->name('guardianreview.flagged');
+Route::get('/dataprivacy', function () {
+    return view('data-privacy');
+})->name('dataprivacy');
