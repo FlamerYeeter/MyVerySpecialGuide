@@ -349,7 +349,7 @@
                     const email = (document.getElementById('admin_email')?.value || '').trim();
                     if (!first && !last && !email) {
                         // nothing to save — still navigate
-                        window.location.href = '{{ route('registerpersonalinfo') }}';
+                        window.location.href = '{{ route('registereducation') }}';
                         return;
                     }
                     const draft = {
