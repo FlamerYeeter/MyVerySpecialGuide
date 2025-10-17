@@ -13,14 +13,13 @@
 
     <!-- Back Button -->
     <div class="absolute top-6 left-6">
-        <button
-            class="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-bold text-xl py-2 px-5 rounded-lg shadow transition-all">
+        <a href="{{ route('home') }}" class="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-bold text-xl py-2 px-5 rounded-lg shadow transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                 stroke="currentColor" class="w-8 h-8 mr-3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
             Back
-        </button>
+        </a>
     </div>
 
     <!-- Login Card -->
@@ -29,10 +28,15 @@
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">LOG IN</h2>
 
         <!-- Form -->
-        <form class="space-y-5">
-            <input type="text" placeholder="Username or Email"
+        <form method="POST" action="{{ route('login.post') }}" class="space-y-5">
+            @csrf
+            @if($errors->any())
+                <div class="text-red-600 text-sm">{{ $errors->first() }}</div>
+            @endif
+            <input name="email" type="text" placeholder="Email"
+                value="{{ old('email') }}"
                 class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-            <input type="password" placeholder="Password"
+            <input name="password" type="password" placeholder="Password"
                 class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" />
             <button type="submit"
                 class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 rounded-md transition-all duration-300">
@@ -52,7 +56,7 @@
     <div class="mt-4 bg-yellow-100 bg-opacity-90 rounded-2xl shadow-md p-6 w-11/12 max-w-md text-center">
         <p class="text-gray-800 text-base">
             Don’t have an account?
-            <a href="#" class="text-blue-600 font-semibold hover:underline">Create Account</a>
+            <a href="{{ route('register') }}" class="text-blue-600 font-semibold hover:underline">Create Account</a>
         </p>
     </div>
 

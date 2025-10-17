@@ -110,15 +110,32 @@
             if (is_array($decoded)) {
                 // Use computed_score if available and preserve structure expected by view
                 foreach ($decoded as $row) {
+                    // normalize keys coming from generate_recommendations.py which may use Title/Company vs title/company
+                    $title = $row['title'] ?? $row['Title'] ?? $row['job_title'] ?? '';
+                    $company = $row['company'] ?? $row['Company'] ?? '';
+                    $job_description = $row['job_description'] ?? $row['JobDescription'] ?? $row['description'] ?? '';
+                    $job_requirement = $row['job_requirement'] ?? $row['resume'] ?? $row['JobRequirment'] ?? $row['RequiredQual'] ?? '';
+                    $location = $row['location'] ?? $row['Location'] ?? '';
+                    $salary = $row['salary'] ?? $row['Salary'] ?? '';
+                    $deadline = $row['deadline'] ?? $row['Deadline'] ?? '';
+                    $announcement_code = $row['announcement_code'] ?? $row['AnnouncementCode'] ?? '';
+
                     $recommendations[] = [
-                        'job_description' => $row['job_description'] ?? '',
-                        'resume' => $row['resume'] ?? '',
+                        'title' => $title,
+                        'company' => $company,
+                        'job_description' => $job_description,
+                        'job_requirement' => $job_requirement,
+                        'resume' => $job_requirement,
                         'match_score' => $row['match_score'] ?? ($row['computed_score'] ?? 0),
                         'computed_score' => $row['computed_score'] ?? null,
                         'industry' => $row['industry'] ?? '',
                         'fit_level' => $row['fit_level'] ?? '',
                         'growth_potential' => $row['growth_potential'] ?? '',
                         'work_environment' => $row['work_environment'] ?? '',
+                        'location' => $location,
+                        'salary' => $salary,
+                        'deadline' => $deadline,
+                        'announcement_code' => $announcement_code,
                     ];
                 }
             }

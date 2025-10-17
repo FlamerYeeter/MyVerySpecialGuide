@@ -35,6 +35,28 @@ class GenRequest(BaseModel):
 # simple in-memory job registry (sufficient for small/temporary use)
 _jobs = {}
 
+def _tail_log(path: str, lines: int = 200):
+    try:
+        if not os.path.exists(path):
+            return []
+        with open(path, 'rb') as f:
+            f.seek(0, os.SEEK_END)
+            size = f.tell()
+            block = 1024
+            data = b''
+            while size > 0 and lines > 0:
+                seek = max(0, size - block)
+                f.seek(seek)
+                chunk = f.read(min(block, size))
+                data = chunk + data
+                size = seek
+                if data.count(b'\n') > lines:
+                    break
+            text = data.decode('utf-8', errors='replace')
+            return text.strip().split('\n')[-lines:]
+    except Exception:
+        return []
+
 async def _run_job(job_id: str, input_path: str, output_path: str, max_features: int):
     _jobs[job_id] = {"status": "running"}
     try:
@@ -43,9 +65,14 @@ async def _run_job(job_id: str, input_path: str, output_path: str, max_features:
         _jobs[job_id]["status"] = "finished"
         _jobs[job_id]["rc"] = int(rc or 0)
         _jobs[job_id]["output"] = output_path
+        # attach recent logs if available
+        log_path = os.path.join(BASE_DIR, 'reco.log')
+        _jobs[job_id]['logs'] = _tail_log(log_path, lines=200)
     except Exception as e:
         _jobs[job_id]["status"] = "error"
         _jobs[job_id]["error"] = str(e)
+        log_path = os.path.join(BASE_DIR, 'reco.log')
+        _jobs[job_id]['logs'] = _tail_log(log_path, lines=200)
 
 @app.on_event("startup")
 async def startup_event():

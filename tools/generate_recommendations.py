@@ -5,6 +5,8 @@ import re
 import sys
 import numpy as np
 import pandas as pd
+import logging
+import traceback
 
 # Try to import sklearn/nltk; give clear error if missing
 try:
@@ -28,6 +30,18 @@ try:
 except LookupError:
     nltk.download('stopwords')
 
+# configure logging for this module: write to tools/reco.log and to console
+_LOG_PATH = os.path.join(os.path.dirname(__file__), 'reco.log')
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.FileHandler(_LOG_PATH, encoding='utf-8'),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(__name__)
+
 def preprocess_text(text):
     if not isinstance(text, str):
         return ""
@@ -38,6 +52,7 @@ def preprocess_text(text):
     return ' '.join([w for w in t.split() if w and w not in sw])
 
 def generate(input_csv, output_json, max_features=5000):
+    logger.info("generate() called with input=%s output=%s max_features=%s", input_csv, output_json, max_features)
     # If the provided path doesn't exist, try a few common filenames used in this project
     COMMON_INPUTS = [
         input_csv,
@@ -52,10 +67,10 @@ def generate(input_csv, output_json, max_features=5000):
             resolved = p
             break
     if resolved is None:
-        print(f"ERROR: Input CSV not found. Searched: {COMMON_INPUTS}", file=sys.stderr)
+        logger.error("Input CSV not found. Searched: %s", COMMON_INPUTS)
         return 1
     if resolved != input_csv:
-        print(f"Note: using discovered CSV: {resolved}")
+        logger.info("Note: using discovered CSV: %s", resolved)
     input_csv = resolved
 
     df = pd.read_csv(input_csv)
@@ -68,12 +83,12 @@ def generate(input_csv, output_json, max_features=5000):
     if os.path.exists(input_csv):
         try:
             df = pd.read_csv(input_csv).head(5000)
-            print(f"Loaded CSV rows: {len(df)} from {input_csv}")
+            logger.info("Loaded CSV rows: %s from %s", len(df), input_csv)
         except Exception as e:
-            print("Failed to read CSV, creating empty fallback dataframe:", e)
+            logger.exception("Failed to read CSV, creating empty fallback dataframe: %s", e)
             df = pd.DataFrame()
     else:
-        print(f"CSV not found at {input_csv}, creating example dataset.")
+        logger.warning("CSV not found at %s, creating example dataset.", input_csv)
         df = pd.DataFrame({
             'JobDescription': ['Software engineer with java', 'Data analyst with python'],
             'RequiredQual': ['I know java and spring boot', 'I use python for data analysis'],
@@ -128,15 +143,24 @@ def generate(input_csv, output_json, max_features=5000):
     # Use a small min_df so the script works with small datasets
     tfidf = TfidfVectorizer(min_df=1, max_df=0.95, max_features=min(max_features, 4000))
     try:
+        logger.info("Fitting TF-IDF (max_features=%s)", min(max_features, 4000))
         job_tfidf = tfidf.fit_transform(df['clean_job_description'])
         resume_tfidf = tfidf.transform(df['clean_resume'])
     except ValueError:
         # fallback: too small corpus, fit on combined text
-        combined = (df['clean_job_description'] + ' ' + df['clean_resume']).tolist()
-        tfidf = TfidfVectorizer(max_features=2000)
-        tfidf.fit(combined)
-        job_tfidf = tfidf.transform(df['clean_job_description'])
-        resume_tfidf = tfidf.transform(df['clean_resume'])
+        logger.warning("TF-IDF ValueError (small corpus), falling back to combined fit")
+        try:
+            combined = (df['clean_job_description'] + ' ' + df['clean_resume']).tolist()
+            tfidf = TfidfVectorizer(max_features=2000)
+            tfidf.fit(combined)
+            job_tfidf = tfidf.transform(df['clean_job_description'])
+            resume_tfidf = tfidf.transform(df['clean_resume'])
+        except Exception:
+            logger.exception("Fallback TF-IDF fit failed")
+            # fallback to zero matrices
+            from scipy.sparse import csr_matrix
+            job_tfidf = csr_matrix((len(df), 0))
+            resume_tfidf = csr_matrix((len(df), 0))
 
     # compute per-row similarity (diag: resume vs own job_description)
     # if resume/description vectors are zero, similarity will be 0
@@ -149,6 +173,7 @@ def generate(input_csv, output_json, max_features=5000):
             sims.append(float(all_sims[i, i]))
     else:
         sims = [0.0] * len(df)
+    logger.info("Computed sims for %s rows (sample: %s)", len(sims), sims[:5])
 
     # also compute for each resume the max similarity to any job (useful)
     max_sims = []
@@ -156,6 +181,7 @@ def generate(input_csv, output_json, max_features=5000):
         max_sims = list(np.max(cosine_similarity(resume_tfidf, job_tfidf), axis=1))
     else:
         max_sims = [0.0] * len(df)
+    logger.info("Computed max_sims sample: %s", (max_sims[:5] if len(max_sims) else []))
 
     # simple inference helpers (same as described)
     def infer_fit(text):
@@ -208,9 +234,9 @@ def generate(input_csv, output_json, max_features=5000):
     try:
         with open(output_json, 'w', encoding='utf-8') as f:
             json.dump(recommendations, f, ensure_ascii=False, indent=2)
-        print(f"Wrote {len(recommendations)} recommendations to {output_json}")
+        logger.info("Wrote %s recommendations to %s", len(recommendations), output_json)
     except Exception as e:
-        print("Failed to write recommendations.json:", e)
+        logger.exception("Failed to write recommendations.json: %s", e)
         raise
 
     return 0

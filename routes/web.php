@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\JobApplicationController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 Route::get('/', function () {
     return view('home');
@@ -22,6 +24,24 @@ Route::get('/register', function () {
 Route::get('/login', function () {
     return view('user_login');
 })->name('login');
+
+// Handle login POST - attempt authentication and redirect to job matches
+Route::post('/login', function (Request $request) {
+    $credentials = $request->only(['email', 'password']);
+    // Use Auth facade if available
+    try {
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+            return redirect()->route('job.matches');
+        }
+    } catch (\Throwable $e) {
+        // If Auth is not configured, just redirect for now (placeholder)
+        // Log the exception to laravel log
+        logger()->error('Login error: ' . $e->getMessage());
+    }
+
+    return back()->withErrors(['email' => 'Login failed. Please check your credentials.'])->withInput();
+})->name('login.post');
 
 Route::get('/registeradminapprove', function () {
     return view('ds_register_adminapprove');
