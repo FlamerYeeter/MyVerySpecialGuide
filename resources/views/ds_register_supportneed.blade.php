@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Registration: Support Need</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <style>
-    /* Floating animations */
+    <meta charset="UTF-8">
+    <title>Registration: Support Need</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+       /* Floating animation */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
@@ -17,155 +16,204 @@
 
     /* visual for selected support card */
     .support-card.selected {
-      border-color: #2563eb;
-      box-shadow: 0 8px 20px rgba(37,99,235,0.12);
-      transform: translateY(-4px);
+            border: 3px solid #2563eb;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
+            transform: translateY(-4px);
+            background-color: #eff6ff;
     }
-  </style>
+    </style>
 </head>
 
-<body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
+<body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
 
-  <!-- Floating Mascots -->
-  <img src="image/obj4.png" alt="Yellow Mascot"
-    class="fixed left-2 sm:left-6 lg:left-8 top-1/3 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-slow z-0">
+    <!-- Floating Mascots -->
+    <img src="image/obj4.png" alt="Yellow Mascot"
+        class="hidden sm:block fixed left-1 sm:left-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-slow z-0">
+    <img src="image/obj7.png" alt="Triangle Mascot"
+        class="hidden sm:block fixed left-1 sm:left-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+    <img src="image/obj3.png" alt="Blue Mascot"
+        class="hidden sm:block fixed right-1 sm:right-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-fast z-0">
+    <img src="image/obj8.png" alt="Twin Mascot"
+        class="hidden sm:block fixed right-1 sm:right-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
 
-  <img src="image/obj7.png" alt="Triangle Mascot"
-    class="fixed left-2 sm:left-6 lg:left-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0">
+    <!-- Back Button -->
+    <button
+        class="fixed left-4 top-4 bg-blue-600 text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        onclick="window.location.href='{{ route('registerschoolworkinfo') }}'">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
+            class="w-3 h-3 sm:w-6 sm:h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back
+    </button>
 
-  <img src="image/obj3.png" alt="Blue Mascot"
-    class="fixed right-2 sm:right-6 lg:right-8 top-1/4 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-fast z-0">
+    <!-- Main Content Container -->
+    <div
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
 
-  <img src="image/obj8.png" alt="Twin Mascot"
-    class="fixed right-2 sm:right-6 lg:right-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0">
-
-  <!-- Back Button -->
-  <button
-    class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
-    onclick="window.location.href='{{ route('registerworkexpinfo') }}'">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-      stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-    </svg>
-    <span class="text-base sm:text-lg font-medium">Back</span>
-  </button>
-
-  <div class="bg-yellow-100 max-w-3xl w-full rounded-2xl shadow-lg p-8 relative z-10">
-
-    <!-- Header -->
-    <div class="text-center mt-8">
-      <h1 class="text-2xl font-semibold text-black mb-4">Create An Account</h1>
-      <img src="image/obj6.png" alt="Pink Stone Object" class="mx-auto w-24 h-24 mb-4">
-
-      <!-- Section Header -->
-      <div class="flex flex-col items-start text-left max-w-xl mx-auto">
-        <h2 class="text-xl font-semibold text-blue-500 border-b-2 border-blue-500 w-full mb-2 flex items-center gap-2">
-          Your Qualification <span class="text-xl text-gray-600 italic">(Iyong Kwalipikasyon)</span>
-          <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </h2>
-
-        <!-- Description -->
-        <div class="mt-4">
-           <h2 class= "text-xl font-semibold" >Support I Need</h2> 
-          <p class="mt-4 text-base font-medium leading-snug flex items-center gap-2">
-            What kind of support would help you at work? (Select all that apply)
-            <button class="text-gray-500 text-xl hover:scale-110 transition-transform">
-              🔊
-            </button>
-          </p>
-          <p class="mt-1 text-[13px] text-gray-500 italic leading-snug">
-            (Ano klaseng tulong ang makakatulong sa iyo sa trabaho? Piliin lahat ng naaangkop na kakayahan na meron ka)
-          </p>
+        <!-- Header -->
+        <div class="text-center mt-2 sm:mt-4 px-2">
+            <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-3 drop-shadow-md leading-snug">
+                Set Up Your Profile
+            </h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-28 md:w-36 mb-5">
+            <h2
+                class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
+                Continue setting up your account
+                <button class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+            </h2>
+            <p
+                class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+                (Ituloy ang pag-set up ng iyong account)
+            </p>
         </div>
 
-        <div class="flex items-center gap-2 mt-8">
-          <p class="font-medium">Choose from the pictures provided and click your answer.</p>
-          <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
+        <!-- Information Note -->
+        <div
+            class="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row items-start gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+                </svg>
+                <div class="flex-1">
+                    <p class="font-medium text-xs sm:text-base leading-relaxed">
+                        Please share what kind of support would help you at work. This helps us
+                        understand your needs and connect you with workplaces that can provide
+                        the right guidance or adjustments.
+                    </p>
+                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
+                        (Ibahagi kung anong uri ng tulong ang makakatulong sa iyo sa trabaho.
+                        Makakatulong ito upang maunawaan namin ang iyong pangangailangan at
+                        maihanap ang mga lugar ng trabaho na kayang magbigay ng tamang gabay o
+                        tulong.)
+                    </p>
+                </div>
+            </div>
         </div>
-        <p class="mt-2 text-[13px] text-gray-500 italic">
-          (Pumili mula sa mga larawan at pindutin ang iyong sagot)
-        </p>
 
-        <!-- Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-
-          <!-- Card 1 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
-               onclick="selectSupportChoice(this, 'coach')">
-            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/support1.png" alt="job coach" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">Job coach/guide to guide me</h3>
-          </div>
-
-            <!-- Card 2 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
-               onclick="selectSupportChoice(this, 'instructions')">
-            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/support2.png" alt="written instruction" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">Written instructions</h3>
-          </div>
-
-            <!-- Card 3 -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
-               onclick="selectSupportChoice(this, 'independently')">
-            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/support3.png" alt="work independtly" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">I can work independtly</h3>
-          </div>
-
-          <!-- Other -->
-          <div class="bg-white p-4 rounded-xl shadow h-[340px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
-             onclick="selectSupportChoice(this, 'other')">
-           <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-           <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
-           <p class="mt-6 text-sm text-justify">
-             Type your answer inside the box if not in the choices
-           </p>
-           <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
-             (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
-           </p>
-          <input id="support_other_text" type="text" placeholder="Type your answer here"
-                 class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
-         </div>
-       </div>
-
-         <!-- Hidden Input for Support Choice -->
-         <input id="support_choice" type="hidden" value="" />
-
-        <!-- Inline helper to toggle visual selection and set hidden value -->
-        <script>
-          // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_supportneed.blade.php
-          function selectSupportChoice(el, value) {
-            try {
-              document.querySelectorAll('.support-card').forEach(c => c.classList.remove('selected'));
-              if (el && el.classList) el.classList.add('selected');
-              const hidden = document.getElementById('support_choice');
-              if (hidden) hidden.value = value || '';
-              if (value === 'other') {
-                const other = document.getElementById('support_other_text');
-                if (other) other.focus();
-              }
-              const err = document.getElementById('supportError');
-              if (err) err.textContent = '';
-            } catch (e) { console.error('selectSupportChoice error', e); }
-          }
-        </script>
-
-        <!-- Next Button -->
-        <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-            <div id="supportError" class="text-red-600 text-sm mb-2"></div>
-            <button id="supportNext" type="button" class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
-                Next →
-            </button>
-            <p class="text-gray-600 text-sm mt-2 text-center">
-                 Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Working Environment<br>
-                 <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
+        <form class="mt-10 max-w-3xl mx-auto">
+            <!-- Support Need Question -->
+            <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
+                <h2 class= "text-xl sm:text-3xl font-bold text-blue-700 mb-2">Support I Need</h2>
+                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
+                    <p class="mt-2 text-base sm:text-lg font-medium text-gray-800">
+                        What kind of support would help you at work? (Select all that apply)
+                        <button
+                            class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                    </p>
+                </div>
+                <p class="text-gray-600 italic text-sm sm:text-base mt-1">
+                    (Ano klaseng tulong ang makakatulong sa iyo sa trabaho? Piliin lahat ng naaangkop na kakayahan na
+                    meron ka)
                 </p>
-        </div>
+            </div>
 
-     </div>
-  </div>
+            <!-- Instruction -->
+            <div class="mt-6 text-center sm:text-left px-1 sm:px-4">
+                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2">
+                    <p class="text-xs sm:text-base font-medium text-gray-800">Choose from the pictures provided and
+                        click
+                        your answer.</p>
+                    <button class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                </div>
+                <p class="text-[10px] sm:text-sm text-gray-600 italic mt-1">(Pumili mula sa mga larawan at pindutin ang
+                    iyong sagot)</p>
+            </div>
 
-  <script src="{{ asset('js/register.js') }}"></script>
-</body>
+            <!-- Support Need Cards -->
+
+            <!-- Card 1 -->
+            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
+                <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center support-card"
+                    onclick="selectSupportChoice(this, 'coach')">
+                    <button
+                        class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    <img src="image/support1.png" alt="job coach" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Job coach/guide to help me learn</h3>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center support-card"
+                    onclick="selectSupportChoice(this, 'instructions')">
+                    <button
+                        class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    <img src="image/support2.png" alt="written instruction" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Written instructions</h3>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center support-card"
+                    onclick="selectSupportChoice(this, 'independently')">
+                    <button
+                        class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    <img src="image/support3.png" alt="work independtly" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">I can work independtly</h3>
+                </div>
+
+           <!-- Other -->
+            <div class="bg-white p-4 rounded-xl shadow h-[290px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative support-card"
+               onclick="selectSupportChoice(this, 'other')">
+                <button
+                    class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
+                <p class="mt-6 text-sm text-justify">
+                    Type your answer inside the box if not in the choices
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
+                    (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
+                </p>
+                <input id="support_other_text" type="text" placeholder="Type your answer here"
+                    class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+            </div>
+            </div>
+
+            <!-- Hidden Input for Support Choice -->
+            <input id="support_choice" type="hidden" value="" />
+
+            <!-- Inline helper to toggle visual selection and set hidden value -->
+            <script>
+                // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_supportneed.blade.php
+                function selectSupportChoice(el, value) {
+                    try {
+                        document.querySelectorAll('.support-card').forEach(c => c.classList.remove('selected'));
+                        if (el && el.classList) el.classList.add('selected');
+                        const hidden = document.getElementById('support_choice');
+                        if (hidden) hidden.value = value || '';
+                        if (value === 'other') {
+                            const other = document.getElementById('support_other_text');
+                            if (other) other.focus();
+                        }
+                        const err = document.getElementById('supportError');
+                        if (err) err.textContent = '';
+                    } catch (e) {
+                        console.error('selectSupportChoice error', e);
+                    }
+                }
+            </script>
+
+            <!-- Next Button -->
+            <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
+                <div id="supportError" class="text-red-600 text-sm mb-2"></div>
+                <button id="supportNext" type="button"
+                    class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
+                    onclick="window.location.href='{{ route('registerworkplace') }}'">
+                    Next →
+                </button>
+                <p class="text-gray-600 text-sm mt-2 text-center">
+                    Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Working
+                    Environment<br>
+                    <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
+                </p>
+            </div>
+
+    </div>
+    </form>
+    </div>
+
+    <script src="{{ asset('js/register.js') }}"></script>
+
+  </body>
 </html>
