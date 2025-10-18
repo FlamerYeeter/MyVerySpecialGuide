@@ -109,7 +109,7 @@
             $decoded = json_decode($json, true);
             if (is_array($decoded)) {
                 // Use computed_score if available and preserve structure expected by view
-                foreach ($decoded as $row) {
+                foreach ($decoded as $index => $row) {
                     // normalize keys coming from generate_recommendations.py which may use Title/Company vs title/company
                     $title = $row['title'] ?? $row['Title'] ?? $row['job_title'] ?? '';
                     $company = $row['company'] ?? $row['Company'] ?? '';
@@ -121,6 +121,7 @@
                     $announcement_code = $row['announcement_code'] ?? $row['AnnouncementCode'] ?? '';
 
                     $recommendations[] = [
+                        'job_id' => isset($row['job_id']) ? intval($row['job_id']) : intval($index),
                         'title' => $title,
                         'company' => $company,
                         'job_description' => $job_description,
@@ -176,6 +177,7 @@
                         return '';
                     };
 
+                    $i = 0;
                     while (($row = fgetcsv($handle)) !== false) {
                         // create associative row by header
                         $assoc = array_combine($cols, $row) ?: [];
@@ -184,6 +186,7 @@
                         $inferred_growth = $infer_growth_potential($textForInference);
                         $inferred_env = $infer_work_environment($textForInference);
                         $recommendations[] = [
+                            'job_id' => $i,
                             // prefer explicit header names, fallback to some common variants
                             'title' => $assoc['Title'] ?? $assoc['jobpost'] ?? '',
                             'company' => $assoc['Company'] ?? '',
@@ -204,6 +207,7 @@
                             'growth_potential' => $assoc['growth_potential'] ?? $assoc['GrowthPotential'] ?? $inferred_growth,
                             'work_environment' => $assoc['work_environment'] ?? $assoc['WorkEnvironment'] ?? $inferred_env ?? ($assoc['Location'] ?? ''),
                         ];
+                        $i++;
                     }
                     fclose($handle);
                 }
@@ -255,8 +259,8 @@
             </div>
         @else
             @foreach($recommendations as $idx => $job)
-                <div class="bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-center">
-                    <div>
+                <div class="bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
+                    <div class="flex-1 pr-6">
                         <h3 class="text-lg font-bold">{{ $job['title'] ?: $job['job_description'] }}</h3>
                         @if(!empty($job['company']))
                           <p class="text-sm text-gray-700 font-medium">{{ $job['company'] }}</p>
@@ -283,14 +287,16 @@
                         </p>
                     </div>
                     <div class="flex items-center gap-3 mt-4 md:mt-0">
-                        <a href="{{ route('job.details', ['job_id' => ($page - 1) * $perPage + $idx]) }}"
-                           class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                        <a href="{{ route('job.details', ['job_id' => $job['job_id'] ?? (($page - 1) * $perPage + $idx)]) }}"
+                           class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">
                             View Details
                         </a>
-                        <form method="POST" action="{{ route('my.job.applications') }}">
+                        <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
                             @csrf
-                            <input type="hidden" name="job_id" value="{{ ($page - 1) * $perPage + $idx }}">
-                            <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">Saved</button>
+                            <input type="hidden" name="job_id" value="{{ $job['job_id'] ?? (($page - 1) * $perPage + $idx) }}">
+                            <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">
+                                Saved
+                            </button>
                         </form>
                     </div>
                 </div>
