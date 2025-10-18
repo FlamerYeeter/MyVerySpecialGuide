@@ -1,4 +1,6 @@
-@extends('layouts.includes')
+
+
+  <!-- Job Info -->@extends('layouts.includes')
 
 @section('content')
 
@@ -6,7 +8,7 @@
     <!-- Back Button -->
   <div class="bg-yellow-400 mt-6 py-4">
     <div class="max-w-5xl mx-auto px-4 flex items-center space-x-2">
-      <a href="/job-details" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
+      <a href="/job-application-1" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
           stroke-width="2" stroke="currentColor" class="w-5 h-5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -15,8 +17,6 @@
       </a>
     </div>
   </div>
-
-  <!-- Job Info -->
   <section class="max-w-5xl mx-auto mt-8 px-4">
     <h2 class="text-lg font-semibold text-gray-800 mb-2">Applying for</h2>
     <div class="border-2 border-blue-200 bg-white rounded-lg p-4 flex items-center space-x-4 shadow-sm">
