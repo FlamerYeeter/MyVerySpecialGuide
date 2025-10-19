@@ -315,4 +315,48 @@
         @endif
     </div>
 </div>
+<!-- Ensure user is signed-in before taking actions like Apply or Save -->
+<script src="{{ asset('js/firebase-config-global.js') }}"></script>
+    <script>
+        @auth
+            window.__SERVER_AUTH = true;
+        @else
+            window.__SERVER_AUTH = false;
+        @endauth
+    </script>
+    <script type="module">
+    (async function(){
+        try {
+            const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+            console.debug('Auth guard: waiting for sign-in resolution (7s)');
+            try {
+                await mod.signInWithServerToken("{{ route('firebase.token') }}");
+            } catch (e) { console.debug('signInWithServerToken failed', e); }
+            const signed = await mod.isSignedIn(7000);
+            console.debug('Auth guard: isSignedIn ->', signed);
+            try {
+                if (mod && typeof mod.debugAuthLogging === 'function') {
+                    // start auth state logging (returns unsubscribe function)
+                    window.__unsubAuthLog = mod.debugAuthLogging();
+                }
+            } catch (e) {
+                console.warn('debugAuthLogging invocation failed', e);
+            }
+            if (!signed) {
+                // if server has a session, assume the user is already authenticated via backend and skip client redirect
+                if (window.__SERVER_AUTH) {
+                    console.info('Auth guard: server session present, not redirecting');
+                    return;
+                }
+                // if still not signed after waiting, redirect to login
+                const current = window.location.pathname + window.location.search;
+                console.info('Auth guard: not signed, redirecting to login');
+                window.location.href = 'login?redirect=' + encodeURIComponent(current);
+                return;
+            }
+        } catch (err) {
+            console.error('Auth guard failed on job matches', err);
+        }
+    })();
+</script>
 @endsection

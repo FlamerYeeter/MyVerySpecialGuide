@@ -2,9 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SavedJobController;
+use App\Http\Controllers\FirebaseTokenController;
 use App\Http\Controllers\JobApplicationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use App\Models\User;
 
 Route::get('/', function () {
     return view('home');
@@ -20,6 +23,24 @@ Route::get('/register', function () {
     return view('ds_register_1');
 })->name('register');
 
+// Navigation buttons page (used by login/back links)
+Route::get('/navigation-buttons', function () {
+    return view('navigation-buttons');
+})->name('navigation_buttons');
+
+// Navigation targets used by navigation-buttons view
+Route::get('/why-this-job-1', function () {
+    return view('why-this-job-1');
+})->name('why.this.job.1');
+
+Route::get('/guardian-review', function () {
+    return view('guardianreview-mode');
+})->name('guardian.review');
+
+Route::get('/career-goals-progress', function () {
+    return view('career-goals-progress');
+})->name('career.goals.progress');
+
 // Minimal login page route (user_login.blade.php exists in views)
 Route::get('/login', function () {
     return view('user_login');
@@ -28,16 +49,75 @@ Route::get('/login', function () {
 // Handle login POST - attempt authentication and redirect to job matches
 Route::post('/login', function (Request $request) {
     $credentials = $request->only(['email', 'password']);
+    // optional redirect (full URL) to return to after successful login
+    $redirect = $request->input('redirect');
     // Use Auth facade if available
     try {
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
+            logger()->info('Login: local Auth succeeded', ['email' => $credentials['email'] ?? null, 'redirect' => $redirect]);
+            // allow only internal redirects: either a path (starts with '/') or same-host URL
+            if (!empty($redirect)) {
+                $host = parse_url($redirect, PHP_URL_HOST);
+                $currentHost = request()->getHost();
+                if ($host === null || $host === $currentHost) {
+                    logger()->info('Login: performing redirect to requested target', ['target' => $redirect]);
+                    return redirect()->to($redirect);
+                }
+                logger()->warning('Login: blocked external redirect target', ['target' => $redirect, 'currentHost' => $currentHost]);
+            }
             return redirect()->route('job.matches');
         }
     } catch (\Throwable $e) {
         // If Auth is not configured, just redirect for now (placeholder)
         // Log the exception to laravel log
         logger()->error('Login error: ' . $e->getMessage());
+    }
+    // If local auth failed, and Firebase API key is present, try Firebase REST auth (email/password)
+    $firebaseKey = env('FIREBASE_API_KEY');
+    // current host used to validate redirect targets
+    $currentHost = request()->getHost();
+    if ($firebaseKey && !empty($credentials['email']) && !empty($credentials['password'])) {
+        try {
+            $resp = Http::asForm()->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$firebaseKey}", [
+                'email' => $credentials['email'],
+                'password' => $credentials['password'],
+                'returnSecureToken' => true,
+            ]);
+            if ($resp->successful()) {
+                $data = $resp->json();
+                $email = $data['email'] ?? $credentials['email'];
+                $firebaseUid = $data['localId'] ?? null;
+                // find or create local user
+                $user = User::where('email', $email)->first();
+                if (!$user) {
+                    $user = User::create([
+                        'name' => explode('@', $email)[0],
+                        'email' => $email,
+                        // random password (won't be used for firebase-authenticated users)
+                        'password' => bcrypt(bin2hex(random_bytes(8))),
+                    ]);
+                }
+                // log the user in via Laravel
+                Auth::login($user);
+                $request->session()->regenerate();
+                logger()->info('Login: firebase-auth succeeded and local user logged in', ['email' => $email, 'redirect' => $redirect]);
+                if (!empty($redirect)) {
+                    $host = parse_url($redirect, PHP_URL_HOST);
+                    $currentHost = request()->getHost();
+                    if ($host === null || $host === $currentHost) {
+                        logger()->info('Login: performing redirect to requested target', ['target' => $redirect]);
+                        return redirect()->to($redirect);
+                    }
+                    logger()->warning('Login: blocked external redirect target', ['target' => $redirect, 'currentHost' => $currentHost]);
+                }
+                return redirect()->route('job.matches');
+            } else {
+                logger()->warning('Firebase login failed: ' . $resp->body());
+            }
+        } catch (\Throwable $e) {
+            logger()->error('Firebase auth error: ' . $e->getMessage());
+        }
     }
 
     return back()->withErrors(['email' => 'Login failed. Please check your credentials.'])->withInput();
@@ -113,6 +193,9 @@ Route::get('/job-application-submit', function () {
     return view('job-application-submit');
 })->name('job.application.submit');
 
+// Server-side submit endpoint (AJAX-friendly). Uses service account to write to Firestore.
+Route::post('/job-application-submit', [JobApplicationController::class, 'submit'])->middleware('auth')->name('job.application.submit.post');
+
 Route::get('/job-details', function () {
     return view('job-details');
 })->name('job.details');
@@ -120,6 +203,9 @@ Route::get('/job-details', function () {
 Route::get('/job-matches', function () {
     return view('job-matches');
 })->name('job.matches');
+
+// Endpoint to issue Firebase custom token for current Laravel user
+Route::get('/firebase-token', [FirebaseTokenController::class, 'token'])->middleware('auth')->name('firebase.token');
 
 Route::get('/my-job-applications', [SavedJobController::class, 'index'])->name('my.job.applications');
 Route::post('/my-job-applications', [SavedJobController::class, 'store'])->name('my.job.applications');

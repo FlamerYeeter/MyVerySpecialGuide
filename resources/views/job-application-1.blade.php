@@ -19,13 +19,40 @@
   <!-- Job Info Card -->
   <section class="max-w-5xl mx-auto mt-8 px-4">
     <h2 class="text-lg font-semibold text-gray-800 mb-2">Applying for</h2>
+    @php
+        // reuse job-details CSV parsing to show the selected job on the application page
+        $csv_path = public_path('data job posts.csv');
+        $job = null;
+        $job_id = request('job_id');
+        if ($job_id !== null && file_exists($csv_path)) {
+            if (($handle = fopen($csv_path, 'r')) !== false) {
+                $header = fgetcsv($handle);
+                $cols = array_map(function($h){ return trim($h); }, $header ?: []);
+                $i = 0;
+        while (($row = fgetcsv($handle)) !== false) {
+          if ($i == intval($job_id)) {
+            $assoc = array_combine($cols, $row) ?: [];
+            $job = [
+              'title' => $assoc['Title'] ?? $assoc['jobpost'] ?? '',
+              'company' => $assoc['Company'] ?? '',
+              'location' => $assoc['Location'] ?? '',
+              'job_description' => $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? '',
+            ];
+            break;
+          }
+          $i++;
+        }
+        fclose($handle);
+      }
+    }
+    @endphp
     <div class="border-2 border-blue-200 bg-white rounded-lg p-4 flex items-center space-x-4 shadow-sm">
-      <img src="/images/ipetclub.png" alt="iPet Club" class="w-20 h-20 object-contain">
+      <img src="/images/ipetclub.png" alt="Job" class="w-20 h-20 object-contain">
       <div>
-        <h3 class="text-xl font-semibold text-gray-800">[[Placeholder Job Title]]</h3>
-        <p class="text-sm text-gray-700">[[Placeholder Name of Company]]</p>
-        <p class="text-sm text-gray-500">[[Address]]</p>
-        <p class="text-sm text-gray-500">[[Part time or Full Time]]</p>
+        <h3 class="text-xl font-semibold text-gray-800">{{ $job['title'] ?? 'Job Title' }}</h3>
+        <p class="text-sm text-gray-700">{{ $job['company'] ?? '' }}</p>
+        <p class="text-sm text-gray-500">{{ $job['location'] ?? '' }}</p>
+        <p class="text-sm text-gray-500">{{ Str::limit($job['job_description'] ?? '', 180) }}</p>
       </div>
     </div>
   </section>
@@ -153,13 +180,15 @@
 						job_description: (document.getElementById('job_description') || {}).value || ''
 					};
 
-					// Save to sessionStorage so page 2 / review pages can access it
-					try {
-						sessionStorage.setItem('jobApplication_step1', JSON.stringify(data));
-					} catch (err) {
-						// storage may be disabled; ignore but still redirect
-						console.warn('sessionStorage not available', err);
-					}
+        // Save to sessionStorage and localStorage so page 2 / review pages can access it
+        try {
+          const json = JSON.stringify(data);
+          sessionStorage.setItem('jobApplication_step1', json);
+          localStorage.setItem('jobApplication_step1', json);
+        } catch (err) {
+          // storage may be disabled; ignore but still redirect
+          console.warn('storage not available', err);
+        }
 
 					// Build next URL and redirect to Job Application 2 with job_id preserved
 					const base = "{{ route('job.application.2') }}";
@@ -170,5 +199,84 @@
 		})();
 	</script>
 
-	<!-- ...existing code... -->
+<!-- Ensure global Firebase config is present and autofill profile for signed-in users -->
+<script src="{{ asset('js/firebase-config-global.js') }}"></script>
+<script type="module">
+  import { getUserProfile, isSignedIn } from "{{ asset('js/job-application-firebase.js') }}";
+
+  (async function(){
+    try {
+      console.debug('job-application-1: waiting for auth resolution (7s)');
+      const signed = await isSignedIn(7000);
+      console.debug('job-application-1: isSignedIn ->', signed);
+      if (!signed) {
+        // Not signed in — redirect to login preserving return URL
+        const current = window.location.pathname + window.location.search;
+        window.location.href = 'login?redirect=' + encodeURIComponent(current);
+        return;
+      }
+      const profile = await getUserProfile();
+      if (profile) {
+        if (profile.first_name) document.getElementById('first_name').value = profile.first_name;
+        if (profile.last_name) document.getElementById('last_name').value = profile.last_name;
+        if (profile.email) document.getElementById('email').value = profile.email;
+        if (profile.phone) document.getElementById('phone_number').value = profile.phone;
+        if (profile.address) document.getElementById('address').value = profile.address;
+      }
+    } catch (err) {
+      console.warn('autofill/profile init failed', err);
+    }
+    })();
+</script>
+
+<!-- Ensure global Firebase config is present and autofill profile for logged-in users -->
+<script src="{{ asset('js/firebase-config-global.js') }}"></script>
+<script type="module">
+  import { getUserProfile, isSignedIn } from "{{ asset('js/job-application-firebase.js') }}";
+
+  async function autofillProfile() {
+    try {
+      const profile = await getUserProfile();
+      if (!profile) return;
+      const personal = profile.personalInfo || {};
+      const school = profile.schoolWorkInfo || {};
+      const guardian = profile.guardianInfo || {};
+      const skills = profile.skills || {};
+      const work = profile.workExperience || {};
+
+      if (personal.first) document.getElementById('first_name').value = personal.first;
+      if (personal.last) document.getElementById('last_name').value = personal.last;
+      if (personal.email) document.getElementById('email').value = personal.email;
+      if (guardian.guardian_phone) document.getElementById('phone_number').value = guardian.guardian_phone;
+      if (school.school_name) document.getElementById('address').value = school.school_name;
+      try {
+        const we = JSON.parse(work.work_experiences || '[]');
+        if (we && we.length) {
+          const first = we[0];
+          if (first.title) document.getElementById('job_title').value = first.title;
+          if (first.company) document.getElementById('company_employer').value = first.company;
+          if (first.description) document.getElementById('job_description').value = first.description;
+        }
+      } catch(e) {}
+    } catch (err) {
+      console.warn('Autofill failed', err);
+    }
+  }
+
+  (async function(){
+    try {
+      const signed = await isSignedIn(3000);
+      if (!signed) {
+        const current = window.location.pathname + window.location.search;
+        window.location.href = 'login?redirect=' + encodeURIComponent(current);
+        return;
+      }
+      document.addEventListener('DOMContentLoaded', autofillProfile);
+    } catch (err) {
+      console.error('Auth check failed', err);
+      document.addEventListener('DOMContentLoaded', autofillProfile);
+    }
+  })();
+</script>
+
 @endsection

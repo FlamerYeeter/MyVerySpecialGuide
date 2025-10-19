@@ -16,7 +16,8 @@
 
         {{--Kindly add image nlang mga beh--}}
         {{-- Navigation Card 1 --}}
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center">
+        <a href="{{ route('job.matches') }}" class="block">
+        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-orange-200 p-3 rounded-md">
                 <img src="{{ asset('images/jobmatches.png') }}" class="w-10 h-10" alt="">
             </div>
@@ -26,9 +27,11 @@
                 <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
             </div>
         </div>
+        </a>
 
         {{-- Navigation Card 2 --}}
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center">
+        <a href="{{ route('career.goals.progress') }}" class="block">
+        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-red-200 p-3 rounded-md">
                 <img src="{{ asset('images/goals.png') }}" class="w-10 h-10" alt="">
             </div>
@@ -38,9 +41,11 @@
                 <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
             </div>
         </div>
+        </a>
 
         {{-- Navigation Card 3 --}}
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center">
+        <a href="{{ route('why.this.job.1') }}" class="block">
+        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-pink-200 p-3 rounded-md">
                 <img src="{{ asset('images/whythisjob.png') }}" class="w-10 h-10" alt="">
             </div>
@@ -50,9 +55,11 @@
                 <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
             </div>
         </div>
+        </a>
 
         {{-- Navigation Card 4 --}}
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center">
+        <a href="{{ route('guardian.review') }}" class="block">
+        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-blue-200 p-3 rounded-md">
                 <img src="{{ asset('images/guardian.png') }}" class="w-10 h-10" alt="">
             </div>
@@ -62,9 +69,11 @@
                 <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
             </div>
         </div>
+        </a>
 
         {{-- Navigation Card 5 --}}
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-8 items-center">
+        <a href="{{ route('user.role') }}" class="block">
+        <div class="bg-blue-50 rounded-lg flex p-5 mb-8 items-center hover:shadow-md transition">
             <div class="bg-purple-200 p-3 rounded-md">
                 <img src="{{ asset('images/profile.png') }}" class="w-10 h-10" alt="">
             </div>
@@ -74,10 +83,11 @@
                 <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
             </div>
         </div>
+        </a>
 
         {{-- Back Button --}}
         <div class="flex justify-start">
-            <a href="#" class="flex items-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white px-6 py-2 rounded-lg shadow-md">
+            <a href="{{ route('home') }}" class="flex items-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white px-6 py-2 rounded-lg shadow-md">
                 <span class="text-lg">←</span>
                 <span>Back</span>
             </a>
@@ -87,3 +97,42 @@
 
 
 @endsection
+
+    <!-- Ensure Firebase config + auth guard for navigation page -->
+    <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+    <script>
+        @auth
+            window.__SERVER_AUTH = true;
+        @else
+            window.__SERVER_AUTH = false;
+        @endauth
+    </script>
+    <script type="module">
+        (async function(){
+            try {
+                const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                console.debug('nav auth guard: waiting for sign-in resolution (7s)');
+                // If we have a Laravel session, request a server-issued Firebase custom token
+                // and sign the client in. This will make auth.currentUser non-null.
+                try {
+                    await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                } catch(e) { console.debug('nav signInWithServerToken failed', e); }
+                const signed = await mod.isSignedIn(7000);
+                console.debug('nav auth guard: isSignedIn ->', signed);
+                try {
+                    if (mod && typeof mod.debugAuthLogging === 'function') window.__unsubAuthLog = mod.debugAuthLogging();
+                } catch(e) { console.warn('nav debugAuthLogging failed', e); }
+                if (!signed) {
+                    if (window.__SERVER_AUTH) {
+                        console.info('nav auth guard: server session present, not redirecting');
+                        return;
+                    }
+                    const current = window.location.pathname + window.location.search;
+                    window.location.href = 'login?redirect=' + encodeURIComponent(current);
+                    return;
+                }
+            } catch (err) {
+                console.error('nav auth guard failed', err);
+            }
+        })();
+    </script>

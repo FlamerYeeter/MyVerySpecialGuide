@@ -248,3 +248,25 @@
   </div>
 </div>
 @endsection
+
+<!-- Require sign-in on My Job Applications page -->
+<script src="{{ asset('js/firebase-config-global.js') }}"></script>
+<script type="module">
+  (async function(){
+    try {
+      const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+      const signed = await mod.isSignedIn(2500);
+      if (!signed) {
+        if (window.__SERVER_AUTH) {
+          console.info('Auth guard: server session present, not redirecting');
+        } else {
+          const current = window.location.pathname + window.location.search;
+          window.location.href = 'login?redirect=' + encodeURIComponent(current);
+          return;
+        }
+      }
+    } catch (err) {
+      console.error('Auth guard failed on my-job-applications', err);
+    }
+  })();
+</script>

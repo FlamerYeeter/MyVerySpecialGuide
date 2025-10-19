@@ -133,4 +133,36 @@
     </div>
   @endif
 
+<!-- Ensure global Firebase config is present and require login for actions on this page -->
+<script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  <script>
+    @auth
+      window.__SERVER_AUTH = true;
+    @else
+      window.__SERVER_AUTH = false;
+    @endauth
+  </script>
+  <script type="module">
+    (async function(){
+      try {
+        const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+        console.debug('Auth guard: waiting for sign-in resolution (7s)');
+        const signed = await mod.isSignedIn(7000);
+        console.debug('Auth guard: isSignedIn ->', signed);
+        if (!signed) {
+          if (window.__SERVER_AUTH) {
+              console.info('Auth guard: server session present, not redirecting');
+              return;
+          }
+          const current = window.location.pathname + window.location.search;
+          console.info('Auth guard: not signed, redirecting to login');
+          window.location.href = 'login?redirect=' + encodeURIComponent(current);
+          return;
+        }
+        // signed-in users proceed; no further client setup required here
+      } catch (err) {
+        console.error('Auth guard failed on job details', err);
+      }
+    })();
+</script>
 @endsection

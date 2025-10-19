@@ -19,13 +19,39 @@
   </div>
   <section class="max-w-5xl mx-auto mt-8 px-4">
     <h2 class="text-lg font-semibold text-gray-800 mb-2">Applying for</h2>
+    @php
+        $csv_path = public_path('data job posts.csv');
+        $job = null;
+        $job_id = request('job_id');
+        if ($job_id !== null && file_exists($csv_path)) {
+            if (($handle = fopen($csv_path, 'r')) !== false) {
+                $header = fgetcsv($handle);
+                $cols = array_map(function($h){ return trim($h); }, $header ?: []);
+                $i = 0;
+                while (($row = fgetcsv($handle)) !== false) {
+                    if ($i == intval($job_id)) {
+                        $assoc = array_combine($cols, $row) ?: [];
+                        $job = [
+                            'title' => $assoc['Title'] ?? $assoc['jobpost'] ?? '',
+                            'company' => $assoc['Company'] ?? '',
+                            'location' => $assoc['Location'] ?? '',
+                            'job_description' => $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? '',
+                        ];
+                        break;
+                    }
+                    $i++;
+                }
+                fclose($handle);
+            }
+        }
+    @endphp
     <div class="border-2 border-blue-200 bg-white rounded-lg p-4 flex items-center space-x-4 shadow-sm">
-      <img src="/images/ipetclub.png" alt="iPet Club" class="w-20 h-20 object-contain">
+      <img src="/images/ipetclub.png" alt="Job" class="w-20 h-20 object-contain">
       <div>
-        <h3 class="text-xl font-semibold text-gray-800">[[Placeholder Job Title]]</h3>
-        <p class="text-sm text-gray-700">[[Placeholder Name of Company]]</p>
-        <p class="text-sm text-gray-500">[[Address]]</p>
-        <p class="text-sm text-gray-500">[[Part time or Full Time]]</p>
+        <h3 class="text-xl font-semibold text-gray-800">{{ $job['title'] ?? 'Job Title' }}</h3>
+        <p class="text-sm text-gray-700">{{ $job['company'] ?? '' }}</p>
+        <p class="text-sm text-gray-500">{{ $job['location'] ?? '' }}</p>
+        <p class="text-sm text-gray-500">{{ Str::limit($job['job_description'] ?? '', 180) }}</p>
       </div>
     </div>
   </section>
@@ -118,9 +144,11 @@ document.getElementById('jobApplicationForm2').addEventListener('submit', functi
     };
 
     try {
-      sessionStorage.setItem('jobApplication_step2', JSON.stringify(data));
+      const json = JSON.stringify(data);
+      sessionStorage.setItem('jobApplication_step2', json);
+      localStorage.setItem('jobApplication_step2', json);
     } catch (err) {
-      console.warn('sessionStorage not available', err);
+      console.warn('storage not available', err);
     }
 
     // preserve job_id when redirecting
@@ -133,3 +161,60 @@ document.getElementById('jobApplicationForm2').addEventListener('submit', functi
 
 </div>
 @endsection
+
+<!-- Autofill education/skills from Firestore user profile -->
+<script src="{{ asset('js/firebase-config-global.js') }}"></script>
+<script type="module">
+import { getUserProfile, isSignedIn, signInWithServerToken } from "{{ asset('js/job-application-firebase.js') }}";
+
+@auth
+  window.__SERVER_AUTH = true;
+@else
+  window.__SERVER_AUTH = false;
+@endauth
+
+async function autofillEducation() {
+  try {
+    const profile = await getUserProfile();
+    if (!profile) return;
+    const school = profile.schoolWorkInfo || {};
+    const skills = profile.skills || {};
+    if (school.school_name) document.getElementById('school_name').value = school.school_name;
+    if (school.certs) document.getElementById('certifications').value = school.certs;
+    if (skills.skills_page1) {
+      // try to parse if stored as JSON string
+      try {
+        const arr = JSON.parse(skills.skills_page1);
+        document.getElementById('relevant_skills').value = Array.isArray(arr) ? arr.join(', ') : skills.skills_page1;
+      } catch(e) {
+        document.getElementById('relevant_skills').value = skills.skills_page1;
+      }
+    }
+  } catch (err) {
+    console.warn('Autofill education failed', err);
+  }
+}
+
+// Page-level auth guard: redirect to login if not signed in
+(async function(){
+  try {
+    // try to sign-in the client using a server-issued custom token (will be no-op if not available)
+    try { await signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { console.debug('signInWithServerToken failed', e); }
+    const signed = await isSignedIn(3000);
+    if (!signed) {
+      if (window.__SERVER_AUTH) {
+        console.info('Auth guard: server session present, not redirecting');
+        document.addEventListener('DOMContentLoaded', autofillEducation);
+        return;
+      }
+      const current = window.location.pathname + window.location.search;
+      window.location.href = 'login?redirect=' + encodeURIComponent(current);
+      return;
+    }
+    document.addEventListener('DOMContentLoaded', autofillEducation);
+  } catch (err) {
+    console.error('Auth check failed', err);
+    document.addEventListener('DOMContentLoaded', autofillEducation);
+  }
+})();
+</script>

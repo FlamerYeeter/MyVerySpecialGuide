@@ -30,6 +30,7 @@
         <!-- Form -->
         <form method="POST" action="{{ route('login.post') }}" class="space-y-5">
             @csrf
+            <input type="hidden" name="redirect" value="/navigation-buttons" />
             @if($errors->any())
                 <div class="text-red-600 text-sm">{{ $errors->first() }}</div>
             @endif

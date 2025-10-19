@@ -1,25 +1,5 @@
 @extends('layouts.includes')
-
 @section('content')
-<div class="min-h-screen bg-gray-50 font-sans">
-    <!-- Header Navigation -->
-    {{-- <header class="bg-white shadow-sm py-4">
-        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between px-4">
-            <div class="flex items-center space-x-2">
-                <img src="image/logo.png" alt="Logo" class="w-16 h-16 object-contain">
-                <h1 class="text-2xl font-bold text-blue-700">MyVerySpecialGuide</h1>
-            </div>
-            <nav class="mt-3 md:mt-0 space-x-3">
-                <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Job Matches</button>
-                <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Goals & Progress</button>
-                <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Why This Job & How to Get There</button>
-                <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Guardian Review</button>
-            </nav>
-            <div class="relative mt-3 md:mt-0">
-                <button class="border px-3 py-1 rounded-full text-sm">Profile ▾</button>
-            </div>
-        </div>
-    </header> --}}
 
     <!-- Info -->
     {{-- <div class="text-center mt-3 text-sm underline text-gray-600">
@@ -43,13 +23,41 @@
   <!-- Applying For -->
   <section class="max-w-5xl mx-auto mt-8 px-4">
     <h2 class="text-lg font-semibold text-gray-800 mb-2">Applying for</h2>
+    @php
+        $csv_path = public_path('data job posts.csv');
+        $job = null;
+        $job_id = request('job_id');
+        if ($job_id !== null && file_exists($csv_path)) {
+            if (($handle = fopen($csv_path, 'r')) !== false) {
+                $header = fgetcsv($handle);
+                $cols = array_map(function($h){ return trim($h); }, $header ?: []);
+                $i = 0;
+                while (($row = fgetcsv($handle)) !== false) {
+                    if ($i == intval($job_id)) {
+                        $assoc = array_combine($cols, $row) ?: [];
+                        $job = [
+                            'title' => $assoc['Title'] ?? $assoc['jobpost'] ?? '',
+                            'company' => $assoc['Company'] ?? '',
+                            'location' => $assoc['Location'] ?? '',
+                            'job_description' => $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? '',
+                            'type' => $assoc['Type'] ?? '',
+                        ];
+                        break;
+                    }
+                    $i++;
+                }
+                fclose($handle);
+            }
+        }
+    @endphp
+
     <div class="border-2 border-blue-200 bg-white rounded-lg p-4 flex items-center space-x-4 shadow-sm">
-      <img src="/images/ipetclub.png" alt="iPet Club" class="w-20 h-20 object-contain">
+      <img src="/images/ipetclub.png" alt="Job" class="w-20 h-20 object-contain">
       <div>
-        <h3 class="text-xl font-semibold text-gray-800">[[Placeholder Job Title]]</h3>
-        <p class="text-sm text-gray-700">[[Placeholder Name of Company]]</p>
-        <p class="text-sm text-gray-500">[[Address]]</p>
-        <p class="text-sm text-gray-500">[[Part time or Full Time]]</p>
+        <h3 class="text-xl font-semibold text-gray-800">{{ $job['title'] ?? 'Job Title' }}</h3>
+        <p class="text-sm text-gray-700">{{ $job['company'] ?? '' }}</p>
+        <p class="text-sm text-gray-500">{{ $job['location'] ?? '' }}</p>
+        <p class="text-sm text-gray-500">{{ $job['type'] ?? '' }}</p>
       </div>
     </div>
   </section>
@@ -84,39 +92,97 @@
 
 </div>
 
+<!-- Ensure global Firebase config is present for the module -->
+<script src="{{ asset('js/firebase-config-global.js') }}"></script>
 <script type="module">
-import { submitJobApplication } from '/js/job-application-firebase.js';
+import { submitJobApplication, isSignedIn, signInWithServerToken } from "{{ asset('js/job-application-firebase.js') }}";
 
-document.getElementById('finalSubmit').addEventListener('click', async function() {
-    const btn = this;
-    btn.disabled = true;
-    btn.textContent = 'Submitting...';
-
-    const step1 = JSON.parse(sessionStorage.getItem('jobApplication_step1') || '{}');
-    const step2 = JSON.parse(sessionStorage.getItem('jobApplication_step2') || '{}');
-
-    // combine
-    const payload = {
-      submitted_at: new Date().toISOString(),
-      ...step1,
-      ...step2,
-      job_id: "{{ request('job_id') ?? '' }}",
-      source: 'web'
-    };
-
-    try {
-      await submitJobApplication(payload);
-      // clear saved steps
-      sessionStorage.removeItem('jobApplication_step1');
-      sessionStorage.removeItem('jobApplication_step2');
-      // redirect to matches or a confirmation page
-      window.location.href = "{{ route('job.matches') }}";
-    } catch (err) {
-      console.error(err);
-      alert('Failed to submit application. Please try again.');
-      btn.disabled = false;
-      btn.textContent = 'Submit Application';
+// Page-level guard: redirect unauthenticated users immediately and attach handler for signed-in users
+(async function(){
+  try {
+    try { await signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { console.debug('signInWithServerToken failed', e); }
+    const signed = await isSignedIn(3000);
+    if (!signed) {
+      const current = window.location.pathname + window.location.search;
+            window.location.href = 'login?redirect=' + encodeURIComponent(current);
+      return;
     }
-});
+
+    // attach handler after confirming signed-in
+    document.getElementById('finalSubmit').addEventListener('click', async function() {
+      const btn = this;
+      btn.disabled = true;
+      const originalText = btn.textContent;
+      btn.textContent = 'Submitting...';
+
+      const step1 = JSON.parse(sessionStorage.getItem('jobApplication_step1') || '{}');
+      const step2 = JSON.parse(sessionStorage.getItem('jobApplication_step2') || '{}');
+
+      // combine
+      const payload = {
+        submitted_at: new Date().toISOString(),
+        ...step1,
+        ...step2,
+        job_id: "{{ request('job_id') ?? '' }}",
+        source: 'web'
+      };
+
+      try {
+        // Ensure user confirmed the terms
+        const confirmed = document.getElementById('confirmation') && document.getElementById('confirmation').checked;
+        if (!confirmed) {
+          alert('Please confirm that the information you provided is accurate before submitting.');
+          btn.disabled = false;
+          btn.textContent = originalText;
+          return;
+        }
+
+        const result = await submitJobApplication(payload);
+        // clear saved steps
+        sessionStorage.removeItem('jobApplication_step1');
+        sessionStorage.removeItem('jobApplication_step2');
+        try {
+          localStorage.removeItem('jobApplication_step1');
+          localStorage.removeItem('jobApplication_step2');
+        } catch(e){}
+
+        // show quick success feedback then redirect
+        btn.textContent = 'Submitted ✓';
+        setTimeout(() => {
+          window.location.href = "{{ route('job.matches') }}";
+        }, 900);
+
+      } catch (err) {
+        console.error('Submit application error', err);
+        const msg = (err && err.message) ? err.message : '';
+        if (msg && msg.toLowerCase().includes('not signed in')) {
+          const current = window.location.pathname + window.location.search;
+          window.location.href = 'login?redirect=' + encodeURIComponent(current);
+          return;
+        }
+        alert('Failed to submit application. Please try again.');
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    });
+
+  } catch (err) {
+    console.error('Auth guard failed', err);
+    // As a fallback attach the handler but let it check again on submit
+    document.getElementById('finalSubmit').addEventListener('click', async function() {
+      const btn = this; btn.disabled = true; const originalText = btn.textContent; btn.textContent = 'Submitting...';
+      const step1 = JSON.parse(sessionStorage.getItem('jobApplication_step1') || '{}');
+      const step2 = JSON.parse(sessionStorage.getItem('jobApplication_step2') || '{}');
+      try {
+        const payload = { submitted_at: new Date().toISOString(), ...step1, ...step2, job_id: "{{ request('job_id') ?? '' }}", source: 'web' };
+        const result = await submitJobApplication(payload);
+        sessionStorage.removeItem('jobApplication_step1');
+        sessionStorage.removeItem('jobApplication_step2');
+        btn.textContent = 'Submitted ✓';
+        setTimeout(() => { window.location.href = "{{ route('job.matches') }}"; }, 900);
+      } catch (e) { alert('Failed to submit application. Please try again.'); btn.disabled = false; btn.textContent = originalText; }
+    });
+  }
+})();
 </script>
 @endsection
