@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Registration: Working Environment</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-       /* Floating animation */
+    <<style>
+    /* Floating animations */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
@@ -13,6 +14,7 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
 
     /* visual for selected workplace card */
     .workplace-card.selected {
@@ -38,7 +40,7 @@
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-blue-600 text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
         onclick="window.location.href='{{ route('registersupportneed') }}'">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-3 h-3 sm:w-6 sm:h-6">
@@ -59,37 +61,43 @@
             <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-28 md:w-36 mb-5">
             <h2
                 class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
-                Continue setting up your account
-                <button class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                Continue setting up your profile
+                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
             </h2>
             <p
                 class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
-                (Ituloy ang pag-set up ng iyong account)
+                (Ituloy ang pag-set up ng iyong profile)
             </p>
         </div>
 
         <!-- Information Section -->
         <div
-            class="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
-            <div class="flex flex-col sm:flex-row items-start gap-3">
+            class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row items-start gap-3 pr-14">
                 <svg xmlns="http://www.w3.org/2000/svg"
                     class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
                     viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
                 </svg>
+
                 <div class="flex-1">
                     <p class="font-medium text-xs sm:text-base leading-relaxed">
-                        The information you share here helps us find workplaces that match your comfort level —
-                        whether you prefer a quiet environment or one that’s more active and lively.
+                        The information you share here helps us find workplaces that match your comfort level — whether
+                        you prefer a
+                        quiet environment or one that’s more active and lively.
                     </p>
                     <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
                         (Ang impormasyong iyong ibibigay dito ay makatutulong upang mahanap namin ang mga lugar ng
-                        trabaho
-                        na akma sa iyong kaginhawaan — tahimik man o masigla ang iyong gusto.)
+                        trabaho na akma sa iyong kaginhawaan — tahimik man o masigla ang iyong gusto.)
                     </p>
                 </div>
             </div>
+
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200">
+                🔊
+            </button>
         </div>
 
         <form class="mt-10 max-w-3xl mx-auto">
@@ -115,7 +123,8 @@
                     <p class="text-xs sm:text-base font-medium text-gray-800">Choose from the pictures provided and
                         click
                         your answer.</p>
-                    <button class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button"
+                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
                 </div>
                 <p class="text-[10px] sm:text-sm text-gray-600 italic mt-1">(Pumili mula sa mga larawan at pindutin ang
                     iyong sagot)</p>
@@ -128,38 +137,40 @@
                 <!-- Card 1 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
                     onclick="selectWorkplaceChoice(this,'quiet')">
-                    <button
-                        class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    <button type="button"
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
                     <img src="image/workplc1.png" alt="quietplace" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">The place is quiet and calm</h3>
-                    <p class="mt-2 text-[13px] text-gray-500 italic text-center">(Tahimik at kalmado ang lugar)</p>
+                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Tahimik at kalmado ang lugar)</p>
                 </div>
 
                 <!-- Card 2 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
                     onclick="selectWorkplaceChoice(this,'busy')">
-                    <button
-                        class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    <button type="button"
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
                     <img src="image/workplc2.png" alt="busyplace" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">There are many people and many things happening
                     </h3>
-                    <p class="mt-2 text-[13px] text-gray-500 italic text-center">(Maraming tao at maraming ginagawa)</p>
+                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Maraming tao at maraming ginagawa)</p>
                 </div>
 
                 <!-- Other -->
-                <div class="bg-white p-4 rounded-xl shadow h-[400px]  transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative workplace-card"
-                    onclick="selectWorkplaceChoice(this,'other')">
-                    <button
-                        class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-                    <h3 class="text-blue-600 font-semibold text-center mb-2">Other</h3>
+                <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
+                    data-value="other" onclick="selectWorkplaceChoice(this,'other')">
+                    <button type="button"
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    <h3 id="workplace_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
                     <p class="mt-6 text-sm text-justify">
                         Type your answer inside the box if not in the choices
                     </p>
-                    <p class="text-[13px] text-gray-500 italic mt-1 mb-3 text-justify">
+                    <label for="workplace_other_text" class="sr-only">Type your other answer here</label>
+                    <p class="text-[13px] text-gray-600 italic mt-1 mb-3 text-justify">
                         (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
                     </p>
-                    <input id="workplace_other_text" type="text" placeholder="Type your answer here"
-                        class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400">
+                    <input id="selectworkplace_other_text" name="workplace_other_text" type="text"
+                        aria-labelledby="workplace_other_label" placeholder="Type your answer here"
+                        class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
                 </div>
             </div>
 
@@ -190,13 +201,14 @@
             <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
                 <div id="workplaceError" class="text-red-600 text-sm mb-2"></div>
                 <button id="workplaceNext" type="button"
-                    class="bg-blue-500 text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
+                    class="bg-[#2E2EFF] text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
                     onclick="window.location.href='{{ route('registerskills1') }}'">
                     Next →
                 </button>
                 <p class="text-gray-600 text-sm mt-2 text-center">
-                    Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page Your Skills<br>
-                    <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
+                    Click <span class="text-[#1E40AF] font-medium">"Next"</span> to move to the next page Your
+                    Skills<br>
+                    <span class="italic text-[#4B4F58]">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
                 </p>
             </div>
     </div>
@@ -205,5 +217,6 @@
 
     <script src="{{ asset('js/register.js') }}"></script>
 
-  </body>
+</body>
+
 </html>

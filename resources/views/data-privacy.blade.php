@@ -30,7 +30,7 @@
 
   <!-- Back Button -->
   <button
-    class="fixed left-4 top-4 bg-blue-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+    class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
     onclick="window.location.href='{{ route('register2') }}'">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
       stroke-width="4" stroke="white" class="w-5 h-5 sm:w-6 sm:h-6">
@@ -48,111 +48,152 @@
       <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-24 sm:w-28 md:w-36 mb-6">
       <h2 class="text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-center">
         We Protect Your Personal Information
-        <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform">🔊</button>
+        <button type="button" class="text-2xl sm:text-3xl hover:scale-110 transition-transform">🔊</button>
       </h2>
       <p class="mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
         (Pinangangalagaan namin ang iyong personal na impormasyon)
       </p>
     </div>
 
-    <!-- Info Section -->
-    <div class="mt-10 max-w-3xl mx-auto bg-blue-50 p-5 sm:p-6 md:p-8 rounded-2xl border border-blue-300 shadow-md">
-      <div class="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
-        <span class="text-yellow-500 text-4xl sm:text-5xl mt-1 flex justify-center sm:justify-start">💡</span>
-        <div class="flex-1 text-center sm:text-left">
-          <p class="text-lg sm:text-xl text-gray-800 font-semibold leading-relaxed">
-            We value your trust and are committed to protecting your data in compliance with the Data Privacy Act of 2012 (RA 10173).
-          </p>
-          <p class="text-gray-700 italic text-base sm:text-lg mt-2">
-            (Pinahahalagahan namin ang iyong tiwala at pinoprotektahan namin ang iyong impormasyon alinsunod sa Data Privacy Act of 2012.)
-          </p>
-        </div>
-        <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-center sm:self-start">🔊</button>
+   <!-- Info Section -->
+<div
+  class="mt-10 max-w-3xl mx-auto bg-blue-50 p-5 sm:p-6 md:p-8 rounded-2xl border border-blue-300 shadow-md relative">
+
+  <!-- Audio Button -->
+  <button type="button" aria-label="Play audio for info section"
+    class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+           text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+           focus:ring-2 focus:ring-blue-400">
+    🔊
+  </button>
+
+  <div class="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6 pr-20">
+    <!-- Icon -->
+    <span class="text-[#846506] text-4xl sm:text-5xl mt-1 flex justify-center sm:justify-start">💡</span>
+
+    <!-- Text -->
+    <div class="flex-1 text-center sm:text-left">
+      <p class="text-lg sm:text-xl text-gray-800 font-semibold leading-relaxed">
+        We value your trust and are committed to protecting your data in compliance with the Data Privacy Act of 2012 (RA 10173).
+      </p>
+      <p class="text-gray-700 italic text-base sm:text-lg mt-2">
+        (Pinahahalagahan namin ang iyong tiwala at pinoprotektahan namin ang iyong impormasyon alinsunod sa Data Privacy Act of 2012.)
+      </p>
+    </div>
+  </div>
+</div>
+
+ <!-- Sections -->
+<div class="mt-10 sm:mt-12 max-w-4xl mx-auto space-y-6 sm:space-y-8">
+
+  <!-- Info We Collect -->
+  <div class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
+    <!-- Audio Button -->
+    <button type="button" aria-label="Play audio for info section"
+      class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+             text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+             focus:ring-2 focus:ring-blue-400">
+      🔊
+    </button>
+
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center pr-20">
+      <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Collect Data Icon"
+        class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto sm:mx-0">
+      <div class="flex-1 text-center sm:text-left">
+        <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Information We Collect</h3>
+        <ul class="list-disc list-inside text-gray-700 text-base sm:text-lg space-y-1">
+          <li>Personal details: name, contact number, email address.</li>
+          <li>Parent/Guardian details: name, contact number, email address.</li>
+          <li>Education and employment history.</li>
+          <li>Supports need, your skills, and job preferences.</li>
+        </ul>
+        <p class="text-gray-700 italic text-base sm:text-lg mt-2">
+          (Kinokolekta namin ang impormasyon tulad ng pangalan, contact number, email, edukasyon, supportang 
+          kailangan, iyong kakayanan at mga trabahong kagustuhan.)
+        </p>
       </div>
     </div>
+  </div>
 
-    <!-- Sections -->
-    <div class="mt-10 sm:mt-12 max-w-4xl mx-auto space-y-6 sm:space-y-8">
+  <!-- Purpose -->
+  <div class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
+    <!-- Audio Button -->
+    <button type="button" aria-label="Play audio for purpose section"
+      class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+             text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+             focus:ring-2 focus:ring-blue-400">
+      🔊
+    </button>
 
-      <!-- Info We Collect -->
-      <div class="bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
-        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
-          <img src="https://cdn-icons-png.flaticon.com/512/847/847969.png" alt="Collect Data Icon"
-            class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto sm:mx-0">
-          <div class="flex-1 text-center sm:text-left">
-            <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Information We Collect</h3>
-            <ul class="list-disc list-inside text-gray-700 text-base sm:text-lg space-y-1">
-              <li>Personal details: name, contact number, email address.</li>
-              <li>Parent/Guardian details: name, contact number, email address.</li>
-              <li>Education and employment history.</li>
-              <li>Supports need, your skills, and job preferences.</li>
-            </ul>
-            <p class="text-gray-700 italic text-base sm:text-lg mt-2">
-              (Kinokolekta namin ang impormasyon tulad ng pangalan, contact number, email, edukasyon, supportang 
-              kailangan, iyong kakayanan at mga trabahong kagustuhan.)
-            </p>
-          </div>
-          <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-center sm:self-start">🔊</button>
-        </div>
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center pr-20">
+      <img src="https://cdn-icons-png.flaticon.com/512/9119/9119230.png" alt="Purpose Icon"
+        class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto sm:mx-0">
+      <div class="flex-1 text-center sm:text-left">
+        <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Purpose of Data Collection</h3>
+        <ul class="list-disc list-inside text-gray-700 text-base sm:text-lg space-y-1">
+          <li>Match you with job opportunities & training.</li>
+          <li>Improve our services and support.</li>
+          <li>Meet compliance requirements.</li>
+        </ul>
+        <p class="text-gray-700 italic text-base sm:text-lg mt-2">
+          (Upang mahanap ang angkop na trabaho o pagsasanay, mapabuti ang aming serbisyo, at makasunod sa mga regulasyon.)
+        </p>
       </div>
-
-      <!-- Purpose -->
-      <div class="bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
-        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
-          <img src="https://cdn-icons-png.flaticon.com/512/9119/9119230.png" alt="Purpose Icon"
-            class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto sm:mx-0">
-          <div class="flex-1 text-center sm:text-left">
-            <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Purpose of Data Collection</h3>
-            <ul class="list-disc list-inside text-gray-700 text-base sm:text-lg space-y-1">
-              <li>Match you with job opportunities & training.</li>
-              <li>Improve our services and support.</li>
-              <li>Meet compliance requirements.</li>
-            </ul>
-            <p class="text-gray-700 italic text-base sm:text-lg mt-2">
-              (Upang mahanap ang angkop na trabaho o pagsasanay, mapabuti ang aming serbisyo, at makasunod sa mga regulasyon.)
-            </p>
-          </div>
-          <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-center sm:self-start">🔊</button>
-        </div>
-      </div>
-
-      <!-- Protection -->
-      <div class="bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
-        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
-          <img src="https://cdn-icons-png.flaticon.com/512/10473/10473528.png" alt="Data Protection Icon"
-            class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto sm:mx-0">
-          <div class="flex-1 text-center sm:text-left">
-            <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Data Protection & Access</h3>
-            <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
-              We use secure systems and only authorized personnel can access your data. Information is only used for declared purposes.
-            </p>
-            <p class="text-gray-700 italic text-base sm:text-lg mt-2">
-              (Ginagamit ang ligtas na sistema at tanging may awtoridad ang pwedeng kumuha ng impormasyon. Ginagamit lamang para sa nakasaad na layunin.)
-            </p>
-          </div>
-          <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-center sm:self-start">🔊</button>
-        </div>
-      </div>
-
-      <!-- Consent -->
-      <div class="bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
-        <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center">
-          <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Check Icon"
-            class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto sm:mx-0">
-          <div class="flex-1 text-center sm:text-left">
-            <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Your Consent</h3>
-            <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
-              By using our services, you consent to the collection & processing of your personal data under this policy.
-            </p>
-            <p class="text-gray-700 italic text-base sm:text-lg mt-2">
-              (Sa paggamit ng aming serbisyo, pumapayag ka sa pagkuha at paggamit ng iyong impormasyon alinsunod sa patakarang ito.)
-            </p>
-          </div>
-          <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-center sm:self-start">🔊</button>
-        </div>
-      </div>
-
     </div>
+  </div>
+
+  <!-- Protection -->
+  <div class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
+    <!-- Audio Button -->
+    <button type="button" aria-label="Play audio for protection section"
+      class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+             text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+             focus:ring-2 focus:ring-blue-400">
+      🔊
+    </button>
+
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center pr-20">
+      <img src="https://cdn-icons-png.flaticon.com/512/10473/10473528.png" alt="Data Protection Icon"
+        class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto sm:mx-0">
+      <div class="flex-1 text-center sm:text-left">
+        <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Data Protection & Access</h3>
+        <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
+          We use secure systems and only authorized personnel can access your data. Information is only used for declared purposes.
+        </p>
+        <p class="text-gray-700 italic text-base sm:text-lg mt-2">
+          (Ginagamit ang ligtas na sistema at tanging may awtoridad ang pwedeng kumuha ng impormasyon. Ginagamit lamang para sa nakasaad na layunin.)
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Consent -->
+  <div class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
+    <!-- Audio Button -->
+    <button type="button" aria-label="Play audio for consent section"
+      class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+             text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+             focus:ring-2 focus:ring-blue-400">
+      🔊
+    </button>
+
+    <div class="flex flex-col sm:flex-row gap-4 sm:gap-6 items-start sm:items-center pr-20">
+      <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Check Icon"
+        class="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 mx-auto sm:mx-0">
+      <div class="flex-1 text-center sm:text-left">
+        <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Your Consent</h3>
+        <p class="text-gray-700 text-base sm:text-lg leading-relaxed">
+          By using our services, you consent to the collection & processing of your personal data under this policy.
+        </p>
+        <p class="text-gray-700 italic text-base sm:text-lg mt-2">
+          (Sa paggamit ng aming serbisyo, pumapayag ka sa pagkuha at paggamit ng iyong impormasyon alinsunod sa patakarang ito.)
+        </p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
 
     <!-- Agree & Next Buttons -->
     <div class="flex flex-col items-center mt-10 sm:mt-14 space-y-6">
@@ -163,15 +204,15 @@
       </label>
 
       <button id="nextButton"
-        class="bg-blue-400 text-white text-2xl sm:text-3xl font-bold px-20 sm:px-28 md:px-32 py-4 sm:py-5 rounded-3xl shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
+        class="bg-[#2E2EFF] text-white text-2xl sm:text-3xl font-bold px-20 sm:px-28 md:px-32 py-4 sm:py-5 rounded-3xl shadow-lg hover:bg-blue-600 transition disabled:opacity-60 disabled:cursor-not-allowed"
         disabled
         onclick="window.location.href='{{ route('registeradminapprove') }}'">
         Next →
       </button>
 
       <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-2 text-center leading-relaxed px-4 sm:px-0">
-        Click <span class="text-blue-600 font-bold">"Next"</span> to continue<br class="hidden sm:block">
-        <span class="italic text-gray-600 block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
+        Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue<br class="hidden sm:block">
+        <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
       </p>
     </div>
   </div>

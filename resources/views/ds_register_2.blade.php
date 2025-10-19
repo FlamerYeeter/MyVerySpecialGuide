@@ -8,14 +8,15 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+    /* Floating animations */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
     }
-    .animate-float-slow { animation: float 6s ease-in-out infinite; }
-    .animate-float-medium { animation: float 4s ease-in-out infinite; }
-    .animate-float-fast { animation: float 3s ease-in-out infinite; }
-  </style>
+    .animate-float-slow { animation: float 5s ease-in-out infinite; }
+    .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
+    .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+    </style>
 </head>
 
 <body class="bg-white flex justify-center items-center min-h-screen p-4 sm:p-6 relative overflow-auto">
@@ -32,7 +33,7 @@
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-blue-600 text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
         onclick="window.location.href='{{ route('register') }}'">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-5 h-5 sm:w-6 sm:h-6">
@@ -53,7 +54,7 @@
             <h2
                 class="text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-center">
                 Let’s Get Started!
-                <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform">🔊</button>
+                <button type="button" class="text-2xl sm:text-3xl hover:scale-110 transition-transform">🔊</button>
             </h2>
             <p class="mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
                 (Magsimula tayo!)
@@ -61,21 +62,26 @@
         </div>
 
         <!-- Info Section -->
-        <div class="mt-10 max-w-3xl mx-auto bg-blue-50 p-5 sm:p-6 md:p-8 rounded-2xl border border-blue-300 shadow-md">
-            <div class="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-6">
+        <div
+            class="relative mt-10 max-w-3xl mx-auto bg-blue-50 p-5 sm:p-6 md:p-8 rounded-2xl border border-blue-300 shadow-md overflow-hidden">
+            <div class="flex items-start gap-4 sm:gap-6">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Account Icon"
-                    class="w-12 h-12 sm:w-14 sm:h-14 mt-1 flex-shrink-0 mx-auto sm:mx-0">
-                <div class="flex-1 text-center sm:text-left">
-                    <p class="text-lg sm:text-xl text-gray-800 font-semibold leading-relaxed">
+                    class="w-12 h-12 sm:w-14 sm:h-14 mt-1 flex-shrink-0">
+                <div class="flex-1">
+                    <p class="text-lg sm:text-xl text-gray-800 font-semibold leading-relaxed pr-14 sm:pr-20">
                         Don’t worry! We’ll help you set up your account easily and guide you along the way.
                     </p>
-                    <p class="text-gray-700 italic text-base sm:text-lg mt-2">
+                    <p class="text-gray-700 italic text-base sm:text-lg mt-2 pr-14 sm:pr-20">
                         (Huwag mag-alala! Tutulungan ka naming mag-set up ng iyong account nang madali.)
                     </p>
                 </div>
-                <button
-                    class="text-2xl sm:text-3xl hover:scale-110 transition-transform self-center sm:self-start">🔊</button>
             </div>
+
+            <!-- Floating Audio Button (position adjusted to avoid overlap) -->
+            <button
+                class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none">
+                🔊
+            </button>
         </div>
 
         <!-- Instruction Section -->
@@ -83,15 +89,10 @@
 
             <!-- English Instructions -->
             <div
-                class="bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
+                class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
                     <div class="text-center sm:text-left flex-1">
-                        <div class="flex justify-center sm:justify-between items-center mb-2">
-                            <h3 class="text-xl sm:text-2xl text-blue-600 font-bold">Instructions</h3>
-                            <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform ml-3 sm:ml-6">
-                                🔊
-                            </button>
-                        </div>
+                        <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-3">Instructions</h3>
 
                         <ul class="list-disc list-inside text-gray-700 text-base sm:text-lg space-y-1">
                             <li>You can go back and change your answers.</li>
@@ -106,21 +107,28 @@
                         </p>
                     </div>
                 </div>
-            </div>
 
-            <!-- Next Button -->
-            <div class="flex flex-col items-center mt-10 sm:mt-14 space-y-4">
+                <!-- Floating Audio Button -->
                 <button
-                    class="bg-blue-500 text-white text-2xl sm:text-3xl font-bold px-20 sm:px-28 md:px-32 py-4 sm:py-5 rounded-3xl shadow-lg hover:bg-blue-600 active:scale-95 transition"
-                    onclick="window.location.href='{{ route('dataprivacy') }}'">
-                    Next →
+                    class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200">
+                    🔊
                 </button>
-                <p class="text-gray-700 text-sm sm:text-base md:text-lg text-center leading-relaxed px-4 sm:px-0">
-                    Click <span class="text-blue-600 font-bold">"Next"</span> to continue<br class="hidden sm:block">
-                    <span class="italic text-gray-600 block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
-                </p>
             </div>
         </div>
+
+        <!-- Next Button -->
+        <div class="flex flex-col items-center mt-10 sm:mt-14 space-y-4">
+            <button
+                class="bg-[#2E2EFF] text-white text-2xl sm:text-3xl font-bold px-20 sm:px-28 md:px-32 py-4 sm:py-5 rounded-3xl shadow-lg hover:bg-blue-600 active:scale-95 transition"
+                onclick="window.location.href='{{ route('dataprivacy') }}'">
+                Next →
+            </button>
+            <p class="text-gray-700 text-sm sm:text-base md:text-lg text-center leading-relaxed px-4 sm:px-0">
+                Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue<br class="hidden sm:block">
+                <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
+            </p>
+        </div>
+    </div>
 
 </body>
 
