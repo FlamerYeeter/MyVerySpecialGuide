@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Registration: Work Experience Information</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        /* Floating animation */
-      @keyframes float {
+     <style>
+    /* Floating animations */
+    @keyframes float {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-10px); }
     }
@@ -37,7 +38,7 @@
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-blue-600 text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
         onclick="window.location.href='{{ route('registerschoolworkinfo') }}'">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-3 h-3 sm:w-6 sm:h-6">
@@ -46,7 +47,7 @@
         Back
     </button>
 
-     <!-- Main Content Container -->
+    <!-- Main Content Container -->
     <div
         class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
 
@@ -59,51 +60,54 @@
             <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-28 md:w-36 mb-5">
             <h2
                 class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
-                Continue setting up your account
-                <button class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                Continue setting up your profile
+                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
             </h2>
             <p
                 class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
-                (Ituloy ang pag-set up ng iyong account)
+                (Ituloy ang pag-set up ng iyong profile)
             </p>
         </div>
 
         <!-- Information Note -->
-        <div
-            class="bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
-            <div class="flex flex-col sm:flex-row items-start gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
-                </svg>
-                <div class="flex-1">
-                    <p class="font-medium text-xs sm:text-base leading-relaxed">
-                        Please share your work experience information. This helps us understand the kind of work you’ve
-                        done before and
-                        identify roles or opportunities where your skills and background will be most valued.
-                    </p>
-                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-                        (Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan
-                        namin ang uri
-                        ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na babagay sa iyong
-                        kasanayan at
-                        karanasan.)
-                    </p>
-                    <p class="text-gray-700 text-[11px] sm:text-sm mt-4 leading-relaxed">
-                        Even if you haven’t worked before, you can still share volunteer work, school activities, or
-                        other experiences
-                        that helped you develop your skills.
-                        <span class="italic text-gray-600 text-[10px] sm:text-xs mt-1">
-                            (Kahit wala ka pang pormal na trabaho, maaari mong ilagay ang mga karanasang boluntaryo,
-                            gawain sa paaralan, o
-                            iba pang aktibidad na nakatulong sa iyong paghubog ng kasanayan.)
-                        </span>
-                    </p>
-                </div>
-            </div>
-        </div>
+<div class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
+  <div class="flex flex-col sm:flex-row items-start gap-3 pr-14">
+    <!-- Info Icon -->
+    <svg xmlns="http://www.w3.org/2000/svg"
+      class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0"
+      fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+    </svg>
+
+    <!-- Info Text -->
+    <div class="flex-1">
+      <p class="font-medium text-xs sm:text-base leading-relaxed">
+        Please share your work experience information. This helps us understand the kind of work you’ve
+        done before and identify roles or opportunities where your skills and background will be most valued.
+      </p>
+      <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
+        (Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan namin
+        ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na babagay sa iyong
+        kasanayan at karanasan.)
+      </p>
+      <p class="text-gray-700 text-[11px] sm:text-sm mt-4 leading-relaxed">
+        Even if you haven’t worked before, you can still share volunteer work, school activities, or other
+        experiences that helped you develop your skills.
+        <span class="italic text-gray-600 text-[10px] sm:text-xs mt-1">
+          (Kahit wala ka pang pormal na trabaho, maaari mong ilagay ang mga karanasang boluntaryo, gawain sa
+          paaralan, o iba pang aktibidad na nakatulong sa iyong paghubog ng kasanayan.)
+        </span>
+      </p>
+    </div>
+  </div>
+
+  <!-- Audio Button -->
+  <button type="button"
+    class="absolute top-3 right-3 bg-[#1E40AF] text-white text-lg sm:text-xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none">
+    🔊
+  </button>
+</div>
 
         <form class="mt-10 max-w-3xl mx-auto">
             <!-- Work Experience Question -->
@@ -113,7 +117,7 @@
                     <p class="mt-2 text-base sm:text-lg font-medium text-gray-800">If you have worked before, how long
                         did you work
                         there?</p>
-                    <button class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button" class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
                 </div>
                 <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Kung may karanasan ka sa trabaho, gaano ka
                     katagal
@@ -126,7 +130,7 @@
                     <p class="text-xs sm:text-base font-medium text-gray-800">Choose from the pictures provided and
                         click
                         your answer.</p>
-                    <button class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button" class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
                 </div>
                 <p class="text-[10px] sm:text-sm text-gray-600 italic mt-1">(Pumili mula sa mga larawan at pindutin ang
                     iyong sagot)</p>
@@ -134,47 +138,51 @@
 
             <!-- Work Years Cards -->
             <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
+                <!-- Card 1 -->
                 <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectWorkYearsChoice(this, 'lt1')">
-                    <button
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-blue-500 hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm">🔊</button>
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm">🔊</button>
                     <img src="image/workyr1.png" alt="less 1 yr"
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-sm sm:text-lg">Less than 1 year</h3>
+                    <h3 class="text-blue-600 font-semibold text-center">Less than 1 year</h3>
                 </div>
 
+                <!-- Card 2 -->
                 <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectWorkYearsChoice(this, '1-2')">
-                    <button
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-blue-500 hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm">🔊</button>
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm">🔊</button>
                     <img src="image/workyr2.png" alt="1-2 yrs"
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-sm sm:text-lg">1-2 years</h3>
+                    <h3 class="text-blue-600 font-semibold text-center">1-2 years</h3>
                 </div>
 
+                <!-- Card 3 -->
                 <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectWorkYearsChoice(this, 'gt3')">
-                    <button
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-blue-500 hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm">🔊</button>
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm">🔊</button>
                     <img src="image/workyr3.png" alt="more than 3 yrs"
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-sm sm:text-lg">More than 3 years</h3>
+                    <h3 class="text-blue-600 font-semibold text-center">More than 3 years</h3>
                 </div>
 
+                <!-- Card 4 -->
                 <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectWorkYearsChoice(this, 'none')">
-                    <button
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-blue-500 hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm">🔊</button>
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm">🔊</button>
                     <img src="image/workyr4.png" alt="no experience"
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-sm sm:text-lg">None</h3>
+                    <h3 class="text-blue-600 font-semibold text-center">None</h3>
                 </div>
             </div>
 
             <!-- Job Experience Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
                 <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Job Experiences</h2>
-                <p class="text-gray-500 italic mt-4 text-base sm:text-lg">Add one or more previous jobs.</p>
+                <p class="text-gray-600 italic mt-4 text-base sm:text-lg">Add one or more previous jobs.</p>
                 <div id="job_experiences_container" class="space-y-4 mt-4"></div>
                 <template id="job_exp_template">
                     <div
@@ -182,7 +190,7 @@
                         <div class="flex justify-between items-center">
                             <h4 class="font-semibold text-blue-800 text-sm sm:text-base">Job Experience</h4>
                             <button type="button"
-                                class="remove-job text-red-600 text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium transition-colors duration-200">
+                                class="remove-job text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium transition-colors duration-200">
                                 Remove
                             </button>
                         </div>
@@ -190,58 +198,65 @@
                         <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <!-- Job Title -->
                             <div class="flex flex-col">
-                                <label class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job Title</label>
-                                <input
+                                <label for="job_title" class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job
+                                    Title</label>
+                                <input id="job_title" name="job_title"
                                     class="job_title w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
                                     placeholder="e.g. Kitchen Helper" />
                             </div>
 
                             <!-- Company Name -->
                             <div class="flex flex-col">
-                                <label class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Company Name</label>
-                                <input
+                                <label for="company_name"
+                                    class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Company Name</label>
+                                <input id="company_name" name="company_name"
                                     class="company_name w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
                                     placeholder="e.g., McDonald's or University of Makati" />
                             </div>
 
-                            <!-- Job Description (full width) -->
+                            <!-- Job Description -->
                             <div class="sm:col-span-2 flex flex-col">
-                                <label class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job
-                                    Description</label>
-                                <textarea
+                                <label for="job_description"
+                                    class="text-xs sm:text-sm font-medium text-gray-700 mb-1">
+                                    Job Description
+                                </label>
+                                <textarea id="job_description" name="job_description"
                                     class="job_description w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="What you did (e.g. cleaned tables, organized shelves)"></textarea>
+                                    placeholder="What you did (e.g. cleaned tables, organized shelves)">
+                    </textarea>
                             </div>
                         </div>
                     </div>
                 </template>
 
-
                 <input id="work_experiences" type="hidden" value="[]" />
                 <input id="work_years" type="hidden" value="" />
-
-                <!-- Add Button -->
+                
+                <!-- Add Another Work Exp Button -->
                 <div class="mt-6 text-center">
                     <button id="addJobBtn" type="button"
-                        class="bg-blue-500 text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition">
-                        <span class="text-lg sm:text-xl mr-2">➕</span> Add Another Job Experience
+                        class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Another Job Experience
                     </button>
                 </div>
-            </div>
-
-            <!-- Next Button -->
-            <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
-                <div id="workExpError" class="text-red-600 text-sm text-center"></div>
-                <button id="workExpNext" type="button"
-                    class="bg-blue-500 text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md"
-                    onclick="window.location.href='{{ route('registersupportneed') }}'">
-                    Next →
-                </button>
-                <p class="text-gray-600 text-[11px] sm:text-sm mt-2 text-center leading-snug">
-                    Click <span class="text-blue-500 font-medium">"Next"</span> to move to the next page<br>
-                    <span class="italic text-gray-500">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
-                </p>
-            </div>
+                <!-- Next Button -->
+                <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
+                    <div id="workExpError" class="text-red-600 text-sm text-center"></div>
+                    <button id="workExpNext" type="button"
+                        class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md"
+                        onclick="window.location.href='{{ route('registersupportneed') }}'">
+                        Next →
+                    </button>
+                    <p class="text-gray-600 text-[11px] sm:text-sm mt-2 text-center leading-snug">
+                        Click <span class="text-[#1E40AF] font-medium">"Next"</span> to move to the next page<br>
+                        <span class="italic text-[#4B4F58]">(Pindutin ang "Next" upang lumipat sa susunod na
+                            pahina)</span>
+                    </p>
+                </div>
         </form>
     </div>
     <script>
