@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Welcome to MyVerySpecialGuide</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { margin: 0; padding: 0; min-height: 100vh; }
@@ -102,5 +103,9 @@
     });
   })();
 </script>
+</script>
+
+@yield('scripts')
+
 </body>
 </html>

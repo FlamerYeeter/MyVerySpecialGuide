@@ -42,8 +42,143 @@ async function ensureInit() {
     return initPromise;
 }
 
+// Basic CSV parser that handles quoted fields and returns array of rows (each row is array of cells)
+function parseCsv(text) {
+    const rows = [];
+    let i = 0;
+    const len = text.length;
+    let row = [];
+    let cell = '';
+    let inQuotes = false;
+    while (i < len) {
+        const ch = text[i];
+        const chNext = i + 1 < len ? text[i+1] : null;
+        if (inQuotes) {
+            if (ch === '"') {
+                if (chNext === '"') { // escaped quote
+                    cell += '"';
+                    i += 2;
+                    continue;
+                }
+                // end quote
+                inQuotes = false;
+                i++;
+                continue;
+            }
+            cell += ch;
+            i++;
+            continue;
+        }
+
+        if (ch === '"') {
+            inQuotes = true;
+            i++;
+            continue;
+        }
+
+        if (ch === ',') {
+            row.push(cell);
+            cell = '';
+            i++;
+            continue;
+        }
+
+        // handle CRLF or LF
+        if (ch === '\r') {
+            // lookahead for \n
+            if (i + 1 < len && text[i+1] === '\n') i++;
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = '';
+            i++;
+            continue;
+        }
+        if (ch === '\n') {
+            row.push(cell);
+            rows.push(row);
+            row = [];
+            cell = '';
+            i++;
+            continue;
+        }
+
+        // normal char
+        cell += ch;
+        i++;
+    }
+    // push last cell/row
+    if (inQuotes) {
+        // malformed CSV with unclosed quote - still push what we have
+        row.push(cell);
+        rows.push(row);
+    } else {
+        // if anything pending
+        if (cell !== '' || row.length > 0) {
+            row.push(cell);
+            rows.push(row);
+        }
+    }
+    return rows;
+}
+
+// Enrich applicationData with job details read from public CSV file
+async function enrichPayloadWithJobFromCsv(applicationData) {
+    try {
+        const jobId = applicationData && (applicationData.job_id || applicationData.jobId || applicationData.job) ? String(applicationData.job_id || applicationData.jobId || applicationData.job) : '';
+        if (!jobId) return applicationData;
+
+        // fetch CSV (encode space in filename)
+        const csvUrl = encodeURI('/data job posts.csv');
+        const resp = await fetch(csvUrl);
+        if (!resp.ok) return applicationData;
+        const text = await resp.text();
+        const rows = parseCsv(text);
+        if (!rows || rows.length < 2) return applicationData;
+
+        const headers = rows[0].map(h => (h || '').trim());
+        const dataRows = rows.slice(1);
+
+        // find job_id column index if exists
+        let jobIdCol = null;
+        for (let i = 0; i < headers.length; i++) {
+            if (headers[i] && headers[i].toLowerCase() === 'job_id') { jobIdCol = i; break; }
+        }
+
+        let rowFound = null;
+        let rowIndex = null;
+        for (let i = 0; i < dataRows.length; i++) {
+            const r = dataRows[i];
+            if (jobIdCol !== null && r[jobIdCol] && String(r[jobIdCol]) === String(jobId)) { rowFound = r; rowIndex = i; break; }
+            if (!isNaN(jobId) && parseInt(jobId, 10) === i) { rowFound = r; rowIndex = i; break; }
+        }
+        if (!rowFound) return applicationData;
+
+        const raw = {};
+        for (let hi = 0; hi < headers.length; hi++) raw[headers[hi]] = rowFound[hi] !== undefined ? rowFound[hi] : null;
+
+        const job = {
+            title: raw.Title || raw.jobpost || raw.title || '',
+            company: raw.Company || raw.company || '',
+            location: raw.Location || raw.location || '',
+            description: raw.JobDescription || raw.jobDescription || raw.job_requirment || raw['JobRequirment'] || '',
+            raw: raw,
+            row_index: rowIndex
+        };
+
+        applicationData.job = job;
+        return applicationData;
+    } catch (e) {
+        console.debug('enrichPayloadWithJobFromCsv failed', e && e.message ? e.message : e);
+        return applicationData;
+    }
+}
+
 export async function submitJobApplication(applicationData) {
     await ensureInit();
+
+    // Try to enrich payload with job details from CSV before sending/writing so both server and fallback include job
+    try { applicationData = await enrichPayloadWithJobFromCsv(applicationData); } catch(e) { console.debug('submitJobApplication: enrich failed', e); }
 
     // Prefer server-side submit (uses service account / REST) to avoid client Firestore rules issues.
     try {

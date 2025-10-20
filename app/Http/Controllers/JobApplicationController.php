@@ -18,7 +18,59 @@ class JobApplicationController extends Controller
      */
     public function submit(Request $request)
     {
+        // Debug: log that submit was called and current Laravel auth state
+        try {
+            logger()->info('JobApplicationController: submit called', [
+                'laravel_auth' => auth()->check() ? 'authenticated' : 'guest',
+                'laravel_user_id' => auth()->id(),
+                'wantsJson' => $request->wantsJson() || $request->isJson(),
+                'remote_addr' => $request->getClientIp(),
+            ]);
+        } catch (\Throwable $e) {
+            // ignore logging failures
+        }
+
         $data = $request->all();
+
+        // If a job_id was provided, try to enrich the payload with job details from the CSV
+        $jobId = $data['job_id'] ?? $request->query('job_id') ?? null;
+        if ($jobId !== null) {
+            try {
+                $job = $this->getJobFromCsv($jobId);
+                if ($job) {
+                    // nest under 'job' key to keep payload organized
+                    $data['job'] = $job;
+                }
+            } catch (\Throwable $e) {
+                logger()->warning('JobApplicationController: failed to load job details for job_id ' . $jobId . ': ' . $e->getMessage());
+            }
+        }
+
+        // Debug: log whether job details were attached
+        try {
+            logger()->info('JobApplicationController: payload after enrichment', [
+                'has_job' => isset($data['job']),
+                'job_preview' => isset($data['job']) ? (is_array($data['job']) ? array_slice($data['job'], 0, 5) : $data['job']) : null,
+                'job_id' => $jobId,
+            ]);
+        } catch (\Throwable $e) {}
+
+        // If debugging requested, return the enriched payload immediately (skip Firestore write)
+        // Accept either query param ?_debug_enriched=1 or JSON body field _debug_enriched: 1
+        $debugEnriched = false;
+        try {
+            if ($request->query('_debug_enriched')) $debugEnriched = true;
+            if (!$debugEnriched && is_array($data) && array_key_exists('_debug_enriched', $data) && $data['_debug_enriched']) $debugEnriched = true;
+        } catch (\Throwable $e) {
+            // ignore
+        }
+
+        if ($debugEnriched) {
+            // Return JSON with the full payload and the enriched job (if present)
+            if ($request->wantsJson() || $request->isJson() || true) {
+                return response()->json(['debug' => true, 'payload' => $data, 'job' => $data['job'] ?? null]);
+            }
+        }
 
         // Load service account
         $serviceAccountPath = env('FIREBASE_SERVICE_ACCOUNT') ?: storage_path('app/firebase-service-account.json');
@@ -135,11 +187,7 @@ class JobApplicationController extends Controller
     {
         // If associative array (object), map to mapValue
         if (is_array($value) && $this->isAssoc($value)) {
-            $map = [];
-            foreach ($value as $k => $v) {
-                $map[$k] = $this->phpValueToFirestoreField($v);
-            }
-            return $map;
+            return $this->phpArrayToFirestoreFieldsMap($value);
         }
 
         // Otherwise, treat as a single field named 'value'
@@ -157,11 +205,7 @@ class JobApplicationController extends Controller
             $vals = [];
             // If associative, represent as mapValue
             if ($this->isAssoc($v)) {
-                $map = [];
-                foreach ($v as $k => $vv) {
-                    $map[$k] = $this->phpValueToFirestoreField($vv);
-                }
-                return ['mapValue' => ['fields' => $map]];
+                return ['mapValue' => ['fields' => $this->phpArrayToFirestoreFieldsMap($v)]];
             }
             foreach ($v as $item) {
                 $vals[] = $this->phpValueToFirestoreField($item);
@@ -170,6 +214,31 @@ class JobApplicationController extends Controller
         }
         // fallback to stringValue
         return ['stringValue' => (string)$v];
+    }
+
+    // Convert associative PHP array into Firestore fields map with sanitized keys
+    private function phpArrayToFirestoreFieldsMap(array $arr): array
+    {
+        $map = [];
+        foreach ($arr as $k => $v) {
+            // sanitize keys to avoid problematic characters in Firestore field names
+            $key = $this->sanitizeFirestoreFieldKey((string)$k);
+            $map[$key] = $this->phpValueToFirestoreField($v);
+        }
+        return $map;
+    }
+
+    // Sanitize a string to use as a Firestore map field key: keep alphanumerics and underscores
+    private function sanitizeFirestoreFieldKey(string $key): string
+    {
+        $k = trim($key);
+        // replace sequences of non-alphanumeric/underscore characters with underscore
+        $k = preg_replace('/[^A-Za-z0-9_]+/', '_', $k);
+        // ensure it doesn't start with a digit (optional, but safer)
+        if (preg_match('/^[0-9]/', $k)) {
+            $k = '_' . $k;
+        }
+        return $k;
     }
 
     private function isAssoc(array $arr)
@@ -204,6 +273,61 @@ class JobApplicationController extends Controller
     private function base64UrlEncode(string $input): string
     {
         return rtrim(strtr(base64_encode($input), '+/', '-_'), '=');
+    }
+
+    // Helper: read the CSV and return a job array for given job id (numeric index or job_id column)
+    private function getJobFromCsv($jobId)
+    {
+        $csvPath = public_path('data job posts.csv');
+        if (!file_exists($csvPath)) return null;
+
+        if (($handle = fopen($csvPath, 'r')) === false) return null;
+        $headers = fgetcsv($handle);
+        if (!$headers) { fclose($handle); return null; }
+
+    $rows = [];
+    while (($row = fgetcsv($handle)) !== false) $rows[] = $row;
+        fclose($handle);
+
+        // Attempt to find header named job_id
+        $jobIdCol = null;
+        foreach ($headers as $i => $h) {
+            if (strtolower(trim($h)) === 'job_id') { $jobIdCol = $i; break; }
+        }
+
+        $rowFound = null;
+        $rowIndex = null;
+        foreach ($rows as $i => $r) {
+            if ($jobIdCol !== null && isset($r[$jobIdCol]) && strval($r[$jobIdCol]) === strval($jobId)) { $rowFound = $r; $rowIndex = $i; break; }
+            if (is_numeric($jobId) && intval($jobId) === $i) { $rowFound = $r; $rowIndex = $i; break; }
+        }
+
+        if (empty($rowFound)) return null;
+
+        $map = array_change_key_case(array_flip($headers));
+        $get = function($names) use ($rowFound, $map) {
+            foreach ((array)$names as $n) {
+                $k = strtolower(trim($n));
+                if (isset($map[$k]) && isset($rowFound[$map[$k]])) return $rowFound[$map[$k]];
+            }
+            return '';
+        };
+
+        // Build associative raw map of header->value
+        $raw = [];
+        foreach ($headers as $hi => $h) {
+            $raw[$h] = $rowFound[$hi] ?? null;
+        }
+
+        return [
+            'title' => $get(['title','jobtitle','job_title','position','job name']) ?: null,
+            'company' => $get(['company','companyname','employer']) ?: null,
+            'location' => $get(['location','address','city']) ?: null,
+            'type' => $get(['type','jobtype','employment_type']) ?: null,
+            'description' => $get(['jobdescription','job_requirment','job_requirement','description']) ?: null,
+            'raw' => $raw,
+            'row_index' => $rowIndex,
+        ];
     }
 }
 

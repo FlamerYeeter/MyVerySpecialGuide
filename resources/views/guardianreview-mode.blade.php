@@ -28,39 +28,70 @@
   </section>
 
   <!-- Job Card -->
-  <section class="max-w-4xl mx-auto mt-6 border-2 border-yellow-400 bg-yellow-50/30 rounded-2xl p-6">
+  @php
+    $job = null;
+    $jobId = request('job_id');
+    $csv_path = public_path('data job posts.csv');
+    if ($jobId !== null && file_exists($csv_path) && ($h = fopen($csv_path, 'r')) !== false) {
+        $header = fgetcsv($h);
+        $cols = array_map(function($h){ return trim($h); }, $header ?: []);
+        $i = 0;
+        while (($row = fgetcsv($h)) !== false) {
+            if ($i == intval($jobId)) {
+                $assoc = array_combine($cols, $row) ?: [];
+                $title = $assoc['Title'] ?? $assoc['jobpost'] ?? '';
+                $company = $assoc['Company'] ?? '';
+                $location = $assoc['Location'] ?? '';
+                $hours = $assoc['Duration'] ?? $assoc['Term'] ?? '';
+                $desc = $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? $assoc['jobpost'] ?? '';
+                // simple match score reused from pending page
+                $keywords = ['hands', 'routine', 'team', 'entry', 'support', 'clean', 'wash', 'prepare'];
+                $cnt = 0; foreach ($keywords as $k) { if (stripos($desc, $k) !== false) $cnt++; }
+                $match_score = min(100, intval( round(($cnt / max(1, count($keywords))) * 100) ));
+                $job = compact('title','company','location','hours','desc','match_score','assoc');
+                break;
+            }
+            $i++;
+        }
+        fclose($h);
+    }
 
-    <!-- Header -->
+    // load guardian approval for this job if present
+    $approval = null;
+    $approvals_path = storage_path('app/guardian_job_approvals.json');
+    if (file_exists($approvals_path)) {
+        $map = json_decode(file_get_contents($approvals_path), true) ?: [];
+        if ($jobId !== null && isset($map[(string)$jobId])) $approval = $map[(string)$jobId];
+    }
+  @endphp
+
+  <section class="max-w-4xl mx-auto mt-6 border-2 border-yellow-400 bg-yellow-50/30 rounded-2xl p-6">
+    @if($job)
     <div class="flex flex-wrap justify-between items-center">
       <div class="flex items-center space-x-2">
         <img src="/images/job-icon.png" alt="Job Icon" class="w-6 h-6">
-        <h3 class="text-lg font-semibold">Kitchen Helper</h3>
+        <h3 class="text-lg font-semibold">{{ $job['title'] }}</h3>
       </div>
 
-      <div class="flex space-x-2">
-        <button class="bg-green-600 text-white text-sm px-4 py-2 rounded-md hover:bg-green-700 transition">Approve Job</button>
-        <button class="bg-yellow-500 text-white text-sm px-4 py-2 rounded-md hover:bg-yellow-600 transition">Flag as Not Suitable</button>
-        <span class="bg-yellow-200 text-yellow-800 text-sm px-4 py-2 rounded-full">Pending Review</span>
+      <div class="flex space-x-2 items-center">
+        <button id="approve-btn" data-jobid="{{ $jobId }}" class="bg-green-600 text-white text-sm px-4 py-2 rounded-md hover:bg-green-700 transition">Approve Job</button>
+        <button id="flag-btn" data-jobid="{{ $jobId }}" class="bg-yellow-500 text-white text-sm px-4 py-2 rounded-md hover:bg-yellow-600 transition">Flag as Not Suitable</button>
+        <span class="bg-yellow-200 text-yellow-800 text-sm px-4 py-2 rounded-full">{{ $approval['status'] ?? 'Pending Review' }}</span>
       </div>
     </div>
 
-    <!-- Match -->
     <div class="mt-4">
-      <span class="bg-green-200 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">90% Match</span>
+      <span id="match-badge" class="bg-green-200 text-green-800 text-sm font-semibold px-3 py-1 rounded-full">{{ $job['match_score'] }}% Match</span>
     </div>
 
-    <!-- Details -->
     <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-      <div class="bg-gray-100 px-3 py-2 rounded-md">
-        <span class="font-semibold">Company Name:</span> KFC
-      </div>
-      <div class="bg-gray-100 px-3 py-2 rounded-md">
-        <span class="font-semibold">Location:</span> Taguig City
-      </div>
-      <div class="bg-gray-100 px-3 py-2 rounded-md">
-        <span class="font-semibold">Hours:</span> Part-time
-      </div>
+      <div class="bg-gray-100 px-3 py-2 rounded-md"><span class="font-semibold">Company Name:</span> {{ $job['company'] }}</div>
+      <div class="bg-gray-100 px-3 py-2 rounded-md"><span class="font-semibold">Location:</span> {{ $job['location'] }}</div>
+      <div class="bg-gray-100 px-3 py-2 rounded-md"><span class="font-semibold">Hours:</span> {{ $job['hours'] }}</div>
     </div>
+    @else
+      <div class="p-6">Job not found. Go back to <a href="{{ route('guardianreview.pending') }}">Pending Review</a>.</div>
+    @endif
   </section>
 
   <!-- Why this Job Matches -->
@@ -69,12 +100,11 @@
       <img src="/images/lightbulb-icon.png" alt="Lightbulb Icon" class="w-5 h-5">
       <h4 class="font-semibold text-gray-700">Why this Job Matches</h4>
     </div>
-
-    <ul class="list-disc pl-6 text-sm text-gray-700 space-y-2">
-      <li><span class="font-semibold">Hands-On Work Skills:</span> Juan excels at practical, hands-on tasks. This position involves washing dishes, preparing vegetables, and organizing – all activities that align with his strengths in following clear, physical task sequences.</li>
-      <li><span class="font-semibold">Structured Routines:</span> The kitchen follows predictable daily routines with clear checklists and procedures. Juan thrives in environments with consistent structures and step-by-step instructions, which this role provides.</li>
-      <li><span class="font-semibold">Team Environment:</span> Juan is described as cooperative and helpful. The kitchen team works collaboratively, and his willingness to support others makes him a valuable team member in a busy food service setting.</li>
-    </ul>
+    @if($job)
+      <p class="text-sm text-gray-700 leading-relaxed">{{ $job['desc'] }}</p>
+    @else
+      <p class="text-sm text-gray-700 leading-relaxed">No description available.</p>
+    @endif
   </section>
 
   <!-- Potential Concerns -->
@@ -105,11 +135,60 @@
       <img src="/images/feedback-icon.png" alt="Feedback Icon" class="w-5 h-5">
       <h4 class="font-semibold text-gray-700">Add your Feedback (Optional)</h4>
     </div>
-    <textarea
-      placeholder="Share your thoughts about this job suggestion"
-      class="w-full rounded-md border border-gray-300 p-3 text-sm text-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:outline-none bg-white"
-      rows="3"></textarea>
+    <textarea id="guardian-feedback" placeholder="Share your thoughts about this job suggestion" class="w-full rounded-md border border-gray-300 p-3 text-sm text-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:outline-none bg-white" rows="3">{{ $approval['feedback'] ?? '' }}</textarea>
   </section>
+
+  @push('scripts')
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const jobId = '{{ $jobId }}';
+    const approveBtn = document.getElementById('approve-btn');
+    const flagBtn = document.getElementById('flag-btn');
+    const feedbackEl = document.getElementById('guardian-feedback');
+
+    function postAction(url, body) {
+      return fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify(body || {})
+      }).then(r => r.json());
+    }
+
+    if (approveBtn) approveBtn.addEventListener('click', function(){
+      const fb = feedbackEl?.value || '';
+      approveBtn.disabled = true;
+      postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/approve', { feedback: fb }).then(resp => {
+        if (resp && resp.success) {
+          document.getElementById('match-badge').textContent = (resp.approval?.status === 'approved' ? '{{ $job['match_score'] }}% Match' : document.getElementById('match-badge').textContent);
+          // show status
+          approveBtn.classList.add('opacity-70');
+          flagBtn.classList.add('opacity-40');
+          location.reload();
+        } else {
+          alert('Approve failed');
+          approveBtn.disabled = false;
+        }
+      }).catch(e=>{ alert('Approve failed'); approveBtn.disabled = false; console.error(e); });
+    });
+
+    if (flagBtn) flagBtn.addEventListener('click', function(){
+      const fb = feedbackEl?.value || '';
+      flagBtn.disabled = true;
+      postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/flag', { feedback: fb }).then(resp => {
+        if (resp && resp.success) {
+          location.reload();
+        } else {
+          alert('Flag failed');
+          flagBtn.disabled = false;
+        }
+      }).catch(e=>{ alert('Flag failed'); flagBtn.disabled = false; console.error(e); });
+    });
+  });
+  </script>
+  @endpush
 
   <div class="h-20"></div>
 </div>

@@ -84,10 +84,25 @@
     <section class="max-w-5xl mx-auto mt-10 px-4">
       <div class="flex flex-col items-center">
         <img src="/images/ipetclub.png" alt="iPet Club" class="w-40 h-40 object-contain mb-4">
-        <div class="flex space-x-4 mb-6">
-          <a href="{{ route('job.application.1', ['job_id' => $job_id]) }}" class="bg-pink-500 text-white px-6 py-2 rounded hover:bg-pink-600 transition">Apply</a>
-           <button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Saved</button>
-         </div>
+            <div class="flex space-x-4 mb-6">
+              @php
+                // check guardian approvals for this job
+                $approvals_path = storage_path('app/guardian_job_approvals.json');
+                $guardianApprovals = [];
+                if (file_exists($approvals_path)) $guardianApprovals = json_decode(file_get_contents($approvals_path), true) ?: [];
+                $isApproved = false;
+                $jid = (string)$job_id;
+                if (isset($guardianApprovals[$jid]) && isset($guardianApprovals[$jid]['status']) && $guardianApprovals[$jid]['status'] === 'approved') $isApproved = true;
+              @endphp
+
+              @if($isApproved)
+                <a href="{{ route('job.application.1', ['job_id' => $job_id]) }}" class="bg-pink-500 text-white px-6 py-2 rounded hover:bg-pink-600 transition">Apply</a>
+              @else
+                <button class="bg-gray-300 text-gray-700 px-6 py-2 rounded" disabled title="This job is pending guardian approval">Apply (Pending Guardian)</button>
+              @endif
+
+               <button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Saved</button>
+             </div>
        </div>
        <div class="bg-white rounded-lg p-6 shadow-sm">
         <h2 class="text-2xl font-bold text-gray-800">{{ $job['title'] ?: $job['job_description'] }}</h2>

@@ -33,9 +33,26 @@ Route::get('/why-this-job-1', function () {
     return view('why-this-job-1');
 })->name('why.this.job.1');
 
-Route::get('/guardian-review', function () {
+// Guardian review routes: pending list and detailed mode
+Route::get('/guardian-review/pending', function () {
+    return view('guardianreview-pending-review');
+})->name('guardianreview.pending');
+
+Route::get('/user-review', function () {
     return view('guardianreview-mode');
+})->name('user.review');
+
+// Backward-compatible redirect for older links that still use /guardian-review
+Route::get('/guardian-review', function () {
+    return redirect()->route('guardianreview.pending');
 })->name('guardian.review');
+
+// Application review API endpoints (shared user/guardian module)
+use App\Http\Controllers\GuardianReviewController;
+use App\Http\Controllers\GuardianJobController;
+Route::get('/api/applications', [GuardianReviewController::class, 'list'])->name('api.applications.list')->middleware('auth');
+Route::post('/api/applications/{docId}/approve', [GuardianReviewController::class, 'approve'])->name('api.applications.approve')->middleware('auth');
+Route::post('/api/applications/{docId}/flag', [GuardianReviewController::class, 'flag'])->name('api.applications.flag')->middleware('auth');
 
 Route::get('/career-goals-progress', function () {
     return view('career-goals-progress');
@@ -203,6 +220,11 @@ Route::get('/job-details', function () {
 Route::get('/job-matches', function () {
     return view('job-matches');
 })->name('job.matches');
+
+// API for guardian to approve/flag jobs (stored locally in storage/app/guardian_job_approvals.json)
+Route::get('/api/guardian/jobs', [GuardianJobController::class, 'list'])->name('api.guardian.jobs')->middleware('auth');
+Route::post('/api/guardian/jobs/{jobId}/approve', [GuardianJobController::class, 'approve'])->name('api.guardian.jobs.approve')->middleware('auth');
+Route::post('/api/guardian/jobs/{jobId}/flag', [GuardianJobController::class, 'flag'])->name('api.guardian.jobs.flag')->middleware('auth');
 
 // Endpoint to issue Firebase custom token for current Laravel user
 Route::get('/firebase-token', [FirebaseTokenController::class, 'token'])->middleware('auth')->name('firebase.token');

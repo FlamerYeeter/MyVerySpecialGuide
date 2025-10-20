@@ -58,7 +58,7 @@
         </a>
 
         {{-- Navigation Card 4 --}}
-        <a href="{{ route('guardian.review') }}" class="block">
+    <a href="{{ route('guardianreview.pending') }}" class="block">
         <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-blue-200 p-3 rounded-md">
                 <img src="{{ asset('images/guardian.png') }}" class="w-10 h-10" alt="">
