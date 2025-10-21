@@ -22,10 +22,10 @@ start_time = time.time()
 # Load only the first 5000 rows for speed.
 # To run on the full dataset, remove .head(5000)
 try:
-    df = pd.read_csv('public/data job posts.csv').head(5000)
-    print("Successfully loaded the first 5000 rows of 'public/data job posts.csv'.")
+    df = pd.read_csv('public/postings.csv').head(5000)
+    print("Successfully loaded the first 5000 rows of 'public/postings.csv'.")
 except FileNotFoundError:
-    print("Error: 'public/data job posts.csv' not found. Using example fallback.")
+    print("Error: 'public/postings.csv' not found. Using example fallback.")
     df = pd.DataFrame({
         'JobDescription': ['Software engineer with java', 'Data analyst with python'],
         'RequiredQual': ['I know java and spring boot', 'I use python for data analysis'],
@@ -34,10 +34,30 @@ except FileNotFoundError:
     })
 
 # --- Adapt the new dataset ---
-df = df.rename(columns={'JobDescription': 'job_description', 'RequiredQual': 'resume'})
+# Map common columns from the new postings.csv schema into the columns
+# expected by the evaluation script (job_description, resume).
+# postings.csv commonly includes 'description' and 'skills_desc'.
+title_series = df['Title'] if 'Title' in df.columns else pd.Series([''] * len(df))
+company_series = df['Company'] if 'Company' in df.columns else pd.Series([''] * len(df))
+
+if 'description' in df.columns:
+    df['job_description'] = df['description']
+elif 'JobDescription' in df.columns:
+    df['job_description'] = df['JobDescription']
+else:
+    # Fallback: combine title and company into a pseudo-description
+    df['job_description'] = (title_series.astype(str) + ' ' + company_series.astype(str)).str.strip()
+
+if 'skills_desc' in df.columns:
+    df['resume'] = df['skills_desc']
+elif 'RequiredQual' in df.columns:
+    df['resume'] = df['RequiredQual']
+else:
+    df['resume'] = ''
+
 df['job_description'] = df['job_description'].fillna('')
 df['resume'] = df['resume'].fillna('')
-df['match_score'] = 5 # Synthetic match score
+df['match_score'] = 5  # Synthetic match score
 
 # --- Add IDs and Preprocess Text ---
 df['job_id'] = df.index

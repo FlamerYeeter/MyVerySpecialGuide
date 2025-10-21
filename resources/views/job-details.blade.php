@@ -2,7 +2,7 @@
 
 @section('content')
 @php
-    $csv_path = public_path('data job posts.csv');
+  $csv_path = public_path('postings.csv');
     $job = null;
     $job_id = request('job_id');
     if ($job_id !== null && file_exists($csv_path)) {
@@ -35,10 +35,18 @@
                 return '';
             };
 
-            $i = 0;
-            while (($row = fgetcsv($handle)) !== false) {
-                if ($i == intval($job_id)) {
-                    $assoc = array_combine($cols, $row) ?: [];
+      $i = 0;
+      $maxRows = 5000;
+      while (($row = fgetcsv($handle)) !== false) {
+        if (count($row) < $numCols) {
+          $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
+        } elseif (count($row) > $numCols) {
+          $row = array_slice($row, 0, $numCols);
+        }
+        if (count($row) !== $numCols) continue;
+        if ($i >= $maxRows) break;
+        if ($i == intval($job_id)) {
+          $assoc = array_combine($cols, $row) ?: [];
                     $textForInference = trim(($assoc['JobDescription'] ?? '') . ' ' . ($assoc['JobRequirment'] ?? '') . ' ' . ($assoc['jobpost'] ?? ''));
                     $inferred_fit = $infer_fit_level($textForInference);
                     $inferred_growth = $infer_growth_potential($textForInference);

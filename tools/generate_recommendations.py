@@ -30,15 +30,20 @@ try:
 except LookupError:
     nltk.download('stopwords')
 
-# configure logging for this module: write to tools/reco.log and to console
+# configure logging for this module: prefer console (stderr). Try file-based logging if writable.
 _LOG_PATH = os.path.join(os.path.dirname(__file__), 'reco.log')
+handlers = [logging.StreamHandler(sys.stderr)]
+try:
+    fh = logging.FileHandler(_LOG_PATH, encoding='utf-8')
+    handlers.insert(0, fh)
+except Exception:
+    # unable to create file handler (permissions); continue with stderr only
+    pass
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler(_LOG_PATH, encoding='utf-8'),
-        logging.StreamHandler(sys.stdout)
-    ]
+    handlers=handlers
 )
 logger = logging.getLogger(__name__)
 
@@ -51,15 +56,13 @@ def preprocess_text(text):
     sw = set(stopwords.words('english'))
     return ' '.join([w for w in t.split() if w and w not in sw])
 
-def generate(input_csv, output_json, max_features=5000):
+def generate(input_csv, output_json=None, max_features=5000, print_per_user=False, users_json=None, top_n=10, alpha=0.6, neighbors=5):
     logger.info("generate() called with input=%s output=%s max_features=%s", input_csv, output_json, max_features)
     # If the provided path doesn't exist, try a few common filenames used in this project
     COMMON_INPUTS = [
         input_csv,
-        'public/data job posts.csv',
-        'public/resume_job_matching_dataset.csv',
-        'resume_job_matching_dataset.csv',
-        'data job posts.csv',
+        'public/postings.csv',
+        'postings.csv',
     ]
     resolved = None
     for p in COMMON_INPUTS:
@@ -135,8 +138,20 @@ def generate(input_csv, output_json, max_features=5000):
         if df['match_score'].sum() == 0:
             df['match_score'] = 5.0
 
+    # build a combined text corpus from multiple posting fields to ensure TF-IDF has content
+    combined_fields = []
+    for f in ['description', 'job_description', 'Title', 'Company', 'skills_desc', 'posting_domain', 'formatted_experience_level']:
+        if f in df.columns:
+            combined_fields.append(df[f].fillna('').astype(str))
+    if combined_fields:
+        df['text_corpus'] = combined_fields[0]
+        for part in combined_fields[1:]:
+            df['text_corpus'] = df['text_corpus'] + ' ' + part
+    else:
+        df['text_corpus'] = (df['job_description'].fillna('') + ' ' + df['resume'].fillna('')).astype(str)
+
     # preprocessing for TF-IDF
-    df['clean_job_description'] = df['job_description'].apply(preprocess_text)
+    df['clean_job_description'] = df['text_corpus'].apply(preprocess_text)
     df['clean_resume'] = df['resume'].apply(preprocess_text)
 
     # TF-IDF vectorization (focused features)
@@ -146,21 +161,31 @@ def generate(input_csv, output_json, max_features=5000):
         logger.info("Fitting TF-IDF (max_features=%s)", min(max_features, 4000))
         job_tfidf = tfidf.fit_transform(df['clean_job_description'])
         resume_tfidf = tfidf.transform(df['clean_resume'])
-    except ValueError:
-        # fallback: too small corpus, fit on combined text
-        logger.warning("TF-IDF ValueError (small corpus), falling back to combined fit")
+    except Exception as e:
+        logger.warning("TF-IDF word-based fit failed: %s — attempting robust fallback", e)
         try:
+            # Try combining fields and a smaller feature set
             combined = (df['clean_job_description'] + ' ' + df['clean_resume']).tolist()
-            tfidf = TfidfVectorizer(max_features=2000)
+            tfidf = TfidfVectorizer(min_df=1, max_df=0.99, max_features=min(2000, max_features))
             tfidf.fit(combined)
             job_tfidf = tfidf.transform(df['clean_job_description'])
             resume_tfidf = tfidf.transform(df['clean_resume'])
-        except Exception:
-            logger.exception("Fallback TF-IDF fit failed")
-            # fallback to zero matrices
-            from scipy.sparse import csr_matrix
-            job_tfidf = csr_matrix((len(df), 0))
-            resume_tfidf = csr_matrix((len(df), 0))
+        except Exception as e2:
+            logger.warning("Combined TF-IDF fallback failed: %s — trying char n-gram fallback", e2)
+            try:
+                # final fallback: character n-grams (robust to short/non-word tokens)
+                tfidf_char = TfidfVectorizer(analyzer='char_wb', ngram_range=(3,5), max_features=min(2000, max_features))
+                # fit on combined content
+                combined = (df['clean_job_description'] + ' ' + df['clean_resume']).tolist()
+                tfidf_char.fit(combined)
+                job_tfidf = tfidf_char.transform(df['clean_job_description'])
+                resume_tfidf = tfidf_char.transform(df['clean_resume'])
+            except Exception:
+                logger.exception("All TF-IDF fallbacks failed")
+                # fallback to zero matrices
+                from scipy.sparse import csr_matrix
+                job_tfidf = csr_matrix((len(df), 0))
+                resume_tfidf = csr_matrix((len(df), 0))
 
     # compute per-row similarity (diag: resume vs own job_description)
     # if resume/description vectors are zero, similarity will be 0
@@ -230,21 +255,254 @@ def generate(input_csv, output_json, max_features=5000):
         }
         recommendations.append(rec)
 
-    # write JSON
-    try:
-        with open(output_json, 'w', encoding='utf-8') as f:
-            json.dump(recommendations, f, ensure_ascii=False, indent=2)
-        logger.info("Wrote %s recommendations to %s", len(recommendations), output_json)
-    except Exception as e:
-        logger.exception("Failed to write recommendations.json: %s", e)
-        raise
+    # if print_per_user mode, compute TF-IDF for job texts and score per provided user profile(s)
+    if print_per_user and users_json:
+        # build job corpus text
+        job_texts = [(i, ' '.join([str(r.get('job_description','')), str(r.get('Title','')), str(r.get('Company','')), str(r.get('skills_desc',''))])) for i, r in enumerate(recommendations)]
+        ids, corpus = zip(*job_texts)
+
+        # Preprocess corpus to avoid empty-vocabulary errors (stopword-only docs)
+        cleaned_corpus = [preprocess_text(s) for s in corpus]
+
+        # Try word-based TF-IDF first, then char n-gram fallback, then zero-matrix fallback
+        job_matrix = None
+        vect = None
+        try:
+            vect = TfidfVectorizer(min_df=1, max_df=0.95, max_features=min(max_features, 8000))
+            logger.info("Fitting TF-IDF on %s job texts (word-based)", len(corpus))
+            job_matrix = vect.fit_transform(cleaned_corpus)
+        except Exception as e:
+            logger.warning("Word TF-IDF on job texts failed: %s; trying char n-gram fallback", e)
+            try:
+                vect = TfidfVectorizer(analyzer='char_wb', ngram_range=(3,5), max_features=min(2000, max_features))
+                logger.info("Fitting char n-gram TF-IDF on %s job texts", len(corpus))
+                job_matrix = vect.fit_transform(cleaned_corpus)
+            except Exception as e2:
+                logger.warning("Char n-gram TF-IDF failed: %s; falling back to zero matrix", e2)
+                from scipy.sparse import csr_matrix
+                job_matrix = csr_matrix((len(corpus), 0))
+
+        # load users JSON (path or stdin)
+        if users_json == '-' or users_json is None:
+            users = json.load(sys.stdin)
+        else:
+            with open(users_json, 'r', encoding='utf-8') as uf:
+                users = json.load(uf)
+
+        # users should be a list of user objects or a dict of uid->profile
+        user_list = []
+        if isinstance(users, dict):
+            for uid, profile in users.items():
+                user_list.append({'uid': uid, 'profile': profile})
+        elif isinstance(users, list):
+            for p in users:
+                if isinstance(p, dict) and ('uid' in p or 'profile' in p):
+                    user_list.append({'uid': p.get('uid', None), 'profile': p.get('profile', p)})
+                else:
+                    user_list.append({'uid': None, 'profile': p})
+        else:
+            logger.error('Unsupported users JSON format')
+            return 2
+
+        out = {}
+
+        # Build user texts for all users first (so we can compute user-user similarities)
+        user_texts_list = []
+        for u in user_list:
+            uid = u.get('uid') or 'anonymous'
+            prof = u.get('profile') or {}
+            text_parts = []
+            try:
+                jp1 = prof.get('jobPreferences', {}).get('jobpref1')
+                jp2 = prof.get('jobPreferences', {}).get('jobpref2')
+                if jp1:
+                    try:
+                        arr = json.loads(jp1) if isinstance(jp1, str) else jp1
+                        text_parts.extend(arr if isinstance(arr, list) else [arr])
+                    except Exception:
+                        text_parts.append(str(jp1))
+                if jp2:
+                    try:
+                        arr = json.loads(jp2) if isinstance(jp2, str) else jp2
+                        text_parts.extend(arr if isinstance(arr, list) else [arr])
+                    except Exception:
+                        text_parts.append(str(jp2))
+                sk1 = prof.get('skills', {}).get('skills_page1')
+                sk2 = prof.get('skills', {}).get('skills_page2')
+                for sk in (sk1, sk2):
+                    if sk:
+                        try:
+                            arr = json.loads(sk) if isinstance(sk, str) else sk
+                            text_parts.extend(arr if isinstance(arr, list) else [arr])
+                        except Exception:
+                            text_parts.append(str(sk))
+                workplace = prof.get('workplace', {}).get('workplace_choice')
+                if workplace:
+                    text_parts.append(workplace)
+            except Exception:
+                logger.exception('Failed to build user text during initial pass for uid=%s', uid)
+            user_text = ' '.join([str(x) for x in text_parts if x])
+            user_texts_list.append((uid, user_text))
+
+        # Vectorize user texts in the same TF-IDF space as jobs (if available)
+        user_vecs = None
+        if job_matrix is None or (hasattr(job_matrix, 'shape') and job_matrix.shape[1] == 0):
+            # No features: create zero vectors
+            user_vecs = np.zeros((len(user_texts_list), 0))
+        else:
+            cleaned_user_texts = [preprocess_text(t) for (_uid, t) in user_texts_list]
+            try:
+                user_vecs = vect.transform(cleaned_user_texts)
+            except Exception as e:
+                logger.warning('Failed to transform user texts with vect: %s', e)
+                # try fallback with a fresh vectorizer fit on combined user+job texts
+                try:
+                    fallback_vect = TfidfVectorizer(min_df=1, max_df=0.95, max_features=min(max_features, 8000))
+                    combined_fit = cleaned_corpus + cleaned_user_texts
+                    fallback_vect.fit(combined_fit)
+                    user_vecs = fallback_vect.transform(cleaned_user_texts)
+                except Exception:
+                    logger.exception('Failed to vectorize user texts; using zero user vectors')
+                    from scipy.sparse import csr_matrix
+                    user_vecs = csr_matrix((len(user_texts_list), 0))
+
+        # Precompute per-user content similarity to jobs (content_scores_map: uid -> job score array)
+        content_scores_map = {}
+        if job_matrix is None or (hasattr(job_matrix, 'shape') and job_matrix.shape[1] == 0):
+            # zero matrix: all zeros
+            for i, (uid, _) in enumerate(user_texts_list):
+                content_scores_map[uid] = np.zeros(len(corpus), dtype=float)
+        else:
+            # compute cosine similarity of each user_vec to job_matrix
+            try:
+                sims_matrix = cosine_similarity(user_vecs, job_matrix)
+                for i, (uid, _) in enumerate(user_texts_list):
+                    content_scores_map[uid] = sims_matrix[i].astype(float)
+            except Exception:
+                logger.exception('Failed to compute user->job similarity matrix; defaulting to zeros')
+                for i, (uid, _) in enumerate(user_texts_list):
+                    content_scores_map[uid] = np.zeros(len(corpus), dtype=float)
+
+        # Compute user-user similarity (collaborative) using user_vecs
+        user_similarity = None
+        if job_matrix is None or (hasattr(job_matrix, 'shape') and job_matrix.shape[1] == 0) or (hasattr(user_vecs, 'shape') and user_vecs.shape[1] == 0):
+            user_similarity = np.zeros((len(user_texts_list), len(user_texts_list)))
+        else:
+            try:
+                user_similarity = cosine_similarity(user_vecs)
+            except Exception:
+                logger.exception('Failed to compute user-user similarity; using zeros')
+                user_similarity = np.zeros((len(user_texts_list), len(user_texts_list)))
+
+        # Now build per-user outputs using neighbor aggregation
+        for ui, (uid, _utext) in enumerate(user_texts_list):
+            prof = user_list[ui].get('profile') or {}
+            # build user text from jobPreferences and skills and workplace
+            text_parts = []
+            try:
+                jp1 = prof.get('jobPreferences', {}).get('jobpref1')
+                jp2 = prof.get('jobPreferences', {}).get('jobpref2')
+                if jp1:
+                    try:
+                        arr = json.loads(jp1) if isinstance(jp1, str) else jp1
+                        text_parts.extend(arr if isinstance(arr, list) else [arr])
+                    except Exception:
+                        text_parts.append(str(jp1))
+                if jp2:
+                    try:
+                        arr = json.loads(jp2) if isinstance(jp2, str) else jp2
+                        text_parts.extend(arr if isinstance(arr, list) else [arr])
+                    except Exception:
+                        text_parts.append(str(jp2))
+                skills_text = ''
+                sk1 = prof.get('skills', {}).get('skills_page1')
+                sk2 = prof.get('skills', {}).get('skills_page2')
+                for sk in (sk1, sk2):
+                    if sk:
+                        try:
+                            arr = json.loads(sk) if isinstance(sk, str) else sk
+                            text_parts.extend(arr if isinstance(arr, list) else [arr])
+                        except Exception:
+                            text_parts.append(str(sk))
+                workplace = prof.get('workplace', {}).get('workplace_choice')
+                if workplace:
+                    text_parts.append(workplace)
+            except Exception:
+                logger.exception('Failed to build user text for uid=%s', uid)
+
+            user_text = ' '.join([str(x) for x in text_parts if x])
+            # If job_matrix has zero features (fallback), return zero similarities
+            # content-based scores for this user (vectorized earlier)
+            content_scores = content_scores_map.get(uid, np.zeros(len(corpus), dtype=float))
+
+            # collaborative aggregation: weighted sum of neighbor content scores
+            coll_scores = np.zeros(len(corpus), dtype=float)
+            # find neighbors (exclude self)
+            if len(user_texts_list) > 1:
+                sims_to_others = user_similarity[ui].copy()
+                sims_to_others[ui] = -1.0  # exclude self
+                neighbor_idx = sims_to_others.argsort()[-neighbors:][::-1]
+                weights = sims_to_others[neighbor_idx]
+                # ignore negative or zero weights
+                pos_mask = weights > 0
+                if pos_mask.any():
+                    w = weights[pos_mask]
+                    idxs = neighbor_idx[pos_mask]
+                    agg = np.zeros(len(corpus), dtype=float)
+                    for kpos, nid in enumerate(idxs):
+                        neighbor_uid = user_texts_list[nid][0]
+                        neighbor_scores = content_scores_map.get(neighbor_uid, np.zeros(len(corpus), dtype=float))
+                        agg += float(w[kpos]) * neighbor_scores
+                    coll_scores = agg / (float(w.sum()) if float(w.sum()) > 0 else 1.0)
+                else:
+                    coll_scores = np.zeros(len(corpus), dtype=float)
+            else:
+                coll_scores = np.zeros(len(corpus), dtype=float)
+
+            # final hybrid score: alpha*content + (1-alpha)*collaborative
+            try:
+                hybrid_scores = (alpha * content_scores) + ((1.0 - alpha) * coll_scores)
+            except Exception:
+                hybrid_scores = content_scores
+
+            # pick top N by hybrid score
+            top_idx = np.argsort(hybrid_scores)[-top_n:][::-1]
+            recs_for_user = []
+            for j in top_idx:
+                job_idx = ids[j]
+                rec_item = recommendations[job_idx]
+                rec_item_out = rec_item.copy()
+                rec_item_out['content_score'] = float(content_scores[j])
+                rec_item_out['collaborative_score'] = float(coll_scores[j])
+                rec_item_out['hybrid_score'] = float(hybrid_scores[j])
+                recs_for_user.append(rec_item_out)
+            out[uid] = recs_for_user
+
+        # print to stdout as JSON
+        print(json.dumps(out, ensure_ascii=False, indent=2))
+        return 0
+
+    # write JSON (fallback behavior)
+    if output_json:
+        try:
+            with open(output_json, 'w', encoding='utf-8') as f:
+                json.dump(recommendations, f, ensure_ascii=False, indent=2)
+            logger.info("Wrote %s recommendations to %s", len(recommendations), output_json)
+        except Exception as e:
+            logger.exception("Failed to write recommendations.json: %s", e)
+            raise
 
     return 0
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Generate recommendations.json from CSV")
-    parser.add_argument('--input', default='public/resume_job_matching_dataset.csv', help='path to input CSV')
-    parser.add_argument('--output', default='public/recommendations.json', help='path to output JSON')
+    parser.add_argument('--input', default='public/postings.csv', help='path to input CSV')
+    parser.add_argument('--output', default=None, help='path to output JSON (omit for print-per-user)')
     parser.add_argument('--max-features', type=int, default=5000, help='max TF-IDF features')
+    parser.add_argument('--print-per-user', action='store_true', help='print top recommendations per user to stdout (requires --users)')
+    parser.add_argument('--users', default=None, help="path to users JSON or '-' to read stdin")
+    parser.add_argument('--alpha', type=float, default=0.6, help='blend factor: alpha*content + (1-alpha)*collaborative')
+    parser.add_argument('--neighbors', type=int, default=5, help='number of nearest neighbors to use for collaborative aggregation')
+    parser.add_argument('--top', type=int, default=10, help='top N recommendations per user')
     args = parser.parse_args()
-    sys.exit(generate(args.input, args.output, args.max_features))
+    sys.exit(generate(args.input, args.output, args.max_features, args.print_per_user, args.users, args.top, args.alpha, args.neighbors))

@@ -21,17 +21,26 @@
     <h2 class="text-lg font-semibold text-gray-800 mb-2">Applying for</h2>
     @php
         // reuse job-details CSV parsing to show the selected job on the application page
-        $csv_path = public_path('data job posts.csv');
+  $csv_path = public_path('postings.csv');
         $job = null;
         $job_id = request('job_id');
         if ($job_id !== null && file_exists($csv_path)) {
             if (($handle = fopen($csv_path, 'r')) !== false) {
                 $header = fgetcsv($handle);
+                if ($header === false) { fclose($handle); }
                 $cols = array_map(function($h){ return trim($h); }, $header ?: []);
+                $numCols = count($cols);
                 $i = 0;
+                $maxRows = 5000;
         while (($row = fgetcsv($handle)) !== false) {
+          if ($numCols > 0) {
+            if (count($row) < $numCols) $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
+            elseif (count($row) > $numCols) $row = array_slice($row, 0, $numCols);
+            if (count($row) !== $numCols) { $i++; continue; }
+          }
+          if ($i >= $maxRows) break;
           if ($i == intval($job_id)) {
-            $assoc = array_combine($cols, $row) ?: [];
+            $assoc = $numCols ? (array_combine($cols, $row) ?: []) : [];
             $job = [
               'title' => $assoc['Title'] ?? $assoc['jobpost'] ?? '',
               'company' => $assoc['Company'] ?? '',

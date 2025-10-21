@@ -246,7 +246,7 @@ class GuardianReviewController extends Controller
     // Build an in-memory CSV index: keyed by job_id (string) and by dataIndex (0-based)
     private function buildCsvIndex()
     {
-        $path = public_path('data job posts.csv');
+    $path = public_path('postings.csv');
         $index = ['byId' => [], 'byDataIndex' => []];
         if (!file_exists($path)) return $index;
         if (($h = fopen($path, 'r')) === false) return $index;

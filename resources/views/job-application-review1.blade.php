@@ -25,7 +25,7 @@
       $jobAddress = '';
       $jobType = '';
       $jobId = request('job_id');
-      $csvPath = public_path('data job posts.csv');
+  $csvPath = public_path('postings.csv');
       if ($jobId && file_exists($csvPath)) {
         // try to find by job_id column or by numeric index
         if (($handle = fopen($csvPath, 'r')) !== false) {

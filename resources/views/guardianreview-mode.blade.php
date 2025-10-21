@@ -29,43 +29,76 @@
 
   <!-- Job Card -->
   @php
-    $job = null;
-    $jobId = request('job_id');
-    $csv_path = public_path('data job posts.csv');
-    if ($jobId !== null && file_exists($csv_path) && ($h = fopen($csv_path, 'r')) !== false) {
-        $header = fgetcsv($h);
-        $cols = array_map(function($h){ return trim($h); }, $header ?: []);
-        $i = 0;
-        while (($row = fgetcsv($h)) !== false) {
-            if ($i == intval($jobId)) {
-                $assoc = array_combine($cols, $row) ?: [];
-                $title = $assoc['Title'] ?? $assoc['jobpost'] ?? '';
-                $company = $assoc['Company'] ?? '';
-                $location = $assoc['Location'] ?? '';
-                $hours = $assoc['Duration'] ?? $assoc['Term'] ?? '';
-                $desc = $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? $assoc['jobpost'] ?? '';
-                // simple match score reused from pending page
-                $keywords = ['hands', 'routine', 'team', 'entry', 'support', 'clean', 'wash', 'prepare'];
-                $cnt = 0; foreach ($keywords as $k) { if (stripos($desc, $k) !== false) $cnt++; }
-                $match_score = min(100, intval( round(($cnt / max(1, count($keywords))) * 100) ));
-                $job = compact('title','company','location','hours','desc','match_score','assoc');
-                break;
-            }
-            $i++;
-        }
-        fclose($h);
-    }
+  // Cached CSV loader: parse postings.csv into a jobs array (index-preserved)
+  $job = null;
+  $jobId = request('job_id');
+  $csv_path = public_path('postings.csv');
 
-    // load guardian approval for this job if present
-    $approval = null;
-    $approvals_path = storage_path('app/guardian_job_approvals.json');
-    if (file_exists($approvals_path)) {
-        $map = json_decode(file_get_contents($approvals_path), true) ?: [];
-        if ($jobId !== null && isset($map[(string)$jobId])) $approval = $map[(string)$jobId];
+  $cache_key = 'postings_csv_' . md5($csv_path . '|' . @filemtime($csv_path));
+  $jobs = cache()->remember($cache_key, 600, function() use ($csv_path) {
+    $out = [];
+    if (!file_exists($csv_path) || ($h = @fopen($csv_path, 'r')) === false) return $out;
+  $header = fgetcsv($h);
+  if ($header === false) { fclose($h); return $out; }
+  $cols = array_map(function($x){ return trim($x); }, $header);
+  $numCols = count($cols);
+  if ($numCols === 0) { fclose($h); return $out; }
+  $i = 0;
+  $maxRows = 100; // safety limit to avoid exhausting PHP memory
+  while (($row = fgetcsv($h)) !== false) {
+      // ensure row matches header length to avoid array_combine errors
+      if (count($row) < $numCols) {
+        $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
+      } elseif (count($row) > $numCols) {
+        $row = array_slice($row, 0, $numCols);
+      }
+      // if still mismatched, skip the row
+      if (count($row) !== $numCols) continue;
+      $assoc = array_combine($cols, $row) ?: [];
+      if ($i >= $maxRows) break;
+      $title = $assoc['Title'] ?? $assoc['jobpost'] ?? '';
+      $company = $assoc['Company'] ?? '';
+      $desc = $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? $assoc['jobpost'] ?? '';
+      // small heuristic score reused from pending page
+      $keywords = ['hands', 'routine', 'team', 'entry', 'support', 'clean', 'wash', 'prepare'];
+      $cnt = 0; foreach ($keywords as $k) { if (stripos($desc, $k) !== false) $cnt++; }
+      $match_score = min(100, intval( round(($cnt / max(1, count($keywords))) * 100) ));
+      $out[] = [
+        'job_id' => $i,
+        'title' => $title,
+        'company' => $company,
+        'location' => $assoc['Location'] ?? '',
+        'hours' => $assoc['Duration'] ?? $assoc['Term'] ?? '',
+        'desc' => $desc,
+        'match_score' => $match_score,
+        'raw' => $assoc,
+      ];
+      $i++;
     }
+    fclose($h);
+    return $out;
+  });
+
+  if ($jobId !== null) {
+    foreach ($jobs as $j) {
+      if (intval($j['job_id']) === intval($jobId)) {
+        $job = $j;
+        break;
+      }
+    }
+  }
+
+  // load guardian approvals map and expose to JS
+  $approvals_path = storage_path('app/guardian_job_approvals.json');
+  $approval = null;
+  $map = [];
+  if (file_exists($approvals_path)) {
+    $map = json_decode(file_get_contents($approvals_path), true) ?: [];
+    if ($jobId !== null && isset($map[(string)$jobId])) $approval = $map[(string)$jobId];
+  }
   @endphp
 
-  <section class="max-w-4xl mx-auto mt-6 border-2 border-yellow-400 bg-yellow-50/30 rounded-2xl p-6">
+  <section class="max-w-4xl mx-auto mt-6 border-2 border-yellow-400 bg-yellow-50/30 rounded-2xl p-6" @if(isset($job)) data-content-score="{{ number_format(($job['match_score'] ?? 0)/100, 3) }}" @endif>
     @if($job)
     <div class="flex flex-wrap justify-between items-center">
       <div class="flex items-center space-x-2">
@@ -140,6 +173,8 @@
 
   @push('scripts')
   <script>
+  // expose guardian approvals map to client-side code
+  window.__GUARDIAN_APPROVALS = {!! json_encode($map ?? []) !!};
   document.addEventListener('DOMContentLoaded', function(){
     const jobId = '{{ $jobId }}';
     const approveBtn = document.getElementById('approve-btn');

@@ -81,23 +81,36 @@
   <!-- Pending Review -->
   <div class="max-w-5xl mx-auto mt-10 px-4">
     @php
-        // Read CSV and approvals then render jobs that are pending (not approved and not flagged)
-        $csv_path = public_path('data job posts.csv');
-        $jobs = [];
-        if (file_exists($csv_path) && ($h = fopen($csv_path, 'r')) !== false) {
+        // Cached CSV loader (same approach as job-matches)
+        $csv_path = public_path('postings.csv');
+        $cache_key = 'postings_csv_' . md5($csv_path . '|' . @filemtime($csv_path));
+        $jobs = cache()->remember($cache_key, 600, function() use ($csv_path) {
+            $out = [];
+            if (!file_exists($csv_path) || ($h = @fopen($csv_path, 'r')) === false) return $out;
             $header = fgetcsv($h);
-            $cols = array_map(function($x){ return trim($x); }, $header ?: []);
+            if ($header === false) { fclose($h); return $out; }
+            $cols = array_map(function($x){ return trim($x); }, $header);
+            $numCols = count($cols);
+            if ($numCols === 0) { fclose($h); return $out; }
             $i = 0;
-            while (($row = fgetcsv($h)) !== false) {
-                $assoc = array_combine($cols, $row) ?: [];
+            $maxRows = 5000; // safety limit
+      while (($row = fgetcsv($h)) !== false) {
+        // align row length with header columns to avoid array_combine errors
+        if (count($row) < $numCols) {
+          $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
+        } elseif (count($row) > $numCols) {
+          $row = array_slice($row, 0, $numCols);
+        }
+        if (count($row) !== $numCols) continue;
+        $assoc = array_combine($cols, $row) ?: [];
+        if ($i >= $maxRows) break;
                 $title = $assoc['Title'] ?? $assoc['jobpost'] ?? '';
                 $company = $assoc['Company'] ?? '';
                 $desc = $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? $assoc['jobpost'] ?? '';
-                // small heuristic score: proportion of keywords (example)
                 $keywords = ['hands', 'routine', 'team', 'entry', 'support', 'clean', 'wash', 'prepare'];
                 $cnt = 0; foreach ($keywords as $k) { if (stripos($desc, $k) !== false) $cnt++; }
                 $match_score = min(100, intval( round(($cnt / max(1, count($keywords))) * 100) ));
-                $jobs[] = [
+                $out[] = [
                     'job_id' => $i,
                     'title' => $title,
                     'company' => $company,
@@ -110,9 +123,10 @@
                 $i++;
             }
             fclose($h);
-        }
+            return $out;
+        });
 
-        // load approvals
+        // load approvals map
         $approvals_path = storage_path('app/guardian_job_approvals.json');
         $guardianApprovals = [];
         if (file_exists($approvals_path)) $guardianApprovals = json_decode(file_get_contents($approvals_path), true) ?: [];
@@ -138,7 +152,7 @@
     <h3 class="text-lg font-bold text-yellow-600 mb-4">Pending Review: {{ $pendingCount }}</h3>
 
     @foreach($pending as $p)
-      <div id="job-card-{{ $p['job_id'] }}" class="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50/20 shadow-sm mb-6">
+      <div id="job-card-{{ $p['job_id'] }}" class="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50/20 shadow-sm mb-6" data-content-score="{{ number_format(($p['match_score'] ?? 0)/100, 3) }}">
         <div class="flex justify-between items-start">
           <div class="flex items-center space-x-2">
             <img src="/images/job-icon.png" class="w-6 h-6" alt="Job Icon">
@@ -174,6 +188,13 @@
         </div>
       </div>
     @endforeach
+  
+  @push('scripts')
+  <script>
+    // expose guardian approvals for client-side use (boosting / badges)
+    window.__GUARDIAN_APPROVALS = {!! json_encode($guardianApprovals ?? []) !!};
+  </script>
+  @endpush
   </div>
 </div>
 <br>

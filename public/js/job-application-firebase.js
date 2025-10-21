@@ -129,7 +129,7 @@ async function enrichPayloadWithJobFromCsv(applicationData) {
         if (!jobId) return applicationData;
 
         // fetch CSV (encode space in filename)
-        const csvUrl = encodeURI('/data job posts.csv');
+    const csvUrl = encodeURI('/postings.csv');
         const resp = await fetch(csvUrl);
         if (!resp.ok) return applicationData;
         const text = await resp.text();

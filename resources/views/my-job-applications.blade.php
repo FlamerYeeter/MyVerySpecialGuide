@@ -7,7 +7,7 @@
   <section class="bg-yellow-400 py-10 mt-4">
         <div class="container mx-auto px-4">
             <div class="flex items-center justify-center space-x-4 mb-6">
-                <img src="{{ asset('images/job-search.png') }}" class="w-20 h-20"> <!-- will export the image -->
+                <img src="{{ asset('image/logo.png') }}" class="w-20 h-20"> <!-- will export the image -->
                 <div>
                     <h2 class="text-3xl font-bold text-gray-800">My Job Applications</h2>
                     <p class="text-sm text-gray-800">Track your application progress and manage your job applications</p>

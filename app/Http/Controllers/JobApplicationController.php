@@ -278,7 +278,7 @@ class JobApplicationController extends Controller
     // Helper: read the CSV and return a job array for given job id (numeric index or job_id column)
     private function getJobFromCsv($jobId)
     {
-        $csvPath = public_path('data job posts.csv');
+    $csvPath = public_path('postings.csv');
         if (!file_exists($csvPath)) return null;
 
         if (($handle = fopen($csvPath, 'r')) === false) return null;
