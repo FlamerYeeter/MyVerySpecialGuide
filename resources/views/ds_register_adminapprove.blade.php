@@ -24,7 +24,7 @@
     <img src="image/obj4.png" alt="Yellow Mascot"
         class="hidden sm:block fixed left-6 top-1/3 w-28 lg:w-36 opacity-90 animate-float-slow z-0">
     <img src="image/obj7.png" alt="Triangle Mascot"
-        class="hidden sm:block fixed left-6 bottom-24 w-28 lg:w-36 opacity-90 animate-float-medium z-0">
+        class="fixed left-1 sm:left-4 md:left-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-20 md:w-28 opacity-90 animate-float-medium z-0">
     <img src="image/obj3.png" alt="Blue Mascot"
         class="hidden sm:block fixed right-6 top-1/4 w-28 lg:w-36 opacity-90 animate-float-fast z-0">
     <img src="image/obj8.png" alt="Twin Mascot"

@@ -26,168 +26,129 @@
 <body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
 
     <!-- Floating Mascots -->
-    <img src="image/obj4.png" alt="Yellow Mascot"
-      class="fixed left-2 sm:left-6 lg:left-8 top-1/3 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-slow z-0" />
-    <img src="image/obj7.png" alt="Triangle Mascot"
-      class="fixed left-2 sm:left-6 lg:left-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0" />
-    <img src="image/obj3.png" alt="Blue Mascot"
-      class="fixed right-2 sm:right-6 lg:right-8 top-1/4 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-fast z-0" />
-    <img src="image/obj8.png" alt="Twin Mascot"
-      class="fixed right-2 sm:right-6 lg:right-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0" />
+    <img src="image/obj4.png" class="fixed left-2 top-1/3 w-20 sm:w-28 opacity-90 animate-float-slow z-0" />
+    <img src="image/obj7.png" class="fixed left-2 bottom-20 w-20 sm:w-28 opacity-90 animate-float-medium z-0" />
+    <img src="image/obj3.png" class="fixed right-2 top-1/4 w-20 sm:w-28 opacity-90 animate-float-fast z-0" />
+    <img src="image/obj8.png" class="fixed right-2 bottom-20 w-20 sm:w-28 opacity-90 animate-float-medium z-0" />
 
     <!-- Back Button -->
     <button
-      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
+      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition shadow-md active:scale-95"
       onclick="window.location.href='{{ route('registerreview2') }}'">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white" class="w-4 h-4">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
       </svg>
-      <span class="text-base sm:text-lg font-medium">Back</span>
+      <span class="font-medium text-base">Back</span>
     </button>
 
-    <!-- Main Container -->
+    <!-- Main Review Container -->
     <div class="bg-yellow-100 max-w-3xl w-full rounded-2xl shadow-lg p-8 relative z-10">
 
       <!-- Header -->
-      <div class="mt-4 flex flex-col items-start text-left max-w-xl mx-auto">
-        <h2 class="text-xl font-semibold text-blue-500 flex items-center gap-2 border-b-2 border-blue-500 pb-1 w-full">
+      <div class="text-left border-b-2 border-blue-500 pb-2">
+        <h2 class="text-xl font-semibold text-blue-600 flex items-center gap-2">
           Review Your Qualifications
           <span class="text-gray-600 italic text-base">(Suriin ang Iyong Kwalipikasyon)</span>
-          <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform translate-y-[-2px]">🔊</button>
         </h2>
+      </div>
 
-        <!-- Support I Need Information Section -->
-        <h2 class="text-lg font-semibold mt-8">
+      <!-- SUPPORT I NEED SECTION -->
+      <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 mt-8">
+        <h3 class="text-lg font-semibold text-blue-600 mb-3 border-b border-blue-300 pb-2">
           Support I Need
           <span class="text-gray-600 italic text-base">(Suporta na Kailangan ko)</span>
-          <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </h2>
-        <p class="mt-2">Selected support: <span id="review_support_choice">—</span></p>
-        <div id="review_support_choice_img_container" class="mt-3 text-center" style="display:none;">
+        </h3>
+
+        <p class="text-gray-800">
+          <span class="font-semibold">Selected Support:</span> <span id="review_support_choice">—</span>
+        </p>
+
+        <div id="review_support_choice_img_container" class="mt-4 text-center" style="display:none;">
           <div class="inline-flex items-center justify-center w-36 h-36 bg-white rounded-xl shadow-md p-2 mx-auto">
             <img id="review_support_choice_img" src="" alt="Support image" class="w-full h-full object-contain rounded-md" />
           </div>
         </div>
-      </div>
 
-      <!-- Support I Need Information Form -->
-      <form class="mt-6 max-w-xl mx-auto">
-        <label class="font-semibold text-[15px] flex items-center gap-1">
-          What kind of support would help you at work?
-          <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </label>
-        <p class="mt-2 text-gray-500 italic text-[14px]">(Ano klaseng tulong ang makakatulong sa iyo sa trabaho?)</p>
-        <p class="font-semibold text-black-500 text-[15px] mt-8">
-          The picture below is your answer.
-          <span class="italic text-gray-500">(Ang picture sa baba ay ang iyong sagot)</span>
-          <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </p>
-
-        <!-- Support need answer -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500 selectable-card">
-            <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
-            <img src="image/support1.png" alt="job coach" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">Job coach/guide to guide me</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div class="bg-white p-4 rounded-xl shadow border border-blue-300 hover:shadow-md transition">
+            <img src="image/support1.png" alt="job coach" class="w-full rounded-md mb-3">
+            <h4 class="text-blue-600 font-semibold text-center">Job coach/guide to guide me</h4>
+            <p class="text-gray-500 italic text-sm text-center">(Tagapayo o tagagabay sa trabaho)</p>
           </div>
-          
-          <div class="bg-white p-4 rounded-xl shadow h-[340px] relative border-2 border-blue-500 selectable-card">
-            <button type="button" class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow">🔊</button>
-            <img src="image/support2.png" alt="written instruction" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">Written instructions</h3>
-          </div> 
+
+          <div class="bg-white p-4 rounded-xl shadow border border-blue-300 hover:shadow-md transition">
+            <img src="image/support2.png" alt="written instruction" class="w-full rounded-md mb-3">
+            <h4 class="text-blue-600 font-semibold text-center">Written instructions</h4>
+            <p class="text-gray-500 italic text-sm text-center">(Nakasulat na tagubilin)</p>
+          </div>
         </div>
 
-        <!-- Edit Button -->
-        <div class="flex flex-col items-start mt-8">
-          <p class="text-gray-500 italic text-[13px] mb-2 text-left">
-            (Pindutin ang “Support I Need Information” upang baguhin ang iyong sagot)
-          </p>
+        <div class="flex flex-col items-start mt-6">
+          <p class="text-gray-500 italic text-sm mb-2">(Pindutin ang “Support I Need Information” upang baguhin ang iyong sagot)</p>
           <button type="button"
-            class="bg-blue-500 text-white font-semibold text-lg px-8 sm:px-12 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center w-full mx-auto shadow-md">
+            class="bg-blue-500 text-white font-semibold text-lg px-8 py-3 rounded-xl hover:bg-blue-600 transition w-full shadow-md">
             ✏️ Click to Support I Need Information
           </button>
         </div>
-      </form>
+      </div>
 
-      <!-- Work Environment Information Section -->
-      <div class="mt-12 max-w-xl mx-auto">
-        <h2 class="text-lg font-semibold">
+      <!-- WORK ENVIRONMENT SECTION -->
+      <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 mt-8">
+        <h3 class="text-lg font-semibold text-blue-600 mb-3 border-b border-blue-300 pb-2">
           Work Environment
           <span class="text-gray-600 italic text-base">(Kapaligiran sa Trabaho)</span>
-          <button class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </h2>
+        </h3>
 
-        <label class="font-semibold text-[15px] flex items-center gap-1 mt-6">
-          What kind of working environment feels comfortable for you? 
-          <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </label>
-        <p class="mt-2 text-gray-500 italic text-[14px]">(Ano klaseng lugar ng trabaho ang komportable para sa iyo? Piliin lahat ng naaangkop na 
-            kakayahan na meron ka)
+        <p class="text-gray-800">
+          <span class="font-semibold">Selected Workplace:</span> <span id="review_workplace_choice">—</span>
         </p>
 
-        <p class="font-semibold text-black-500 text-[15px] mt-8">
-          The picture below is your answer.
-          <span class="italic text-gray-500">(Ang picture sa baba ay ang iyong sagot)</span>
-          <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </p>
-        <p class="mt-2">Selected workplace: <span id="review_workplace_choice">—</span></p>
-        <div id="review_workplace_choice_img_container" class="mt-3 text-center" style="display:none;">
+        <div id="review_workplace_choice_img_container" class="mt-4 text-center" style="display:none;">
           <div class="inline-flex items-center justify-center w-36 h-36 bg-white rounded-xl shadow-md p-2 mx-auto">
             <img id="review_workplace_choice_img" src="" alt="Workplace image" class="w-full h-full object-contain rounded-md" />
           </div>
         </div>
 
-        <!-- Work Environment answer -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-          <div class="bg-white p-4 rounded-xl shadow h-[400px] relative border-2 border-blue-500 selectable-card">
-            <button class="absolute top-3 right-3 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
-            <img src="image/workplc1.png" alt="quietplace" class="w-full rounded-md mb-4">
-            <h3 class="text-blue-600 font-semibold text-center">The place is quiet and calm</h3>
-            <p class="mt-2 text-[13px] text-gray-500 italic text-center">(Tahimik at kalmado ang lugar)</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+          <div class="bg-white p-4 rounded-xl shadow border border-blue-300 hover:shadow-md transition">
+            <img src="image/workplc1.png" alt="quietplace" class="w-full rounded-md mb-3">
+            <h4 class="text-blue-600 font-semibold text-center">The place is quiet and calm</h4>
+            <p class="text-gray-500 italic text-sm text-center">(Tahimik at kalmado ang lugar)</p>
           </div>
         </div>
 
-        <!-- Edit Button -->
-        <div class="flex flex-col items-start mt-8">
-          <p class="text-gray-500 italic text-[13px] mb-2 text-left">
-            (Pindutin ang “Edit Work Environment” upang baguhin ang iyong sagot)
-          </p>
+        <div class="flex flex-col items-start mt-6">
+          <p class="text-gray-500 italic text-sm mb-2">(Pindutin ang “Edit Work Environment” upang baguhin ang iyong sagot)</p>
           <button type="button"
-            class="bg-blue-500 text-white font-semibold text-lg px-8 sm:px-12 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 justify-center w-full mx-auto shadow-md">
+            class="bg-blue-500 text-white font-semibold text-lg px-8 py-3 rounded-xl hover:bg-blue-600 transition w-full shadow-md">
             ✏️ Click to Edit Work Environment
           </button>
         </div>
 
-        <!-- Info Box -->
         <div class="bg-green-50 border border-green-400 rounded-lg px-5 py-4 mt-6 shadow-sm">
-          <div class="flex items-start gap-2">
-            <p class="text-[14px] text-black-800 leading-relaxed">
-              This information will help us find workplaces where you will feel comfortable and supported.
-            </p>
-            <button type="button" class="text-green-600 text-xl leading-none hover:text-green-700 hover:scale-110 transition-transform mt-[2px]" title="Play Audio">🔊</button>
-          </div>
-          <p class="mt-2 italic text-gray-700 text-[13px] leading-relaxed">
-            (Ang impormasyong ito ay makakatulong sa amin na makahanap ng mga lugar ng trabaho kung saan ka magiging
-            komportable at supporta.)
+          <p class="text-[14px] text-black leading-relaxed">
+            This information will help us find workplaces where you will feel comfortable and supported.
+          </p>
+          <p class="mt-2 italic text-gray-700 text-[13px]">
+            (Ang impormasyong ito ay makakatulong sa amin na makahanap ng mga lugar ng trabaho kung saan ka magiging komportable at suportado.)
           </p>
         </div>
       </div>
 
       <!-- Continue Button -->
-      <div class="text-center mt-12">
+      <div class="text-center mt-10">
         <button type="button"
-          class="bg-blue-500 text-white font-semibold text-lg px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
+          class="bg-blue-500 text-white font-semibold text-lg px-20 py-3 rounded-xl hover:bg-blue-600 transition shadow-md"
           onclick="window.location.href='{{ route('registerreview4') }}'">
           Continue →
         </button>
         <p class="text-gray-700 text-sm mt-3">
           Click <span class="text-blue-500 font-medium">“Continue”</span> to move to the next page
-        <p class="text-gray-500 italic text-[13px]">(Pindutin ang “Continue” upang magpatuloy)</p>
+        </p>
+        <p class="text-gray-500 italic text-sm">(Pindutin ang “Continue” upang magpatuloy)</p>
       </div>
-
     </div>
+
 
     <!-- removed global floating preview -->
 

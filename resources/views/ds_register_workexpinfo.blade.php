@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Registration: Work Experience Information</title>
     <script src="https://cdn.tailwindcss.com"></script>
-     <style>
+    <style>
     /* Floating animations */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -15,12 +15,13 @@
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
 
-    .workyr-card.selected {
+
+        .workyr-card.selected {
             border: 3px solid #2563eb;
             box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
             transform: translateY(-4px);
             background-color: #eff6ff;
-    }
+        }
     </style>
 </head>
 
@@ -70,44 +71,50 @@
         </div>
 
         <!-- Information Note -->
-<div class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
-  <div class="flex flex-col sm:flex-row items-start gap-3 pr-14">
-    <!-- Info Icon -->
-    <svg xmlns="http://www.w3.org/2000/svg"
-      class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0"
-      fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
-    </svg>
+        <div
+            class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
+            <div class="flex flex-col sm:flex-row items-start gap-3 pr-14">
+                <!-- Info Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+                </svg>
 
-    <!-- Info Text -->
-    <div class="flex-1">
-      <p class="font-medium text-xs sm:text-base leading-relaxed">
-        Please share your work experience information. This helps us understand the kind of work you’ve
-        done before and identify roles or opportunities where your skills and background will be most valued.
-      </p>
-      <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-        (Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan namin
-        ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na babagay sa iyong
-        kasanayan at karanasan.)
-      </p>
-      <p class="text-gray-700 text-[11px] sm:text-sm mt-4 leading-relaxed">
-        Even if you haven’t worked before, you can still share volunteer work, school activities, or other
-        experiences that helped you develop your skills.
-        <span class="italic text-gray-600 text-[10px] sm:text-xs mt-1">
-          (Kahit wala ka pang pormal na trabaho, maaari mong ilagay ang mga karanasang boluntaryo, gawain sa
-          paaralan, o iba pang aktibidad na nakatulong sa iyong paghubog ng kasanayan.)
-        </span>
-      </p>
-    </div>
-  </div>
+                <!-- Info Text -->
+                <div class="flex-1">
+                    <p class="font-medium text-xs sm:text-base leading-relaxed">
+                        Please share your work experience information. This helps us understand the kind of work you’ve
+                        done before and identify roles or opportunities where your skills and background will be most
+                        valued.
+                    </p>
+                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
+                        (Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan
+                        namin
+                        ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na babagay sa
+                        iyong
+                        kasanayan at karanasan.)
+                    </p>
+                    <p class="text-gray-700 text-[11px] sm:text-sm mt-4 leading-relaxed">
+                        Even if you haven’t worked before, you can still share volunteer work, school activities, or
+                        other
+                        experiences that helped you develop your skills.
+                        <span class="italic text-gray-600 text-[10px] sm:text-xs mt-1">
+                            (Kahit wala ka pang pormal na trabaho, maaari mong ilagay ang mga karanasang boluntaryo,
+                            gawain sa
+                            paaralan, o iba pang aktibidad na nakatulong sa iyong paghubog ng kasanayan.)
+                        </span>
+                    </p>
+                </div>
+            </div>
 
-  <!-- Audio Button -->
-  <button type="button"
-    class="absolute top-3 right-3 bg-[#1E40AF] text-white text-lg sm:text-xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none">
-    🔊
-  </button>
-</div>
+            <!-- Audio Button -->
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-lg sm:text-xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none">
+                🔊
+            </button>
+        </div>
 
         <form class="mt-10 max-w-3xl mx-auto">
             <!-- Work Experience Question -->
@@ -117,7 +124,8 @@
                     <p class="mt-2 text-base sm:text-lg font-medium text-gray-800">If you have worked before, how long
                         did you work
                         there?</p>
-                    <button type="button" class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button"
+                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
                 </div>
                 <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Kung may karanasan ka sa trabaho, gaano ka
                     katagal
@@ -130,7 +138,8 @@
                     <p class="text-xs sm:text-base font-medium text-gray-800">Choose from the pictures provided and
                         click
                         your answer.</p>
-                    <button type="button" class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button"
+                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
                 </div>
                 <p class="text-[10px] sm:text-sm text-gray-600 italic mt-1">(Pumili mula sa mga larawan at pindutin ang
                     iyong sagot)</p>
@@ -186,7 +195,7 @@
                 <div id="job_experiences_container" class="space-y-4 mt-4"></div>
                 <template id="job_exp_template">
                     <div
-                        class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out mt-3">
+                        class="job_exp_item bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out mt-3">
                         <div class="flex justify-between items-center">
                             <h4 class="font-semibold text-blue-800 text-sm sm:text-base">Job Experience</h4>
                             <button type="button"
@@ -214,24 +223,37 @@
                                     placeholder="e.g., McDonald's or University of Makati" />
                             </div>
 
+                            <!-- Work Year -->
+                            <div class="flex flex-col">
+                                <label for="job_work_year"
+                                    class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Work Year</label>
+                                <input id="job_work_year" name="job_work_year" type="text"
+                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
+                                    readonly />
+                            </div>
+
                             <!-- Job Description -->
                             <div class="sm:col-span-2 flex flex-col">
                                 <label for="job_description"
-                                    class="text-xs sm:text-sm font-medium text-gray-700 mb-1">
-                                    Job Description
-                                </label>
+                                    class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job Description</label>
                                 <textarea id="job_description" name="job_description"
                                     class="job_description w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
                                     placeholder="What you did (e.g. cleaned tables, organized shelves)">
-                    </textarea>
+                         </textarea>
                             </div>
                         </div>
                     </div>
                 </template>
 
+                <!-- ADD for the backend+ When the user selects a work year (e.g. “1–2 years”), that choice should be copied
+                    to the first Job Experience entry automatically. -->
+                <!-- When the user adds another Job Experience, the selected work year should still be remembered
+                    and included (renewed) in the newly added section. -->
+
+
                 <input id="work_experiences" type="hidden" value="[]" />
                 <input id="work_years" type="hidden" value="" />
-                
+
                 <!-- Add Another Work Exp Button -->
                 <div class="mt-6 text-center">
                     <button id="addJobBtn" type="button"

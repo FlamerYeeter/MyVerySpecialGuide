@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Registration: School & Work Information</title>
     <script src="https://cdn.tailwindcss.com"></script>
-        <style>
+    <style>
     /* Floating animations */
     @keyframes float {
       0%, 100% { transform: translateY(0); }

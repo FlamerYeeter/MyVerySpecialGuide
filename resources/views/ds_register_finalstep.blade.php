@@ -16,162 +16,153 @@
     </style>
   </head>
 
-  <body class="bg-white flex justify-center items-center min-h-screen p-4 relative overflow-auto">
+  <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
 
-    <!-- Floating Mascots -->
-    <img src="image/obj4.png" alt="Yellow Mascot"
-      class="fixed left-2 sm:left-6 lg:left-8 top-1/3 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-slow z-0" />
-    <img src="image/obj7.png" alt="Triangle Mascot"
-      class="fixed left-2 sm:left-6 lg:left-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0" />
-    <img src="image/obj3.png" alt="Blue Mascot"
-      class="fixed right-2 sm:right-6 lg:right-8 top-1/4 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-fast z-0" />
-    <img src="image/obj8.png" alt="Twin Mascot"
-      class="fixed right-2 sm:right-6 lg:right-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0" />
+  <!-- Floating Mascots -->
+  <img src="image/obj4.png"
+    class="hidden sm:block fixed left-2 sm:left-4 top-1/4 w-12 sm:w-16 lg:w-24 opacity-80 animate-float-slow z-0" />
+  <img src="image/obj7.png"
+    class="hidden sm:block fixed left-2 sm:left-4 bottom-6 sm:bottom-16 w-12 sm:w-20 lg:w-24 opacity-80 animate-float-medium z-0" />
+  <img src="image/obj3.png"
+    class="hidden sm:block fixed right-2 sm:right-4 top-1/4 w-12 sm:w-16 lg:w-24 opacity-80 animate-float-fast z-0" />
+  <img src="image/obj8.png"
+    class="hidden sm:block fixed right-2 sm:right-4 bottom-6 sm:bottom-16 w-12 sm:w-20 lg:w-24 opacity-80 animate-float-medium z-0" />
 
-    <!-- Back Button -->
-    <button
-      class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-4 sm:px-6 lg:px-8 py-2 sm:py-3 rounded-lg flex items-center justify-center gap-2 text-center hover:bg-blue-600 transition z-10 shadow-md active:scale-95"
-      onclick="window.location.href='{{ route('registerreview5') }}'">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke-width="4" stroke="white" class="w-4 sm:w-5 h-4 sm:h-5">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-      </svg>
-      <span class="text-base sm:text-lg font-medium">Back</span>
-    </button>
+  <!-- Back Button -->
+  <button
+    class="fixed left-3 top-3 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+    onclick="window.location.href='{{ route('registerreview5') }}'">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
+      class="w-4 h-4 sm:w-6 sm:h-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+    Back
+  </button>
 
-    <!-- Main Container -->
-    <div class="bg-yellow-100 max-w-3xl w-full mx-auto rounded-2xl shadow-lg p-8 relative z-10">
+  <!-- Main Container -->
+  <div
+    class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden mt-20 sm:mt-24 md:mt-28">
 
-      <!-- Header -->
-      <div class="mt-4 flex flex-col items-start text-left max-w-xl mx-auto">
-        <div class="flex items-center gap-2 border-b-2 border-blue-500 pb-1 w-full">
-          <h2 class="text-xl font-semibold text-blue-500 flex items-center gap-2">
-            Final Step
-            <span class="text-gray-600 italic text-base">(Panghuling Hakbang)</span>
-          </h2>
-          <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform">🔊</button>
-        </div>
+    <!-- Header -->
+    <div class="text-center mt-2 sm:mt-4 px-2">
+      <h1
+        class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-3 drop-shadow-md leading-snug break-words">
+        Final Step: Agreement
+      </h1>
+      <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-28 md:w-36 mb-5">
+    </div>
 
-        <div class="mt-6 flex items-start gap-2">
-          <div>
-            <p class="text-gray-800 font-semibold">
-              Please check the box if you agree to the agreement explained below.
-            </p>
-            <p class="text-gray-500 italic text-sm mt-1">
-              (Paki-check ang kahon kung ikaw ay sumasang-ayon sa kasunduan na ipinaliwanag)
-            </p>
-          </div>
-          <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform mt-1">🔊</button>
-        </div>
-
-        <!-- Important Agreements -->
-        <div class="bg-[#E8FBFB] border border-blue-200 rounded-2xl p-6 mt-6 shadow-sm">
-          <!-- Header -->
-          <div class="flex items-center justify-between mb-4">
-            <div class="flex items-center gap-2">
-              <img src="image/targeticon.png" alt="Info" class="w-6 h-6" />
-              <h3 class="text-blue-600 font-semibold text-lg">
-                Important Agreements
-                <span class="text-sm text-gray-600 italic">(Mahalagang Kasunduan)</span>
-              </h3>
-            </div>
-            <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform
-            max-w-xl mx-auto">🔊</button>
-          </div>
-
-          <!-- Checkbox 1 -->
-          <label class="flex items-start gap-4 bg-white/70 p-4 rounded-xl border border-blue-100 hover:bg-blue-50 transition mb-3 cursor-pointer shadow-sm" id="agree1_label">
-            <input id="agree1" type="checkbox" class="w-6 h-6 mt-[2px] accent-blue-500 border-2 border-gray-400 rounded-md flex-shrink-0" />
-            <div class="flex flex-col gap-1">
-              <div class="flex items-start justify-between gap-2">
-                <p class="text-[15px] font-medium text-gray-800 flex-1">
-                  I agree to share my information with employers who have jobs that match my skills.
-                </p>
-                <button type="button" class="text-gray-500 text-lg leading-none hover:scale-110 transition-transform">🔊</button>
-              </div>
-              <p class="text-gray-500 italic text-sm leading-snug">
-                (Sumasang-ayon akong ibahagi ang aking impormasyon sa mga employer na may trabaho na tumutugma sa aking kakayahan.)
-              </p>
-            </div>
-          </label>
-
-          <!-- Checkbox 2 -->
-          <label class="flex items-start gap-4 bg-white/70 p-4 rounded-xl border border-blue-100 hover:bg-blue-50 transition cursor-pointer shadow-sm" id="agree2_label">
-            <input id="agree2" type="checkbox" class="w-6 h-6 mt-[2px] accent-blue-500 border-2 border-gray-400 rounded-md flex-shrink-0" />
-            <div class="flex flex-col gap-1">
-              <div class="flex items-start justify-between gap-2">
-                <p class="text-[15px] font-medium text-gray-800 flex-1">
-                  I understand that my information will be kept private and safe.
-                </p>
-                <button type="button" class="text-gray-500 text-lg leading-none hover:scale-110 transition-transform">🔊</button>
-              </div>
-              <p class="text-gray-500 italic text-sm leading-snug">
-                (Nauunawaan ko na ang aking impormasyon ay papanatilihing pribado at ligtas.)
-              </p>
-            </div>
-          </label>
-        </div>
-
-        <!-- Info Box -->
-        <div class="bg-[#C7F5C4] border border-green-500 rounded-lg p-5 mt-6 shadow-sm">
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <p class="text-[14px] text-gray-800">
-                After creating your account, we will match you with jobs that fit your skills and preferences.
-                You will receive notifications when new job opportunities are available.
-              </p>
-              <p class="italic text-gray-700 text-[13px] mt-2">
-                (Pagkatapos gumawa ng iyong account, itutugma ka namin sa mga trabaho na ayon sa iyong kakayahan at
-                kagustuhan. Makakatanggap ka ng notification kapag may bagong trabaho na available.)
-              </p>
-            </div>
-            <button type="button" class="text-gray-500 text-xl leading-none hover:scale-110 transition-transform mt-1">🔊</button>
-          </div>
-        </div>
-
-        <!-- Create Account Button -->
-        <div class="mt-8 flex flex-col items-center justify-center text-center w-full">
-          <div id="finalError" class="text-red-600 text-sm mb-2"></div>
-
-          <!-- Hidden: server-provided email used for verification only -->
-          <input type="hidden" id="emailFromServer" value="{{ $email ?? old('email') ?? session('email') ?? '' }}" />
-          <!-- Hidden inputs so register.js can validate/create the user automatically -->
-          <input type="hidden" id="email" name="email" value="" />
-          <input type="hidden" id="password" name="password" value="" />
-          <input type="hidden" id="confirm_password" name="confirm_password" value="" />
-
-          <button id="createAccountBtn" type="button" class="bg-blue-500 text-white font-semibold text-lg px-12 sm:px-20 py-3 rounded-xl hover:bg-blue-600 transition shadow-md">
-            Create My Account
-          </button>
-          <p class="text-[13px] text-gray-700 mt-3">
-            Click <span class="text-blue-500 font-medium">“Create My Account”</span> to create your account
+    <!-- Instruction Box -->
+    <div
+      class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-6 mt-6 sm:mt-8 shadow-sm">
+      <div class="flex flex-col sm:flex-row items-start gap-3 pr-12 sm:pr-14">
+        <svg xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+        </svg>
+        <div class="flex-1 text-center sm:text-left">
+          <p class="font-medium text-sm sm:text-base leading-relaxed">
+            Please check the boxes below if you agree to the terms of this agreement.
           </p>
-          <p class="italic text-[12px] text-gray-500">
-            (Pindutin ang “Create My Account” upang magawa ang iyong account)
+          <p class="italic text-gray-600 text-xs sm:text-sm mt-1 sm:mt-2 leading-relaxed">
+            (Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito.)
           </p>
         </div>
       </div>
+      <button type="button"
+        class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200">
+        🔊
+      </button>
     </div>
+
+    <!-- Agreement Box -->
+    <div class="bg-white rounded-2xl shadow-md p-4 sm:p-6 border border-gray-200 mt-6">
+      <h3 class="text-lg sm:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2 text-center sm:text-left">
+        Important Agreements <span class="text-gray-700 text-sm">(Mahalagang Kasunduan)</span>
+      </h3>
+
+      <!-- Agreement 1 -->
+      <label
+        class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-blue-50 p-4 rounded-xl border border-blue-200 hover:bg-blue-100 transition mb-4 cursor-pointer">
+        <div class="flex items-start gap-3 w-full">
+          <input id="agree1" type="checkbox"
+            class="w-6 h-6 mt-[2px] accent-[#2E2EFF] border-2 border-gray-400 rounded-md flex-shrink-0" />
+          <div class="flex flex-col gap-1 w-full">
+            <div class="flex items-center justify-between">
+              <p class="text-[15px] sm:text-base font-medium text-gray-800 leading-snug">
+                I agree to share my information with employers who are hiring.
+              </p>
+              <button type="button"
+                class="bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform flex-shrink-0"
+                title="Play Audio">🔊</button>
+            </div>
+            <p class="text-gray-600 italic text-sm leading-snug mt-1">
+              (Sumasang-ayon akong ibahagi ang aking impormasyon sa mga employer na naghahanap ng empleyado.)
+            </p>
+          </div>
+        </div>
+      </label>
+
+      <!-- Agreement 2 -->
+      <label
+        class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-blue-50 p-4 rounded-xl border border-blue-200 hover:bg-blue-100 transition cursor-pointer">
+        <div class="flex items-start gap-3 w-full">
+          <input id="agree2" type="checkbox"
+            class="w-6 h-6 mt-[2px] accent-[#2E2EFF] border-2 border-gray-400 rounded-md flex-shrink-0" />
+          <div class="flex flex-col gap-1 w-full">
+            <div class="flex items-center justify-between">
+              <p class="text-[15px] sm:text-base font-medium text-gray-800 leading-snug">
+                I understand that my information will be kept private and safe.
+              </p>
+              <button type="button"
+                class="bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform flex-shrink-0"
+                title="Play Audio">🔊</button>
+            </div>
+            <p class="text-gray-600 italic text-sm leading-snug mt-1">
+              (Nauunawaan ko na ang aking impormasyon ay papanatilihing pribado at ligtas.)
+            </p>
+          </div>
+        </div>
+      </label>
+    </div>
+
+    <!-- Info Box -->
+    <div class="bg-green-50 border border-green-400 rounded-lg px-4 sm:px-6 py-4 mt-6 shadow-sm">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <p class="text-sm sm:text-[15px] text-black leading-relaxed flex-1">
+          After creating your account, we will match you with jobs that fit your skills and preferences.
+          You will receive notifications when new opportunities are available.
+        </p>
+        <button type="button"
+          class="bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
+          title="Play Audio">🔊</button>
+      </div>
+      <p class="mt-2 italic text-gray-700 text-xs sm:text-[13px] leading-relaxed">
+        (Pagkatapos gumawa ng iyong account, itutugma ka namin sa mga trabaho na ayon sa iyong kakayahan at kagustuhan. Makakatanggap ka ng notification kapag may bagong trabaho na available.)
+      </p>
+    </div>
+
+    <!-- Buttons -->
+    <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
+      <button id="createAccountBtn" type="button"
+        class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-base sm:text-lg font-semibold 
+        px-8 sm:px-10 py-3 sm:py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
+        shadow-md w-full sm:w-64 text-center">
+        Create My Account
+      </button>
+    </div>
+
+    <!-- Helper Text -->
+    <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
+      Click <span class="text-[#1E40AF] font-medium">“Create My Account”</span> to complete your registration
+    </p>
+    <p class="text-gray-600 italic text-[12px] sm:text-[13px] text-center">
+      (Pindutin ang “Create My Account” upang tapusin ang iyong pagpaparehistro)
+    </p>
+  </div>
   
-    <script src="{{ asset('js/register.js') }}"></script>
-    <!-- Email verification modal (shown after account creation on final step) -->
-    <div id="emailVerifyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-      <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 mx-4">
-        <div class="flex items-start justify-between">
-          <h3 class="text-lg font-semibold text-blue-600">Verify your email</h3>
-          <button id="emailVerifyClose" class="text-gray-400 hover:text-gray-600">✕</button>
-        </div>
-        <div class="mt-4">
-          <p class="text-gray-700">We've sent a verification email to:</p>
-          <p id="verificationEmail" class="font-medium text-gray-900 mt-2"></p>
-          <p class="text-sm text-gray-600 mt-3">Please open your email and follow the instructions. When ready, continue to the verification screen to enter the code or confirm.</p>
-        </div>
-        <div class="mt-6 flex items-center justify-end gap-3">
-          <button id="emailVerifyProceed" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Proceed to verification</button>
-          <button id="emailVerifyCancel" class="bg-white border border-gray-200 text-gray-700 px-4 py-2 rounded-lg">Close</button>
-        </div>
-      </div>
-    </div>
     <script>
       (function(){
         const modal = document.getElementById('emailVerifyModal');
