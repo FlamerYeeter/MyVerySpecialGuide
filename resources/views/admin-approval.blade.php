@@ -31,12 +31,12 @@
     <h2 class="text-2xl font-semibold mt-4 mb-3">Approval</h2>
 
     <!-- Tabs -->
-    <div class="flex border-b mb-4 space-x-6 text-gray-600 font-medium">
-      <button class="active-tab pb-2">User Approval</button>
-      <button class="pb-2 hover:text-[#2a9cf4]">New Admin Approval</button>
-      <button class="pb-2 hover:text-[#2a9cf4]">Expert Approval</button>
-      <button class="pb-2 hover:text-[#2a9cf4]">Company Approval</button>
-      <button class="pb-2 hover:text-[#2a9cf4]">Job Posting Approval</button>
+    <div class="flex flex-wrap gap-3 mb-5 text-gray-600 font-medium">
+      <button class="px-3 py-2 hover:text-[#2a9cf4] border border-gray-200 rounded-md">User Approval</button>
+      <button class="px-3 py-2 active-tab">New Admin Approval</button>
+      <button class="px-3 py-2 hover:text-[#2a9cf4] border border-gray-200 rounded-md">Expert Approval</button>
+      <button class="px-3 py-2 hover:text-[#2a9cf4] border border-gray-200 rounded-md">Job Application Approval</button>
+      <button class="px-3 py-2 hover:text-[#2a9cf4] border border-gray-200 rounded-md">Job Posting Approval</button>
     </div>
 
     <!-- Status Cards -->
@@ -96,11 +96,13 @@
               <td class="px-4 py-2">+639 876 184 3854</td>
               <td class="px-4 py-2">40 Block Maguining St., Taguig</td>
               <td class="px-4 py-2 text-yellow-500 font-medium">Pending</td>
-              <td class="px-4 py-2 flex items-center space-x-2">
-                <button class="text-green-500 font-semibold text-xs px-2 py-1 border border-green-400 rounded-md hover:bg-green-100">Approve</button>
-                <button class="text-red-500 font-semibold text-xs px-2 py-1 border border-red-400 rounded-md hover:bg-red-100">Reject</button>
-                <button class="text-yellow-500 font-semibold text-xs px-2 py-1 border border-yellow-400 rounded-md hover:bg-yellow-100">Under Review</button>
-              </td>
+                <td class="px-4 py-2">
+                    <select class="border border-gray-300 rounded-md text-sm p-2 focus:outline-none">
+                        <option value="approve" class="text-green-500">Approve</option>
+                        <option value="reject" class="text-red-500">Reject</option>
+                        <option value="under_review" class="text-yellow-500">Under Review</option>
+                    </select>
+                </td>
             </tr>
             <tr class="bg-pink-50 border-t">
               <td colspan="9" class="px-4 py-3">
