@@ -379,7 +379,7 @@
 
             <!-- Submit Button -->
             <div class="flex flex-col items-center mt-6">
-                <button id="adminSubmitBtn" type="button"
+                <button id="createAccountBtn" type="button"
                     class="bg-[#2E2EFF] text-white text-base sm:text-lg font-semibold px-6 sm:px-12 py-3 rounded-xl hover:bg-blue-600 transition shadow-md w-full sm:w-auto">
                     Submit for Approval
                 </button>
@@ -423,40 +423,61 @@
     <!-- Save draft script: persist to rpi_personal so register.js autofills personal page -->
     <script>
         (function() {
-            const btn = document.getElementById('adminSubmitBtn');
+            // Save-only helper: persist draft so the central register.js can pick it up and create the account.
+            const btn = document.getElementById('createAccountBtn');
             if (!btn) return;
+
             btn.addEventListener('click', function() {
                 try {
-                    const first = (document.getElementById('admin_first_name')?.value || '').trim();
-                    const last = (document.getElementById('admin_last_name')?.value || '').trim();
-                    const email = (document.getElementById('admin_email')?.value || '').trim();
-                    if (!first && !last && !email) {
-                        // nothing to save — still navigate
-                        window.location.href = '{{ route('registereducation') }}';
-                        return;
-                    }
+                    btn.disabled = true; btn.classList.add('opacity-60');
+                    const data = {};
+                    // collect all inputs/selects/textareas that have an id
+                    document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+                        const id = el.id;
+                        if (!id) return;
+                        if (el.type === 'checkbox') data[id] = !!el.checked;
+                        else data[id] = el.value || '';
+                    });
+
+                    // normalize common fields to expected keys
                     const draft = {
-                        firstName: first,
-                        lastName: last,
-                        email: email,
-                        phone: '',
-                        age: '',
-                        // password intentionally not set — user will create password on personal info page
+                        firstName: data.first_name || data.firstName || data.first || '',
+                        lastName: data.last_name || data.lastName || data.last || '',
+                        email: data.email || '',
+                        phone: data.phone || '',
+                        age: data.age || '',
+                        username: data.username || '',
+                        guardian_first: data.guardian_first || data.guardianFirst || '',
+                        guardian_last: data.guardian_last || data.guardianLast || '',
+                        guardian_email: data.guardian_email || '',
+                        guardian_phone: data.guardian_phone || '',
+                        guardian_relationship: data.guardian_relationship || data.guardianRelationship || ''
                     };
+
+                    try { localStorage.setItem('rpi_personal', JSON.stringify(draft)); } catch (err) { console.warn('Could not save rpi_personal', err); }
+                    console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
+                    // dispatch event for other scripts to pick up
+                    try { window.dispatchEvent(new CustomEvent('mvsg:adminSaved', { detail: { key: 'rpi_personal', data: draft } })); } catch(e){}
+
+                    // Debug: report firebase config presence and firebase.auth availability
                     try {
-                        localStorage.setItem('rpi_personal', JSON.stringify(draft));
-                    } catch (e) {
-                        console.warn('Could not save admin draft', e);
-                    }
-                    // navigate to personal info page (register.js will pick up the draft)
-                    window.location.href = '{{ route('registerpersonalinfo') }}';
-                } catch (e) {
-                    console.error('admin submit failed', e);
-                    window.location.href = '{{ route('registerpersonalinfo') }}';
+                        console.info('[adminapprove] FIREBASE_CONFIG present?', !!window.FIREBASE_CONFIG, window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId);
+                        console.info('[adminapprove] window.firebase available?', !!window.firebase);
+                        if (window.firebase && firebase.auth) console.info('[adminapprove] firebase.currentUser', firebase.auth().currentUser);
+                    } catch(e) { console.warn('[adminapprove] debug probe failed', e); }
+
+                    // Do not navigate here — allow register.js to run account creation and handle navigation.
+                } catch (err) {
+                    console.error('[adminapprove] submit failed', err);
+                    btn.disabled = false; btn.classList.remove('opacity-60');
                 }
             });
         })();
     </script>
+
+    <!-- Include Firebase config and registration script -->
+    <script src="js/firebase-config-global.js"></script>
+    <script src="js/register.js"></script>
 
 </body>
 

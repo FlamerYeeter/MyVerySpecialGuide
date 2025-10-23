@@ -14,7 +14,26 @@ async function ensureInit() {
     initPromise = (async () => {
         // Wait a short time for firebase-config-global.js to run and set window.FIREBASE_CONFIG
         if (!window.FIREBASE_CONFIG) {
-            // poll for up to 2000ms
+            // Try to auto-load the global config script if it's not already present on the page.
+            try {
+                if (typeof document !== 'undefined') {
+                    const found = Array.from(document.getElementsByTagName('script')).some(s => s.src && s.src.indexOf('firebase-config-global.js') !== -1);
+                    if (!found) {
+                        await new Promise((resolve) => {
+                            const s = document.createElement('script');
+                            s.src = '/js/firebase-config-global.js';
+                            s.async = true;
+                            s.onload = () => resolve();
+                            s.onerror = () => resolve();
+                            (document.head || document.body || document.documentElement).appendChild(s);
+                        });
+                    }
+                }
+            } catch (e) {
+                // ignore and continue to polling
+            }
+
+            // poll for up to 2000ms for window.FIREBASE_CONFIG to become available
             await new Promise((resolve) => {
                 const timeout = setTimeout(resolve, 2000);
                 const iv = setInterval(() => {
@@ -304,6 +323,32 @@ export async function isSignedIn(timeoutMs = 3000) {
     });
 }
 
+// Return the current signed-in user's UID, waiting up to timeoutMs for auth state
+export async function getCurrentUserUid(timeoutMs = 3000) {
+    await ensureInit();
+    if (auth && auth.currentUser) return auth.currentUser.uid;
+    return new Promise((resolve) => {
+        let settled = false;
+        const unsub = onAuthStateChanged(auth, (user) => {
+            if (settled) return;
+            settled = true;
+            try { unsub(); } catch (e) {}
+            resolve(user ? user.uid : null);
+        }, (err) => {
+            if (settled) return;
+            settled = true;
+            try { unsub(); } catch (e) {}
+            resolve(null);
+        });
+        setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            try { unsub(); } catch (e) {}
+            resolve(auth && auth.currentUser ? auth.currentUser.uid : null);
+        }, timeoutMs);
+    });
+}
+
 // Fetch the user's profile document from Firestore (collection 'users', doc = uid)
 export async function getUserProfile() {
     await ensureInit();
@@ -347,6 +392,7 @@ export async function signInWithServerToken(tokenEndpoint = '/firebase-token') {
             let bodyText = null;
             try { bodyText = await resp.text(); } catch (e) { bodyText = '<no body>'; }
             console.debug('signInWithServerToken: server returned', resp.status, bodyText);
+            try { (await import('./client-logger.js')).sendClientLog('warning', 'signInWithServerToken: server returned non-ok', { status: resp.status, body: bodyText }); } catch(e){}
             return false;
         }
         const body = await resp.json();
@@ -354,18 +400,23 @@ export async function signInWithServerToken(tokenEndpoint = '/firebase-token') {
         if (!token) {
             if (body && body.error === 'service_account_missing') {
                 console.info('signInWithServerToken: server has no service account configured (expected in dev)');
+                try { (await import('./client-logger.js')).sendClientLog('info', 'signInWithServerToken: service_account_missing'); } catch(e){}
             } else if (body && body.error) {
                 console.info('signInWithServerToken: server returned error:', body.error);
+                try { (await import('./client-logger.js')).sendClientLog('warning', 'signInWithServerToken: server returned error', { error: body.error }); } catch(e){}
             } else {
                 console.debug('signInWithServerToken: no token in response');
+                try { (await import('./client-logger.js')).sendClientLog('debug', 'signInWithServerToken: no token in response'); } catch(e){}
             }
             return false;
         }
         await signInWithCustomToken(auth, token);
         console.info('signInWithServerToken: signed in, uid=', auth.currentUser && auth.currentUser.uid);
+        try { (await import('./client-logger.js')).sendClientLog('info', 'signInWithServerToken: signed in', { uid: auth.currentUser && auth.currentUser.uid }); } catch(e){}
         return true;
     } catch (err) {
         console.warn('signInWithServerToken failed', err);
+        try { (await import('./client-logger.js')).sendClientLog('error', 'signInWithServerToken failed', { error: String(err) }); } catch(e){}
         return false;
     }
 }

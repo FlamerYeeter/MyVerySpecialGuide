@@ -232,8 +232,7 @@
             <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
                 <div id="supportError" class="text-red-600 text-sm mb-2"></div>
                 <button id="supportNext" type="button"
-                    class="bg-[#2E2EFF] text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2"
-                    onclick="window.location.href='{{ route('registerworkplace') }}'">
+                    class="bg-[#2E2EFF] text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
                     Next →
                 </button>
                 <p class="text-gray-600 text-sm mt-2 text-center">

@@ -4,5 +4,25 @@
         "feedback": "Initial sample approval",
         "actioned_by": "system",
         "actioned_at": "2025-10-20T00:00:00+00:00"
+    },
+    "2462": {
+        "status": "approved",
+        "feedback": "Looks good",
+        "actioned_by": "cli:1001",
+        "actioned_at": "2025-10-22T15:13:02+02:00"
+    },
+    "2204": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
+        "actioned_at": "2025-10-23T06:37:02+00:00",
+        "source": "firestore"
+    },
+    "9": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
+        "actioned_at": "2025-10-23T06:37:31+00:00",
+        "source": "firestore"
     }
 }

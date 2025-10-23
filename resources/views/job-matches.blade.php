@@ -186,6 +186,14 @@
                         }
                     }
 
+                    // extract hours: prefer formatted_work_type, fallback to Duration/Term/Hours, or parse from description
+                    $hours = trim($row['formatted_work_type'] ?? $row['Duration'] ?? $row['Term'] ?? $row['Hours'] ?? '');
+                    if ($hours === '') {
+                        if (preg_match('/Expected hours:\s*([^\r\n]+)/i', $job_description, $m)) {
+                            $hours = trim($m[1]);
+                        }
+                    }
+
                     $recommendations[] = [
                         'job_id' => isset($row['job_id']) ? intval($row['job_id']) : intval($index),
                         'title' => $title,
@@ -204,6 +212,7 @@
                         'salary' => $salary,
                         'deadline' => $deadline,
                         'announcement_code' => $announcement_code,
+                        'hours' => $hours,
                     ];
                 }
             }
@@ -326,6 +335,7 @@
                         'views' => $assoc['views'] ?? null,
                         'applies' => $assoc['applies'] ?? null,
                         'formatted_work_type' => $assoc['formatted_work_type'] ?? $assoc['work_type'] ?? null,
+                        'hours' => $hours,
                         'original_listed_time' => $assoc['original_listed_time'] ?? null,
                         'listed_time' => $assoc['listed_time'] ?? null,
                         'remote_allowed' => $assoc['remote_allowed'] ?? null,
@@ -571,15 +581,12 @@
                             @elseif($approval && (($approval['status'] ?? '') === 'flagged'))
                                 <span class="px-3 py-1 rounded text-xs bg-red-100 text-red-800 font-semibold">Flagged by guardian</span>
                             @else
-                                <span id="guardian-badge-{{ $jid }}" class="px-3 py-1 rounded text-xs bg-yellow-100 text-yellow-800 font-semibold">Pending guardian review</span>
-                                @auth
-                                    <div class="flex items-center space-x-2">
-                                        <button data-jobid="{{ $jid }}" class="guardian-approve-btn inline-flex items-center justify-center h-9 px-3 bg-green-600 text-white rounded text-sm">Approve</button>
-                                        <button data-jobid="{{ $jid }}" class="guardian-flag-btn inline-flex items-center justify-center h-9 px-3 bg-red-500 text-white rounded text-sm">Flag</button>
-                                    </div>
+                                <a href="{{ route('guardianreview.pending') }}?job_id={{ $jid }}" id="guardian-badge-{{ $jid }}" title="Open guardian review for this job" class="px-3 py-1 rounded text-xs bg-yellow-100 text-yellow-800 font-semibold">Pending guardian review</a>
+                                @if(Auth::check() && optional(Auth::user())->role === 'guardian')
+                                    {{-- Guardian users should still use the guardian review pages for approve/flag actions; link provided above --}}
                                 @else
                                     <a href="{{ route('guardianreview.pending') }}" class="text-sm text-gray-700 underline">Ask guardian to review</a>
-                                @endauth
+                                @endif
                             @endif
                         @endif
 
@@ -619,6 +626,34 @@
         @else
             window.__SERVER_AUTH = false;
         @endauth
+    </script>
+    <script type="module">
+    (async function(){
+        try {
+            const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+            const logger = await import("{{ asset('js/client-logger.js') }}");
+            // Attempt server-backed sign-in (makes Firebase ID token available to the page)
+            try {
+                await mod.signInWithServerToken("{{ route('firebase.token') }}");
+            } catch(e) { console.debug('job-matches signInWithServerToken failed', e); try { logger.sendClientLog('debug', 'job-matches signInWithServerToken failed', { error: String(e) }); } catch(_) {} }
+            const signed = await mod.isSignedIn(7000);
+            console.debug('job-matches auth guard: isSignedIn ->', signed);
+            if (!signed) {
+                if (window.__SERVER_AUTH) {
+                    console.info('job-matches: server session present, not redirecting');
+                    try { logger.sendClientLog('info', 'job-matches auth guard: server session present', {}); } catch(_) {}
+                    return;
+                }
+                const current = window.location.pathname + window.location.search;
+                try { logger.sendClientLog('info', 'job-matches auth guard: redirecting to login', { redirect: current }); } catch(_) {}
+                window.location.href = 'login?redirect=' + encodeURIComponent(current);
+                return;
+            }
+        } catch (err) {
+            console.error('job-matches auth guard failed', err);
+            try { (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error', 'job-matches auth guard failed', { error: String(err) }); } catch(_) {}
+        }
+    })();
     </script>
     <script>
         // expose guardian approvals to client-side renderer
@@ -701,7 +736,6 @@
         } catch(e) {
             console.debug('Hybrid recommender failed', e);
         }
-    })();
     </script>
     <script type="module">
     (async function(){
@@ -750,41 +784,7 @@
         }).then(r => r.json());
     }
 
-    document.addEventListener('DOMContentLoaded', function(){
-        document.querySelectorAll('.guardian-approve-btn').forEach(btn => {
-            btn.addEventListener('click', function(){
-                const jobId = this.getAttribute('data-jobid');
-                this.disabled = true;
-                postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/approve', { feedback: '' }).then(resp => {
-                    if (resp && resp.success) {
-                        const badge = document.getElementById('guardian-badge-' + jobId);
-                        if (badge) badge.textContent = 'Approved by guardian';
-                        btn.remove();
-                    } else {
-                        alert('Approve failed');
-                        this.disabled = false;
-                    }
-                }).catch(err => { console.error(err); alert('Approve error'); this.disabled = false; });
-            });
-        });
-
-        document.querySelectorAll('.guardian-flag-btn').forEach(btn => {
-            btn.addEventListener('click', function(){
-                const jobId = this.getAttribute('data-jobid');
-                this.disabled = true;
-                postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/flag', { feedback: '' }).then(resp => {
-                    if (resp && resp.success) {
-                        const badge = document.getElementById('guardian-badge-' + jobId);
-                        if (badge) badge.textContent = 'Flagged by guardian';
-                        btn.remove();
-                    } else {
-                        alert('Flag failed');
-                        this.disabled = false;
-                    }
-                }).catch(err => { console.error(err); alert('Flag error'); this.disabled = false; });
-            });
-        });
-    });
+    // Approve/flag actions are only available in the Guardian Review pages; no handlers here.
 </script>
 <script type="module">
 // Re-score job cards using the user's Firestore profile (if available)

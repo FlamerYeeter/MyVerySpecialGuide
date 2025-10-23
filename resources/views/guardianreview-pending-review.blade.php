@@ -12,119 +12,243 @@
       <p class="text-gray-700">and learn the step-by-step path to achieve your aspirations</p>
     </div>
 
-  @push('scripts')
+  
+  <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+
   <script>
   document.addEventListener('DOMContentLoaded', function(){
     function postAction(url, body) {
+      const b = body ? Object.assign({}, body) : {};
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+      };
+      if (b.idToken) {
+        headers['Authorization'] = 'Bearer ' + b.idToken;
+        // also leave idToken in body only if needed by server; controller accepts either
+        delete b.idToken;
+      }
       return fetch(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify(body || {})
-      }).then(r => r.json());
+        headers: headers,
+        body: JSON.stringify(b || {})
+      }).then(async r => {
+        const text = await r.text();
+        try {
+          const json = text ? JSON.parse(text) : {};
+          if (r.ok) return json;
+          return Object.assign({ status: r.status }, json);
+        } catch (e) {
+          return { status: r.status, body: text };
+        }
+      });
     }
 
-    document.querySelectorAll('.approve-btn').forEach(btn => {
+        document.querySelectorAll('.approve-btn').forEach(btn => {
       btn.addEventListener('click', function(e){
         const jobId = this.getAttribute('data-jobid');
         const feedback = document.getElementById('feedback-' + jobId)?.value || '';
         this.disabled = true;
-        postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/approve', { feedback }).then(resp => {
+        // include optional uid target if present in page URL or from firebase auth
+        (async function(){
+            let uidTarget = new URLSearchParams(window.location.search).get('uid') || '';
+            let idToken = '';
+            try {
+                const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
+                try { const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser; if (user && typeof user.getIdToken === 'function') idToken = await user.getIdToken(); } catch(e) {}
+            } catch(e) { /* ignore */ }
+            const body = { feedback };
+            if (uidTarget) body.uid = uidTarget;
+            if (idToken) body.idToken = idToken;
+            postAction('{{ url('/api/guardian/jobs') }}' + '/' + encodeURIComponent(jobId) + '/approve', body).then(resp => {
+          console.debug('approve resp', resp);
           if (resp && resp.success) {
             const el = document.getElementById('job-card-' + jobId);
             if (el) el.remove();
           } else {
-            alert('Approve failed');
+            const msg = (resp && (resp.message || resp.error || resp.body)) ? (resp.message || resp.error || resp.body) : 'Approve failed';
+            alert(msg);
             this.disabled = false;
           }
-        }).catch(err => { console.error(err); alert('Approve error'); this.disabled = false; });
+            }).catch(err => { console.error(err); alert('Approve error: ' + String(err)); this.disabled = false; });
+        })();
       });
     });
 
-    document.querySelectorAll('.flag-btn').forEach(btn => {
+        document.querySelectorAll('.flag-btn').forEach(btn => {
       btn.addEventListener('click', function(e){
         const jobId = this.getAttribute('data-jobid');
         const feedback = document.getElementById('feedback-' + jobId)?.value || '';
         this.disabled = true;
-        postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/flag', { feedback }).then(resp => {
+        (async function(){
+            let uidTarget = new URLSearchParams(window.location.search).get('uid') || '';
+            let idToken = '';
+            try {
+                const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
+                try { const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser; if (user && typeof user.getIdToken === 'function') idToken = await user.getIdToken(); } catch(e) {}
+            } catch(e) { /* ignore */ }
+            const body = { feedback };
+            if (uidTarget) body.uid = uidTarget;
+            if (idToken) body.idToken = idToken;
+            postAction('{{ url('/api/guardian/jobs') }}' + '/' + encodeURIComponent(jobId) + '/flag', body).then(resp => {
+          console.debug('flag resp', resp);
           if (resp && resp.success) {
             const el = document.getElementById('job-card-' + jobId);
             if (el) el.remove();
           } else {
-            alert('Flag failed');
+            const msg = (resp && (resp.message || resp.error || resp.body)) ? (resp.message || resp.error || resp.body) : 'Flag failed';
+            alert(msg);
             this.disabled = false;
           }
-        }).catch(err => { console.error(err); alert('Flag error'); this.disabled = false; });
+            }).catch(err => { console.error(err); alert('Flag error: ' + String(err)); this.disabled = false; });
+        })();
       });
     });
   });
   </script>
-  @endpush
   </section>
 
   <!-- Instructions Button -->
   <div class="flex justify-start mt-6 ml-8">
-    <button class="bg-blue-500 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-600 transition">
-      Click to View Instructions
-    </button>
+    <a href="{{ route('guardianreview.instructions') }}" class="bg-blue-500 text-white px-6 py-2 rounded-md font-medium hover:bg-blue-600 transition">Click to View Instructions</a>
   </div>
 
   <!-- Tabs -->
   <div class="flex justify-start mt-6 space-x-2 text-sm font-medium">
-    <button class="bg-gray-200 px-4 py-2 rounded-md">Pending Review</button>
-    <button class="px-4 py-2 rounded-md hover:bg-gray-100">Approved Job</button>
-    <button class="px-4 py-2 rounded-md hover:bg-gray-100">Flagged Job</button>
+    <a href="{{ route('guardianreview.pending') }}" class="bg-gray-200 px-4 py-2 rounded-md">Pending Review</a>
+    <a href="{{ route('guardianreview.approved') }}" class="px-4 py-2 rounded-md hover:bg-gray-100">Approved Job</a>
+    <a href="{{ route('guardianreview.flagged') }}" class="px-4 py-2 rounded-md hover:bg-gray-100">Flagged Job</a>
   </div>
 
   <!-- Pending Review -->
   <div class="max-w-5xl mx-auto mt-10 px-4">
     @php
-        // Cached CSV loader (same approach as job-matches)
-        $csv_path = public_path('postings.csv');
-        $cache_key = 'postings_csv_' . md5($csv_path . '|' . @filemtime($csv_path));
-        $jobs = cache()->remember($cache_key, 600, function() use ($csv_path) {
-            $out = [];
-            if (!file_exists($csv_path) || ($h = @fopen($csv_path, 'r')) === false) return $out;
-            $header = fgetcsv($h);
-            if ($header === false) { fclose($h); return $out; }
-            $cols = array_map(function($x){ return trim($x); }, $header);
-            $numCols = count($cols);
-            if ($numCols === 0) { fclose($h); return $out; }
-            $i = 0;
-            $maxRows = 5000; // safety limit
-      while (($row = fgetcsv($h)) !== false) {
-        // align row length with header columns to avoid array_combine errors
-        if (count($row) < $numCols) {
-          $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
-        } elseif (count($row) > $numCols) {
-          $row = array_slice($row, 0, $numCols);
+    // Build jobs using the same JSON-first recommendations pipeline as job-matches
+    $json_path = public_path('recommendations.json');
+    $jobs = [];
+
+    // small industry keyword mapping reused from job-matches
+    $industryKeywords = [
+      'Healthcare' => ['health', 'nurse', 'doctor', 'clinic', 'hospital', 'patient', 'medical', 'therapist', 'pharmacy', 'caregiver', 'care'],
+      'Retail' => ['retail','store','sales','cashier','shop','merchandis','customer service','stock','merchandise','associate'],
+      'Food Service' => ['cook','chef','restaurant','food','barista','kitchen','waiter','waitress','server','catering'],
+      'Education' => ['teacher','education','school','instructor','tutor','teacher aide','educator','classroom'],
+      'Hospitality' => ['hotel','hospitality','front desk','housekeeping','concierge','lodging','guest'],
+      'Manufacturing' => ['manufactur','assembly','production','factory','warehouse','operator','machinist','plant'],
+      'Transportation' => ['driver','delivery','truck','transport','logistic','courier','van driver','bus driver'],
+      'Cleaning' => ['clean','janitor','housekeeping','custodian','sanitation','cleaner'],
+      'Office' => ['office','admin','administrative','reception','clerical','data entry','secretary'],
+      'Construction' => ['construction','builder','carpenter','laborer','site','construction worker','foreman','excavator'],
+      'Creative' => ['designer','creative','graphic','artist','illustrator','photograph','copywriter','content'],
+      'Packing' => ['packag','packer','fulfillment','picker','warehouse','shipping'],
+      'Other' => []
+    ];
+
+    // simple helpers (lightweight) - used when falling back to CSV
+    $infer_fit_level = function(string $text) {
+      $t = strtolower($text);
+      $excellent = ['excellent', 'perfect', 'highly suitable', 'highly qualified', 'strong match', 'ideal'];
+      foreach ($excellent as $k) { if (strpos($t, $k) !== false) return 'Excellent Fit'; }
+      $good = ['good fit', 'good', 'suitable', 'appropriate', 'fit'];
+      foreach ($good as $k) { if (strpos($t, $k) !== false) return 'Good Fit'; }
+      return '';
+    };
+
+    if (file_exists($json_path)) {
+      $cacheKey = 'recommendations_json_' . md5($json_path . '|' . @filemtime($json_path));
+      $decoded = cache()->remember($cacheKey, 600, function() use ($json_path) {
+        $json = @file_get_contents($json_path);
+        $rows = json_decode($json, true) ?: [];
+        return is_array($rows) ? $rows : [];
+      });
+
+      if (is_array($decoded)) {
+        foreach ($decoded as $index => $row) {
+          $title = trim($row['title'] ?? $row['Title'] ?? $row['job_title'] ?? '');
+          $company = trim($row['company'] ?? $row['Company'] ?? $row['company_name'] ?? '');
+          $job_description = trim($row['job_description'] ?? $row['JobDescription'] ?? $row['description'] ?? '');
+          $hours = trim($row['formatted_work_type'] ?? $row['Duration'] ?? $row['Term'] ?? $row['Hours'] ?? '');
+          $match = $row['match_score'] ?? $row['computed_score'] ?? $row['content_score'] ?? 0;
+          // normalize small fractional scores into 0-100
+          if (is_numeric($match) && $match > 0 && $match <= 1.01) $match = $match * 100;
+          $jobs[] = [
+            'job_id' => isset($row['job_id']) ? (string)$row['job_id'] : (string)$index,
+            'title' => $title ?: (strlen($job_description) ? Str::limit($job_description, 80) : 'Untitled Job'),
+            'company' => $company,
+            'location' => $row['location'] ?? '',
+            'hours' => $hours,
+            'match_score' => intval(round(floatval($match))),
+            'why' => $job_description,
+            'raw' => $row,
+          ];
         }
-        if (count($row) !== $numCols) continue;
-        $assoc = array_combine($cols, $row) ?: [];
-        if ($i >= $maxRows) break;
-                $title = $assoc['Title'] ?? $assoc['jobpost'] ?? '';
-                $company = $assoc['Company'] ?? '';
-                $desc = $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? $assoc['jobpost'] ?? '';
-                $keywords = ['hands', 'routine', 'team', 'entry', 'support', 'clean', 'wash', 'prepare'];
-                $cnt = 0; foreach ($keywords as $k) { if (stripos($desc, $k) !== false) $cnt++; }
-                $match_score = min(100, intval( round(($cnt / max(1, count($keywords))) * 100) ));
-                $out[] = [
-                    'job_id' => $i,
-                    'title' => $title,
-                    'company' => $company,
-                    'location' => $assoc['Location'] ?? '',
-                    'hours' => $assoc['Duration'] ?? $assoc['Term'] ?? '',
-                    'match_score' => $match_score,
-                    'why' => $assoc['JobDescription'] ?? '',
-                    'raw' => $assoc,
-                ];
-                $i++;
+      }
+    } else {
+      // fallback to CSV postings.csv (defensive parsing)
+      $csv_path = public_path('postings.csv');
+      if (file_exists($csv_path)) {
+        $cacheKey = 'recommendations_csv_' . md5($csv_path . '|' . @filemtime($csv_path));
+        $csvRows = cache()->remember($cacheKey, 600, function() use ($csv_path) {
+          $out = [];
+          if (($handle = fopen($csv_path, 'r')) !== false) {
+            $header = fgetcsv($handle);
+            if ($header === false) { fclose($handle); return $out; }
+            $cols = $header ? array_map('trim', $header) : [];
+            $numCols = count($cols);
+            if ($numCols === 0) { fclose($handle); return $out; }
+            $maxRows = 5000;
+            while (($row = fgetcsv($handle)) !== false) {
+              if ($numCols > 0) {
+                if (count($row) < $numCols) $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
+                elseif (count($row) > $numCols) $row = array_slice($row, 0, $numCols);
+                if (count($row) !== $numCols) continue;
+              }
+              if ($maxRows-- <= 0) break;
+              $assoc = $numCols ? (array_combine($cols, $row) ?: []) : [];
+              $out[] = $assoc;
             }
-            fclose($h);
-            return $out;
+            fclose($handle);
+          }
+          return $out;
         });
+
+        $i = 0;
+        foreach ($csvRows as $assoc) {
+          $assoc = is_array($assoc) ? $assoc : [];
+          $title = $assoc['title'] ?? $assoc['jobtitle'] ?? $assoc['Title'] ?? '';
+          $company = $assoc['company_name'] ?? $assoc['company'] ?? '';
+          $description = $assoc['description'] ?? $assoc['JobDescription'] ?? '';
+          $hours = trim($assoc['formatted_work_type'] ?? $assoc['Duration'] ?? $assoc['Term'] ?? $assoc['Hours'] ?? '');
+          // lightweight content score heuristic
+          $textForScoring = trim($title . ' ' . $description . ' ' . ($assoc['skills_desc'] ?? ''));
+          $tokens = preg_split('/\W+/', strtolower($textForScoring));
+          $tokens = array_filter($tokens, function($t){ return strlen($t) > 2; });
+          $totalTokens = max(1, count($tokens));
+          $unique = array_unique($tokens);
+          $skillTokens = preg_split('/\W+/', strtolower($assoc['skills_desc'] ?? ''));
+          $skillTokens = array_filter($skillTokens, function($t){ return strlen($t) > 2; });
+          $skillCount = count($skillTokens);
+          $scoreBase = count($unique) / $totalTokens;
+          $skillBoost = min(1.5, $skillCount / max(1, min(50, $totalTokens)) );
+          $contentScore = round(($scoreBase * 0.7 + $skillBoost * 0.3) * 100, 2);
+
+          $jobs[] = [
+            'job_id' => isset($assoc['job_id']) ? (string)$assoc['job_id'] : (string)$i,
+            'title' => trim($title) ?: (strlen(trim($description)) ? Str::limit(trim($description), 80) : 'Untitled Job'),
+            'company' => trim($company),
+            'location' => $assoc['location'] ?? '',
+            'hours' => $hours,
+            'match_score' => intval(round(floatval($assoc['match_score'] ?? $contentScore ?? 0))),
+            'why' => $description,
+            'raw' => $assoc,
+          ];
+          $i++;
+        }
+      }
+    }
 
         // load approvals map
         $approvals_path = storage_path('app/guardian_job_approvals.json');
@@ -140,18 +264,65 @@
       }
       return true;
     }));
-    // sort pending by match_score desc so highest match appears first
-    usort($pending, function($a, $b){
-      $aa = isset($a['match_score']) ? intval($a['match_score']) : 0;
-      $bb = isset($b['match_score']) ? intval($b['match_score']) : 0;
-      return $bb <=> $aa;
+
+    // Normalize fields for display and scoring so this page matches job-matches behavior
+    foreach ($pending as $k => $job) {
+        $title = trim(strval($job['title'] ?? $job['raw']['title'] ?? $job['raw']['Title'] ?? ''));
+        $job_description = trim(strval($job['why'] ?? $job['raw']['job_description'] ?? $job['raw']['JobDescription'] ?? $job['raw']['description'] ?? ''));
+        if ($title === '') {
+            if (preg_match('/^(.{1,140}?)(?:\.|
+| needed with| needed| required with| required|:| - )/i', $job_description, $m)) {
+                $title = trim($m[1]);
+            } else {
+                $title = Str::limit($job_description, 120);
+            }
+        }
+        $company = trim(strval($job['company'] ?? $job['raw']['company'] ?? $job['raw']['Company'] ?? $job['raw']['company_name'] ?? ''));
+
+        // compute raw/computed scores if present and normalize to 0-100
+        $rawContentValue = $job['raw']['content_score'] ?? $job['raw']['computed_score'] ?? $job['raw']['match_score'] ?? ($job['match_score'] ?? 0);
+        $computedMax = $job['raw']['computed_max_score'] ?? $job['raw']['computed_max'] ?? null;
+        // normalize fractional values (0-1) to 0-100
+        if (is_numeric($rawContentValue) && $rawContentValue > 0 && $rawContentValue <= 1.01) $rawContentValue = $rawContentValue * 100;
+        $normContent = is_numeric($rawContentValue) ? round(floatval($rawContentValue), 2) : 0;
+
+        // update the pending item with normalized fields used later in template
+        $pending[$k]['title'] = $title;
+        $pending[$k]['company'] = $company;
+        $pending[$k]['match_score'] = intval(round(floatval($job['match_score'] ?? $normContent ?? 0)));
+        $pending[$k]['content_score'] = $normContent;
+        $pending[$k]['computed_score'] = $job['raw']['computed_score'] ?? null;
+        $pending[$k]['computed_max_score'] = $computedMax;
+    }
+
+    // Sort using the same comparator as job-matches: prefer computed/content/hybrid then match_score
+    usort($pending, function($a, $b) {
+        $getRaw = function($x) {
+            if (isset($x['content_score']) && $x['content_score'] !== null) return floatval($x['content_score']);
+            if (isset($x['computed_score']) && $x['computed_score'] !== null) return floatval($x['computed_score']);
+            return floatval($x['match_score'] ?? 0);
+        };
+        $norm = function($val) {
+            if ($val > 0 && $val <= 1.01) return $val * 100.0;
+            return $val;
+        };
+        $aScore = $norm($getRaw($a));
+        $bScore = $norm($getRaw($b));
+        return $bScore <=> $aScore;
     });
     $pendingCount = count($pending);
+    // simple server-side pagination
+    $perPage = 10;
+    $page = max(1, intval(request()->query('page', 1)));
+    $totalPages = max(1, (int) ceil($pendingCount / $perPage));
+    if ($page > $totalPages) $page = $totalPages;
+    $start = ($page - 1) * $perPage;
+    $paged = array_slice($pending, $start, $perPage);
     @endphp
 
-    <h3 class="text-lg font-bold text-yellow-600 mb-4">Pending Review: {{ $pendingCount }}</h3>
+  <h3 class="text-lg font-bold text-yellow-600 mb-4">Pending Review: {{ $pendingCount }} &middot; Page {{ $page }} of {{ $totalPages }}</h3>
 
-    @foreach($pending as $p)
+  @foreach($paged as $p)
       <div id="job-card-{{ $p['job_id'] }}" class="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50/20 shadow-sm mb-6" data-content-score="{{ number_format(($p['match_score'] ?? 0)/100, 3) }}">
         <div class="flex justify-between items-start">
           <div class="flex items-center space-x-2">
@@ -182,12 +353,30 @@
         </div>
 
         <div class="flex justify-start space-x-3 mt-6">
-          <a href="{{ route('user.review') }}?job_id={{ $p['job_id'] }}" class="bg-blue-500 text-white px-5 py-2 rounded-md text-sm hover:bg-blue-600 transition">View Details</a>
+          <a href="{{ route('job.details') }}?job_id={{ $p['job_id'] }}" class="bg-blue-500 text-white px-5 py-2 rounded-md text-sm hover:bg-blue-600 transition">View Details</a>
           <button data-jobid="{{ $p['job_id'] }}" class="approve-btn bg-green-600 text-white px-5 py-2 rounded-md text-sm hover:bg-green-700 transition">Approve Job</button>
           <button data-jobid="{{ $p['job_id'] }}" class="flag-btn bg-yellow-500 text-white px-5 py-2 rounded-md text-sm hover:bg-yellow-600 transition">Flag as Not Suitable</button>
         </div>
       </div>
     @endforeach
+
+    {{-- Pagination controls --}}
+    <div class="flex items-center justify-center space-x-2 mt-6">
+      @php
+        $baseUrl = request()->url();
+      @endphp
+      @if($page > 1)
+        <a href="{{ $baseUrl }}?page={{ $page - 1 }}" class="px-3 py-1 bg-gray-200 rounded-md">&laquo; Prev</a>
+      @else
+        <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded-md">&laquo; Prev</span>
+      @endif
+      <span class="px-3 py-1 bg-white rounded-md">Page {{ $page }} / {{ $totalPages }}</span>
+      @if($page < $totalPages)
+        <a href="{{ $baseUrl }}?page={{ $page + 1 }}" class="px-3 py-1 bg-gray-200 rounded-md">Next &raquo;</a>
+      @else
+        <span class="px-3 py-1 bg-gray-100 text-gray-400 rounded-md">Next &raquo;</span>
+      @endif
+    </div>
   
   @push('scripts')
   <script>
@@ -195,6 +384,37 @@
     window.__GUARDIAN_APPROVALS = {!! json_encode($guardianApprovals ?? []) !!};
   </script>
   @endpush
+  <!-- Ensure Firebase client is signed-in (attempt server-backed sign-in + logging) -->
+  <script type="module">
+  (async function(){
+    try {
+      const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+      const logger = await import("{{ asset('js/client-logger.js') }}");
+      try {
+        await mod.signInWithServerToken("{{ route('firebase.token') }}");
+      } catch(e) {
+        console.debug('guardian signInWithServerToken failed', e);
+        try { logger.sendClientLog('debug', 'guardian signInWithServerToken failed', { error: String(e) }); } catch(_) {}
+      }
+      const signed = await mod.isSignedIn(7000);
+      console.debug('guardian auth guard: isSignedIn ->', signed);
+      try {
+        if (mod && typeof mod.debugAuthLogging === 'function') window.__unsubAuthLog = mod.debugAuthLogging();
+      } catch(e) { console.warn('guardian debugAuthLogging failed', e); }
+      // Do not redirect on guardian page; just ensure client has an ID token if possible
+      if (!signed) {
+        if (window.__SERVER_AUTH) {
+          try { logger.sendClientLog('info', 'guardian auth guard: server session present, not signed-in client'); } catch(_) {}
+        } else {
+          try { logger.sendClientLog('info', 'guardian auth guard: client not signed-in and no server session'); } catch(_) {}
+        }
+      }
+    } catch(err) {
+      console.error('guardian auth guard failed', err);
+      try { (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error', 'guardian auth guard failed', { error: String(err) }); } catch(_) {}
+    }
+  })();
+  </script>
   </div>
 </div>
 <br>

@@ -213,8 +213,7 @@
             <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
                 <div id="educError" class="text-red-600 text-sm text-center"></div>
                 <button id="educNext" type="button"
-                    class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md"
-                    onclick="window.location.href='{{ route('registerschoolworkinfo') }}'">
+                    class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
                     Next →
                 </button>
                 <p class="text-gray-600 text-[11px] sm:text-sm mt-2 text-center leading-snug">

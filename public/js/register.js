@@ -169,6 +169,14 @@ service cloud.firestore {
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
       const data = collectPageInputs();
+      // validation for education step: ensure edu_level selected
+      if (sectionKey === 'educationInfo') {
+        const lvl = data.edu_level || document.getElementById('edu_level')?.value || '';
+        if (!lvl) {
+          showError('Please select your education level.', 'educError');
+          return;
+        }
+      }
       saveLocalDraft(sectionKey, data);
       const fb = await ensureFirebase();
       if (!fb) return (window.location.href = normalizeNextPath(nextPath));
@@ -197,6 +205,8 @@ service cloud.firestore {
   // Personal Info: Create Account
   // -----------------------
   function handlePersonalInfoCreate() {
+    // Do not attach the generic personal-info create handler on the final-step page
+    if (window.location.pathname && window.location.pathname.includes('registerfinalstep')) return;
     const btn = document.getElementById('nextBtn') || document.getElementById('createAccountBtn');
     if (!btn) return;
     btn.addEventListener('click', async (e) => {
@@ -204,19 +214,33 @@ service cloud.firestore {
       const first = document.getElementById('first_name')?.value || '';
       const last = document.getElementById('last_name')?.value || '';
       const email = document.getElementById('email')?.value || '';
-      const pass = document.getElementById('password')?.value || '';
-      const confirm = document.getElementById('confirm_password')?.value || '';
+  const pass = document.getElementById('password')?.value || '';
+  // Some templates use 'confirm_password' while others use camelCase 'confirmPassword'.
+  // Read either so confirmation checks work regardless of which input id the page uses.
+  const confirm = document.getElementById('confirm_password')?.value || document.getElementById('confirmPassword')?.value || '';
       const phone = document.getElementById('phone')?.value || '';
       const age = document.getElementById('age')?.value || '';
       if (!email || !pass) return showError('Email and password required');
       if (pass !== confirm) return showError('Passwords do not match');
       const fb = await ensureFirebase(); if (!fb) return;
       try {
-        const cred = await auth.createUserWithEmailAndPassword(email, pass);
-        const uid = cred.user.uid;
+  const cred = await auth.createUserWithEmailAndPassword(email, pass);
+  const uid = cred.user.uid;
+  // ensure auth state is established before Firestore writes (avoids permission-denied when rules require request.auth)
+  try { await new Promise(res => auth.onAuthStateChanged(u => res(u))); } catch(e){}
           // include phone and age in the stored personalInfo
+          // build guardian info from form if present
+          const guardian = {
+            guardian_first_name: document.getElementById('guardian_first')?.value || '',
+            guardian_last_name: document.getElementById('guardian_last')?.value || '',
+            guardian_email: document.getElementById('guardian_email')?.value || '',
+            guardian_phone: document.getElementById('guardian_phone')?.value || '',
+          guardian_relationship: readSelectValueOrText('guardian_relationship') || ''
+          };
+
           await db.collection('users').doc(uid).set({
             personalInfo: { first, last, email, phone, age },
+            guardianInfo: guardian,
             role: 'User',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true });
@@ -231,11 +255,129 @@ service cloud.firestore {
               return;
             }
           } catch(e){}
-          // default: go to guardian info
-          window.location.href = normalizeNextPath('registerguardianinfo');
+          // default: go to education (guardian/personal steps removed)
+          window.location.href = normalizeNextPath('registereducation');
       } catch (e2) { showError(e2.message); }
     });
   }
+
+  // Finalize registration from the Final Step page.
+  // Exposed so inline page script can call it with agreement data.
+  window.mvsgFinalizeRegistration = async function(finalData) {
+    try {
+      console.info('[reg.js] mvsgFinalizeRegistration start', finalData || {});
+      const fb = await ensureFirebase();
+      if (!fb) {
+        showError('Firebase not configured. Account cannot be created.', 'finalError');
+        return { ok: false, error: 'no-firebase' };
+      }
+
+      const email = (finalData && finalData.email) || document.getElementById('email')?.value || '';
+      let password = document.getElementById('password')?.value || window.__mvsg_generatedPassword || '';
+      if (!email || !password) {
+        showError('Missing email or password for account creation.', 'finalError');
+        console.warn('[reg.js] Missing credentials:', { email, passwordProvided: !!password });
+        return { ok: false, error: 'missing-credentials' };
+      }
+
+      // Ensure auth exists
+      if (!auth) {
+        console.warn('[reg.js] auth is not initialized even after ensureFirebase()');
+        showError('Authentication subsystem not available.', 'finalError');
+        return { ok: false, error: 'no-auth' };
+      }
+
+      // Pre-check: see if this email already has sign-in methods (helps surface clear error)
+      try {
+        const methods = await auth.fetchSignInMethodsForEmail(email).catch(()=>null);
+        if (methods && Array.isArray(methods) && methods.length) {
+          console.warn('[reg.js] fetchSignInMethodsForEmail ->', methods);
+          showError('Email already in use. Please sign in or use a different email.', 'finalError');
+          return { ok: false, error: 'email-already-in-use', methods };
+        }
+      } catch (e) {
+        console.debug('[reg.js] fetchSignInMethodsForEmail failed (continuing):', e && e.message);
+      }
+
+      try {
+  const cred = await auth.createUserWithEmailAndPassword(email, password);
+  const uid = cred.user.uid;
+  console.info('[reg.js] created auth user', uid);
+  // ensure auth state is established before Firestore writes (avoids permission-denied when rules require request.auth)
+  try { await new Promise(res => auth.onAuthStateChanged(u => res(u))); } catch(e){}
+
+        // Build a personalInfo object from available sources (drafts, forms)
+        let personal = {};
+        let guardian = {};
+        try {
+          const d = await getDraft().catch(()=>null);
+          const draft = d && (d.data || d) || {};
+          personal.first = draft.first_name || draft.firstName || draft.first || document.getElementById('first_name')?.value || '';
+          personal.last = draft.last_name || draft.lastName || draft.last || document.getElementById('last_name')?.value || '';
+          personal.email = email;
+          personal.phone = draft.phone || document.getElementById('phone')?.value || '';
+          personal.age = draft.age || document.getElementById('age')?.value || '';
+
+          // Build guardian from draft or DOM
+          guardian.guardian_first_name = draft.guardian_first || draft.guardian_first_name || document.getElementById('guardian_first')?.value || '';
+          guardian.guardian_last_name = draft.guardian_last || draft.guardian_last_name || document.getElementById('guardian_last')?.value || '';
+          guardian.guardian_email = draft.guardian_email || document.getElementById('guardian_email')?.value || '';
+          guardian.guardian_phone = draft.guardian_phone || document.getElementById('guardian_phone')?.value || '';
+        guardian.guardian_relationship = draft.guardian_relationship || draft.guardian_choice || readSelectValueOrText('guardian_relationship') || '';
+        } catch (e) { console.debug('[reg.js] build personal info failed', e); }
+
+        // Save to Firestore (best-effort). If it fails due to rules we'll continue but persist pending writes locally
+        try {
+          await db.collection('users').doc(uid).set({
+            personalInfo: personal,
+            guardianInfo: guardian,
+            agreements: finalData && finalData.agreements ? finalData.agreements : {},
+            role: 'User',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true });
+          console.info('[reg.js] wrote user doc to Firestore', uid);
+        } catch (e) {
+          console.warn('[reg.js] Failed to write user doc to Firestore', e && e.message || e);
+          // store as pending write for later flush
+          try { storeFailedWriteLocally(uid, 'personalInfo', personal); } catch(e2) { console.warn(e2); }
+        }
+
+        // try flushing any pending writes for this uid
+        try { await flushPendingWrites(uid).catch(()=>null); } catch(e) { /* ignore */ }
+
+        // Send verification email (best-effort)
+        try { await cred.user.sendEmailVerification(); console.info('[reg.js] verification email sent'); } catch (e) { console.warn('[reg.js] sendEmailVerification failed', e); }
+
+        // Show verification modal if available
+        if (typeof window.mvsgShowEmailVerificationModal === 'function') {
+          try { window.mvsgShowEmailVerificationModal(email); } catch (e) { console.warn(e); }
+        }
+
+        return { ok: true, uid };
+      } catch (e) {
+        console.error('mvsgFinalizeRegistration error', e);
+        const code = e && e.code ? e.code : 'unknown';
+        const msg = e && e.message ? e.message : String(e);
+        // handle common firebase auth errors gracefully
+        if (code === 'auth/email-already-in-use') {
+          showError('Email already in use. Please sign in or use a different email. (' + code + ')', 'finalError');
+        } else if (code === 'auth/invalid-email') {
+          showError('Invalid email address. (' + code + ')', 'finalError');
+        } else if (code === 'auth/weak-password') {
+          showError('Password is too weak. Please try again. (' + code + ')', 'finalError');
+        } else if (code === 'auth/operation-not-allowed') {
+          showError('Email/password sign-in is not enabled for this project. Enable it in Firebase Console. (' + code + ')', 'finalError');
+        } else {
+          showError(msg || 'Account creation failed. (' + code + ')', 'finalError');
+        }
+        return { ok: false, error: e };
+      }
+    } catch (e) {
+      console.error('mvsgFinalizeRegistration top-level error', e);
+      showError('Account creation failed (internal).', 'finalError');
+      return { ok: false, error: e };
+    }
+  };
 
   // -----------------------
   // Autofill on load
@@ -259,7 +401,24 @@ service cloud.firestore {
         }
         Object.values(data || {}).forEach(v => typeof v === 'object' && fillFormFields(v));
       }
-    } catch (e) { showError('Autofill failed (Firestore)', 'regError'); }
+    } catch (e) {
+      // Don't surface Firestore read errors directly to the user UI.
+      // Log for debugging and try local/session/global draft fallbacks.
+      console.warn('Autofill (Firestore) failed:', e);
+      try {
+        const fallback = await getDraft();
+        if (fallback && typeof fallback === 'object') {
+          const data = fallback.personalInfo || fallback.personal || fallback;
+          if (data) {
+            fillFormFields(data);
+            try { safeSet('phone', data.phone || ''); } catch (ee){}
+            try { safeSet('age', data.age || ''); } catch (ee){}
+          }
+        }
+      } catch (e2) {
+        console.warn('Autofill fallback failed:', e2);
+      }
+    }
   }
 
   // central helpers for reading drafts and populating review pages
@@ -364,6 +523,18 @@ service cloud.firestore {
     if (!el) return;
     if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = value ?? '';
     else el.textContent = value ?? '';
+  }
+
+  // Read select value or fallback to option text (useful when option value is empty)
+  function readSelectValueOrText(id) {
+    try {
+      const el = document.getElementById(id);
+      if (!el) return '';
+      const v = el.value;
+      if (v !== undefined && v !== null && String(v).trim()) return String(v).trim();
+      const opt = el.options && el.selectedIndex >= 0 ? el.options[el.selectedIndex] : null;
+      return opt ? (opt.textContent || opt.innerText || '').trim() : '';
+    } catch (e) { return ''; }
   }
 
   // copy matching card image into per-field preview container and mark matched card selected
@@ -620,10 +791,10 @@ service cloud.firestore {
       ['workExpNext', 'workExperience', '/registersupportneed'],
       ['supportNext', 'supportNeed', '/registerworkplace'],
       ['workplaceNext', 'workplace', '/registerskills1'],
-      ['skills1Next', 'skills', '/registerskills2'],
-      ['skills2Next', 'skills', '/registerjobpreference1'],
-      ['jobpref1Next', 'jobPreferences', '/registerjobpreference2'],
-      ['jobpref2Next', 'jobPreferences', '/registerreview1'],
+      // skills2 step removed: skills1 now advances directly to job preferences
+  ['skills1Next', 'skills', '/registerjobpreference1'],
+  // single job preference page flow: jobpref1 now advances directly to review
+  ['jobpref1Next', 'jobPreferences', '/registerreview1'],
       ['finalizeNext', 'finalize', '/home']
     ];
     mapping.forEach(([btn, key, path]) => handleNextButton(btn, key, path));

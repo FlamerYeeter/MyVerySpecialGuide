@@ -23,74 +23,95 @@
 
   <!-- Pending Review -->
   <div class="max-w-5xl mx-auto mt-10 px-4">
-    <h3 class="text-lg font-bold text-red-600 mb-4">Flagged Job: 1</h3>
+    @php
+        // Reuse same CSV loader and approvals map; filter for flagged
+        $csv_path = public_path('postings.csv');
+        $cache_key = 'postings_csv_' . md5($csv_path . '|' . @filemtime($csv_path));
+        $jobs = cache()->remember($cache_key, 600, function() use ($csv_path) {
+            $out = [];
+            if (!file_exists($csv_path) || ($h = @fopen($csv_path, 'r')) === false) return $out;
+            $header = fgetcsv($h);
+            if ($header === false) { fclose($h); return $out; }
+            $cols = array_map(function($x){ return trim($x); }, $header);
+            $numCols = count($cols);
+            if ($numCols === 0) { fclose($h); return $out; }
+            $i = 0; $maxRows = 5000;
+            while (($row = fgetcsv($h)) !== false) {
+                if (count($row) < $numCols) $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
+                elseif (count($row) > $numCols) $row = array_slice($row, 0, $numCols);
+                if (count($row) !== $numCols) continue;
+                $assoc = array_combine($cols, $row) ?: [];
+                if ($i >= $maxRows) break;
+                $title = trim($assoc['title'] ?? $assoc['jobtitle'] ?? '');
+                $company = trim($assoc['company_name'] ?? $assoc['company'] ?? '');
+                $desc = trim($assoc['description'] ?? '');
+                $hours = trim($assoc['formatted_work_type'] ?? $assoc['Duration'] ?? $assoc['Term'] ?? '');
+                if ($hours === '' && preg_match('/Expected hours:\s*([^\r\n]+)/i', $desc, $m)) $hours = trim($m[1]);
+                if (empty($title)) {
+                    $firstLine = preg_split('/[\r\n]+/', $desc)[0] ?? '';
+                    if (preg_match('/([^.?!]+[.?!])/u', $firstLine, $m2)) { $title = trim($m2[1]); }
+                    else $title = trim(implode(' ', array_slice(preg_split('/\s+/', $firstLine), 0, 8)));
+                    if ($title === '') $title = 'Untitled Job';
+                }
+                $out[] = ['job_id'=>$i,'title'=>$title,'company'=>$company,'location'=>trim($assoc['location'] ?? ''),'hours'=>$hours,'match_score'=>0,'why'=>$desc,'raw'=>$assoc];
+                $i++;
+            }
+            fclose($h);
+            return $out;
+        });
 
-    <!-- Job Card -->
-    <div class="border-2 border-red-400 rounded-2xl p-6 bg-red-50/20 shadow-sm">
-      <div class="flex justify-between items-start">
-        <div class="flex items-center space-x-2">
-          <img src="/images/job-icon.png" class="w-6 h-6" alt="Job Icon">
-          <h4 class="text-lg font-semibold">Kitchen Helper</h4>
+    // Attempt Firestore-backed approvals when uid query param provided
+    $guardianApprovals = [];
+    $uidParam = request()->query('uid');
+    if (!empty($uidParam)) {
+      try {
+        $fs = app(\App\Http\Controllers\GuardianJobController::class)->fetchApprovalsFromFirestore($uidParam);
+        if (is_array($fs)) $guardianApprovals = $fs;
+      } catch (\Throwable $e) {
+        logger()->warning('Firestore fetch failed in flagged view: ' . $e->getMessage());
+      }
+    }
+    if (empty($guardianApprovals)) {
+      $approvals_path = storage_path('app/guardian_job_approvals.json');
+      if (file_exists($approvals_path)) $guardianApprovals = json_decode(file_get_contents($approvals_path), true) ?: [];
+    }
+
+        $flagged = array_values(array_filter($jobs, function($j) use ($guardianApprovals) {
+            $id = (string)$j['job_id'];
+            return isset($guardianApprovals[$id]) && (($guardianApprovals[$id]['status'] ?? '') === 'flagged');
+        }));
+        usort($flagged, function($a,$b){ return intval($b['match_score'] ?? 0) <=> intval($a['match_score'] ?? 0); });
+        $total = count($flagged);
+        $perPage = 10; $page = max(1,intval(request()->query('page',1))); $lastPage = max(1,(int)ceil($total/$perPage));
+        if ($page > $lastPage) $page = $lastPage;
+        $start = ($page - 1) * $perPage; $paged = array_slice($flagged, $start, $perPage);
+    @endphp
+
+    <h3 class="text-lg font-bold text-red-600 mb-4">Flagged Job: {{ $total }} · Page {{ $page }} / {{ $lastPage }}</h3>
+
+    @foreach($paged as $p)
+      <div id="job-card-{{ $p['job_id'] }}" class="border-2 border-red-400 rounded-2xl p-6 bg-red-50/20 shadow-sm mb-6">
+        <div class="flex justify-between items-start">
+          <div class="flex items-center space-x-2">
+            <img src="/images/job-icon.png" class="w-6 h-6" alt="Job Icon">
+            <h4 class="text-lg font-semibold">{{ $p['title'] }}</h4>
+          </div>
+          <span class="bg-red-200 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">Flagged</span>
         </div>
-        <span class="bg-red-200 text-red-800 px-3 py-1 rounded-full text-xs font-semibold">
-          Flagged
-        </span>
+        <div class="mt-4 flex items-center"><span class="bg-green-200 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">{{ $p['match_score'] }}% Match</span></div>
+        <div class="mt-4 grid grid-cols-3 gap-4 mt-4 text-sm">
+          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Company Name:</span> {{ $p['company'] }}</div>
+          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Location:</span> {{ $p['location'] }}</div>
+          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Hours:</span> {{ $p['hours'] }}</div>
+        </div>
+        <div class="bg-gray-100 rounded-lg mt-6 p-4"><p class="text-sm text-gray-700">{{ Str::limit($p['why'], 400) }}</p></div>
       </div>
+    @endforeach
 
-      <!-- Match Percentage -->
-      <div class="flex items-center mt-4">
-        <span class="bg-green-200 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">
-          90% Match
-        </span>
-        <span class="bg-green-200 text-green-800 px-3 py-1 rounded-md text-sm font-semibold ml-3">
-          Flagged: [Date]
-        </span>
-        
-      </div>
-
-      <!-- Job Info -->
-      <div class="grid grid-cols-3 gap-4 mt-4 text-sm">
-        <div class="bg-gray-100 p-2 rounded-md">
-          <span class="font-semibold">Company Name:</span> KFC
-        </div>
-        <div class="bg-gray-100 p-2 rounded-md">
-          <span class="font-semibold">Location:</span> Taguig City
-        </div>
-        <div class="bg-gray-100 p-2 rounded-md">
-          <span class="font-semibold">Hours:</span> Part-time
-        </div>
-      </div>
-
-      
-
-      <!-- Feedback Section -->
-      <div class="bg-blue-100 rounded-lg mt-6 p-4">
-        <div class="flex items-center space-x-2 mb-2">
-          <img src="/images/feedback-icon.png" class="w-5 h-5" alt="Feedback Icon">
-          <h5 class="font-semibold text-gray-800">Your Feedback</h5>
-        </div>
-        <textarea
-          class="w-full rounded-md border border-gray-300 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-400"
-          placeholder="Share your thoughts about this job suggestion"
-          rows="3">[Placeholder Text to be Integrated]</textarea>
-          <br>
-        <div class="flex items-center space-x-2 mb-2">
-          <h6 class="font-semibold text-gray-500 text-xs italic">— Submitted by [Name] on [Date]</h6>
-        </div>
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="flex justify-start space-x-3 mt-6">
-        <button class="bg-blue-500 text-white px-5 py-2 rounded-md text-sm hover:bg-blue-600 transition">
-          View Details
-        </button>
-        <button class="bg-green-600 text-white px-5 py-2 rounded-md text-sm hover:bg-green-700 transition">
-          Edit Feedback
-        </button>
-        <button class="bg-yellow-500 text-white px-5 py-2 rounded-md text-sm hover:bg-yellow-600 transition">
-          Reconsider Job
-        </button>
-      </div>
+    <div class="flex items-center justify-center space-x-2 mt-6">
+      @if($page>1) <a href="{{ request()->url() }}?page={{ $page-1 }}" class="px-3 py-1 bg-gray-200 rounded-md">&laquo; Prev</a> @endif
+      <span class="px-3 py-1 bg-white rounded-md">Page {{ $page }} / {{ $lastPage }}</span>
+      @if($page<$lastPage) <a href="{{ request()->url() }}?page={{ $page+1 }}" class="px-3 py-1 bg-gray-200 rounded-md">Next &raquo;</a> @endif
     </div>
   </div>
 </div>

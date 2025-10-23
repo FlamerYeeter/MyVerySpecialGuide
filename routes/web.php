@@ -28,6 +28,25 @@ Route::get('/navigation-buttons', function () {
     return view('navigation-buttons');
 })->name('navigation_buttons');
 
+// Endpoint for client-side logs (lightweight, accepts JSON {level, message, meta})
+Route::post('/client-log', function (\Illuminate\Http\Request $req) {
+    $data = $req->json()->all();
+    $level = $data['level'] ?? 'info';
+    $message = $data['message'] ?? '<no message>'; 
+    $meta = $data['meta'] ?? [];
+    try {
+        switch (strtolower($level)) {
+            case 'debug': logger()->debug($message, $meta); break;
+            case 'warning': logger()->warning($message, $meta); break;
+            case 'error': logger()->error($message, $meta); break;
+            default: logger()->info($message, $meta); break;
+        }
+    } catch (\Throwable $e) {
+        logger()->error('client-log endpoint failed: ' . $e->getMessage());
+    }
+    return response()->json(['ok' => true]);
+});
+
 // Navigation targets used by navigation-buttons view
 Route::get('/why-this-job-1', function () {
     return view('why-this-job-1');
@@ -37,6 +56,19 @@ Route::get('/why-this-job-1', function () {
 Route::get('/guardian-review/pending', function () {
     return view('guardianreview-pending-review');
 })->name('guardianreview.pending');
+
+// Guardian instruction & review list pages
+Route::get('/guardian-review/instructions', function () {
+    return view('guardianreview-instructions');
+})->name('guardianreview.instructions');
+
+Route::get('/guardian-review/approved', function () {
+    return view('guardianreview-approved-job');
+})->name('guardianreview.approved');
+
+Route::get('/guardian-review/flagged', function () {
+    return view('guardianreview-flagged-job');
+})->name('guardianreview.flagged');
 
 Route::get('/user-review', function () {
     return view('guardianreview-mode');
@@ -144,13 +176,6 @@ Route::get('/registeradminapprove', function () {
     return view('ds_register_adminapprove');
 })->name('registeradminapprove');
 
-Route::get('/registerpersonalinfo', function () {
-    return view('ds_register_personalinfo');
-})->name('registerpersonalinfo');
-
-Route::get('/registerguardianinfo', function () {
-    return view('ds_register_guardianinfo');
-})->name('registerguardianinfo');
 
 Route::get('/registereducation', function () {
     return view('ds_register_education');
@@ -176,16 +201,14 @@ Route::get('/registerskills1', function () {
     return view('ds_register_skills-1');
 })->name('registerskills1');
 
-Route::get('/registerskills2', function () {
-    return view('ds_register_skills-2');
-})->name('registerskills2');
 
 Route::get('/registerjobpreference1', function () {
     return view('ds_register_job-preference-1');
 })->name('registerjobpreference1');
 
+// Compatibility redirect: forward old /registerjobpreference2 requests to the consolidated review page
 Route::get('/registerjobpreference2', function () {
-    return view('ds_register_job-preference-2');
+    return redirect()->route('registerreview1');
 })->name('registerjobpreference2');
 
 Route::get('/job-application-1', function () {
@@ -222,9 +245,12 @@ Route::get('/job-matches', function () {
 })->name('job.matches');
 
 // API for guardian to approve/flag jobs (stored locally in storage/app/guardian_job_approvals.json)
-Route::get('/api/guardian/jobs', [GuardianJobController::class, 'list'])->name('api.guardian.jobs')->middleware('auth');
-Route::post('/api/guardian/jobs/{jobId}/approve', [GuardianJobController::class, 'approve'])->name('api.guardian.jobs.approve')->middleware('auth');
-Route::post('/api/guardian/jobs/{jobId}/flag', [GuardianJobController::class, 'flag'])->name('api.guardian.jobs.flag')->middleware('auth');
+// NOTE: these endpoints accept either a Laravel session (auth middleware) OR a Firebase ID token
+// in the request (Authorization: Bearer <idToken> or JSON body {idToken}). We don't enforce
+// Laravel session here to allow client-side Firebase-auth flows to call them directly.
+Route::get('/api/guardian/jobs', [GuardianJobController::class, 'list'])->name('api.guardian.jobs');
+Route::post('/api/guardian/jobs/{jobId}/approve', [GuardianJobController::class, 'approve'])->name('api.guardian.jobs.approve');
+Route::post('/api/guardian/jobs/{jobId}/flag', [GuardianJobController::class, 'flag'])->name('api.guardian.jobs.flag');
 
 // Recommendations API: hybrid generator endpoint
 use App\Http\Controllers\RecommendationController;
@@ -306,5 +332,5 @@ Route::get('/aboutdownsyndrome', function () {
 })->name('aboutdownsyndrome');
 
 Route::get('/dataprivacy', function () {
-    return view('data-privacy');
+    return view('ds_data-privacy');
 })->name('dataprivacy');

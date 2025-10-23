@@ -134,7 +134,7 @@
       <h4 class="font-semibold text-gray-700">Why this Job Matches</h4>
     </div>
     @if($job)
-      <p class="text-sm text-gray-700 leading-relaxed">{{ $job['desc'] }}</p>
+      <p class="text-sm text-gray-700 leading-relaxed">{{ $job['desc'] ?? $job['job_description'] ?? $job['description'] ?? '' }}</p>
     @else
       <p class="text-sm text-gray-700 leading-relaxed">No description available.</p>
     @endif
@@ -173,6 +173,114 @@
 
   @push('scripts')
   <script>
+  // Attempt server-backed Firebase sign-in so client can get ID token for approve/flag actions
+  (function(){
+    try {
+      const script = document.createElement('script');
+      script.src = "{{ asset('js/firebase-config-global.js') }}";
+      script.defer = true;
+      document.head.appendChild(script);
+      (async function(){
+        try {
+          const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+          if (mod && typeof mod.signInWithServerToken === 'function') {
+            // attempt sign-in but don't block UI
+            mod.signInWithServerToken().catch(() => {});
+          }
+        } catch(e) {}
+      })();
+    } catch(e) {}
+  })();
+  
+    // expose guardian approvals map to client-side code
+    window.__GUARDIAN_APPROVALS = {!! json_encode($map ?? []) !!};
+    document.addEventListener('DOMContentLoaded', function(){
+      const jobId = '{{ $jobId }}';
+      const approveBtn = document.getElementById('approve-btn');
+      const flagBtn = document.getElementById('flag-btn');
+      const feedbackEl = document.getElementById('guardian-feedback');
+  
+      function postAction(url, body) {
+        return fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          },
+          body: JSON.stringify(body || {})
+        }).then(r => r.json());
+      }
+  
+      if (approveBtn) approveBtn.addEventListener('click', function(){
+        const fb = feedbackEl?.value || '';
+        approveBtn.disabled = true;
+        (async function(){
+          let uidTarget = new URLSearchParams(window.location.search).get('uid') || '';
+          let idToken = '';
+          try {
+            const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+            if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
+            // attempt to get ID token for server verification if possible
+            if (mod && typeof mod.isSignedIn === 'function') {
+              const signed = await mod.isSignedIn(3000);
+              if (signed && mod && typeof mod.getCurrentUserUid === 'function' && typeof window.firebase !== 'undefined') {
+                try {
+                  const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser;
+                  if (user && typeof user.getIdToken === 'function') {
+                    idToken = await user.getIdToken();
+                  }
+                } catch(e) { /* ignore */ }
+              }
+            }
+          } catch(e) {}
+          const body = { feedback: fb };
+          if (idToken) body.idToken = idToken;
+          if (uidTarget) body.uid = uidTarget;
+          postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/approve', body).then(resp => {
+            if (resp && resp.success) {
+              document.getElementById('match-badge').textContent = (resp.approval?.status === 'approved' ? '{{ $job['match_score'] }}% Match' : document.getElementById('match-badge').textContent);
+              // show status
+              approveBtn.classList.add('opacity-70');
+              flagBtn.classList.add('opacity-40');
+              location.reload();
+            } else {
+              alert('Approve failed');
+              approveBtn.disabled = false;
+            }
+          }).catch(e=>{ alert('Approve failed'); approveBtn.disabled = false; console.error(e); });
+        })();
+      });
+  
+      if (flagBtn) flagBtn.addEventListener('click', function(){
+        const fb = feedbackEl?.value || '';
+        flagBtn.disabled = true;
+        (async function(){
+          let uidTarget = new URLSearchParams(window.location.search).get('uid') || '';
+          let idToken = '';
+          try {
+            const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+            if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
+            try {
+              const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser;
+              if (user && typeof user.getIdToken === 'function') idToken = await user.getIdToken();
+            } catch(e) {}
+          } catch(e) {}
+          const body = { feedback: fb };
+          if (idToken) body.idToken = idToken;
+          if (uidTarget) body.uid = uidTarget;
+          postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/flag', body).then(resp => {
+            if (resp && resp.success) {
+              location.reload();
+            } else {
+              alert('Flag failed');
+              flagBtn.disabled = false;
+            }
+          }).catch(e=>{ alert('Flag failed'); flagBtn.disabled = false; console.error(e); });
+        })();
+      });
+    });
+    </script>
+
   // expose guardian approvals map to client-side code
   window.__GUARDIAN_APPROVALS = {!! json_encode($map ?? []) !!};
   document.addEventListener('DOMContentLoaded', function(){
@@ -182,44 +290,85 @@
     const feedbackEl = document.getElementById('guardian-feedback');
 
     function postAction(url, body) {
-      return fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        },
-        body: JSON.stringify(body || {})
-      }).then(r => r.json());
+      const b = body ? Object.assign({}, body) : {};
+      const headers = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+      };
+      if (b.idToken) { headers['Authorization'] = 'Bearer ' + b.idToken; delete b.idToken; }
+      return fetch(url, { method: 'POST', headers: headers, body: JSON.stringify(b || {}) }).then(async r => {
+        const text = await r.text();
+        try { const json = text ? JSON.parse(text) : {}; if (r.ok) return json; return Object.assign({ status: r.status }, json); } catch(e) { return { status: r.status, body: text }; }
+      });
     }
 
     if (approveBtn) approveBtn.addEventListener('click', function(){
       const fb = feedbackEl?.value || '';
       approveBtn.disabled = true;
-      postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/approve', { feedback: fb }).then(resp => {
-        if (resp && resp.success) {
-          document.getElementById('match-badge').textContent = (resp.approval?.status === 'approved' ? '{{ $job['match_score'] }}% Match' : document.getElementById('match-badge').textContent);
-          // show status
-          approveBtn.classList.add('opacity-70');
-          flagBtn.classList.add('opacity-40');
-          location.reload();
-        } else {
-          alert('Approve failed');
-          approveBtn.disabled = false;
-        }
-      }).catch(e=>{ alert('Approve failed'); approveBtn.disabled = false; console.error(e); });
+      (async function(){
+        let uidTarget = new URLSearchParams(window.location.search).get('uid') || '';
+        let idToken = '';
+        try {
+          const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+          if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
+          // attempt to get ID token for server verification if possible
+          if (mod && typeof mod.isSignedIn === 'function') {
+            const signed = await mod.isSignedIn(3000);
+            if (signed && mod && typeof mod.getCurrentUserUid === 'function' && typeof window.firebase !== 'undefined') {
+              try {
+                const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser;
+                if (user && typeof user.getIdToken === 'function') {
+                  idToken = await user.getIdToken();
+                }
+              } catch(e) { /* ignore */ }
+            }
+          }
+        } catch(e) {}
+        const body = { feedback: fb };
+        if (idToken) body.idToken = idToken;
+        if (uidTarget) body.uid = uidTarget;
+  postAction('{{ url('/api/guardian/jobs') }}' + '/' + encodeURIComponent(jobId) + '/approve', body).then(resp => {
+          console.debug('approve resp', resp);
+          if (resp && resp.success) {
+            location.reload();
+          } else {
+            const msg = (resp && (resp.message || resp.error || resp.body)) ? (resp.message || resp.error || resp.body) : 'Approve failed';
+            alert(msg);
+            approveBtn.disabled = false;
+          }
+        }).catch(e=>{ alert('Approve failed: ' + String(e)); approveBtn.disabled = false; console.error(e); });
+      })();
     });
 
     if (flagBtn) flagBtn.addEventListener('click', function(){
       const fb = feedbackEl?.value || '';
       flagBtn.disabled = true;
-      postAction('/api/guardian/jobs/' + encodeURIComponent(jobId) + '/flag', { feedback: fb }).then(resp => {
-        if (resp && resp.success) {
-          location.reload();
-        } else {
-          alert('Flag failed');
-          flagBtn.disabled = false;
-        }
-      }).catch(e=>{ alert('Flag failed'); flagBtn.disabled = false; console.error(e); });
+      (async function(){
+        let uidTarget = new URLSearchParams(window.location.search).get('uid') || '';
+        let idToken = '';
+        try {
+          const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+          if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
+          try {
+            const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser;
+            if (user && typeof user.getIdToken === 'function') idToken = await user.getIdToken();
+          } catch(e) {}
+        } catch(e) {}
+        const body = { feedback: fb };
+        if (idToken) body.idToken = idToken;
+        if (uidTarget) body.uid = uidTarget;
+  postAction('{{ url('/api/guardian/jobs') }}' + '/' + encodeURIComponent(jobId) + '/flag', body).then(resp => {
+          console.debug('flag resp', resp);
+          if (resp && resp.success) {
+            location.reload();
+          } else {
+            const msg = (resp && (resp.message || resp.error || resp.body)) ? (resp.message || resp.error || resp.body) : 'Flag failed';
+            alert(msg);
+            flagBtn.disabled = false;
+          }
+        }).catch(e=>{ alert('Flag failed: ' + String(e)); flagBtn.disabled = false; console.error(e); });
+      })();
     });
   });
   </script>
