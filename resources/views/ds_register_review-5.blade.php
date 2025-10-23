@@ -43,14 +43,15 @@
 <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
 
     <!-- Floating Mascots -->
-    <img src="image/obj4.png"
-        class="hidden sm:block fixed left-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-slow z-0" />
-    <img src="image/obj7.png"
-        class="hidden sm:block fixed left-4 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0" />
-    <img src="image/obj3.png"
-        class="hidden sm:block fixed right-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-fast z-0" />
-    <img src="image/obj8.png"
-        class="hidden sm:block fixed right-4 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0" />
+    <img src="image/obj4.png" alt="Yellow Mascot"
+        class="hidden sm:block fixed left-6 top-1/3 w-28 lg:w-36 opacity-90 animate-float-slow z-0">
+    <img src="image/obj7.png" alt="Triangle Mascot"
+        class="fixed left-1 sm:left-4 md:left-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-20 md:w-28 opacity-90 animate-float-medium z-0">
+    <img src="image/obj3.png" alt="Blue Mascot"
+        class="hidden sm:block fixed right-6 top-1/4 w-28 lg:w-36 opacity-90 animate-float-fast z-0">
+    <img src="image/obj8.png" alt="Twin Mascot"
+        class="hidden sm:block fixed right-6 bottom-24 w-28 lg:w-36 opacity-90 animate-float-medium z-0">
+
 
     <!-- Back Button -->
     <button
