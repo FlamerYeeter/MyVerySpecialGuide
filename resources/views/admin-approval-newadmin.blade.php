@@ -17,10 +17,10 @@
     <!-- Header -->
     <div class="flex justify-between items-center">
       <nav class="text-sm text-gray-500">
-        <span class="text-[#facc15] font-medium">Home</span> <span class="mx-1">›</span> Moderation <span class="mx-1">›</span> <span class="text-black font-medium">Approval</span>
+        Home <span class="mx-1">›</span> <span class="mx-1">Moderation</span> › <span class="text-black font-medium">Approval</span>
       </nav>
       <div class="flex items-center space-x-4">
-        <button class="bg-[#2a9cf4] p-2 rounded-full text-white">🔍</button>
+        <button class="bg-gray-100 p-2 rounded-full">🔍</button>
         <button class="bg-gray-100 p-2 rounded-full">🔔</button>
         <div class="bg-gray-200 w-8 h-8 rounded-full"></div>
       </div>
@@ -38,16 +38,37 @@
       <button class="px-3 py-2 hover:text-[#2a9cf4] border border-gray-200 rounded-md">Job Posting Approval</button>
     </div>
 
-    <!-- Status Filter -->
-    <div class="flex justify-between items-center mb-3">
-      <p class="font-medium">Status</p>
-      <select class="border border-gray-300 rounded-md text-sm p-2 focus:outline-none">
-        <option>All</option>
-        <option>Pending</option>
-        <option>Approved</option>
-        <option>Rejected</option>
-      </select>
+    <!-- Status Cards -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="bg-white shadow-sm rounded-lg p-4 text-center">
+        <p class="text-gray-500 text-sm">Pending Queue</p>
+        <p class="text-2xl font-bold text-black">10</p>
+      </div>
+      <div class="bg-white shadow-sm rounded-lg p-4 text-center border-t-4 border-green-500">
+        <p class="text-gray-500 text-sm">Approved</p>
+        <p class="text-2xl font-bold text-black">16</p>
+      </div>
+      <div class="bg-white shadow-sm rounded-lg p-4 text-center border-t-4 border-yellow-400">
+        <p class="text-gray-500 text-sm">Under Review</p>
+        <p class="text-2xl font-bold text-black">4</p>
+      </div>
+      <div class="bg-white shadow-sm rounded-lg p-4 text-center border-t-4 border-red-500">
+        <p class="text-gray-500 text-sm">Rejected</p>
+        <p class="text-2xl font-bold text-black">2</p>
+      </div>
     </div>
+
+    <!-- Table -->
+    <div class="bg-white shadow-sm rounded-lg p-4">
+      <div class="flex justify-between items-center mb-3">
+        <p class="font-medium">Status</p>
+        <select class="border border-gray-300 rounded-md text-sm p-2 focus:outline-none">
+          <option>All</option>
+          <option>Pending</option>
+          <option>Approved</option>
+          <option>Rejected</option>
+        </select>
+      </div>
 
     <!-- Approval Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden mb-8">
@@ -78,12 +99,17 @@
               </div>
             </td>
             <td class="px-4 py-2 text-yellow-500 font-medium">Pending</td>
-            <td class="px-4 py-2 text-center">
-              <select class="border rounded-md text-sm p-1 focus:outline-none bg-white">
-                <option class="bg-green-500 text-white">Approved</option>
-                <option class="bg-red-500 text-white">Rejected</option>
-              </select>
-            </td>
+                <td class="px-4 py-2 text-center">
+                    <div class="flex justify-center items-center space-x-2">
+                        <select class="border rounded-md text-sm p-1 focus:outline-none bg-white">
+                            <option class="bg-green-500 text-white">Approved</option>
+                            <option class="bg-red-500 text-white">Rejected</option>
+                        </select>
+                        <button class="text-red-500 hover:text-red-700">
+                        🗑️
+                        </button>
+                    </div>
+                </td>
           </tr>
         </tbody>
       </table>
@@ -100,9 +126,9 @@
     </div>
 
     <!-- Overview Table -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-      <h3 class="text-lg font-semibold p-4 text-gray-500">Overview</h3>
-      <table class="w-full text-sm text-left">
+    <div class="bg-white mt-8 shadow-sm rounded-lg p-4">
+      <h3 class="text-lg font-semibold mb-3">Overview</h3>
+      <table class="w-full text-sm border border-gray-200 rounded-lg">
         <thead class="bg-[#2a9cf4] text-white">
           <tr>
             <th class="px-4 py-2 font-semibold">Username</th>
