@@ -20,55 +20,12 @@
   <section class="max-w-5xl mx-auto mt-8 px-4">
     <h2 class="text-lg font-semibold text-gray-800 mb-2">Applying for</h2>
     @php
-      $jobTitle = 'Unknown Job';
-      $jobCompany = '';
-      $jobAddress = '';
-      $jobType = '';
-      $jobId = request('job_id');
-  $csvPath = public_path('postings.csv');
-      if ($jobId && file_exists($csvPath)) {
-        // try to find by job_id column or by numeric index
-        if (($handle = fopen($csvPath, 'r')) !== false) {
-          $headers = fgetcsv($handle);
-          $rows = [];
-          while (($row = fgetcsv($handle)) !== false) {
-            $rows[] = $row;
-          }
-          fclose($handle);
-
-          // Attempt to find a header named job_id (case-insensitive)
-          $jobIdCol = null;
-          foreach ($headers as $i => $h) {
-            if (strtolower(trim($h)) === 'job_id') { $jobIdCol = $i; break; }
-          }
-
-          foreach ($rows as $i => $r) {
-            // match by explicit job_id column
-            if ($jobIdCol !== null && isset($r[$jobIdCol]) && strval($r[$jobIdCol]) === strval($jobId)) {
-              $rowFound = $r; break;
-            }
-            // or match by 0-based index if job_id looks numeric and equals index
-            if (is_numeric($jobId) && intval($jobId) === $i) {
-              $rowFound = $r; break;
-            }
-          }
-          if (!empty($rowFound)) {
-            // map common columns by header name fallbacks
-            $map = array_change_key_case(array_flip($headers));
-            $get = function($names) use ($rowFound, $map) {
-              foreach ((array)$names as $n) {
-                $k = strtolower(trim($n));
-                if (isset($map[$k]) && isset($rowFound[$map[$k]])) return $rowFound[$map[$k]];
-              }
-              return '';
-            };
-            $jobTitle = $get(['title','jobtitle','job_title','position','job name','position title']) ?: $jobTitle;
-            $jobCompany = $get(['company','companyname','employer','organization','company name']) ?: $jobCompany;
-            $jobAddress = $get(['location','address','city','place']) ?: $jobAddress;
-            $jobType = $get(['type','jobtype','employment_type','job_type']) ?: $jobType;
-          }
-        }
-      }
+      // safe access: use data_get to avoid errors when $job is null / not an array
+      $job = $job ?? null;
+      $jobTitle = data_get($job, 'title', 'Unknown Job');
+      $jobCompany = data_get($job, 'company', '');
+      $jobAddress = data_get($job, 'location', '');
+      $jobType = data_get($job, 'type', '');
     @endphp
 
     <div class="border-2 border-blue-200 bg-white rounded-lg p-4 flex items-center space-x-4 shadow-sm">
@@ -151,21 +108,29 @@
           const step1 = JSON.parse(sessionStorage.getItem('jobApplication_step1') || localStorage.getItem('jobApplication_step1') || '{}');
           const step2 = JSON.parse(sessionStorage.getItem('jobApplication_step2') || localStorage.getItem('jobApplication_step2') || '{}');
 
+          // small DOM guard helper
+          const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.textContent = value;
+          };
+
           // populate personal
-          document.getElementById('rv_full_name').textContent = (step1.first_name || '') + ' ' + (step1.last_name || '');
-          document.getElementById('rv_email').textContent = step1.email || '-';
-          document.getElementById('rv_phone').textContent = step1.phone_number || '-';
-          document.getElementById('rv_dob').textContent = step1.date_of_birth || '-';
-          document.getElementById('rv_gender').textContent = step1.gender || '-';
-          document.getElementById('rv_address').textContent = step1.address || '-';
+          setText('rv_full_name', ((step1.first_name || '') + ' ' + (step1.last_name || '')).trim() || '-');
+          setText('rv_email', step1.email || '-');
+          setText('rv_phone', step1.phone_number || '-');
+          setText('rv_dob', step1.date_of_birth || '-');
+          setText('rv_gender', step1.gender || '-');
+          setText('rv_address', step1.address || '-');
 
           // populate work experience
-          document.getElementById('rv_job_title').textContent = step1.job_title || '-';
-          document.getElementById('rv_company').textContent = step1.company_employer || '-';
+          setText('rv_job_title', step1.job_title || '-');
+          setText('rv_company', step1.company_employer || '-');
           const sd = step1.start_date || '';
           const ed = step1.end_date || '';
-          document.getElementById('rv_work_dates').textContent = sd || ed ? (sd + (ed ? ' - ' + ed : '')) : '-';
-          document.getElementById('rv_work_desc').textContent = step1.job_description || '-';
+          // fix precedence: ensure (sd || ed) is evaluated for the ternary
+          setText('rv_work_dates', (sd || ed) ? (sd + (ed ? ' - ' + ed : '')) : '-');
+          setText('rv_work_desc', step1.job_description || '-');
 
           // Next => Review 2 (preserve job_id)
           document.getElementById('toReview2').addEventListener('click', function(){

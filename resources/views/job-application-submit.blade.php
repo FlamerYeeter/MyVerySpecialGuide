@@ -33,9 +33,9 @@
         if ($header === false) { fclose($handle); }
         $cols = array_map(function($h){ return trim($h); }, $header ?: []);
         $numCols = count($cols);
-        $i = 0;
-        $maxRows = 5000;
-        while (($row = fgetcsv($handle)) !== false) {
+      $i = 0;
+      $maxRows = 5000;
+      while (($row = fgetcsv($handle)) !== false) {
           if ($numCols > 0) {
             if (count($row) < $numCols) $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
             elseif (count($row) > $numCols) $row = array_slice($row, 0, $numCols);
@@ -56,6 +56,26 @@
                     $i++;
                 }
                 fclose($handle);
+      if (!empty($rowFound)) {
+        $map = [];
+        if (is_array($headers)) {
+          $flipped = @array_flip($headers);
+          if (is_array($flipped)) $map = array_change_key_case($flipped);
+        }
+        $get = function($names) use ($rowFound, $map) {
+          foreach ((array)$names as $n) {
+            $k = strtolower(trim($n));
+            if (is_array($map) && array_key_exists($k, $map)) {
+              $idx = $map[$k];
+              if (is_array($rowFound) && array_key_exists($idx, $rowFound)) return $rowFound[$idx];
+            }
+          }
+          return '';
+        };
+        $title = $get(['title','jobtitle','job_title','position','job name']) ?: $title;
+        $company = $get(['company','companyname','employer']) ?: $company;
+        $location = $get(['location','address','city']) ?: $location;
+      }
             }
         }
     @endphp

@@ -218,10 +218,19 @@ export async function submitJobApplication(applicationData) {
         let resp = null;
         for (const endpoint of candidates) {
             try {
+                // Attempt to include Firebase ID token (if signed-in) so server can verify
+                const headersWithAuth = Object.assign({}, headers);
+                try {
+                    if (auth && auth.currentUser) {
+                        const idToken = await auth.currentUser.getIdToken();
+                        if (idToken) headersWithAuth['Authorization'] = 'Bearer ' + idToken;
+                    }
+                } catch (e) { /* ignore token fetch failures */ }
+
                 resp = await fetch(endpoint, {
                     method: 'POST',
                     credentials: 'same-origin',
-                    headers,
+                    headers: headersWithAuth,
                     body: JSON.stringify(applicationData),
                 });
             } catch (e) {

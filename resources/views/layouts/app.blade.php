@@ -13,6 +13,21 @@
             min-height: 100vh;
         }
     </style>
+
+    @php
+        // guard Vite manifest so missing build doesn't throw a 500
+        $manifestPath = public_path('build/manifest.json');
+    @endphp
+
+    @if (file_exists($manifestPath))
+        {{-- Use Vite when the build manifest is present (normal production / built dev) --}}
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        {{-- Manifest missing — fallback to static assets to avoid server error.
+             Run `npm install && npm run build` later to restore Vite-managed assets. --}}
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <script src="{{ asset('js/app.js') }}" defer></script>
+    @endif
 </head>
 
 <body class="font-sans antialiased flex flex-col min-h-screen">

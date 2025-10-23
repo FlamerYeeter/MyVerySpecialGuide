@@ -221,8 +221,61 @@ Route::get('/job-application-2', function () {
     return view('job-application-2');
 })->name('job.application.2');
 
+use App\Services\JobCsvParser;
+
 Route::get('/job-application-review1', function () {
-    return view('job-application-review1');
+    $job = null;
+    try {
+        $parser = new JobCsvParser();
+        $jobId = request('job_id');
+        $assoc = $parser->findJobById($jobId);
+        if (is_array($assoc)) {
+            // normalize some common keys for the view (fallbacks)
+            $job = [
+                'title' => $assoc['title'] ?? ($assoc['job_title'] ?? ($assoc['position'] ?? 'Unknown Job')),
+                'company' => $assoc['company'] ?? ($assoc['companyname'] ?? $assoc['employer'] ?? ''),
+                'location' => $assoc['location'] ?? ($assoc['address'] ?? ($assoc['city'] ?? '')),
+                'type' => $assoc['type'] ?? ($assoc['jobtype'] ?? ($assoc['employment_type'] ?? '')),
+                'job_description' => $assoc['job_description'] ?? ($assoc['description'] ?? ($assoc['job description'] ?? '')),
+            ];
+        }
+    } catch (\Throwable $e) {
+        logger()->error('job-application-review1 route: parser exception: ' . $e->getMessage());
+    }
+    // If parser returned no assoc and the user didn't explicitly force the view, show debug page
+    $force = request()->boolean('force_view');
+    if ((empty($assoc) || $assoc === null) && !$force) {
+        // collect diagnostic info
+        $csvPath = public_path('postings.csv');
+        $jsonPath = public_path('recommendations.json');
+        $approvalsPath = storage_path('app/guardian_job_approvals.json');
+        $files = [
+            'postings_exists' => file_exists($csvPath),
+            'postings_size' => @filesize($csvPath) ?: 0,
+            'postings_mtime' => @filemtime($csvPath) ?: null,
+            'reco_exists' => file_exists($jsonPath),
+            'reco_size' => @filesize($jsonPath) ?: 0,
+            'reco_mtime' => @filemtime($jsonPath) ?: null,
+            'approvals_exists' => file_exists($approvalsPath),
+        ];
+
+        // tail the laravel log (last 200 lines)
+        $logPath = storage_path('logs/laravel.log');
+        $logTail = [];
+        if (file_exists($logPath)) {
+            $lines = @file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [];
+            $logTail = array_slice($lines, -200);
+        }
+
+        return view('debug.job-load-debug', [
+            'jobId' => $jobId,
+            'files' => $files,
+            'assoc' => $assoc,
+            'logTail' => $logTail,
+        ]);
+    }
+
+    return view('job-application-review1', ['job' => $job]);
 })->name('job.application.review1');
 
 Route::get('/job-application-review2', function () {
@@ -234,7 +287,9 @@ Route::get('/job-application-submit', function () {
 })->name('job.application.submit');
 
 // Server-side submit endpoint (AJAX-friendly). Uses service account to write to Firestore.
-Route::post('/job-application-submit', [JobApplicationController::class, 'submit'])->middleware('auth')->name('job.application.submit.post');
+// NOTE: this route no longer requires Laravel session middleware so clients that
+// supply a Firebase ID token (Authorization: Bearer <idToken>) can submit too.
+Route::post('/job-application-submit', [JobApplicationController::class, 'submit'])->name('job.application.submit.post');
 
 Route::get('/job-details', function () {
     return view('job-details');

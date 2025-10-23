@@ -30,7 +30,43 @@ class JobApplicationController extends Controller
             // ignore logging failures
         }
 
-        $data = $request->all();
+    $data = $request->all();
+    // Treat JSON POSTs and fetch() calls as API clients even if Accept header isn't set.
+    $isApi = $request->wantsJson() || $request->isJson() || str_contains((string)$request->header('Content-Type', ''), 'application/json') || $request->ajax();
+
+        // Attempt to authenticate: prefer Laravel session, fallback to Firebase ID token
+        $laravelUserId = auth()->id();
+        $firebaseUid = null;
+        try {
+            $idToken = null;
+            $authHeader = $request->header('Authorization', '') ?: $request->server('HTTP_AUTHORIZATION', '');
+            if ($authHeader && preg_match('/Bearer\s+(.*)$/i', $authHeader, $m)) {
+                $idToken = trim($m[1]);
+            }
+            if (!$idToken) $idToken = (string)$request->input('idToken', '');
+            if ($idToken) {
+                $firebaseUid = $this->verifyFirebaseIdToken($idToken);
+            }
+        } catch (\Throwable $e) {
+            logger()->warning('JobApplicationController: firebase token verify failed: ' . $e->getMessage());
+        }
+
+        // If no Laravel session and no Firebase uid, return a JSON 401 for API clients
+        if (empty($laravelUserId) && empty($firebaseUid)) {
+            if ($isApi) {
+                return response()->json(['success' => false, 'error' => 'unauthorized', 'message' => 'Authentication required (Laravel session or Firebase idToken).'], 401);
+            }
+            return redirect()->route('login')->with('error', 'You must be signed in to submit an application.');
+        }
+
+        // Debug: log auth headers and resolved identities
+        try {
+            logger()->info('JobApplicationController: auth resolution', [
+                'laravel_user_id' => $laravelUserId,
+                'firebase_uid' => $firebaseUid,
+                'auth_header_present' => !empty($request->header('Authorization', '') ?: $request->server('HTTP_AUTHORIZATION', '')),
+            ]);
+        } catch (\Throwable $e) {}
 
         // If a job_id was provided, try to enrich the payload with job details from the CSV
         $jobId = $data['job_id'] ?? $request->query('job_id') ?? null;
@@ -72,16 +108,22 @@ class JobApplicationController extends Controller
             }
         }
 
-        // Load service account
-        $serviceAccountPath = env('FIREBASE_SERVICE_ACCOUNT') ?: storage_path('app/firebase-service-account.json');
+    // Load service account
+    $serviceAccountPath = (getenv('FIREBASE_SERVICE_ACCOUNT') ?: '') ?: storage_path('app/firebase-service-account.json');
         if (!file_exists($serviceAccountPath)) {
             logger()->error('JobApplicationController: service account missing: ' . $serviceAccountPath);
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'service_account_missing', 'message' => 'Server misconfiguration (service account missing).'], 500);
+            }
             return redirect()->back()->with('error', 'Server misconfiguration (service account missing).');
         }
 
         $sa = json_decode(file_get_contents($serviceAccountPath), true);
         if (!$sa || empty($sa['client_email']) || empty($sa['private_key']) || empty($sa['project_id'])) {
             logger()->error('JobApplicationController: invalid service account JSON');
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'service_account_invalid', 'message' => 'Server misconfiguration (invalid service account).'], 500);
+            }
             return redirect()->back()->with('error', 'Server misconfiguration (invalid service account).');
         }
 
@@ -106,6 +148,9 @@ class JobApplicationController extends Controller
             $jwt = $this->createSignedJwt($assertion, $privateKey);
         } catch (\Throwable $e) {
             logger()->error('JobApplicationController: JWT encode failed: ' . $e->getMessage());
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'jwt_sign_failed', 'message' => 'Server error creating auth token'], 500);
+            }
             return redirect()->back()->with('error', 'Server error creating auth token');
         }
 
@@ -117,11 +162,17 @@ class JobApplicationController extends Controller
             ]);
         } catch (\Throwable $e) {
             logger()->error('JobApplicationController: token request failed: ' . $e->getMessage());
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'token_request_failed', 'message' => 'Server error requesting access token'], 500);
+            }
             return redirect()->back()->with('error', 'Server error requesting access token');
         }
 
         if (!$resp->successful()) {
             logger()->error('JobApplicationController: token endpoint error: ' . $resp->body());
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'token_endpoint_error', 'body' => $resp->body()], 500);
+            }
             return redirect()->back()->with('error', 'Server error obtaining access token');
         }
 
@@ -129,6 +180,9 @@ class JobApplicationController extends Controller
         $accessToken = $tokenData['access_token'] ?? null;
         if (!$accessToken) {
             logger()->error('JobApplicationController: no access_token in response');
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'no_access_token', 'message' => 'Server error obtaining access token'], 500);
+            }
             return redirect()->back()->with('error', 'Server error obtaining access token');
         }
 
@@ -278,7 +332,20 @@ class JobApplicationController extends Controller
     // Helper: read the CSV and return a job array for given job id (numeric index or job_id column)
     private function getJobFromCsv($jobId)
     {
-    $csvPath = public_path('postings.csv');
+        // Prefer Laravel helper when available; fall back to project/public/postings.csv
+        $csvPath = null;
+        if (function_exists('public_path')) {
+            try {
+                $csvPath = public_path('postings.csv');
+            } catch (\Throwable $e) {
+                $csvPath = null;
+            }
+        }
+        if (empty($csvPath)) {
+            // controller is in app/Http/Controllers -> move up to project root
+            $projectRoot = dirname(__DIR__, 3);
+            $csvPath = $projectRoot . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'postings.csv';
+        }
         if (!file_exists($csvPath)) return null;
 
         if (($handle = fopen($csvPath, 'r')) === false) return null;
@@ -304,11 +371,24 @@ class JobApplicationController extends Controller
 
         if (empty($rowFound)) return null;
 
-        $map = array_change_key_case(array_flip($headers));
+        // Build a lookup map of lowercased header => column index. Guard if headers are malformed.
+        $map = [];
+        if (is_array($headers)) {
+            $flipped = @array_flip($headers);
+            if (is_array($flipped)) {
+                $map = array_change_key_case($flipped);
+            }
+        }
+
         $get = function($names) use ($rowFound, $map) {
             foreach ((array)$names as $n) {
                 $k = strtolower(trim($n));
-                if (isset($map[$k]) && isset($rowFound[$map[$k]])) return $rowFound[$map[$k]];
+                if (is_array($map) && array_key_exists($k, $map)) {
+                    $idx = $map[$k];
+                    if (is_array($rowFound) && array_key_exists($idx, $rowFound)) {
+                        return $rowFound[$idx];
+                    }
+                }
             }
             return '';
         };
@@ -316,7 +396,7 @@ class JobApplicationController extends Controller
         // Build associative raw map of header->value
         $raw = [];
         foreach ($headers as $hi => $h) {
-            $raw[$h] = $rowFound[$hi] ?? null;
+            $raw[$h] = (is_array($rowFound) && array_key_exists($hi, $rowFound)) ? $rowFound[$hi] : null;
         }
 
         return [
@@ -328,6 +408,118 @@ class JobApplicationController extends Controller
             'raw' => $raw,
             'row_index' => $rowIndex,
         ];
+    }
+
+    // Verify a Firebase ID token using Google's tokeninfo endpoint. Returns uid (sub) on success or null on failure.
+    private function verifyFirebaseIdToken(string $idToken): ?string
+    {
+        try {
+            $parts = explode('.', $idToken);
+            if (count($parts) !== 3) return null;
+            $b64Header = $parts[0];
+            $b64Payload = $parts[1];
+            $b64Sig = $parts[2];
+
+            $header = json_decode($this->base64UrlDecode($b64Header), true) ?: [];
+            $payload = json_decode($this->base64UrlDecode($b64Payload), true) ?: [];
+            $kid = $header['kid'] ?? null;
+
+            $svcPath = (getenv('FIREBASE_SERVICE_ACCOUNT') ?: '') ?: storage_path('app/firebase-service-account.json');
+            $projectId = null;
+            if (file_exists($svcPath)) {
+                $j = json_decode(file_get_contents($svcPath), true);
+                $projectId = $j['project_id'] ?? null;
+            }
+
+            // Try verifying signature with Google's certs if available
+            $certsUrl = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
+            
+            $certsRaw = @file_get_contents($certsUrl);
+            if ($certsRaw !== false) {
+                $certs = json_decode($certsRaw, true) ?: [];
+                if ($kid && isset($certs[$kid])) {
+                    $cert = $certs[$kid];
+                    $sig = $this->base64UrlDecode($b64Sig);
+                    $signed = $b64Header . '.' . $b64Payload;
+                    $pub = openssl_pkey_get_public($cert);
+                    if ($pub !== false) {
+                        $ok = openssl_verify($signed, $sig, $pub, OPENSSL_ALGO_SHA256);
+                        openssl_free_key($pub);
+                    } else {
+                        $ok = 0;
+                    }
+                    if ($ok === 1) {
+                        $now = time();
+                        if ($projectId && (!isset($payload['aud']) || $payload['aud'] !== $projectId)) {
+                            logger()->warning('Firebase token aud mismatch');
+                            return null;
+                        }
+                        if ($projectId && (!isset($payload['iss']) || $payload['iss'] !== 'https://securetoken.google.com/' . $projectId)) {
+                            logger()->warning('Firebase token iss mismatch');
+                            return null;
+                        }
+                        if (!isset($payload['sub']) || !is_string($payload['sub']) || $payload['sub'] === '') return null;
+                        if (isset($payload['exp']) && $payload['exp'] < ($now - 5)) {
+                            logger()->warning('Firebase token expired');
+                            return null;
+                        }
+                        return $payload['sub'];
+                    }
+                }
+            }
+
+            // Fallback: tokeninfo endpoint
+            $url = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken);
+            $resp = @file_get_contents($url);
+            if ($resp === false) return null;
+            $data = json_decode($resp, true);
+            if (empty($data) || empty($data['sub'])) return null;
+            if ($projectId && !empty($data['aud']) && (string)$data['aud'] !== (string)$projectId && (string)$data['aud'] !== (string)(getenv('FIREBASE_API_KEY') ?: '')) {
+                logger()->warning('Firebase token audience mismatch (fallback)');
+                return null;
+            }
+            return $data['sub'] ?? null;
+        } catch (\Throwable $e) {
+            logger()->warning('verifyFirebaseIdToken failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    private function base64UrlDecode(string $input): string
+    {
+        $remainder = strlen($input) % 4;
+        if ($remainder) {
+            $padlen = 4 - $remainder;
+            $input .= str_repeat('=', $padlen);
+        }
+        $safe = strtr($input, '-_', '+/');
+        return base64_decode($safe);
+    }
+
+    // Obtain an OAuth2 access token using a service account private key (JWT assertion)
+    private function getAccessTokenFromServiceAccount(string $clientEmail, string $privateKeyPem): string
+    {
+        $now = time();
+        $tokenUrl = 'https://oauth2.googleapis.com/token';
+        $scope = 'https://www.googleapis.com/auth/datastore https://www.googleapis.com/auth/cloud-platform';
+        $jwtClaim = [
+            'iss' => $clientEmail,
+            'scope' => $scope,
+            'aud' => $tokenUrl,
+            'iat' => $now,
+            'exp' => $now + 3600,
+        ];
+        $assertion = $this->createSignedJwt($jwtClaim, $privateKeyPem);
+        $res = Http::asForm()->post($tokenUrl, [
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'assertion' => $assertion,
+        ]);
+        if (!$res->successful()) {
+            throw new \RuntimeException('Token endpoint returned ' . $res->status() . ': ' . $res->body());
+        }
+        $json = $res->json();
+        if (empty($json['access_token'])) throw new \RuntimeException('No access_token in response');
+        return $json['access_token'];
     }
 }
 

@@ -48,20 +48,27 @@
               $rowFound = $r; break;
             }
           }
-          if (!empty($rowFound)) {
-            $map = array_change_key_case(array_flip($headers));
-            $get = function($names) use ($rowFound, $map) {
-              foreach ((array)$names as $n) {
-                $k = strtolower(trim($n));
-                if (isset($map[$k]) && isset($rowFound[$map[$k]])) return $rowFound[$map[$k]];
-              }
-              return '';
-            };
-            $jobTitle = $get(['title','jobtitle','job_title','position','job name','position title']) ?: $jobTitle;
-            $jobCompany = $get(['company','companyname','employer','organization','company name']) ?: $jobCompany;
-            $jobAddress = $get(['location','address','city','place']) ?: $jobAddress;
-            $jobType = $get(['type','jobtype','employment_type','job_type']) ?: $jobType;
-          }
+                if (!empty($rowFound)) {
+                  $map = [];
+                  if (is_array($headers)) {
+                    $flipped = @array_flip($headers);
+                    if (is_array($flipped)) $map = array_change_key_case($flipped);
+                  }
+                  $get = function($names) use ($rowFound, $map) {
+                    foreach ((array)$names as $n) {
+                      $k = strtolower(trim($n));
+                      if (is_array($map) && array_key_exists($k, $map)) {
+                        $idx = $map[$k];
+                        if (is_array($rowFound) && array_key_exists($idx, $rowFound)) return $rowFound[$idx];
+                      }
+                    }
+                    return '';
+                  };
+                  $jobTitle = $get(['title','jobtitle','job_title','position','job name']) ?: $jobTitle;
+                  $jobCompany = $get(['company','companyname','employer']) ?: $jobCompany;
+                  $jobAddress = $get(['location','address','city']) ?: $jobAddress;
+                  $jobType = $get(['type','jobtype','employment_type']) ?: $jobType;
+                }
         }
       }
     @endphp

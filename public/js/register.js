@@ -42,7 +42,11 @@
   async function ensureFirebase() {
     if (firebaseInitialized) return { auth, db };
     const cfg = readFirebaseConfig();
-    if (!cfg || !cfg.apiKey) { showError('Firebase not configured — using local storage only.'); return null; }
+    if (!cfg || !cfg.apiKey) {
+      // Do not show a blocking alert. Use console warning and fall back to local-only mode.
+      console.warn('[reg.js] Firebase not configured — using local storage only.');
+      return null;
+    }
 
     if (!window.firebase) {
       await loadScript('https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js');
@@ -181,7 +185,12 @@ service cloud.firestore {
       const fb = await ensureFirebase();
       if (!fb) return (window.location.href = normalizeNextPath(nextPath));
       const user = await waitForAuth(8000);
-      if (!user) return showError('Please sign in again before proceeding.', `${sectionKey}Error`);
+      if (!user) {
+        // Don't surface a sign-in prompt in the UI. Fall back to local-only save and continue.
+        // This avoids showing a 'please sign in again' message that can be confusing.
+        // Save was already stored locally via saveLocalDraft above; just redirect to next path.
+        return (window.location.href = normalizeNextPath(nextPath));
+      }
       try {
         await saveToFirestore(user.uid, sectionKey, data);
         window.location.href = normalizeNextPath(nextPath);
