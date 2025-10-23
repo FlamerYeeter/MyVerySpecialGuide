@@ -70,6 +70,11 @@ class JobApplicationController extends Controller
 
         // If a job_id was provided, try to enrich the payload with job details from the CSV
         $jobId = $data['job_id'] ?? $request->query('job_id') ?? null;
+        // Normalize 'p' prefixed ids (used by some client-side renderers) to numeric when possible
+        if (is_string($jobId) && preg_match('/^p(\d+)$/i', $jobId, $m)) {
+            $jobId = (int)$m[1];
+        }
+
         if ($jobId !== null) {
             try {
                 $job = $this->getJobFromCsv($jobId);

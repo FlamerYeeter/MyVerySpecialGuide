@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
+use App\Jobs\GenerateRecommendations;
 
 class RecommendationController extends Controller
 {
@@ -16,36 +17,41 @@ class RecommendationController extends Controller
         $profile = $request->json()->all();
         $uid = $request->input('uid') ?? ($profile['uid'] ?? 'anonymous');
 
-        $tmpPath = storage_path('app/tmp_reco_users_' . preg_replace('/[^A-Za-z0-9_\-]/', '_', $uid) . '.json');
+        // sanitize uid for file paths
+        $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $uid ?: 'anonymous');
+        $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
+
+        // TTL for cached results (seconds). If cached file is recent, return it immediately.
+        $cacheTtl = 60 * 60; // 1 hour
         try {
-            file_put_contents($tmpPath, json_encode([$uid => $profile], JSON_UNESCAPED_UNICODE));
-
-            $python = 'python';
-            $script = base_path('tools/generate_recommendations.py');
-            $input = base_path('public/postings.csv');
-
-            $cmd = [$python, $script, '--input', $input, '--print-per-user', '--users', $tmpPath, '--top', '50', '--alpha', '0.6', '--neighbors', '5'];
-            $process = new Process($cmd);
-            $process->setTimeout(120);
-            $process->run();
-
-            if (!$process->isSuccessful()) {
-                Log::error('Recommendation generator failed: ' . $process->getErrorOutput());
-                return response()->json(['error' => 'generator_failed', 'detail' => $process->getErrorOutput()], 500);
+            // If cache exists and is fresh, return immediately
+            if (file_exists($cachePath) && (time() - filemtime($cachePath) < $cacheTtl)) {
+                $raw = @file_get_contents($cachePath);
+                $json = json_decode($raw, true);
+                if ($json !== null) {
+                    return response()->json($json);
+                }
             }
 
-            $out = $process->getOutput();
-            $json = json_decode($out, true);
-            if ($json === null) {
-                return response()->json(['error' => 'invalid_output', 'raw' => $out], 500);
+            // If stale or missing cache: dispatch background job to generate recommendations
+            // but return cached file immediately if present
+            if (file_exists($cachePath)) {
+                // return stale cache while job regenerates in background
+                $raw = @file_get_contents($cachePath);
+                $json = json_decode($raw, true);
+                // dispatch the job asynchronously
+                GenerateRecommendations::dispatch($uid, $profile);
+                if ($json !== null) {
+                    return response()->json($json);
+                }
             }
 
-            return response()->json($json);
+            // No cache exists: dispatch job and return 202 Accepted with placeholder
+            GenerateRecommendations::dispatch($uid, $profile);
+            return response()->json(['status' => 'scheduled', 'message' => 'Recommendation generation scheduled.'], 202);
         } catch (\Exception $e) {
             Log::error('Recommendation exception: ' . $e->getMessage());
             return response()->json(['error' => 'exception', 'message' => $e->getMessage()], 500);
-        } finally {
-            @unlink($tmpPath);
         }
     }
 }

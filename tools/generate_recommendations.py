@@ -99,6 +99,58 @@ def generate(input_csv, output_json=None, max_features=5000, print_per_user=Fals
             'Company': ['Tech Corp', 'Data Inc.']
         })
 
+    # Normalize common header variants to expected internal column names
+    # Build a mapping of lowercase column name -> original column name
+    cols_map = {c.lower(): c for c in df.columns}
+    def pick(*names):
+        for n in names:
+            if n and n.lower() in cols_map:
+                return cols_map[n.lower()]
+        return None
+
+    # map into standard columns used downstream
+    # Title
+    title_col = pick('Title', 'title', 'job_title')
+    if title_col:
+        df['Title'] = df[title_col].fillna('').astype(str)
+    elif 'Title' not in df.columns:
+        df['Title'] = ''
+
+    # Company
+    comp_col = pick('Company', 'company', 'company_name', 'employer')
+    if comp_col:
+        df['Company'] = df[comp_col].fillna('').astype(str)
+    elif 'Company' not in df.columns:
+        df['Company'] = ''
+
+    # job_description
+    jd_col = pick('job_description', 'description', 'job description', 'jobdesc', 'job_desc')
+    if jd_col:
+        df['job_description'] = df[jd_col].fillna('').astype(str)
+    elif 'job_description' not in df.columns:
+        df['job_description'] = ''
+
+    # skills_desc
+    skills_col = pick('skills_desc', 'skills', 'required_skills', 'skillset')
+    if skills_col:
+        df['skills_desc'] = df[skills_col].fillna('').astype(str)
+    elif 'skills_desc' not in df.columns:
+        df['skills_desc'] = ''
+
+    # location
+    loc_col = pick('location', 'work_location', 'city')
+    if loc_col:
+        df['Location'] = df[loc_col].fillna('').astype(str)
+    elif 'Location' not in df.columns:
+        df['Location'] = ''
+
+    # resume/requirements (used earlier as 'resume' field)
+    res_col = pick('resume', 'RequiredQual', 'requirements', 'requirements_text')
+    if res_col:
+        df['resume'] = df[res_col].fillna('').astype(str)
+    elif 'resume' not in df.columns:
+        df['resume'] = ''
+
     # normalize expected column names
     cols = {c.strip(): c for c in df.columns}
     def col(name, fallback=None):
@@ -139,14 +191,21 @@ def generate(input_csv, output_json=None, max_features=5000, print_per_user=Fals
             df['match_score'] = 5.0
 
     # build a combined text corpus from multiple posting fields to ensure TF-IDF has content
+    # give higher weight to Title and skills fields by repeating them in the corpus
     combined_fields = []
     for f in ['description', 'job_description', 'Title', 'Company', 'skills_desc', 'posting_domain', 'formatted_experience_level']:
         if f in df.columns:
             combined_fields.append(df[f].fillna('').astype(str))
     if combined_fields:
+        # Start with first field then append others; repeat Title and skills_desc to boost their importance
         df['text_corpus'] = combined_fields[0]
-        for part in combined_fields[1:]:
+        for part_name, part in zip(['description','job_description','Title','Company','skills_desc','posting_domain','formatted_experience_level'], combined_fields[1:]):
             df['text_corpus'] = df['text_corpus'] + ' ' + part
+        # boost Title and skills if available
+        if 'Title' in df.columns:
+            df['text_corpus'] = df['text_corpus'] + ' ' + df['Title'].fillna('').astype(str) + ' ' + df['Title'].fillna('').astype(str)
+        if 'skills_desc' in df.columns:
+            df['text_corpus'] = df['text_corpus'] + ' ' + df['skills_desc'].fillna('').astype(str)
     else:
         df['text_corpus'] = (df['job_description'].fillna('') + ' ' + df['resume'].fillna('')).astype(str)
 
@@ -388,98 +447,167 @@ def generate(input_csv, output_json=None, max_features=5000, print_per_user=Fals
         if job_matrix is None or (hasattr(job_matrix, 'shape') and job_matrix.shape[1] == 0) or (hasattr(user_vecs, 'shape') and user_vecs.shape[1] == 0):
             user_similarity = np.zeros((len(user_texts_list), len(user_texts_list)))
         else:
-            try:
-                user_similarity = cosine_similarity(user_vecs)
-            except Exception:
-                logger.exception('Failed to compute user-user similarity; using zeros')
-                user_similarity = np.zeros((len(user_texts_list), len(user_texts_list)))
+                # --- Revised collaborative/hybrid pipeline aligned to test script ---
+                try:
+                    from sklearn.preprocessing import MinMaxScaler
+                except Exception:
+                    logger.info('MinMaxScaler unavailable; attempting import from sklearn.preprocessing')
+                    from sklearn.preprocessing import MinMaxScaler
 
-        # Now build per-user outputs using neighbor aggregation
-        for ui, (uid, _utext) in enumerate(user_texts_list):
-            prof = user_list[ui].get('profile') or {}
-            # build user text from jobPreferences and skills and workplace
-            text_parts = []
-            try:
-                jp1 = prof.get('jobPreferences', {}).get('jobpref1')
-                jp2 = prof.get('jobPreferences', {}).get('jobpref2')
-                if jp1:
+                # sims_matrix: user x jobs (content similarities computed earlier via cosine_similarity(user_vecs, job_matrix))
+                try:
+                    sims_matrix = cosine_similarity(user_vecs, job_matrix)
+                except Exception:
+                    logger.exception('Failed to compute sims_matrix; falling back to zeros')
+                    sims_matrix = np.zeros((len(user_texts_list), len(corpus)))
+
+                # Simulated user-item interactions: pick top-k jobs per user (neighbors)
+                # This avoids brittle global thresholds which can produce empty interaction rows.
+                k = max(1, int(neighbors))
+                user_item_matrix = np.zeros_like(sims_matrix, dtype=float)
+                try:
+                    for ui in range(sims_matrix.shape[0]):
+                        if k >= sims_matrix.shape[1]:
+                            # mark all as interacted when k >= num_jobs
+                            user_item_matrix[ui, :] = (sims_matrix[ui, :] > 0).astype(float)
+                        else:
+                            topk = np.argsort(sims_matrix[ui])[-k:]
+                            user_item_matrix[ui, topk] = 1.0
+                except Exception:
+                    logger.exception('Failed to build top-k user_item_matrix; falling back to threshold=0.1')
+                    CONTENT_THRESHOLD = 0.1
+                    user_item_matrix = (sims_matrix > CONTENT_THRESHOLD).astype(float)
+
+                # User-user and item-item similarities for CF
+                try:
+                    user_similarity = cosine_similarity(user_item_matrix)
+                except Exception:
+                    logger.exception('Failed to compute user_similarity; using zeros')
+                    user_similarity = np.zeros((len(user_texts_list), len(user_texts_list)))
+                try:
+                    item_similarity = cosine_similarity(user_item_matrix.T)
+                except Exception:
+                    logger.exception('Failed to compute item_similarity; using zeros')
+                    item_similarity = np.zeros((len(corpus), len(corpus)))
+
+                # user-based CF scores: (user_similarity dot user_item_matrix) normalized
+                # shape: (num_users, num_jobs)
+                with np.errstate(divide='ignore', invalid='ignore'):
+                    denom_u = np.sum(np.abs(user_similarity), axis=1, keepdims=True) + 1e-8
+                    user_cf_scores = (user_similarity.dot(user_item_matrix)) / denom_u
+
+                    # item-based CF: user_item_matrix dot item_similarity
+                    denom_i = np.sum(np.abs(item_similarity), axis=1, keepdims=True).T + 1e-8
+                    item_cf_scores = (user_item_matrix.dot(item_similarity)) / denom_i
+
+                # Normalize each component to 0-1 using MinMaxScaler (fit on rows)
+                # Normalize each user's score vector (row-wise) to 0-1 to avoid column-wise degeneracy
+                def row_minmax(mat):
+                    mat = np.array(mat, dtype=float)
+                    if mat.size == 0:
+                        return mat
+                    mn = np.nanmin(mat, axis=1, keepdims=True)
+                    mx = np.nanmax(mat, axis=1, keepdims=True)
+                    rng = mx - mn
+                    rng[rng == 0] = 1.0
+                    return ((mat - mn) / rng)
+
+                try:
+                    content_norm = row_minmax(sims_matrix)
+                    user_cf_norm = row_minmax(user_cf_scores)
+                    item_cf_norm = row_minmax(item_cf_scores)
+                except Exception:
+                    logger.exception('Row-wise normalization failed; falling back to zeros')
+                    content_norm = np.zeros_like(sims_matrix, dtype=float)
+                    user_cf_norm = np.zeros_like(user_cf_scores, dtype=float)
+                    item_cf_norm = np.zeros_like(item_cf_scores, dtype=float)
+
+                # Combine into hybrid: weights aligned with test script
+                W_CONTENT = 0.5
+                W_USER = 0.25
+                W_ITEM = 0.25
+                hybrid_matrix = (W_CONTENT * content_norm) + (W_USER * user_cf_norm) + (W_ITEM * item_cf_norm)
+
+                # Helper: infer user level from profile text (simple keyword match)
+                def infer_user_level_from_text(t):
+                    if not isinstance(t, str): return 'Associate'
+                    s = t.lower()
+                    if any(k in s for k in ['senior', 'manager', 'lead', 'sr.']): return 'Mid-Senior level'
+                    if any(k in s for k in ['junior', 'jr.', 'entry', 'intern', 'graduate']): return 'Entry level'
+                    return 'Associate'
+
+                # Job levels vector (from original dataframe if present)
+                job_levels = []
+                for i, r in enumerate(recommendations):
+                    jl = ''
                     try:
-                        arr = json.loads(jp1) if isinstance(jp1, str) else jp1
-                        text_parts.extend(arr if isinstance(arr, list) else [arr])
+                        jl = df.iloc[i].get('formatted_experience_level', '')
                     except Exception:
-                        text_parts.append(str(jp1))
-                if jp2:
+                        jl = ''
+                    job_levels.append(jl)
+                job_levels = np.array(job_levels)
+
+                # Apply per-user context boost and emit top-N
+                CONTEXT_BOOST = 0.2
+                for ui, (uid, _utext) in enumerate(user_texts_list):
+                    prof = user_list[ui].get('profile') or {}
+                    # build a small free-text from profile to infer level
+                    ptext = ' '.join([str(x) for x in [
+                        prof.get('jobPreferences', {}).get('jobpref1', ''),
+                        prof.get('jobPreferences', {}).get('jobpref2', ''),
+                        prof.get('skills', {}).get('skills_page1', ''),
+                        prof.get('skills', {}).get('skills_page2', ''),
+                        prof.get('workplace', {}).get('workplace_choice', ''),
+                        prof.get('educationInfo', '')
+                    ] if x])
+                    user_level = infer_user_level_from_text(ptext)
+
+                    # base hybrid scores for this user (row ui)
+                    user_hybrid = hybrid_matrix[ui].astype(float).copy()
+
+                    # apply context boost where job_levels == user_level
                     try:
-                        arr = json.loads(jp2) if isinstance(jp2, str) else jp2
-                        text_parts.extend(arr if isinstance(arr, list) else [arr])
+                        mask = (job_levels.astype(str) == str(user_level))
+                        if mask.any():
+                            user_hybrid = user_hybrid + (mask.astype(float) * CONTEXT_BOOST)
                     except Exception:
-                        text_parts.append(str(jp2))
-                skills_text = ''
-                sk1 = prof.get('skills', {}).get('skills_page1')
-                sk2 = prof.get('skills', {}).get('skills_page2')
-                for sk in (sk1, sk2):
-                    if sk:
-                        try:
-                            arr = json.loads(sk) if isinstance(sk, str) else sk
-                            text_parts.extend(arr if isinstance(arr, list) else [arr])
-                        except Exception:
-                            text_parts.append(str(sk))
-                workplace = prof.get('workplace', {}).get('workplace_choice')
-                if workplace:
-                    text_parts.append(workplace)
-            except Exception:
-                logger.exception('Failed to build user text for uid=%s', uid)
+                        pass
 
-            user_text = ' '.join([str(x) for x in text_parts if x])
-            # If job_matrix has zero features (fallback), return zero similarities
-            # content-based scores for this user (vectorized earlier)
-            content_scores = content_scores_map.get(uid, np.zeros(len(corpus), dtype=float))
+                    # Re-normalize per-user hybrid to 0-1
+                    mn = float(np.nanmin(user_hybrid))
+                    mx = float(np.nanmax(user_hybrid))
+                    if mx - mn > 1e-12:
+                        user_hybrid_norm = (user_hybrid - mn) / (mx - mn)
+                    else:
+                        user_hybrid_norm = np.zeros_like(user_hybrid)
 
-            # collaborative aggregation: weighted sum of neighbor content scores
-            coll_scores = np.zeros(len(corpus), dtype=float)
-            # find neighbors (exclude self)
-            if len(user_texts_list) > 1:
-                sims_to_others = user_similarity[ui].copy()
-                sims_to_others[ui] = -1.0  # exclude self
-                neighbor_idx = sims_to_others.argsort()[-neighbors:][::-1]
-                weights = sims_to_others[neighbor_idx]
-                # ignore negative or zero weights
-                pos_mask = weights > 0
-                if pos_mask.any():
-                    w = weights[pos_mask]
-                    idxs = neighbor_idx[pos_mask]
-                    agg = np.zeros(len(corpus), dtype=float)
-                    for kpos, nid in enumerate(idxs):
-                        neighbor_uid = user_texts_list[nid][0]
-                        neighbor_scores = content_scores_map.get(neighbor_uid, np.zeros(len(corpus), dtype=float))
-                        agg += float(w[kpos]) * neighbor_scores
-                    coll_scores = agg / (float(w.sum()) if float(w.sum()) > 0 else 1.0)
-                else:
-                    coll_scores = np.zeros(len(corpus), dtype=float)
-            else:
-                coll_scores = np.zeros(len(corpus), dtype=float)
+                    # Prepare output: top_n indices
+                    top_idx = np.argsort(user_hybrid_norm)[-top_n:][::-1]
+                    recs_for_user = []
+                    for j in top_idx:
+                        job_idx = ids[j]
+                        rec_item = recommendations[job_idx]
+                        rec_item_out = rec_item.copy()
+                        # populate normalized scores (0-1)
+                        rec_item_out['content_score'] = float(content_norm[ui, j])
+                        rec_item_out['user_cf_score'] = float(user_cf_norm[ui, j])
+                        rec_item_out['item_cf_score'] = float(item_cf_norm[ui, j])
+                        rec_item_out['hybrid_score'] = float(user_hybrid_norm[j])
+                        recs_for_user.append(rec_item_out)
+                    out[uid] = recs_for_user
 
-            # final hybrid score: alpha*content + (1-alpha)*collaborative
+        # print or write per-user JSON
+        out_json = json.dumps(out, ensure_ascii=False, indent=2)
+        if output_json:
             try:
-                hybrid_scores = (alpha * content_scores) + ((1.0 - alpha) * coll_scores)
-            except Exception:
-                hybrid_scores = content_scores
-
-            # pick top N by hybrid score
-            top_idx = np.argsort(hybrid_scores)[-top_n:][::-1]
-            recs_for_user = []
-            for j in top_idx:
-                job_idx = ids[j]
-                rec_item = recommendations[job_idx]
-                rec_item_out = rec_item.copy()
-                rec_item_out['content_score'] = float(content_scores[j])
-                rec_item_out['collaborative_score'] = float(coll_scores[j])
-                rec_item_out['hybrid_score'] = float(hybrid_scores[j])
-                recs_for_user.append(rec_item_out)
-            out[uid] = recs_for_user
-
-        # print to stdout as JSON
-        print(json.dumps(out, ensure_ascii=False, indent=2))
+                with open(output_json, 'w', encoding='utf-8') as wf:
+                    wf.write(out_json)
+                logger.info('Wrote per-user recommendations to %s', output_json)
+                return 0
+            except Exception as e:
+                logger.exception('Failed to write per-user output to %s: %s', output_json, e)
+                # fall back to printing
+        print(out_json)
         return 0
 
     # write JSON (fallback behavior)

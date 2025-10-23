@@ -383,6 +383,71 @@
     // expose guardian approvals for client-side use (boosting / badges)
     window.__GUARDIAN_APPROVALS = {!! json_encode($guardianApprovals ?? []) !!};
   </script>
+  <script type="module">
+  // After auth is resolved, request per-user hybrid recommendations and replace pending list
+  (async function(){
+      try {
+          const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+      await mod.ensureInit?.();
+      let profile = null;
+      try {
+        try { await mod.signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { console.debug('signInWithServerToken (guardian) failed', e); }
+        profile = await mod.getUserProfile();
+      } catch(e) { console.debug('no profile from firebase module', e); }
+          if (!profile) return; // nothing to do
+
+            const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': '{{ csrf_token() }}'
+              },
+              body: JSON.stringify(Object.assign({ uid: profile.uid || profile.userId || profile.user_id || '' }, profile))
+          });
+          if (!resp.ok) { console.warn('Hybrid recommender error', resp.status); return; }
+          const data = await resp.json();
+          const keys = Object.keys(data || {});
+          if (keys.length === 0) return;
+          const first = data[keys[0]] || [];
+          // build new pending elements and replace existing list
+          const container = document.querySelector('.max-w-5xl.mx-auto.mt-10.px-4');
+          if (!container) return;
+          // remove current listing children until the pagination (keep pagination area if present)
+          // simple approach: clear and re-render header + items
+          const headerHtml = container.querySelector('h3')?.outerHTML || '';
+          container.innerHTML = headerHtml + '<div id="reco-list" class="mt-4"></div>';
+          const list = container.querySelector('#reco-list');
+          first.slice(0, 50).forEach((r, idx) => {
+              const jid = String(r.job_id || ('p' + idx));
+              const title = r.Title || r.title || r.job_title || (r.job_description || '').substring(0,80) || 'Untitled Job';
+              const company = r.Company || r.company || r.company_name || '';
+              const match = Math.round((Number(r.hybrid_score ?? r.content_score ?? r.match_score ?? 0) || 0) * ((Number(r.hybrid_score) > 1) ? 1 : 100));
+              const why = (r.job_description || r.description || '').substring(0,400);
+              const card = document.createElement('div');
+              card.className = 'border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50/20 shadow-sm mb-6';
+              card.innerHTML = `
+                  <div class="flex justify-between items-start">
+                    <div class="flex items-center space-x-2">
+                      <img src="/images/job-icon.png" class="w-6 h-6" alt="Job Icon">
+                      <h4 class="text-lg font-semibold">${escapeHtml(title)}</h4>
+                    </div>
+                    <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">Pending Review</span>
+                  </div>
+                  <div class="mt-4"><span class="bg-green-200 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${match}% Match</span></div>
+                  <div class="mt-4 grid grid-cols-3 gap-4 mt-4 text-sm">
+                    <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Company Name:</span> ${escapeHtml(company)}</div>
+                    <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Location:</span> ${escapeHtml(r.location || '')}</div>
+                    <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Hours:</span> ${escapeHtml(r.hours || '')}</div>
+                  </div>
+                  <div class="bg-gray-100 rounded-lg mt-6 p-4"><div class="flex items-center space-x-2 mb-2"><img src="/images/lightbulb-icon.png" class="w-5 h-5" alt="Idea Icon"><h5 class="font-semibold text-gray-800">Why this Job Matches</h5></div><p class="text-sm text-gray-700">${escapeHtml(why)}</p></div>
+                  <div class="bg-yellow-100 rounded-lg mt-6 p-4"><div class="flex items-center space-x-2 mb-2"><img src="/images/feedback-icon.png" class="w-5 h-5" alt="Feedback Icon"><h5 class="font-semibold text-gray-800">Add your Feedback (Optional)</h5></div><textarea id="feedback-${jid}" class="w-full rounded-md border border-gray-300 p-3 text-sm" placeholder="Share your thoughts about this job suggestion" rows="3"></textarea></div>
+                  <div class="flex justify-start space-x-3 mt-6"><a href="/job-details?job_id=${encodeURIComponent(jid)}" class="bg-blue-500 text-white px-5 py-2 rounded-md text-sm hover:bg-blue-600 transition">View Details</a><button data-jobid="${jid}" class="approve-btn bg-green-600 text-white px-5 py-2 rounded-md text-sm hover:bg-green-700 transition">Approve Job</button><button data-jobid="${jid}" class="flag-btn bg-yellow-500 text-white px-5 py-2 rounded-md text-sm hover:bg-yellow-600 transition">Flag as Not Suitable</button></div>
+              `;
+              list.appendChild(card);
+          });
+      } catch(e) { console.debug('guardian per-user reco failed', e); }
+  })();
+  </script>
   @endpush
   <!-- Ensure Firebase client is signed-in (attempt server-backed sign-in + logging) -->
   <script type="module">

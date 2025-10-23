@@ -110,21 +110,27 @@ class GuardianJobController extends Controller
                             $doc = $resp->json();
                             // Mirror to local JSON file so server-side pages that read the local map
                             // (backwards compatibility) see the approval immediately.
-                            try {
-                                $pathLocal = storage_path('app/guardian_job_approvals.json');
-                                $mapLocal = [];
-                                if (file_exists($pathLocal)) $mapLocal = json_decode(file_get_contents($pathLocal), true) ?: [];
-                                $mapLocal[$key] = [
-                                    'status' => $status,
-                                    'feedback' => $feedback,
-                                    'actioned_by' => $actionedBy,
-                                    'actioned_at' => $actionedAt,
-                                    'source' => 'firestore',
-                                ];
-                                @file_put_contents($pathLocal, json_encode($mapLocal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-                            } catch (\Throwable $__e) {
-                                logger()->warning('Failed to mirror firestore approval to local file: ' . $__e->getMessage());
-                            }
+                                try {
+                                    $pathLocal = storage_path('app/guardian_job_approvals.json');
+                                    $mapLocal = [];
+                                    if (file_exists($pathLocal)) {
+                                        $raw = @file_get_contents($pathLocal);
+                                        $mapLocal = $raw ? (json_decode($raw, true) ?: []) : [];
+                                    }
+                                    $mapLocal[$key] = [
+                                        'status' => $status,
+                                        'feedback' => $feedback,
+                                        'actioned_by' => $actionedBy,
+                                        'actioned_at' => $actionedAt,
+                                        'source' => 'firestore',
+                                    ];
+                                    $w = @file_put_contents($pathLocal, json_encode($mapLocal, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
+                                    if ($w === false) {
+                                        logger()->warning('Failed to mirror firestore approval to local file (file_put_contents returned false): ' . $pathLocal);
+                                    }
+                                } catch (\Throwable $__e) {
+                                    logger()->warning('Failed to mirror firestore approval to local file: ' . $__e->getMessage());
+                                }
 
                             return response()->json(['success' => true, 'approval' => [
                                 'status' => $status,
@@ -188,8 +194,13 @@ class GuardianJobController extends Controller
             'actioned_at' => $actionedAt,
         ];
         try {
-            file_put_contents($path, json_encode($map, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            $w = @file_put_contents($path, json_encode($map, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), LOCK_EX);
+            if ($w === false) {
+                logger()->error('Failed to write guardian approvals to local file: ' . $path);
+                return response()->json(['error' => 'write_failed', 'message' => 'failed to write approvals file'], 500);
+            }
         } catch (\Throwable $e) {
+            logger()->error('Exception writing guardian approvals to local file: ' . $e->getMessage());
             return response()->json(['error' => 'write_failed', 'message' => $e->getMessage()], 500);
         }
         return response()->json(['success' => true, 'approval' => $map[$key], 'source' => 'local']);

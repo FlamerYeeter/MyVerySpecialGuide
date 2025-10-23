@@ -466,29 +466,6 @@
     @endphp
 
     <div class="container mx-auto mt-8 px-4 space-y-6">
-        {{-- Quick summary: show number of unique job titles and companies extracted from recommendations --}}
-        <div class="bg-white p-4 rounded-lg shadow mb-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h4 class="text-lg font-semibold">Jobs Summary</h4>
-                    <p class="text-sm text-gray-600">Found <strong>{{ count($uniqueTitles) }}</strong> unique titles and <strong>{{ count($uniqueCompanies) }}</strong> unique companies in the current dataset.</p>
-                </div>
-                <div class="text-sm text-gray-500">
-                    <a href="#titles-list" class="underline">View titles</a> · <a href="#companies-list" class="underline">View companies</a>
-                </div>
-            </div>
-
-            <div id="titles-list" class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                @foreach(array_slice($uniqueTitles, 0, 30) as $t)
-                    <span class="px-2 py-1 bg-gray-100 rounded">{{ Str::limit($t, 50) }}</span>
-                @endforeach
-            </div>
-            <div id="companies-list" class="mt-3 grid grid-cols-1 md:grid-cols-3 gap-2 text-sm">
-                @foreach(array_slice($uniqueCompanies, 0, 30) as $c)
-                    <span class="px-2 py-1 bg-gray-100 rounded">{{ Str::limit($c, 50) }}</span>
-                @endforeach
-            </div>
-        </div>
         @if(empty($recommendations))
             <div class="bg-yellow-100 p-6 rounded-xl text-center text-gray-600">
                 No job recommendations found. Please upload <b>postings.csv</b> to the <b>public/</b> folder (or generate recommendations.json).
@@ -578,7 +555,20 @@
                     <div class="flex items-center gap-3 mt-4 md:mt-0">
                         @php
                             $jid = (string)($job['job_id'] ?? (($page - 1) * $perPage + $idx));
-                            $approval = $guardianApprovals[$jid] ?? null;
+                            // Try multiple possible keys because some pipelines store job ids differently
+                            $possibleKeys = [$jid];
+                            if (is_numeric($jid)) {
+                                $possibleKeys[] = (string)intval($jid);
+                                $possibleKeys[] = 'p' . (string)intval($jid);
+                            }
+                            if (!empty($job['raw']) && is_array($job['raw'])) {
+                                if (isset($job['raw']['job_id'])) $possibleKeys[] = (string)$job['raw']['job_id'];
+                                if (isset($job['raw']['jobid'])) $possibleKeys[] = (string)$job['raw']['jobid'];
+                                if (isset($job['raw']['id'])) $possibleKeys[] = (string)$job['raw']['id'];
+                            }
+                            $possibleKeys = array_values(array_unique(array_filter($possibleKeys, function($x){ return strlen((string)$x) > 0; })));
+                            $approval = null;
+                            foreach ($possibleKeys as $k) { if (isset($guardianApprovals[$k])) { $approval = $guardianApprovals[$k]; break; } }
                         @endphp
 
                         @if(!empty($guardianApprovals))
@@ -667,81 +657,7 @@
         function escapeHtml(s) { if (!s) return ''; return String(s).replace(/[&<>"]+/g, function(ch){ return {'&':'&amp;','<':'&lt;','>':'&gt;', '"':'&quot;'}[ch]; }); }
     </script>
     <script type="module">
-        // Also request server-side hybrid recommendations (collaborative + content)
-        try {
-            const resp = await fetch('/api/recommendations/user', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify(profile)
-            });
-            if (resp.ok) {
-                const data = await resp.json();
-                const keys = Object.keys(data || {});
-                if (keys.length > 0) {
-                    const first = data[keys[0]] || [];
-                    // render the returned recommendations into the container (replace server-side list)
-                    const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
-                    if (container) {
-                        container.innerHTML = '';
-                        // create cards
-                        first.forEach((r, idx) => {
-                            const jid = String(r.job_id || ('p' + idx));
-                            const approval = window.__GUARDIAN_APPROVALS && window.__GUARDIAN_APPROVALS[jid];
-                            const approvedBadge = approval && approval.status === 'approved' ? '<span class="px-3 py-1 rounded text-xs bg-green-100 text-green-800 font-semibold">Approved by guardian</span>' : (approval && approval.status === 'flagged' ? '<span class="px-3 py-1 rounded text-xs bg-red-100 text-red-800 font-semibold">Flagged by guardian</span>' : '<span class="px-3 py-1 rounded text-xs bg-yellow-100 text-yellow-800 font-semibold">Pending guardian review</span>');
-
-                            const title = r.Title || r.title || r.job_title || '';
-                            const company = r.Company || r.company_name || r.company || '';
-                            const desc = (r.job_description || r.description || '').substring(0, 400);
-                            // normalize returned score into percent and keep raw display string
-                            const rawS = r.hybrid_score ?? r.content_score ?? r.user_score ?? r.match_score ?? 0;
-                            const rawNum = Number(rawS);
-                            let matchPct = 0;
-                            let rawDisplay = rawS;
-                            if (!isNaN(rawNum)) {
-                                if (rawNum > 0 && rawNum <= 1.01) { matchPct = Math.round(rawNum * 100); rawDisplay = rawNum; }
-                                else if (rawNum > 0 && rawNum <= 5.01) { matchPct = Math.round(rawNum * 20); rawDisplay = rawNum + '/5'; }
-                                else { matchPct = Math.round(rawNum); rawDisplay = rawNum; }
-                            }
-
-                            const card = document.createElement('div');
-                            card.className = 'job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start';
-                            card.setAttribute('data-job-id', jid);
-                            // expose raw values as data attributes for later client-side rescoring
-                            card.setAttribute('data-raw-match', String(rawDisplay));
-                            card.setAttribute('data-raw-content', String(r.content_score ?? r.computed_score ?? r.match_score ?? ''));
-                            card.setAttribute('data-match-percent', String(matchPct));
-                            card.setAttribute('data-computed-score', String(r.computed_score ?? ''));
-                            card.setAttribute('data-computed-max', String(r.computed_max_score ?? r.computed_max ?? ''));
-                            card.innerHTML = `
-                                <div class="flex-1 pr-6">
-                                    <h3 class="text-lg font-bold">${escapeHtml(title) || escapeHtml(desc)}</h3>
-                                    <div class="mt-2"><span class="js-match-badge bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${matchPct}% Match <small class="text-xs text-gray-500">(raw: ${escapeHtml(String(rawDisplay))})</small></span></div>
-                                    ${company ? `<p class="text-sm text-gray-700 font-medium">${escapeHtml(company)}</p>` : ''}
-                                    <p class="text-gray-600 mt-2 text-sm">${escapeHtml(desc)}</p>
-                                </div>
-                                <div class="flex items-center gap-3 mt-4 md:mt-0">
-                                    <div>${approvedBadge}</div>
-                                    <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
-                                    <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-                                        @csrf
-                                        <input type="hidden" name="job_id" value="${escapeHtml(jid)}">
-                                        <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Saved</button>
-                                    </form>
-                                </div>
-                            `;
-                            container.appendChild(card);
-                        });
-                    }
-                }
-            } else {
-                console.warn('Hybrid recommender error', resp.status);
-            }
-        } catch(e) {
-            console.debug('Hybrid recommender failed', e);
-        }
+        // Per-user hybrid recommendations are requested later after Firebase profile is available (see rescore module).
     </script>
     <script type="module">
     (async function(){
@@ -798,9 +714,12 @@
     try {
         const mod = await import("{{ asset('js/job-application-firebase.js') }}");
         await mod.ensureInit?.();
-        // get profile (uses getUserProfile in module)
+        // Ensure server-backed sign-in so getUserProfile can access Firestore document
         let profile = null;
-        try { profile = await mod.getUserProfile(); } catch(e) { console.debug('no profile from firebase module', e); }
+        try {
+            try { await mod.signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { console.debug('signInWithServerToken (rescore) failed', e); }
+            profile = await mod.getUserProfile();
+        } catch(e) { console.debug('no profile from firebase module', e); }
 
         if (!profile) return;
         // Normalize profile fields
@@ -864,23 +783,60 @@
 
         // Also request server-side hybrid recommendations (collaborative + content)
         try {
-            const resp = await fetch('/api/recommendations/user', {
+            const resp = await fetch('{{ url('/api/recommendations/user') }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify(profile)
+                body: JSON.stringify(Object.assign({ uid: profile.uid || profile.userId || profile.user_id || '' }, profile))
             });
-            if (resp.ok) {
-                const data = await resp.json();
-                const keys = Object.keys(data || {});
-                if (keys.length > 0) {
-                    const first = data[keys[0]] || [];
-                    // map job_id -> hybrid_score
+            // helper: normalize server response into an array of recommendation objects
+            async function normalizeRecsFromResponse(response) {
+                const data = await response.json();
+                if (Array.isArray(data)) return data;
+                if (data && typeof data === 'object') {
+                    const vals = Object.values(data);
+                    const arrVal = vals.find(v => Array.isArray(v));
+                    if (arrVal) return arrVal;
+                    const keys = Object.keys(data || {});
+                    if (keys.length > 0 && Array.isArray(data[keys[0]])) return data[keys[0]];
+                }
+                return [];
+            }
+
+            if (resp.status === 202) {
+                console.info('Hybrid recommender scheduled; polling for results...');
+                // Poll a few times for generated recommendations
+                const maxAttempts = 10;
+                const delayMs = 3000;
+                let attempts = 0;
+                let recs = [];
+                while (attempts < maxAttempts) {
+                    attempts++;
+                    await new Promise(r => setTimeout(r, delayMs));
+                    try {
+                        const pollResp = await fetch('{{ url('/api/recommendations/user') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify(Object.assign({ uid: profile.uid || profile.userId || profile.user_id || '' }, profile))
+                        });
+                        if (pollResp.ok) {
+                            recs = await normalizeRecsFromResponse(pollResp);
+                            break;
+                        }
+                    } catch (e) {
+                        console.debug('Poll attempt failed', e);
+                    }
+                }
+                if (recs.length === 0) {
+                    console.warn('No recommendations received after polling.');
+                } else {
                     const scoreMap = {};
-                    first.forEach(r => { scoreMap[String(r.job_id)] = Number(r.hybrid_score ?? r.user_score ?? 0); });
-                    // apply scores and reorder DOM
+                    recs.forEach(r => { scoreMap[String(r.job_id)] = Number(r.hybrid_score ?? r.user_score ?? 0); });
                     const scoredHybrid = [];
                     document.querySelectorAll('.job-card').forEach(card => {
                         const jid = String(card.dataset.jobId || card.getAttribute('data-job-id'));
@@ -892,6 +848,21 @@
                     const container2 = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
                     if (container2) scoredHybrid.forEach(x=> container2.appendChild(x.card));
                 }
+            } else if (resp.ok) {
+                const recs = await normalizeRecsFromResponse(resp);
+                const scoreMap = {};
+                recs.forEach(r => { scoreMap[String(r.job_id)] = Number(r.hybrid_score ?? r.user_score ?? 0); });
+                // apply scores and reorder DOM
+                const scoredHybrid = [];
+                document.querySelectorAll('.job-card').forEach(card => {
+                    const jid = String(card.dataset.jobId || card.getAttribute('data-job-id'));
+                    const s = scoreMap[jid] !== undefined ? scoreMap[jid] : 0;
+                    card.dataset.hybridScore = String(s);
+                    scoredHybrid.push({ card, score: s });
+                });
+                scoredHybrid.sort((a,b)=> b.score - a.score);
+                const container2 = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
+                if (container2) scoredHybrid.forEach(x=> container2.appendChild(x.card));
             } else {
                 console.warn('Hybrid recommender error', resp.status);
             }

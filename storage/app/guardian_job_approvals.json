@@ -24,5 +24,60 @@
         "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
         "actioned_at": "2025-10-23T06:37:31+00:00",
         "source": "firestore"
+    },
+    "4774": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
+        "actioned_at": "2025-10-23T13:43:56+00:00",
+        "source": "firestore"
+    },
+    "220": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
+        "actioned_at": "2025-10-23T13:46:08+00:00",
+        "source": "firestore"
+    },
+    "3671": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
+        "actioned_at": "2025-10-23T13:46:13+00:00",
+        "source": "firestore"
+    },
+    "233": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
+        "actioned_at": "2025-10-23T13:49:41+00:00",
+        "source": "firestore"
+    },
+    "4059": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
+        "actioned_at": "2025-10-23T13:50:04+00:00",
+        "source": "firestore"
+    },
+    "1644": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:rkMci8v3LFWGbgmodDETalkEv7B2",
+        "actioned_at": "2025-10-23T13:50:07+00:00",
+        "source": "firestore"
+    },
+    "test123": {
+        "status": "approved",
+        "feedback": "Simulated approval for debug",
+        "actioned_by": "cli:test",
+        "actioned_at": "2025-10-23T16:03:25+02:00"
+    },
+    "3": {
+        "status": "approved",
+        "feedback": "",
+        "actioned_by": "firebase:BIPhEcQu6ISF8vdQvqeTpJf4O1D2",
+        "actioned_at": "2025-10-23T17:37:19+00:00",
+        "source": "firestore"
     }
 }

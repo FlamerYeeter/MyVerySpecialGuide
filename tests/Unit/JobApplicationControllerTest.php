@@ -21,8 +21,8 @@ class JobApplicationControllerTest extends TestCase
         foreach ($rows as $r) { fputcsv($fp, $r); }
         fclose($fp);
 
-    // Temporarily copy CSV to public/postings.csv so controller's getJobFromCsv (which uses public_path) finds it
-    // We'll call getJobFromCsv by constructing the controller and using reflection
+        // Temporarily copy CSV to public/postings.csv so controller's getJobFromCsv (which uses public_path) finds it
+        // We'll call getJobFromCsv by constructing the controller and using reflection
         $ctrl = new JobApplicationController();
 
         $ref = new \ReflectionClass($ctrl);
@@ -30,7 +30,13 @@ class JobApplicationControllerTest extends TestCase
         $method->setAccessible(true);
 
         // Monkeypatch public_path via closure? Instead, temporarily copy file to public/postings.csv
-    $publicCsv = $base . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'postings.csv';
+        // To avoid destroying a developer's existing public/postings.csv, back it up if present and restore after the test
+        $publicCsv = $base . DIRECTORY_SEPARATOR . 'public' . DIRECTORY_SEPARATOR . 'postings.csv';
+        $backup = null;
+        if (file_exists($publicCsv)) {
+            $backup = $publicCsv . '.bak_' . uniqid();
+            copy($publicCsv, $backup);
+        }
         copy($csvPath, $publicCsv);
 
         $job = $method->invoke($ctrl, '100');
@@ -48,5 +54,10 @@ class JobApplicationControllerTest extends TestCase
         // clean up
         @unlink($csvPath);
         @unlink($publicCsv);
+        // restore original postings.csv if we backed it up
+        if (!empty($backup) && file_exists($backup)) {
+            copy($backup, $publicCsv);
+            @unlink($backup);
+        }
     }
 }

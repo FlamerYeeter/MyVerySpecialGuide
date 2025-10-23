@@ -24,60 +24,71 @@
   <section class="max-w-5xl mx-auto mt-8 px-4">
     <h2 class="text-lg font-semibold text-gray-800 mb-2">Applying for</h2>
     @php
-  $csv_path = public_path('postings.csv');
-        $job = null;
-        $job_id = request('job_id');
-    if ($job_id !== null && file_exists($csv_path)) {
-      if (($handle = fopen($csv_path, 'r')) !== false) {
-        $header = fgetcsv($handle);
-        if ($header === false) { fclose($handle); }
-        $cols = array_map(function($h){ return trim($h); }, $header ?: []);
-        $numCols = count($cols);
-      $i = 0;
-      $maxRows = 5000;
-      while (($row = fgetcsv($handle)) !== false) {
-          if ($numCols > 0) {
-            if (count($row) < $numCols) $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
-            elseif (count($row) > $numCols) $row = array_slice($row, 0, $numCols);
-            if (count($row) !== $numCols) { $i++; continue; }
+      $csv_path = public_path('postings.csv');
+      $job = null;
+      $job_id = request('job_id');
+      if ($job_id !== null && file_exists($csv_path)) {
+        if (($handle = fopen($csv_path, 'r')) !== false) {
+          $headers = fgetcsv($handle);
+          // normalize headers to lowercase trimmed keys -> index
+          $headerMap = [];
+          if (is_array($headers)) {
+            foreach ($headers as $i => $h) {
+              $k = strtolower(trim((string)$h));
+              if ($k !== '') $headerMap[$k] = $i;
+            }
           }
-          if ($i >= $maxRows) break;
-          if ($i == intval($job_id)) {
-            $assoc = $numCols ? (array_combine($cols, $row) ?: []) : [];
-                        $job = [
-                            'title' => $assoc['Title'] ?? $assoc['jobpost'] ?? '',
-                            'company' => $assoc['Company'] ?? '',
-                            'location' => $assoc['Location'] ?? '',
-                            'job_description' => $assoc['JobDescription'] ?? $assoc['JobRequirment'] ?? '',
-                            'type' => $assoc['Type'] ?? '',
-                        ];
-                        break;
-                    }
-                    $i++;
+
+          $i = 0;
+          $maxRows = 5000;
+          while (($row = fgetcsv($handle)) !== false) {
+            if (count($row) > 0 && is_array($headers)) {
+              // normalize row length to header count
+              $numCols = count($headers);
+              if (count($row) < $numCols) $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
+              elseif (count($row) > $numCols) $row = array_slice($row, 0, $numCols);
+            }
+            if ($i >= $maxRows) break;
+
+            // match by explicit job_id header first
+            if (array_key_exists('job_id', $headerMap)) {
+              $col = $headerMap['job_id'];
+              if (isset($row[$col]) && strval($row[$col]) === strval($job_id)) {
+                $rowFound = $row;
+                break;
+              }
+            }
+            // fallback: numeric job id as row index
+            if (is_numeric($job_id) && intval($job_id) === $i) {
+              $rowFound = $row; break;
+            }
+
+            $i++;
+          }
+          fclose($handle);
+
+          if (!empty($rowFound)) {
+            $get = function($names) use ($rowFound, $headerMap) {
+              foreach ((array)$names as $n) {
+                $k = strtolower(trim($n));
+                if (array_key_exists($k, $headerMap)) {
+                  $idx = $headerMap[$k];
+                  if (is_array($rowFound) && array_key_exists($idx, $rowFound)) return $rowFound[$idx];
                 }
-                fclose($handle);
-      if (!empty($rowFound)) {
-        $map = [];
-        if (is_array($headers)) {
-          $flipped = @array_flip($headers);
-          if (is_array($flipped)) $map = array_change_key_case($flipped);
-        }
-        $get = function($names) use ($rowFound, $map) {
-          foreach ((array)$names as $n) {
-            $k = strtolower(trim($n));
-            if (is_array($map) && array_key_exists($k, $map)) {
-              $idx = $map[$k];
-              if (is_array($rowFound) && array_key_exists($idx, $rowFound)) return $rowFound[$idx];
-            }
+              }
+              return '';
+            };
+
+            $job = [
+              'title' => $get(['title','jobtitle','job_title','position','job name','jobpost','job post']) ?: '',
+              'company' => $get(['company','companyname','employer']) ?: '',
+              'location' => $get(['location','address','city']) ?: '',
+              'job_description' => $get(['jobdescription','jobrequirment','job_requirement','job_requirements','job_description']) ?: '',
+              'type' => $get(['type','jobtype','employment_type']) ?: '',
+            ];
           }
-          return '';
-        };
-        $title = $get(['title','jobtitle','job_title','position','job name']) ?: $title;
-        $company = $get(['company','companyname','employer']) ?: $company;
-        $location = $get(['location','address','city']) ?: $location;
-      }
-            }
         }
+      }
     @endphp
 
     <div class="border-2 border-blue-200 bg-white rounded-lg p-4 flex items-center space-x-4 shadow-sm">

@@ -195,9 +195,29 @@
                     try { $fs = app(\App\Http\Controllers\GuardianJobController::class)->fetchApprovalsFromFirestore($uidParam); if (is_array($fs)) $guardianApprovals = $fs; } catch (\Throwable $e) { logger()->warning('Firestore fetch failed in job-details: ' . $e->getMessage()); }
                 }
                 if (empty($guardianApprovals)) { $approvals_path = storage_path('app/guardian_job_approvals.json'); if (file_exists($approvals_path)) $guardianApprovals = json_decode(file_get_contents($approvals_path), true) ?: []; }
-                $isApproved = false; $isFlagged = false; $approvalRec = null;
-                $jid = (string)$job_id;
-                if (isset($guardianApprovals[$jid])) { $approvalRec = $guardianApprovals[$jid]; $st = $approvalRec['status'] ?? ''; if ($st === 'approved') $isApproved = true; if ($st === 'flagged') $isFlagged = true; }
+        $isApproved = false; $isFlagged = false; $approvalRec = null;
+  // Normalize 'p' prefix (used by some client-side renderers) and keep multiple possible keys
+  $jid = (string)$job_id;
+  if (is_string($jid) && preg_match('/^p(\d+)$/i', $jid, $m)) $jid = (string)intval($m[1]);
+        // Try multiple possible keys because job ids may be stored as numeric index, explicit job_id column, or prefixed (e.g. 'p0')
+        $possibleKeys = [$jid];
+        if (is_numeric($jid)) {
+          $possibleKeys[] = (string)intval($jid);
+          $possibleKeys[] = 'p' . (string)intval($jid);
+        }
+        // If job row/raw info present, try common raw id fields and row_index
+        if (!empty($job['raw']) && is_array($job['raw'])) {
+          $raw = $job['raw'];
+          if (isset($raw['job_id'])) $possibleKeys[] = (string)$raw['job_id'];
+          if (isset($raw['jobid'])) $possibleKeys[] = (string)$raw['jobid'];
+          if (isset($raw['id'])) $possibleKeys[] = (string)$raw['id'];
+        }
+        if (isset($job['row_index'])) $possibleKeys[] = (string)$job['row_index'];
+        // normalize and dedupe
+        $possibleKeys = array_values(array_unique(array_filter($possibleKeys, function($x){ return strlen((string)$x) > 0; })));
+        foreach ($possibleKeys as $k) {
+          if (isset($guardianApprovals[$k])) { $approvalRec = $guardianApprovals[$k]; $st = $approvalRec['status'] ?? ''; if ($st === 'approved') $isApproved = true; if ($st === 'flagged') $isFlagged = true; break; }
+        }
               @endphp
 
               @if($isApproved)

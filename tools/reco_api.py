@@ -31,6 +31,8 @@ class GenRequest(BaseModel):
     output: Optional[str] = None
     max_features: int = 5000
     wait: bool = False  # if true, wait for completion and return result
+    per_user: bool = False
+    users: Optional[str] = None
 
 # simple in-memory job registry (sufficient for small/temporary use)
 _jobs = {}
@@ -61,6 +63,7 @@ async def _run_job(job_id: str, input_path: str, output_path: str, max_features:
     _jobs[job_id] = {"status": "running"}
     try:
         # call the generate() function in a thread to avoid blocking the event loop
+        # note: generate() signature: generate(input_csv, output_json=None, max_features=5000, print_per_user=False, users_json=None, top_n=10, alpha=0.6, neighbors=5)
         rc = await asyncio.to_thread(generate, input_path, output_path, max_features)
         _jobs[job_id]["status"] = "finished"
         _jobs[job_id]["rc"] = int(rc or 0)
@@ -98,8 +101,17 @@ async def generate_route(req: GenRequest):
     output_path = os.path.normpath(output_path)
 
     job_id = str(uuid.uuid4())
-    # start background job
-    task = asyncio.create_task(_run_job(job_id, input_path, output_path, int(req.max_features)))
+    # if per_user requested and users path provided, call generate directly in a thread with users and write per-user output
+    if req.per_user:
+        users_path = req.users
+        if not users_path:
+            raise HTTPException(status_code=400, detail='per_user generation requires `users` path')
+        # use output as target per-user JSON
+        out_path = output_path or str((BASE_DIR.parent / '..' / 'tools' / 'reco_per_user.json').resolve())
+        task = asyncio.create_task(asyncio.to_thread(generate, input_path, out_path, int(req.max_features), True, users_path))
+    else:
+        # start background job for global generation
+        task = asyncio.create_task(_run_job(job_id, input_path, output_path, int(req.max_features)))
 
     if req.wait:
         await task

@@ -242,9 +242,13 @@ Route::get('/job-application-review1', function () {
     } catch (\Throwable $e) {
         logger()->error('job-application-review1 route: parser exception: ' . $e->getMessage());
     }
-    // If parser returned no assoc and the user didn't explicitly force the view, show debug page
+    // If parser returned no assoc, previously we showed a debug page automatically.
+    // That makes the route behave like an error for end users. Change behavior:
+    // - If ?debug=1 is present, show the debug diagnostic page.
+    // - Otherwise always render the review view (job may be null and the view handles that).
     $force = request()->boolean('force_view');
-    if ((empty($assoc) || $assoc === null) && !$force) {
+    $showDebug = request()->boolean('debug');
+    if ($showDebug && (empty($assoc) || $assoc === null)) {
         // collect diagnostic info
         $csvPath = public_path('postings.csv');
         $jsonPath = public_path('recommendations.json');
@@ -389,3 +393,25 @@ Route::get('/aboutdownsyndrome', function () {
 Route::get('/dataprivacy', function () {
     return view('ds_data-privacy');
 })->name('dataprivacy');
+
+// Temporary route to test whether web requests can write to laravel.log.
+// Visit /__log_test in your browser (or via curl/Invoke-WebRequest) and
+// then check storage/logs/laravel.log for the test entry.
+Route::get('/__log_test', function () {
+    logger()->info('web log test: route /__log_test was visited', ['ip' => request()->ip()]);
+    return response('log-written');
+});
+
+// Temporary route to check APP_KEY visibility to the web process.
+Route::get('/__key_check', function () {
+    $envKey = env('APP_KEY');
+    $cfgKey = config('app.key');
+    logger()->info('__key_check', [
+        'env_present' => $envKey !== null,
+        'env_len' => $envKey ? strlen($envKey) : 0,
+        'cfg_present' => $cfgKey !== null,
+        'cfg_len' => $cfgKey ? strlen($cfgKey) : 0,
+        'app_env' => env('APP_ENV'),
+    ]);
+    return response('key-checked');
+});

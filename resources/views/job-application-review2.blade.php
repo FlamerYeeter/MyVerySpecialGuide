@@ -29,42 +29,43 @@
       if ($jobId && file_exists($csvPath)) {
         if (($handle = fopen($csvPath, 'r')) !== false) {
           $headers = fgetcsv($handle);
-          $rows = [];
+
+          // Build normalized header -> index map (lowercase, trimmed keys)
+          $headerMap = [];
+          if (is_array($headers)) {
+            foreach ($headers as $i => $h) {
+              $k = strtolower(trim((string)$h));
+              if ($k !== '') $headerMap[$k] = $i;
+            }
+          }
+
+          $rowIndex = 0;
+          // Stream rows to avoid loading entire file into memory
           while (($row = fgetcsv($handle)) !== false) {
-            $rows[] = $row;
+            // match by explicit job_id column if present
+            if (array_key_exists('job_id', $headerMap)) {
+              $col = $headerMap['job_id'];
+              if (isset($row[$col]) && strval($row[$col]) === strval($jobId)) { $rowFound = $row; break; }
+            }
+            // fallback: numeric job id as row index
+            if (is_numeric($jobId) && intval($jobId) === $rowIndex) { $rowFound = $row; break; }
+            $rowIndex++;
           }
           fclose($handle);
-
-          $jobIdCol = null;
-          foreach ($headers as $i => $h) {
-            if (strtolower(trim($h)) === 'job_id') { $jobIdCol = $i; break; }
-          }
-
-          foreach ($rows as $i => $r) {
-            if ($jobIdCol !== null && isset($r[$jobIdCol]) && strval($r[$jobIdCol]) === strval($jobId)) {
-              $rowFound = $r; break;
-            }
-            if (is_numeric($jobId) && intval($jobId) === $i) {
-              $rowFound = $r; break;
-            }
-          }
                 if (!empty($rowFound)) {
-                  $map = [];
-                  if (is_array($headers)) {
-                    $flipped = @array_flip($headers);
-                    if (is_array($flipped)) $map = array_change_key_case($flipped);
-                  }
-                  $get = function($names) use ($rowFound, $map) {
+                  // helper: read by several possible header names using normalized headerMap
+                  $get = function($names) use ($rowFound, $headerMap) {
                     foreach ((array)$names as $n) {
                       $k = strtolower(trim($n));
-                      if (is_array($map) && array_key_exists($k, $map)) {
-                        $idx = $map[$k];
+                      if (array_key_exists($k, $headerMap)) {
+                        $idx = $headerMap[$k];
                         if (is_array($rowFound) && array_key_exists($idx, $rowFound)) return $rowFound[$idx];
                       }
                     }
                     return '';
                   };
-                  $jobTitle = $get(['title','jobtitle','job_title','position','job name']) ?: $jobTitle;
+
+                  $jobTitle = $get(['title','jobtitle','job_title','position','job name','job post','jobpost']) ?: $jobTitle;
                   $jobCompany = $get(['company','companyname','employer']) ?: $jobCompany;
                   $jobAddress = $get(['location','address','city']) ?: $jobAddress;
                   $jobType = $get(['type','jobtype','employment_type']) ?: $jobType;

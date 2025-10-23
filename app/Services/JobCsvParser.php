@@ -35,12 +35,6 @@ class JobCsvParser
             return null;
         }
 
-        $rows = [];
-        while (($row = fgetcsv($handle)) !== false) {
-            $rows[] = $row;
-        }
-        fclose($handle);
-
         // Build lowercase header->index map
         $map = [];
         if (is_array($headers)) {
@@ -50,22 +44,30 @@ class JobCsvParser
             }
         }
 
-        $rowFound = null;
-
-        // Try to match job_id header
         $jobIdCol = null;
         if (!empty($map) && array_key_exists('job_id', $map)) {
             $jobIdCol = $map['job_id'];
         }
 
-        foreach ($rows as $i => $r) {
-            if ($jobIdCol !== null && is_array($r) && array_key_exists($jobIdCol, $r) && strval($r[$jobIdCol]) === strval($jobId)) {
-                $rowFound = $r; break;
+        $rowIndex = 0;
+        // Stream rows one-by-one to avoid loading the whole file into memory
+        while (($row = fgetcsv($handle)) !== false) {
+            // If header column exists, compare by that column
+            if ($jobIdCol !== null && is_array($row) && array_key_exists($jobIdCol, $row) && strval($row[$jobIdCol]) === strval($jobId)) {
+                $rowFound = $row;
+                break;
             }
-            if (is_numeric($jobId) && intval($jobId) === $i) {
-                $rowFound = $r; break;
+
+            // Also allow numeric jobId to match 0-based row index
+            if (is_numeric($jobId) && intval($jobId) === $rowIndex) {
+                $rowFound = $row;
+                break;
             }
+
+            $rowIndex++;
         }
+
+        fclose($handle);
 
         if (empty($rowFound)) {
             $this->safeLog('info', 'JobCsvParser: job not found in postings.csv', ['job_id' => $jobId, 'path' => $this->path]);
