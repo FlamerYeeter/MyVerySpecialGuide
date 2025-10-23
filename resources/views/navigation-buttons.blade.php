@@ -111,28 +111,32 @@
         (async function(){
             try {
                 const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                const logger = await import("{{ asset('js/client-logger.js') }}");
                 console.debug('nav auth guard: waiting for sign-in resolution (7s)');
                 // If we have a Laravel session, request a server-issued Firebase custom token
                 // and sign the client in. This will make auth.currentUser non-null.
                 try {
                     await mod.signInWithServerToken("{{ route('firebase.token') }}");
-                } catch(e) { console.debug('nav signInWithServerToken failed', e); }
+                } catch(e) { console.debug('nav signInWithServerToken failed', e); try { logger.sendClientLog('debug', 'nav signInWithServerToken failed', {error: String(e)}); } catch(_) {} }
                 const signed = await mod.isSignedIn(7000);
                 console.debug('nav auth guard: isSignedIn ->', signed);
                 try {
                     if (mod && typeof mod.debugAuthLogging === 'function') window.__unsubAuthLog = mod.debugAuthLogging();
-                } catch(e) { console.warn('nav debugAuthLogging failed', e); }
+                } catch(e) { console.warn('nav debugAuthLogging failed', e); try { logger.sendClientLog('warning', 'nav debugAuthLogging failed', {error: String(e)}); } catch(_) {} }
                 if (!signed) {
                     if (window.__SERVER_AUTH) {
                         console.info('nav auth guard: server session present, not redirecting');
+                        try { logger.sendClientLog('info', 'nav auth guard: server session present, not redirecting', {}); } catch(_) {}
                         return;
                     }
                     const current = window.location.pathname + window.location.search;
+                    try { logger.sendClientLog('info', 'nav auth guard: redirecting to login', { redirect: current }); } catch(_) {}
                     window.location.href = 'login?redirect=' + encodeURIComponent(current);
                     return;
                 }
             } catch (err) {
                 console.error('nav auth guard failed', err);
+                try { (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error', 'nav auth guard failed', {error: String(err)}); } catch(_) {}
             }
         })();
     </script>

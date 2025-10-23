@@ -227,8 +227,8 @@
 
             <!-- Next Button -->
             <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-                <div id="skills2Error" class="text-red-600 text-sm mb-2"></div>
-                <button id="skills2Next" type="button"
+                <div id="skills1Error" class="text-red-600 text-sm mb-2"></div>
+                <button id="skills1Next" type="button"
                     class="bg-[#2E2EFF] text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
                     Next →
                 </button>
