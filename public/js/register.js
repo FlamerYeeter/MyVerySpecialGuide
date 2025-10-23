@@ -362,6 +362,10 @@ service cloud.firestore {
           try { window.mvsgShowEmailVerificationModal(email); } catch (e) { console.warn(e); }
         }
 
+        // redirect user to home after successful registration
+        try {
+          window.location.href = normalizeNextPath('/home');
+        } catch (e) { /* ignore */ }
         return { ok: true, uid };
       } catch (e) {
         console.error('mvsgFinalizeRegistration error', e);
@@ -582,7 +586,7 @@ service cloud.firestore {
     // also keep getDraft/readStored/populateReview accessible
     window.getDraft = getDraft;
     window.readStored = readStored;
-    window.populateReview = populateReview;
+  window.populateReview = window.populateReview || populateReview;
   } catch (e) {
     console.warn('Could not attach global helpers', e);
   }
@@ -911,11 +915,12 @@ service cloud.firestore {
   }
 
   // small init log and event so pages can detect the script is loaded
-  try {
+    try {
     info('register.js initialized');
     window.__mvsg_debugRun = __mvsg_debugRun;
-    window.getDraft = getDraft;
-    window.populateReview = populateReview;
+    // Do not overwrite existing implementations from the main module; only expose these helpers if not present
+    window.getDraft = window.getDraft || getDraft;
+    window.populateReview = window.populateReview || populateReview;
     // notify other inline scripts that register.js is available
     try { window.dispatchEvent(new CustomEvent('mvsg:registerLoaded')); } catch(e){}
   } catch(e){ warn('register.js init failed', e); }

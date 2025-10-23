@@ -95,6 +95,18 @@ Route::get('/login', function () {
     return view('user_login');
 })->name('login');
 
+// Logout route used by header sign-out forms
+Route::post('/logout', function (Request $request) {
+    try {
+        Auth::logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+    } catch (\Throwable $e) {
+        logger()->warning('Logout route error: ' . $e->getMessage());
+    }
+    return redirect()->route('home');
+})->name('logout');
+
 // Handle login POST - attempt authentication and redirect to job matches
 Route::post('/login', function (Request $request) {
     $credentials = $request->only(['email', 'password']);

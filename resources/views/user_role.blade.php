@@ -14,6 +14,27 @@
     <img src="image/logo.png" alt="MVSG Logo" class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 object-contain">
   </div>
 
+  @auth
+  <!-- Profile (Top Right) -->
+  <div class="absolute top-3 right-3 sm:top-4 sm:right-4">
+    <div class="relative">
+      <button id="profileToggle" type="button" onclick="document.getElementById('profileMenu').classList.toggle('hidden')"
+              class="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-3 py-1 shadow-sm hover:shadow-md">
+        <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}" alt="avatar" class="w-8 h-8 rounded-full object-cover">
+        <span class="hidden sm:inline text-sm font-medium text-gray-700">{{ Auth::user()->name ?? 'Profile' }}</span>
+      </button>
+
+      <div id="profileMenu" class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
+        <a href="{{ route('user.role') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+        <form method="POST" action="{{ route('logout') }}" class="px-2">
+          @csrf
+          <button type="submit" class="w-full text-left text-sm text-red-600 px-2 py-2 hover:bg-gray-100 rounded">Sign Out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  @endauth
+
   <!-- Header -->
   <div class="text-center mb-6 sm:mb-8 mt-20 sm:mt-0">
     <h1 class="text-xl sm:text-2xl md:text-3xl font-semibold text-gray-900">Select your role</h1>

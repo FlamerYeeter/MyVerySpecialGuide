@@ -43,27 +43,50 @@
             <!-- Nav Links -->
             <div class="hidden md:flex items-center space-x-8">
                 <a href="{{ route('home') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
-                <a href="{{ route('about.us') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About
-                    MVSG</a>
-                <a href="{{ route('about.ds') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down
-                    Syndrome</a>
+                <a href="{{ route('about.us') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About MVSG</a>
+                <a href="{{ route('about.ds') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
             </div>
 
-            <!-- Responsive Menu Button -->
-            <button id="menu-toggle" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-            </button>
+            <div class="flex items-center space-x-4">
+                @auth
+                <div class="hidden md:block relative">
+                    <button id="desktopProfileBtn" type="button" onclick="document.getElementById('desktopProfileMenu').classList.toggle('hidden')"
+                            class="flex items-center gap-2 border px-3 py-1 rounded-full">
+                        <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}" alt="avatar" class="w-6 h-6 rounded-full">
+                        <span class="text-sm">{{ Auth::user()->name ?? 'Profile' }}</span>
+                    </button>
+                    <div id="desktopProfileMenu" class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
+                        <a href="{{ route('user.role') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                        <form method="POST" action="{{ route('logout') }}" class="px-2">
+                            @csrf
+                            <button type="submit" class="w-full text-left text-sm text-red-600 px-2 py-2 hover:bg-gray-100 rounded">Sign Out</button>
+                        </form>
+                    </div>
+                </div>
+                @endauth
+
+                <!-- Responsive Menu Button -->
+                <button id="menu-toggle" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <!-- Responsive Dropdown Menu -->
         <div id="mobile-menu" class="hidden flex-col mt-4 space-y-3 md:hidden">
             <a href="{{ route('home') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">Home</a>
             <a href="{{ route('about.us') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About MVSG</a>
-            <a href="{{ route('about.ds') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down
-                Syndrome</a>
+            <a href="{{ route('about.ds') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down Syndrome</a>
+            @auth
+                <a href="{{ route('user.role') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">Profile</a>
+                <form method="POST" action="{{ route('logout') }}" class="px-0">
+                    @csrf
+                    <button type="submit" class="w-full text-left text-red-600 font-medium py-2">Sign Out</button>
+                </form>
+            @endauth
         </div>
     </nav>
 

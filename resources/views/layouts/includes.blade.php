@@ -28,17 +28,31 @@
                 <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Guardian Review</button>
             </nav>
 
-            <div class="flex items-center space-x-3">
-                <div class="hidden md:block">
-                    <button class="border px-3 py-1 rounded-full text-sm">Profile ▾</button>
-                </div>
+      <div class="flex items-center space-x-3">
+        @auth
+        <div class="hidden md:block relative">
+          <button id="desktopProfileBtn" type="button" onclick="document.getElementById('desktopProfileMenu').classList.toggle('hidden')"
+              class="border px-3 py-1 rounded-full text-sm flex items-center gap-2">
+            <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}" alt="avatar" class="w-6 h-6 rounded-full object-cover">
+            <span>{{ Auth::user()->name ?? 'Profile' }}</span>
+          </button>
 
-                <!-- Mobile hamburger -->
-                <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100" aria-controls="mobile-menu" aria-expanded="false" aria-label="Open main menu">
-                    <svg id="hamburger-open" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
-                    <svg id="hamburger-close" class="h-6 w-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
+          <div id="desktopProfileMenu" class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
+            <a href="{{ route('user.role') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+            <form method="POST" action="{{ route('logout') }}" class="px-2">
+              @csrf
+              <button type="submit" class="w-full text-left text-sm text-red-600 px-2 py-2 hover:bg-gray-100 rounded">Sign Out</button>
+            </form>
+          </div>
+        </div>
+                @endauth
+
+        <!-- Mobile hamburger -->
+        <button id="mobile-menu-button" class="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:bg-gray-100" aria-controls="mobile-menu" aria-expanded="false" aria-label="Open main menu">
+          <svg id="hamburger-open" class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg id="hamburger-close" class="h-6 w-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
         </div>
 
         <!-- Mobile menu -->
@@ -48,9 +62,15 @@
                 <button class="w-full text-left bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Goals & Progress</button>
                 <button class="w-full text-left bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Why This Job & How to Get There</button>
                 <button class="w-full text-left bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Guardian Review</button>
-                <div class="pt-2">
-                    <button class="w-full border px-3 py-2 rounded-full text-sm text-left">Profile ▾</button>
-                </div>
+        <div class="pt-2">
+          @auth
+            <a href="{{ route('user.role') }}" class="w-full block border px-3 py-2 rounded-full text-sm text-left">Profile</a>
+            <form method="POST" action="{{ route('logout') }}" class="mt-2">
+              @csrf
+              <button type="submit" class="w-full text-left border px-3 py-2 rounded-full text-sm text-red-600">Sign Out</button>
+            </form>
+          @endauth
+        </div>
             </div>
         </div>
     </header>
