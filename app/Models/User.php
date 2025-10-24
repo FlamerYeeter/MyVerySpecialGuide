@@ -22,6 +22,9 @@ class User extends Authenticatable
         'email',
         'password',
         'firebase_uid',
+        'role',
+        'admin_approved',
+        'approved',
     ];
 
     /**
@@ -45,6 +48,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'firebase_uid' => 'string',
+            'role' => 'string',
+            'admin_approved' => 'boolean',
+            'approved' => 'boolean',
+            'approved_at' => 'datetime',
         ];
     }
 }

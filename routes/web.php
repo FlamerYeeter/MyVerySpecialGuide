@@ -496,6 +496,29 @@ Route::get('/registeradminapprove', function () {
     return view('ds_register_adminapprove');
 })->name('registeradminapprove');
 
+// Admin registration page (uses admin/admin-register-page1.blade.php)
+Route::get('/admin/register', function () {
+    return view('admin.admin-register-page1');
+})->name('admin.register');
+
+// Admin registration submit endpoint (client should create Firebase account first and then POST the firebaseUid here)
+use App\Http\Controllers\AdminRegistrationController;
+Route::post('/admin/register/submit', [AdminRegistrationController::class, 'submit'])->name('admin.register.submit');
+
+// Admin area routes (protected). Use the middleware class directly to avoid Kernel edits.
+Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])->prefix('admin')->group(function () {
+    Route::get('/approval', function () { return view('admin.admin-approval'); })->name('admin.approval');
+    Route::get('/newadmin', function () { return view('admin.admin-approval-newadmin'); })->name('admin.newadmin');
+    Route::get('/company', function () { return view('admin.admin-approval-company'); })->name('admin.company');
+    Route::get('/expert', function () { return view('admin.admin-approval-expert'); })->name('admin.expert');
+    Route::get('/jobpostings', function () { return view('admin.admin-approval-jobpostings'); })->name('admin.jobpostings');
+    Route::get('/adminview', function () { return view('admin.admin-approval-adminview'); })->name('admin.adminview');
+    // Approvals API
+    Route::get('/api/pending-approvals', [\App\Http\Controllers\AdminApprovalController::class, 'pending'])->name('admin.api.pending');
+    Route::post('/api/approve/{id}', [\App\Http\Controllers\AdminApprovalController::class, 'approve'])->name('admin.api.approve');
+    Route::post('/api/reject/{id}', [\App\Http\Controllers\AdminApprovalController::class, 'reject'])->name('admin.api.reject');
+});
+
 
 Route::get('/registereducation', function () {
     return view('ds_register_education');

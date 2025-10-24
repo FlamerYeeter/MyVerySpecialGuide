@@ -76,15 +76,16 @@
     </div>
 
     <!-- Admin -->
-    <div class="border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
+  <a href="{{ route('admin.register') }}"
+       class="block border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
       <img src="image/role4.png" alt="Admin" class="mx-auto mb-4 w-20 sm:w-24 md:w-28">
       <h3 class="text-blue-700 font-semibold text-lg mb-2">Admin</h3>
       <p class="text-gray-600 text-sm md:text-base leading-relaxed">
-        Manages system moderation and approval workflows. Reviews and approves new employer 
-        entries, user feedback, flagged content, and training materials to ensure safety, 
+        Manages system moderation and approval workflows. Reviews and approves new employer
+        entries, user feedback, flagged content, and training materials to ensure safety,
         relevance, and accessibility.
       </p>
-    </div>
+    </a>
   </div>
 
   <!-- Back Button -->
