@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Evaluation Metrics</title>
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;margin:24px;color:#111}
+    .card{border:1px solid #eee;padding:16px;border-radius:8px;max-width:720px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;text-align:left;border-bottom:1px solid #f0f0f0}
+    th{background:#fafafa}
+    .ts{color:#666;font-size:0.9rem}
+  </style>
+</head>
+<body>
+  <h1>Model Evaluation Metrics</h1>
+  <p class="ts">This page reads <code>eval_metrics.json</code> from the same folder and displays accuracy, precision, recall and F1 for each model. It refreshes every 30s.</p>
+  <div class="card">
+    <div id="content">Loading metrics…</div>
+  </div>
+
+  <script>
+    async function loadMetrics(){
+      const container = document.getElementById('content');
+      try{
+        const res = await fetch('./eval_metrics.json', {cache: 'no-store'});
+        if(!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const rows = data.metrics || [];
+        const generated = data.generated_at || '';
+        if(rows.length === 0){
+          container.innerHTML = '<p>No metrics found in <code>eval_metrics.json</code>.</p>';
+          return;
+        }
+        let html = '';
+        html += '<p class="ts">Generated at: ' + generated + '</p>';
+        html += '<table><thead><tr><th>Model</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th></tr></thead><tbody>';
+        for(const r of rows){
+          html += `<tr><td>${r.model}</td><td>${(r.accuracy||0).toFixed(4)}</td><td>${(r.precision||0).toFixed(4)}</td><td>${(r.recall||0).toFixed(4)}</td><td>${(r.f1||0).toFixed(4)}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      }catch(err){
+        container.innerHTML = '<p style="color:crimson">Failed to load metrics: '+String(err)+'</p>';
+      }
+    }
+    loadMetrics();
+    setInterval(loadMetrics, 30000);
+  </script>
+</body>
+</html>

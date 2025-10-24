@@ -9,6 +9,8 @@ import nltk
 from nltk.corpus import stopwords
 import re
 import time
+import json
+from datetime import datetime
 
 # --- Download NLTK stopwords ---
 try:
@@ -97,12 +99,26 @@ test_df = df.loc[X_test.index]
 # --- 4. Recommendation Model Simulation (Optimized CF) ---
 eval_time = time.time()
 
-def evaluate_model(predictions, actual):
+def evaluate_model(model_name, predictions, actual, metrics_list=None):
+    """Compute metrics, print to console, and optionally append to metrics_list.
+
+    Returns the metrics dict.
+    """
     accuracy = accuracy_score(actual, predictions)
     precision = precision_score(actual, predictions, zero_division=0)
     recall = recall_score(actual, predictions, zero_division=0)
     f1 = f1_score(actual, predictions, zero_division=0)
-    print(f"Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1: {f1:.4f}\n")
+    metrics = {
+        'model': model_name,
+        'accuracy': float(np.round(accuracy, 4)),
+        'precision': float(np.round(precision, 4)),
+        'recall': float(np.round(recall, 4)),
+        'f1': float(np.round(f1, 4))
+    }
+    print(f"{model_name} -> Accuracy: {metrics['accuracy']:.4f}, Precision: {metrics['precision']:.4f}, Recall: {metrics['recall']:.4f}, F1: {metrics['f1']:.4f}\n")
+    if metrics_list is not None:
+        metrics_list.append(metrics)
+    return metrics
 
 # --- Model 1: Content-Based Filtering (Already fast) ---
 print("--- 1. Content-Based Filtering ---")
@@ -111,7 +127,9 @@ all_jobs_tfidf = tfidf_vectorizer.transform(df['clean_job_description'])
 similarities = cosine_similarity(test_resumes_tfidf, all_jobs_tfidf)
 actual_pair_scores = [similarities[i, test_df.iloc[i]['job_id']] for i in range(len(test_df))]
 content_preds = [1 if score > 0.1 else 0 for score in actual_pair_scores]
-evaluate_model(content_preds, y_test.tolist())
+# collect metrics for frontend output
+metrics = []
+evaluate_model('content_based', content_preds, y_test.tolist(), metrics)
 
 # --- User-Item Matrix and SVD for CF ---
 user_item_matrix = df.pivot_table(index='user_id', columns='job_id', values='match_score').fillna(0)
@@ -127,15 +145,27 @@ print("--- 2. User-Based Collaborative Filtering (Optimized) ---")
 user_similarity = cosine_similarity(user_item_matrix_reduced)
 # The evaluation loop is still row-by-row but runs on a much smaller test set
 user_cf_preds = [1 for _ in test_df.iterrows()] # Simplified for speed demonstration
-evaluate_model(user_cf_preds, y_test.tolist())
+evaluate_model('user_cf', user_cf_preds, y_test.tolist(), metrics)
 
 
 print("--- 3. Item-Based Collaborative Filtering (Optimized) ---")
 item_similarity = cosine_similarity(item_user_matrix_reduced)
 item_cf_preds = [1 for _ in test_df.iterrows()] # Simplified for speed demonstration
-evaluate_model(item_cf_preds, y_test.tolist())
+evaluate_model('item_cf', item_cf_preds, y_test.tolist(), metrics)
 
 print(f"Model evaluation took: {time.time() - eval_time:.2f} seconds")
+
+# --- 6. Write metrics to frontend JSON for quick viewing ---
+metrics_output = {
+    'generated_at': datetime.utcnow().isoformat() + 'Z',
+    'metrics': metrics
+}
+try:
+    with open('public/eval_metrics.json', 'w', encoding='utf-8') as f:
+        json.dump(metrics_output, f, indent=2)
+    print("Wrote evaluation metrics to 'public/eval_metrics.json'.")
+except Exception as e:
+    print(f"Warning: failed to write metrics file: {e}")
 
 # --- 5. Simulation: Recommend a Job for a New Resume ---
 print("\n### Job Recommendation Simulation ###")

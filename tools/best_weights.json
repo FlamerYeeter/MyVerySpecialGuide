@@ -1,0 +1,40 @@
+{
+  "best": {
+    "weights": {
+      "content_score": 0.0146,
+      "user_cf_score": 0.0405,
+      "item_cf_score": 0.8832,
+      "hybrid_score": 0.0618
+    },
+    "threshold": 0.659120984089405,
+    "metrics": {
+      "tp": 16,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "f1": 1.0
+  },
+  "score_columns": [
+    "content_score",
+    "user_cf_score",
+    "item_cf_score",
+    "hybrid_score"
+  ],
+  "mins": {
+    "content_score": 0.07,
+    "user_cf_score": 0.03,
+    "item_cf_score": 0.02,
+    "hybrid_score": 0.04
+  },
+  "maxs": {
+    "content_score": 0.7,
+    "user_cf_score": 0.6,
+    "item_cf_score": 0.68,
+    "hybrid_score": 0.69
+  },
+  "trials": 5000,
+  "seed": 123
+}

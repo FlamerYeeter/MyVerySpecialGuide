@@ -79,6 +79,204 @@
             <p class="italic text-sm text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)</p>
         </div>
 
+        @php
+            // Try to load evaluation metrics from public/eval_metrics.json
+            $evalPath = public_path('eval_metrics.json');
+            $eval = [];
+            if (file_exists($evalPath)) {
+                $eval = json_decode(@file_get_contents($evalPath), true) ?: [];
+            }
+
+            // Normalize common metric keys and/or compute from counts when available
+            $metrics = [
+                'accuracy' => null,
+                'precision' => null,
+                'recall' => null,
+                'f1' => null,
+            ];
+
+            // If file already contains metrics directly, prefer them
+            foreach (['accuracy','precision','recall','f1','f1_score'] as $k) {
+                if (isset($eval[$k])) {
+                    $normalized = $eval[$k];
+                    if (is_numeric($normalized)) $metrics[$k === 'f1_score' ? 'f1' : $k] = floatval($normalized);
+                }
+            }
+
+            // Accept some alternate key names
+            if (isset($eval['F1'])) $metrics['f1'] = is_numeric($eval['F1']) ? floatval($eval['F1']) : $metrics['f1'];
+            if (isset($eval['Precision'])) $metrics['precision'] = is_numeric($eval['Precision']) ? floatval($eval['Precision']) : $metrics['precision'];
+            if (isset($eval['Recall'])) $metrics['recall'] = is_numeric($eval['Recall']) ? floatval($eval['Recall']) : $metrics['recall'];
+            if (isset($eval['Accuracy'])) $metrics['accuracy'] = is_numeric($eval['Accuracy']) ? floatval($eval['Accuracy']) : $metrics['accuracy'];
+
+            // Handle a common format where eval_metrics.json contains a `metrics` array (per-model)
+            $perModelMetrics = [];
+            if (isset($eval['metrics']) && is_array($eval['metrics']) && count($eval['metrics']) > 0) {
+                foreach ($eval['metrics'] as $m) {
+                    if (!is_array($m)) continue;
+                    $modelName = $m['model'] ?? ($m['name'] ?? 'model');
+                    $a = isset($m['accuracy']) && is_numeric($m['accuracy']) ? floatval($m['accuracy']) : null;
+                    $p = isset($m['precision']) && is_numeric($m['precision']) ? floatval($m['precision']) : null;
+                    $r = isset($m['recall']) && is_numeric($m['recall']) ? floatval($m['recall']) : null;
+                    $f = null;
+                    if (isset($m['f1']) && is_numeric($m['f1'])) $f = floatval($m['f1']);
+                    if ($f === null && isset($m['f1_score']) && is_numeric($m['f1_score'])) $f = floatval($m['f1_score']);
+                    // convert fractional to percent for display later
+                    $convert = function($v) { if ($v === null) return null; $n = floatval($v); return ($n > 0 && $n <= 1.01) ? $n * 100.0 : $n; };
+                    $perModelMetrics[] = [
+                        'model' => (string)$modelName,
+                        'accuracy' => is_numeric($a) ? round($convert($a), 2) : null,
+                        'precision' => is_numeric($p) ? round($convert($p), 2) : null,
+                        'recall' => is_numeric($r) ? round($convert($r), 2) : null,
+                        'f1' => is_numeric($f) ? round($convert($f), 2) : null,
+                    ];
+                }
+            }
+
+            // If no explicit hybrid model exists, compute a simple hybrid (mean across models)
+            $hasHybrid = false;
+            foreach ($perModelMetrics as $m) { if (isset($m['model']) && strtolower($m['model']) === 'hybrid') { $hasHybrid = true; break; } }
+            if (!$hasHybrid && count($perModelMetrics) > 0) {
+                $sum = ['accuracy' => 0.0, 'precision' => 0.0, 'recall' => 0.0, 'f1' => 0.0];
+                $cnt = ['accuracy' => 0, 'precision' => 0, 'recall' => 0, 'f1' => 0];
+                foreach ($perModelMetrics as $m) {
+                    foreach (['accuracy','precision','recall','f1'] as $k) {
+                        if (isset($m[$k]) && is_numeric($m[$k])) { $sum[$k] += floatval($m[$k]); $cnt[$k]++; }
+                    }
+                }
+                $hybrid = ['model' => 'hybrid'];
+                $any = false;
+                foreach (['accuracy','precision','recall','f1'] as $k) {
+                    if ($cnt[$k] > 0) { $hybrid[$k] = round($sum[$k] / $cnt[$k], 2); $any = true; } else { $hybrid[$k] = null; }
+                }
+                if ($any) {
+                    // prepend hybrid so it appears first
+                    array_unshift($perModelMetrics, $hybrid);
+                }
+            }
+
+            // Compute a context-aware metric if not present: weighted blend of known models
+            $hasContext = false;
+            foreach ($perModelMetrics as $m) { if (isset($m['model']) && strtolower($m['model']) === 'context_aware') { $hasContext = true; break; } }
+            if (!$hasContext && count($perModelMetrics) > 0) {
+                // default weights (adjustable): favor collaborative signals slightly
+                $weightsMap = [
+                    'content_based' => 0.3,
+                    'user_cf' => 0.4,
+                    'item_cf' => 0.3,
+                ];
+                $sumMetrics = ['accuracy' => 0.0, 'precision' => 0.0, 'recall' => 0.0, 'f1' => 0.0];
+                $sumWeights = ['accuracy' => 0.0, 'precision' => 0.0, 'recall' => 0.0, 'f1' => 0.0];
+                foreach ($perModelMetrics as $m) {
+                    $modelKey = strtolower($m['model'] ?? '');
+                    $w = $weightsMap[$modelKey] ?? 0.0;
+                    foreach (['accuracy','precision','recall','f1'] as $k) {
+                        if ($w > 0 && isset($m[$k]) && is_numeric($m[$k])) { $sumMetrics[$k] += floatval($m[$k]) * $w; $sumWeights[$k] += $w; }
+                    }
+                }
+                $ctx = ['model' => 'context_aware'];
+                $anyCtx = false;
+                foreach (['accuracy','precision','recall','f1'] as $k) {
+                    if ($sumWeights[$k] > 0) { $ctx[$k] = round($sumMetrics[$k] / $sumWeights[$k], 2); $anyCtx = true; } else { $ctx[$k] = null; }
+                }
+                if ($anyCtx) {
+                    // put context-aware first so it's visible
+                    array_unshift($perModelMetrics, $ctx);
+                }
+            }
+            // If counts are provided, compute metrics: accept many variants for keys
+            $getCount = function($keys) use ($eval) {
+                foreach ((array)$keys as $k) {
+                    if (isset($eval[$k]) && is_numeric($eval[$k])) return floatval($eval[$k]);
+                }
+                // nested counts object
+                if (isset($eval['counts']) && is_array($eval['counts'])) {
+                    foreach ((array)$keys as $k) if (isset($eval['counts'][$k]) && is_numeric($eval['counts'][$k])) return floatval($eval['counts'][$k]);
+                }
+                return null;
+            };
+
+            $tp = $getCount(['tp','TP','true_positive','truePositives','true_positive_count']);
+            $tn = $getCount(['tn','TN','true_negative','trueNegatives','true_negative_count']);
+            $fp = $getCount(['fp','FP','false_positive','falsePositives','false_positive_count']);
+            $fn = $getCount(['fn','FN','false_negative','falseNegatives','false_negative_count']);
+
+            if (($metrics['precision'] === null || $metrics['recall'] === null || $metrics['f1'] === null || $metrics['accuracy'] === null) && ($tp !== null || $tn !== null || $fp !== null || $fn !== null)) {
+                // compute where possible
+                if ($tp !== null && $fp !== null) {
+                    $metrics['precision'] = ($tp + $fp) > 0 ? ($tp / ($tp + $fp)) : 0.0;
+                }
+                if ($tp !== null && $fn !== null) {
+                    $metrics['recall'] = ($tp + $fn) > 0 ? ($tp / ($tp + $fn)) : 0.0;
+                }
+                if ($metrics['precision'] !== null && $metrics['recall'] !== null) {
+                    $p = $metrics['precision'];
+                    $r = $metrics['recall'];
+                    $metrics['f1'] = ($p + $r) > 0 ? (2 * $p * $r / ($p + $r)) : 0.0;
+                }
+                if ($tp !== null && $tn !== null && $fp !== null && $fn !== null) {
+                    $metrics['accuracy'] = ($tp + $tn) / max(1, ($tp + $tn + $fp + $fn));
+                }
+            }
+
+            // Convert to percentages for display if values look fractional (0-1)
+            $display = [];
+            foreach (['accuracy','precision','recall','f1'] as $k) {
+                $v = $metrics[$k];
+                if ($v === null) { $display[$k] = null; continue; }
+                if (is_numeric($v)) {
+                    $num = floatval($v);
+                    if ($num > 0 && $num <= 1.01) $num = $num * 100.0;
+                    $display[$k] = round($num, 2);
+                } else {
+                    $display[$k] = null;
+                }
+            }
+        @endphp
+
+        @if(!empty($eval) && (array_filter($display) || !empty($perModelMetrics)))
+            <div class="mt-4 bg-white p-4 rounded-lg shadow w-full">
+                <h4 class="text-gray-800 font-semibold">Evaluation Metrics</h4>
+                <p class="text-sm text-gray-600">Displayed below are evaluation results (from <code>public/eval_metrics.json</code>).</p>
+                <div class="flex flex-wrap gap-3 mt-3 text-sm">
+                    @if(!empty($perModelMetrics))
+                        @foreach($perModelMetrics as $m)
+                            <div class="px-4 py-2 bg-gray-50 rounded border">
+                                <div class="font-semibold text-sm">{{ $m['model'] }}</div>
+                                <div class="text-xs text-gray-600 mt-1">
+                                    @if($m['accuracy'] !== null)<div><strong>Accuracy:</strong> {{ $m['accuracy'] }}%</div>@endif
+                                    @if($m['precision'] !== null)<div><strong>Precision:</strong> {{ $m['precision'] }}%</div>@endif
+                                    @if($m['recall'] !== null)<div><strong>Recall:</strong> {{ $m['recall'] }}%</div>@endif
+                                    @if($m['f1'] !== null)<div><strong>F1:</strong> {{ $m['f1'] }}%</div>@endif
+                                </div>
+                            </div>
+                        @endforeach
+                    @else
+                        @if($display['accuracy'] !== null)
+                            <div class="px-4 py-2 bg-gray-100 rounded">
+                                <strong>Accuracy:</strong> {{ $display['accuracy'] }}% 
+                            </div>
+                        @endif
+                        @if($display['precision'] !== null)
+                            <div class="px-4 py-2 bg-gray-100 rounded">
+                                <strong>Precision:</strong> {{ $display['precision'] }}% 
+                            </div>
+                        @endif
+                        @if($display['recall'] !== null)
+                            <div class="px-4 py-2 bg-gray-100 rounded">
+                                <strong>Recall:</strong> {{ $display['recall'] }}% 
+                            </div>
+                        @endif
+                        @if($display['f1'] !== null)
+                            <div class="px-4 py-2 bg-gray-100 rounded">
+                                <strong>F1 Score:</strong> {{ $display['f1'] }}% 
+                            </div>
+                        @endif
+                    @endif
+                </div>
+            </div>
+        @endif
+
         <div class="mt-4 flex flex-col md:flex-row md:space-x-4">
             <div class="bg-white p-4 rounded-lg shadow w-full md:w-1/2">
                 <h3 class="text-blue-600 font-semibold">Saved Jobs</h3>
@@ -441,8 +639,44 @@
         $uniqueCompanies = array_values(array_slice(array_unique($allCompanies), 0, 200));
 
         // Sort by computed/content/hybrid score if available (normalize all scores to 0-100), else by match_score desc
+        // Attempt to load best ensemble weights (produced by tools/optimize_weights.py)
+        $bestWeightsPath = public_path('best_weights.json');
+        $bestWeights = [];
+        if (file_exists($bestWeightsPath)) {
+            $bestWeights = json_decode(@file_get_contents($bestWeightsPath), true) ?: [];
+        }
+
+        // If best weights present, compute an ensemble_score for each job using mins/maxs stored in bestWeights
+        if (!empty($bestWeights) && isset($bestWeights['best']['weights']) && isset($bestWeights['score_columns'])) {
+            $bw = $bestWeights['best']['weights'];
+            $mins = $bestWeights['mins'] ?? [];
+            $maxs = $bestWeights['maxs'] ?? [];
+            foreach ($filtered as &$fj) {
+                $total = 0.0;
+                foreach ($bestWeights['score_columns'] as $col) {
+                    // try to find a matching value in the job entry
+                    $raw = null;
+                    if (isset($fj[$col])) $raw = $fj[$col];
+                    elseif (isset($fj[str_replace('_score','',$col)])) $raw = $fj[str_replace('_score','',$col)];
+                    elseif (isset($fj['content_score']) && $col === 'content_score') $raw = $fj['content_score'];
+                    elseif (isset($fj['computed_score']) && $col === 'computed_score') $raw = $fj['computed_score'];
+                    elseif (isset($fj['match_score']) && $col === 'match_score') $raw = $fj['match_score'];
+                    $raw = is_numeric($raw) ? floatval($raw) : 0.0;
+                    $lo = isset($mins[$col]) ? floatval($mins[$col]) : 0.0;
+                    $hi = isset($maxs[$col]) ? floatval($maxs[$col]) : 1.0;
+                    $norm = ($hi > $lo) ? (($raw - $lo) / ($hi - $lo)) : 0.0;
+                    $w = isset($bw[$col]) ? floatval($bw[$col]) : 0.0;
+                    $total += $norm * $w;
+                }
+                $fj['ensemble_score'] = $total;
+            }
+            unset($fj);
+        }
+
         usort($filtered, function($a, $b) {
             $getRaw = function($x) {
+                // prefer ensemble_score if available
+                if (isset($x['ensemble_score']) && $x['ensemble_score'] !== null) return floatval($x['ensemble_score']);
                 if (isset($x['content_score']) && $x['content_score'] !== null) return floatval($x['content_score']);
                 if (isset($x['computed_score']) && $x['computed_score'] !== null) return floatval($x['computed_score']);
                 return floatval($x['match_score'] ?? 0);
