@@ -56,6 +56,56 @@ async function ensureInit() {
         } catch (err) {
             console.debug('setPersistence(browserLocalPersistence) failed (non-critical):', err && err.message ? err.message : err);
         }
+        // Attach a single global listener to synchronize client Firebase sign-in
+        // with the server session. When the user signs in client-side, POST the
+        // ID token to /session/firebase-signin so the Laravel session gains
+        // the firebase_uid and the users table can be persisted server-side.
+        try {
+            if (typeof window !== 'undefined' && !window.__firebaseSessionSyncAttached) {
+                window.__firebaseSessionSyncAttached = true;
+                onAuthStateChanged(auth, async (user) => {
+                    if (!user) return;
+                    try {
+                        // Acquire a fresh short-lived ID token
+                        const idToken = await user.getIdToken();
+                        if (!idToken) return;
+                        // POST to server to persist session and DB mapping
+                        try {
+                            const headers = { 'Content-Type': 'application/json' };
+                            try {
+                                const csrfMeta = typeof document !== 'undefined' && document.querySelector ? document.querySelector('meta[name="csrf-token"]') : null;
+                                if (csrfMeta && csrfMeta.getAttribute) headers['X-CSRF-TOKEN'] = csrfMeta.getAttribute('content');
+                            } catch (e) { /* ignore */ }
+
+                            await fetch('/session/firebase-signin', {
+                                method: 'POST',
+                                credentials: 'include',
+                                headers,
+                                body: JSON.stringify({ idToken }),
+                            }).then(async (r) => {
+                                try {
+                                    const j = await r.json().catch(() => null);
+                                    if (j && j.ok) {
+                                        console.debug('firebase session sync: server acknowledged firebase_uid', j.firebase_uid);
+                                    } else {
+                                        console.debug('firebase session sync: server did not acknowledge', j);
+                                    }
+                                } catch (e) { console.debug('firebase session sync: parse failed', e); }
+                            }).catch((e) => {
+                                console.debug('firebase session sync: fetch failed', e);
+                            });
+                        } catch (e) {
+                            console.debug('firebase session sync: request error', e && e.message ? e.message : e);
+                        }
+                    } catch (e) {
+                        // If getIdToken fails, ignore silently (no server sync)
+                        console.debug('firebase session sync: getIdToken failed', e && e.message ? e.message : e);
+                    }
+                });
+            }
+        } catch (e) {
+            console.debug('firebase session sync: attach failed', e && e.message ? e.message : e);
+        }
         return;
     })();
     return initPromise;

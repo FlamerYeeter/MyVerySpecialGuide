@@ -14,7 +14,7 @@
     </div>
   </section>
   
-   <!-- Job Roles Section -->
+  <!-- Job Roles Section -->
   <section class="max-w-4xl mx-auto mt-10 mb-16 px-4">
     <div class="bg-white shadow-md rounded-xl p-6 border">
       <div class="flex items-center mb-6 space-x-3">
@@ -23,78 +23,68 @@
         <img src="/images/sound-icon.png" alt="Speaker" class="w-6 h-6 ml-auto">
       </div>
 
-      <!-- Job Card 1 -->
-      <div class="bg-white shadow rounded-xl border mb-8">
-        <div class="p-6">
-          <div class="flex justify-between items-center">
-            <h4 class="font-semibold text-lg">Kitchen Helper</h4>
-            <span class="text-sm bg-green-100 text-green-600 px-3 py-1 rounded-full font-medium">Excellent Match</span>
-          </div>
+      @if(!empty($approvedJobs) && is_array($approvedJobs) && count($approvedJobs) > 0)
+        @foreach($approvedJobs as $job)
+          <div class="bg-white shadow rounded-xl border mb-8">
+            <div class="p-6">
+              <div class="flex justify-between items-center">
+        <h4 class="font-semibold text-lg">{{ $job['assoc']['title'] ?? ($job['assoc']['job_title'] ?? 'Untitled Job') }}</h4>
+        @php
+          // Normalize match score to a 0-100 percent for display.
+          $rawMatch = $job['match_score'] ?? null;
+          $displayMatch = $job['assoc']['fit_level'] ?? 'Matched';
+          $matchPercent = null;
+          if (is_numeric($rawMatch)) {
+            $m = floatval($rawMatch);
+            if ($m > 0 && $m <= 1.01) {
+              $matchPercent = round($m * 100);
+            } elseif ($m > 0 && $m <= 5.0) {
+              $matchPercent = round($m * 20);
+            } else {
+              $matchPercent = round($m);
+            }
+            $displayMatch = $matchPercent . '% Match';
+          } elseif (!empty($rawMatch) && is_string($rawMatch)) {
+            $displayMatch = $rawMatch;
+          }
+        @endphp
+        <span class="text-sm bg-green-100 text-green-600 px-3 py-1 rounded-full font-medium">{{ $displayMatch }}</span>
+              </div>
 
-          <p class="text-sm mt-2 text-gray-600 font-medium">Match Score</p>
-          <div class="w-full bg-gray-200 h-3 rounded-full mt-1">
-            <div class="bg-green-400 h-3 rounded-full w-[90%]"></div>
-          </div>
-          <p class="text-right text-sm font-semibold mt-1">90%</p>
+              <p class="text-sm mt-2 text-gray-600 font-medium">Match Score</p>
+              <div class="w-full bg-gray-200 h-3 rounded-full mt-1">
+                <div class="bg-green-400 h-3 rounded-full" style="width: {{ $matchPercent !== null ? intval($matchPercent) . '%' : '50%' }}"></div>
+              </div>
+              <p class="text-right text-sm font-semibold mt-1">{{ $matchPercent !== null ? intval($matchPercent) . '%' : ($job['match_score'] ?? 'N/A') }}</p>
 
-          <!-- Matching Skills -->
-          <div class="bg-gray-50 p-4 rounded-lg mt-4">
-            <p class="text-sm font-medium text-gray-700 mb-2">Your Matching Skills</p>
-            <div class="flex flex-wrap gap-3">
-              <span class="bg-blue-50 text-blue-500 px-4 py-1 rounded-full text-sm font-medium">Cleaning</span>
-              <span class="bg-blue-50 text-blue-500 px-4 py-1 rounded-full text-sm font-medium">Following Instructions</span>
-              <span class="bg-blue-50 text-blue-500 px-4 py-1 rounded-full text-sm font-medium">Working with others</span>
+              <!-- Matching Skills -->
+              <div class="bg-gray-50 p-4 rounded-lg mt-4">
+                <p class="text-sm font-medium text-gray-700 mb-2">Your Matching Skills</p>
+                <div class="flex flex-wrap gap-3">
+                  @if(!empty($job['matching_skills']) && is_array($job['matching_skills']))
+                    @foreach($job['matching_skills'] as $skill)
+                      <span class="bg-blue-50 text-blue-500 px-4 py-1 rounded-full text-sm font-medium">{{ $skill }}</span>
+                    @endforeach
+                  @else
+                    <span class="text-sm text-gray-500">No specific matching skills identified.</span>
+                  @endif
+                </div>
+              </div>
+
+              <!-- View Details -->
+              <div class="mt-4 flex items-center justify-between">
+                <a href="{{ route('job.application.review1', ['job_id' => $job['job_id']]) }}" class="bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2 rounded-lg transition inline-block">View Details</a>
+                <img src="/images/sound-icon.png" alt="Audio" class="w-6 h-6">
+              </div>
+              <p class="text-xs text-gray-500 mt-1">(Click "View Details" to see full information)</p>
             </div>
           </div>
-
-          <!-- View Details -->
-          <div class="mt-4 flex items-center justify-between">
-            <button class="bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2 rounded-lg transition">
-              View Details
-            </button>
-            <img src="/images/sound-icon.png" alt="Audio" class="w-6 h-6">
-          </div>
-          <p class="text-xs text-gray-500 mt-1">
-            (Pindutin ang <a href="#" class="text-blue-500 underline">"View Details"</a> upang makita ang buong impormasyon)
-          </p>
+        @endforeach
+      @else
+        <div class="bg-white rounded-xl border p-6">
+          <p class="text-gray-700">No guardian-approved jobs were found yet. Once a guardian approves jobs you will see them listed here along with the matching skills highlighted by the recommendation algorithm.</p>
         </div>
-      </div>
-
-      <!-- Job Card 2 -->
-      <div class="bg-white shadow rounded-xl border">
-        <div class="p-6">
-          <div class="flex justify-between items-center">
-            <h4 class="font-semibold text-lg">Pet Care Assistant</h4>
-            <span class="text-sm bg-green-100 text-green-600 px-3 py-1 rounded-full font-medium">Great Match</span>
-          </div>
-
-          <p class="text-sm mt-2 text-gray-600 font-medium">Match Score</p>
-          <div class="w-full bg-gray-200 h-3 rounded-full mt-1">
-            <div class="bg-green-400 h-3 rounded-full w-[50%]"></div>
-          </div>
-          <p class="text-right text-sm font-semibold mt-1">50%</p>
-
-          <!-- Matching Skills -->
-          <div class="bg-gray-50 p-4 rounded-lg mt-4">
-            <p class="text-sm font-medium text-gray-700 mb-2">Your Matching Skills</p>
-            <div class="flex flex-wrap gap-3">
-              <span class="bg-blue-50 text-blue-500 px-4 py-1 rounded-full text-sm font-medium">Organization</span>
-              <span class="bg-blue-50 text-blue-500 px-4 py-1 rounded-full text-sm font-medium">Following Instructions</span>
-            </div>
-          </div>
-
-          <!-- View Details -->
-          <div class="mt-4 flex items-center justify-between">
-            <button class="bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2 rounded-lg transition">
-              View Details
-            </button>
-            <img src="/images/sound-icon.png" alt="Audio" class="w-6 h-6">
-          </div>
-          <p class="text-xs text-gray-500 mt-1">
-            (Pindutin ang <a href="#" class="text-blue-500 underline">"View Details"</a> upang makita ang buong impormasyon)
-          </p>
-        </div>
-      </div>
+      @endif
 
     </div>
   </section>

@@ -326,6 +326,98 @@ class GuardianJobController extends Controller
         }
     }
 
+    /**
+     * Fetch the user's profile document from Firestore (users/{uid}) and convert
+     * Firestore field types into a plain PHP associative array.
+     * Returns null on failure.
+     */
+    public function fetchUserProfileFromFirestore(string $uid): ?array
+    {
+        try {
+            $svcPath = env('FIREBASE_SERVICE_ACCOUNT') ?: storage_path('app/firebase-service-account.json');
+            // Log presence of service account and project id (non-sensitive)
+            if (!file_exists($svcPath)) {
+                logger()->info('fetchUserProfileFromFirestore: service account not found', ['svcPath' => $svcPath]);
+                return null;
+            }
+            $json = json_decode(file_get_contents($svcPath), true);
+            $projectId = $json['project_id'] ?? null;
+            if (!$projectId) {
+                logger()->info('fetchUserProfileFromFirestore: project_id missing in service account', ['svcPath' => $svcPath]);
+                return null;
+            }
+
+            // Try obtaining access token
+            $access = $this->getServiceAccessTokenForScope($json, 'https://www.googleapis.com/auth/datastore');
+            if (!$access) {
+                logger()->info('fetchUserProfileFromFirestore: failed to obtain access token', ['projectId' => $projectId]);
+                return null;
+            }
+
+            $url = "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents/users/" . urlencode($uid);
+            $resp = \Illuminate\Support\Facades\Http::withToken($access)->get($url);
+            // Log HTTP status for diagnostics (no body data)
+            logger()->info('fetchUserProfileFromFirestore: firestore HTTP response', ['projectId' => $projectId, 'uid' => $uid, 'status' => $resp->status()]);
+            if (!$resp->successful()) return null;
+            $data = $resp->json();
+            if (empty($data) || empty($data['fields'])) return [];
+            return $this->firestoreFieldsToPhp($data['fields']);
+        } catch (\Throwable $e) {
+            logger()->warning('fetchUserProfileFromFirestore failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    // Convert Firestore document 'fields' structure to a plain PHP array
+    private function firestoreFieldsToPhp(array $fields)
+    {
+        $out = [];
+        foreach ($fields as $key => $val) {
+            // value types are single-key objects like ['stringValue' => 'x'] or ['arrayValue' => ['values' => [...]]]
+            if (isset($val['stringValue'])) {
+                $out[$key] = $val['stringValue'];
+                continue;
+            }
+            if (isset($val['booleanValue'])) {
+                $out[$key] = $val['booleanValue'];
+                continue;
+            }
+            if (isset($val['integerValue'])) {
+                $out[$key] = is_numeric($val['integerValue']) ? (int)$val['integerValue'] : $val['integerValue'];
+                continue;
+            }
+            if (isset($val['doubleValue'])) {
+                $out[$key] = (float)$val['doubleValue'];
+                continue;
+            }
+            if (isset($val['nullValue'])) {
+                $out[$key] = null;
+                continue;
+            }
+            if (isset($val['mapValue']) && isset($val['mapValue']['fields'])) {
+                $out[$key] = $this->firestoreFieldsToPhp($val['mapValue']['fields']);
+                continue;
+            }
+            if (isset($val['arrayValue']) && isset($val['arrayValue']['values']) && is_array($val['arrayValue']['values'])) {
+                $arr = [];
+                foreach ($val['arrayValue']['values'] as $v) {
+                    // each $v is a Firestore value union
+                    if (isset($v['stringValue'])) $arr[] = $v['stringValue'];
+                    elseif (isset($v['integerValue'])) $arr[] = is_numeric($v['integerValue']) ? (int)$v['integerValue'] : $v['integerValue'];
+                    elseif (isset($v['doubleValue'])) $arr[] = (float)$v['doubleValue'];
+                    elseif (isset($v['booleanValue'])) $arr[] = $v['booleanValue'];
+                    elseif (isset($v['mapValue']) && isset($v['mapValue']['fields'])) $arr[] = $this->firestoreFieldsToPhp($v['mapValue']['fields']);
+                    else $arr[] = null;
+                }
+                $out[$key] = $arr;
+                continue;
+            }
+            // unknown type: store raw
+            $out[$key] = $val;
+        }
+        return $out;
+    }
+
     // Exchange service-account credentials for an access token with the requested scope
     private function getServiceAccessTokenForScope(array $serviceAccountJson, string $scope): ?string
     {

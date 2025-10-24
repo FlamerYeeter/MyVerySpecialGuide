@@ -48,8 +48,218 @@ Route::post('/client-log', function (\Illuminate\Http\Request $req) {
 });
 
 // Navigation targets used by navigation-buttons view
-Route::get('/why-this-job-1', function () {
-    return view('why-this-job-1');
+Route::get('/why-this-job-1', function (\Illuminate\Http\Request $request) {
+    // Require authenticated Laravel session; do not accept uid overrides.
+    if (!\Illuminate\Support\Facades\Auth::check()) {
+        return redirect()->route('login');
+    }
+    $laravelId = (string)\Illuminate\Support\Facades\Auth::id();
+    // keep the old $uid usage for view/debugging (local numeric id)
+    $uid = $laravelId;
+    $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $laravelId ?: 'anonymous');
+
+    // Load approvals (local fallback)
+    $approvalsPath = storage_path('app/guardian_job_approvals.json');
+    $approvals = [];
+    if (file_exists($approvalsPath)) {
+        $raw = @file_get_contents($approvalsPath);
+        $approvals = $raw ? (json_decode($raw, true) ?: []) : [];
+    }
+
+    $approvedIds = [];
+    if (is_array($approvals)) {
+        foreach ($approvals as $jobId => $meta) {
+            if (is_array($meta) && isset($meta['status']) && strtolower($meta['status']) === 'approved') {
+                $approvedIds[] = (string)$jobId;
+            }
+        }
+    }
+
+    // Load per-user recommendation cache if present (used as fallback only)
+    $recoPath = storage_path('app/reco_user_' . $safeUid . '.json');
+    $reco = null;
+    if (file_exists($recoPath)) {
+        $raw = @file_get_contents($recoPath);
+        $reco = $raw ? (json_decode($raw, true) ?: null) : null;
+    }
+
+    // Try to load Firestore profile for authoritative matching skills
+    $fsProfile = null;
+    try {
+        // Prefer a firebase_uid persisted on the local user record; fall back to session
+        $fsUid = null;
+        try {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if ($user && !empty($user->firebase_uid)) {
+                $fsUid = (string)$user->firebase_uid;
+                logger()->info('why-this-job: using firebase_uid from user model', ['hint' => substr($fsUid, 0, 6) . '...']);
+            }
+        } catch (\Throwable $__e) {
+            // ignore
+        }
+
+        if (!$fsUid) {
+            $fsUid = session('firebase_uid', null);
+            if ($fsUid) {
+                logger()->info('why-this-job: using firebase_uid from session', ['hint' => substr($fsUid, 0, 6) . '...']);
+            }
+        }
+
+        if ($fsUid) {
+            $fs = app(\App\Http\Controllers\GuardianJobController::class)->fetchUserProfileFromFirestore($fsUid);
+            if (is_array($fs)) $fsProfile = $fs;
+        } else {
+            logger()->info('why-this-job: no firebase_uid available; skipping Firestore profile fetch', ['laravel_id' => $laravelId]);
+        }
+    } catch (\Throwable $e) {
+        logger()->warning('why-this-job: Firestore profile fetch failed: ' . $e->getMessage());
+        $fsProfile = null;
+    }
+
+    // Debug: log the fetched profile shape (redact sensitive fields if needed)
+    try {
+        if (is_array($fsProfile)) {
+            logger()->info('why-this-job: fetched Firestore profile', ['uid' => $uid, 'profile_keys' => array_keys($fsProfile)]);
+        } else {
+            logger()->info('why-this-job: no Firestore profile found for uid', ['uid' => $uid]);
+        }
+    } catch (\Throwable $__e) {}
+
+    $jobs = [];
+    try {
+        $parser = new \App\Services\JobCsvParser();
+        // a small list of common skill tokens to surface when the reco doesn't include explicit skills
+        $COMMON_SKILLS = ['communication','teamwork','organization','cleaning','customer service','problem solving','excel','microsoft','management','leadership','sales','cooking','following instructions','working with others','organization','revit','data','analysis','programming','teaching','caregiving'];
+
+        foreach ($approvedIds as $jobId) {
+            $assoc = $parser->findJobById($jobId);
+            // attempt to find the job in reco output (if it's an array of objects)
+            $foundReco = null;
+            if (is_array($reco)) {
+                // reco may be a list of job objects or map; try both
+                if (array_keys($reco) !== range(0, count($reco) - 1)) {
+                    // associative map: job_id => obj
+                    if (isset($reco[$jobId])) $foundReco = $reco[$jobId];
+                } else {
+                    foreach ($reco as $r) {
+                        if (is_array($r) && (isset($r['job_id']) && strval($r['job_id']) === strval($jobId))) {
+                            $foundReco = $r;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Primary: pull skills from Firestore profile (if available)
+            $matchingSkills = [];
+            if (is_array($fsProfile)) {
+                // Primary candidate: a top-level explicit matching_skills array
+                if (!empty($fsProfile['matching_skills']) && is_array($fsProfile['matching_skills'])) {
+                    $matchingSkills = $fsProfile['matching_skills'];
+                }
+
+                // Next: a 'skills' map is common in your dataset. It may contain fields
+                // like skills_page1/skills_page2 which are JSON-encoded arrays stored as strings.
+                if (empty($matchingSkills) && !empty($fsProfile['skills']) && is_array($fsProfile['skills'])) {
+                    $skillsNode = $fsProfile['skills'];
+                    $s = [];
+                    // If skills_page1/2 exist as strings, decode them
+                    try {
+                        if (!empty($skillsNode['skills_page1']) && is_string($skillsNode['skills_page1'])) {
+                            $decoded = json_decode($skillsNode['skills_page1'], true);
+                            if (is_array($decoded)) $s = array_merge($s, $decoded);
+                        }
+                    } catch (\Throwable $__e) {}
+                    try {
+                        if (!empty($skillsNode['skills_page2']) && is_string($skillsNode['skills_page2'])) {
+                            $decoded = json_decode($skillsNode['skills_page2'], true);
+                            if (is_array($decoded)) $s = array_merge($s, $decoded);
+                        }
+                    } catch (\Throwable $__e) {}
+
+                    // If the skills node itself is a simple list like ['skill1','skill2'] normalize that too
+                    $isIndexedList = array_values($skillsNode) === $skillsNode;
+                    if ($isIndexedList) {
+                        foreach ($skillsNode as $v) {
+                            if (is_scalar($v)) $s[] = (string)$v;
+                        }
+                    }
+
+                    if (!empty($s) && is_array($s)) {
+                        $matchingSkills = $s;
+                    }
+                }
+
+                // Also accept top-level skills_page1 / skills_page2 fields (some profiles store them at root)
+                if (empty($matchingSkills) && (!empty($fsProfile['skills_page1']) || !empty($fsProfile['skills_page2']))) {
+                    $s = [];
+                    try { if (!empty($fsProfile['skills_page1']) && is_string($fsProfile['skills_page1'])) $s = array_merge($s, json_decode($fsProfile['skills_page1'], true) ?: []); } catch (\Throwable $__e) {}
+                    try { if (!empty($fsProfile['skills_page2']) && is_string($fsProfile['skills_page2'])) $s = array_merge($s, json_decode($fsProfile['skills_page2'], true) ?: []); } catch (\Throwable $__e) {}
+                    if (!empty($s) && is_array($s)) $matchingSkills = $s;
+                }
+
+                // Normalize any found skills into a clean array of strings
+                if (!empty($matchingSkills) && is_array($matchingSkills)) {
+                    $normalized = [];
+                    foreach ($matchingSkills as $item) {
+                        if (is_scalar($item)) {
+                            $val = trim((string)$item);
+                            if ($val !== '') $normalized[] = $val;
+                        } elseif (is_array($item)) {
+                            // if nested map, try to extract plausible string values
+                            foreach ($item as $sub) {
+                                if (is_scalar($sub)) {
+                                    $val = trim((string)$sub);
+                                    if ($val !== '') $normalized[] = $val;
+                                }
+                            }
+                        }
+                    }
+                    $matchingSkills = array_values(array_unique($normalized));
+                }
+            }
+
+            // Secondary: fallback to reco cache keys (if profile didn't provide skills)
+            if (empty($matchingSkills) && is_array($foundReco)) {
+                $skillKeys = ['matching_skills', 'skills', 'keywords', 'tags', 'match_skills', 'matching_skills_v2'];
+                foreach ($skillKeys as $k) {
+                    if (!empty($foundReco[$k]) && is_array($foundReco[$k])) {
+                        $matchingSkills = $foundReco[$k];
+                        break;
+                    }
+                    if (!empty($foundReco[$k]) && is_string($foundReco[$k])) {
+                        $parts = array_filter(array_map('trim', explode(',', $foundReco[$k])));
+                        if (!empty($parts)) {
+                            $matchingSkills = array_values($parts);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Final fallback: scan job description for common skill tokens
+            if (empty($matchingSkills) && is_array($assoc)) {
+                $desc = strtolower($assoc['job_description'] ?? ($assoc['description'] ?? ''));
+                $found = [];
+                foreach ($COMMON_SKILLS as $token) {
+                    if (stripos($desc, $token) !== false) $found[] = ucwords($token);
+                }
+                $matchingSkills = array_slice(array_unique($found), 0, 6);
+            }
+
+            $jobs[] = [
+                'job_id' => $jobId,
+                'assoc' => $assoc,
+                'matching_skills' => $matchingSkills,
+                'match_score' => is_array($foundReco) && isset($foundReco['match_score']) ? $foundReco['match_score'] : null,
+                'approval' => $approvals[$jobId] ?? null,
+            ];
+        }
+    } catch (\Throwable $e) {
+        logger()->warning('why-this-job route assembly failed: ' . $e->getMessage());
+    }
+
+    return view('why-this-job-1', ['approvedJobs' => $jobs, 'uid' => $uid]);
 })->name('why.this.job.1');
 
 // Guardian review routes: pending list and detailed mode
@@ -161,6 +371,26 @@ Route::post('/login', function (Request $request) {
                 }
                 // log the user in via Laravel
                 Auth::login($user);
+                // Persist the Firebase UID in session so server-side pages can fetch Firestore docs
+                try {
+                    if (!empty($firebaseUid)) {
+                        session(['firebase_uid' => $firebaseUid]);
+                        logger()->info('Login: saved firebase_uid to session', ['firebase_uid_hint' => substr($firebaseUid, 0, 6) . '...']);
+                        // Also persist to the users table if not already set (so server-side processes
+                        // that rely on Auth::user()->firebase_uid can work outside of a single request)
+                        try {
+                            if (empty($user->firebase_uid) || $user->firebase_uid !== $firebaseUid) {
+                                $user->firebase_uid = $firebaseUid;
+                                $user->save();
+                                logger()->info('Login: persisted firebase_uid to user record', ['user_id' => $user->id, 'firebase_uid_hint' => substr($firebaseUid, 0, 6) . '...']);
+                            }
+                        } catch (\Throwable $__save_e) {
+                            logger()->warning('Login: failed to persist firebase_uid to user record: ' . $__save_e->getMessage());
+                        }
+                    }
+                } catch (\Throwable $__e) {
+                    // ignore session write failures
+                }
                 $request->session()->regenerate();
                 logger()->info('Login: firebase-auth succeeded and local user logged in', ['email' => $email, 'redirect' => $redirect]);
                 if (!empty($redirect)) {
@@ -183,6 +413,84 @@ Route::post('/login', function (Request $request) {
 
     return back()->withErrors(['email' => 'Login failed. Please check your credentials.'])->withInput();
 })->name('login.post');
+
+// Client-side Firebase sign-in helper: accepts a Firebase ID token (idToken) and
+// verifies it with the Identity Toolkit API. If valid, create or find a local
+// user, log them in, persist firebase_uid to session and the users table.
+Route::post('/session/firebase-signin', function (Request $request) {
+    $idToken = $request->json('idToken') ?: $request->input('idToken');
+    if (empty($idToken)) {
+        return response()->json(['ok' => false, 'error' => 'missing_idToken'], 400);
+    }
+    $apiKey = env('FIREBASE_API_KEY');
+    if (empty($apiKey)) {
+        logger()->warning('firebase-signin: FIREBASE_API_KEY missing');
+        return response()->json(['ok' => false, 'error' => 'server_misconfigured'], 500);
+    }
+
+    try {
+        $resp = Http::post("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={$apiKey}", [
+            'idToken' => $idToken,
+        ]);
+        if (!$resp->successful()) {
+            logger()->warning('firebase-signin: accounts:lookup failed', ['status' => $resp->status(), 'body' => $resp->body()]);
+            return response()->json(['ok' => false, 'error' => 'invalid_idToken'], 401);
+        }
+        $data = $resp->json();
+        if (empty($data['users']) || !is_array($data['users'])) {
+            return response()->json(['ok' => false, 'error' => 'invalid_idToken_no_user'], 401);
+        }
+        $u = $data['users'][0];
+        $firebaseUid = $u['localId'] ?? null;
+        $email = $u['email'] ?? null;
+
+        if (empty($firebaseUid) || empty($email)) {
+            return response()->json(['ok' => false, 'error' => 'invalid_user_payload'], 400);
+        }
+
+        // find or create local user by email
+        $user = User::where('email', $email)->first();
+        if (!$user) {
+            $user = User::create([
+                'name' => explode('@', $email)[0],
+                'email' => $email,
+                'password' => bcrypt(bin2hex(random_bytes(8))),
+            ]);
+        }
+
+        // log the user in and persist firebase UID
+        Auth::login($user);
+        session(['firebase_uid' => $firebaseUid]);
+        try {
+            if (empty($user->firebase_uid) || $user->firebase_uid !== $firebaseUid) {
+                $user->firebase_uid = $firebaseUid;
+                $user->save();
+                logger()->info('firebase-signin: persisted firebase_uid to user', ['user_id' => $user->id, 'hint' => substr($firebaseUid, 0, 6) . '...']);
+            }
+        } catch (\Throwable $e) {
+            logger()->warning('firebase-signin: failed to persist firebase_uid: ' . $e->getMessage());
+        }
+
+        $request->session()->regenerate();
+        return response()->json(['ok' => true, 'firebase_uid' => $firebaseUid]);
+    } catch (\Throwable $e) {
+        logger()->error('firebase-signin: exception: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => 'exception'], 500);
+    }
+})->name('session.firebase_signin');
+
+// Debug helper (development only): return current session and user firebase_uid
+// Use this to verify the client successfully synced the firebase UID into the session.
+Route::get('/debug/firebase-session', function (Request $request) {
+    try {
+        $sess = session('firebase_uid', null);
+        $user = Auth::user();
+        $modelUid = $user && !empty($user->firebase_uid) ? $user->firebase_uid : null;
+        return response()->json(['ok' => true, 'session_firebase_uid' => $sess, 'user_firebase_uid' => $modelUid]);
+    } catch (\Throwable $e) {
+        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+    }
+})->name('debug.firebase_session');
 
 Route::get('/registeradminapprove', function () {
     return view('ds_register_adminapprove');
