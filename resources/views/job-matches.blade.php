@@ -15,7 +15,9 @@
                 </div>
             </form>
         </div>
-</section>
+    </section>
+    <section class="max-w-6xl mx-auto mt-8 px-6">
+        <h3 class="text-lg font-semibold mb-3">Filter</h3>
                 <div class="flex flex-wrap justify-center gap-3">
                     <select name="industry" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
                         <option value="">Industry</option>
