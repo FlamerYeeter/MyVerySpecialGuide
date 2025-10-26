@@ -76,7 +76,7 @@
             <!-- Audio Button -->
             <button type="button" aria-label="Play audio for information note"
                 class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
-    text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400">
+                text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400">
                 🔊
             </button>
 
@@ -196,10 +196,10 @@
                         class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
                         Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
                     </h3>
-                    <p class="text-black-600 italic text-xs sm:text-sm leading-snug mt-1">
-                        (You may fill this in if you already have records or a doctor’s assessment that shows your type
+                    <p class="text-black-600 text-xs sm:text-sm leading-snug mt-1">
+                        You may fill this in if you already have records or a doctor’s assessment that shows your type
                         of Down syndrome.
-                        It’s perfectly okay if you’re not aware of it yet — you can leave it blank.)
+                        It’s perfectly okay if you’re not aware of it yet — you can leave it blank.
                     </p>
 
                     <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4">

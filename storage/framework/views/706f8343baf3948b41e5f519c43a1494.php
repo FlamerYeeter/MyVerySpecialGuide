@@ -73,12 +73,12 @@
         <div
             class="relative bg-[#EEF4FF] border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
 
-            <!-- Audio Button -->
-            <button type="button" aria-label="Play audio for information note"
-                class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
+  <!-- Audio Button -->
+  <button type="button" aria-label="Play audio for information note"
+    class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
     text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400">
-                🔊
-            </button>
+    🔊
+  </button>
 
             <div class="flex items-start gap-3 pr-20"> <!-- Added right padding here -->
                 <!-- Info Icon -->
@@ -187,20 +187,18 @@
             </div>
 
             <!-- Type of Down Syndrome -->
-            <div
-                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
-
-                <!-- Text Section -->
-                <div class="flex-1">
-                    <h3
-                        class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                        Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
-                    </h3>
-                    <p class="text-black-600 italic text-xs sm:text-sm leading-snug mt-1">
-                        (You may fill this in if you already have records or a doctor’s assessment that shows your type
-                        of Down syndrome.
-                        It’s perfectly okay if you’re not aware of it yet — you can leave it blank.)
-                    </p>
+<div
+  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
+  
+  <!-- Text Section -->
+  <div class="flex-1">
+    <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+      Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
+    </h3>
+    <p class="text-black-600 italic text-xs sm:text-sm leading-snug mt-1">
+      (You may fill this in if you already have records or a doctor’s assessment that shows your type of Down syndrome. 
+      It’s perfectly okay if you’re not aware of it yet — you can leave it blank.)
+    </p>
 
                     <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4">
                         (Opsyonal lamang ito. Maaari mo itong sagutan kung mayroon ka nang tala o pagsusuri mula sa
