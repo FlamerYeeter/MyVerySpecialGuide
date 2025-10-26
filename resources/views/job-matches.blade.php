@@ -73,10 +73,15 @@
             </form>
 
         </div>
-        <p class="text-sm flex item-center text-gray-600">
-      Click the dropdown arrow above, look at the list, and choose the option you want, the system will show jobs that match what you picked.
-    </p>
-    <p class="text-xs text-gray-500 italic">(I-click ang dropdown arrow sa itaas, tingnan ang listahan, at piliin ang gusto mong option, ipapakita ng system ang mga trabahong bagay sa iyong pinili)</p>
+       <div class="text-center flex flex-col items-center justify-center">
+            <p class="text-sm text-gray-600">
+            Click the dropdown arrow above, look at the list, and choose the option you want, the system will show jobs that match what you picked.
+            </p>
+            <p class="text-xs text-gray-500 italic">
+            (I-click ang dropdown arrow sa itaas, tingnan ang listahan, at piliin ang gusto mong option, ipapakita ng system ang mga trabahong bagay sa iyong pinili)
+            </p>
+        </div>
+
     </section>
 
     <!-- Match Notice -->
