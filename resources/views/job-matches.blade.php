@@ -2,7 +2,6 @@
 
 @section('content')
 
-
     <!-- Filter Form -->
     <section class="bg-yellow-400 py-10 mt-4">
         <div class="container mx-auto px-4">
@@ -14,6 +13,9 @@
                         <p class="text-sm text-gray-600 italic">(Mga Trabahong Para sa Iyo)</p>
                     </div>
                 </div>
+            </form>
+        </div>
+</section>
                 <div class="flex flex-wrap justify-center gap-3">
                     <select name="industry" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
                         <option value="">Industry</option>
