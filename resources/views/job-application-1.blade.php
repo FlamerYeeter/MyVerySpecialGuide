@@ -3,18 +3,20 @@
 @section('content')
 
 
-  <!-- Back Button -->
-  <div class="bg-yellow-400 mt-6 py-4">
-    <div class="max-w-5xl mx-auto px-4 flex items-center space-x-2">
-      <a href="/job-details" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke-width="2" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        <span>Back to Job Details</span>
-      </a>
-    </div>
+<!-- Back Button -->
+<div class="bg-yellow-400 mt-6 py-8">
+  <div class="max-w-5xl mx-auto px-6">
+    <a href="/job-details" class="flex items-center space-x-3 text-blue-900 text-3xl font-semibold hover:underline w-fit">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+        stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>Back</span>
+    </a>
   </div>
+</div>
+
+
 
   <!-- Job Info Card -->
   <section class="max-w-5xl mx-auto mt-8 px-4">

@@ -35,13 +35,7 @@
                   At the <span class="font-semibold text-blue-600">Down Syndrome Work Society</span>,
                   we open doors for people with Down syndrome to share their talents and build brighter futures.
               </p>
-             <!-- About MVSG button -->
-             <div class="flex justify-center">
-                 <a href="{{ route('about.us') }}"
-                     class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold shadow-md transition-transform hover:scale-105 text-sm">
-                     About MVSG
-                 </a>
-             </div>
+             
           </div>
 
           <!-- Image with Borders -->

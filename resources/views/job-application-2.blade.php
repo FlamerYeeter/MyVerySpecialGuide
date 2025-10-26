@@ -1,6 +1,4 @@
-
-
-  <!-- Job Info -->@extends('layouts.includes')
+@extends('layouts.includes')
 
 @section('content')
 
