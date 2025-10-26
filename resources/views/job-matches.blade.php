@@ -3,7 +3,7 @@
 @section('content')
 
     <!-- Filter Form -->
-    <section class="bg-yellow-400 py-10 mt-4">
+    <section class="bg-yellow-400 py-7 mt-4">
         <div class="container mx-auto px-4">
             <form method="GET" action="{{ route('job.matches') }}">
                 <div class="flex items-center justify-center space-x-4 mb-6">
