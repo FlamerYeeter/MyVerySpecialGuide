@@ -22,6 +22,11 @@
             transform: translateY(-4px);
             background-color: #eff6ff;
     }
+    .tts-btn.speaking {
+        background-color: #2563eb !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        transform: scale(1.03);
+    }
     </style>
 </head>
 
@@ -61,7 +66,7 @@
             <h2
                 class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
                 Continue setting up your profile
-                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile" aria-label="Play audio for header">🔊</button>
             </h2>
             <p
                 class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
@@ -106,7 +111,8 @@
             </div>
 
             <button type="button"
-                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200">
+                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 tts-btn"
+                data-tts-en="This section helps us understand what kind of jobs you prefer based on your comfort level. By choosing your job preferences, we can match you with workplaces where you’ll feel comfortable, supported, and confident to do your best work." data-tts-tl="Ang seksyong ito ay tumutulong upang malaman namin kung anong klase ng trabaho ang gusto mo batay sa iyong antas ng kaginhawaan. Sa pagpili ng iyong mga job preference, matutulungan ka naming makahanap ng lugar ng trabaho kung saan ka magiging komportable, suportado, at makakagawa ng iyong pinakamahusay." aria-label="Play audio for information note">
                 🔊
             </button>
         </div>
@@ -124,8 +130,8 @@
                         </h2>
                     </div>
                     <button type="button"
-                        class="ml-auto bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200"
-                        title="Play instruction">
+                        class="ml-auto bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 tts-btn"
+                        data-tts-en="Choose 3 to 5 job options from the images below. You must choose at least 3 and no more than 5 options to proceed." data-tts-tl="Pumili ng 3 hanggang 5 pagpipiliang trabaho mula sa mga larawan sa ibaba. Kailangang pumili ka ng hindi bababa sa 3 at hindi hihigit sa 5 na opsyon upang magpatuloy." title="Play instruction" aria-label="Play audio for instruction">
                         🔊
                     </button>
                 </div>
@@ -156,7 +162,8 @@
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
                 data-value="Office Work" onclick="toggleJobPref1Choice(this,'Office Work')">
                 <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Office Work: use the computer for simple tasks, answer the phone politely, and keep papers organized in folders." data-tts-tl="Office Work: gagamit ka ng computer para sa simpleng gawain, sasagot ng telepono nang magalang, at aayusin ang mga papeles sa mga folder." aria-label="Play audio for Office Work">🔊</button>
                 <img src="image/officework.png" alt="Office Work" class="w-full rounded-md mb-4" />
                 <h3 class="text-blue-600 font-semibold text-center">Office Work</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
@@ -174,7 +181,8 @@
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
                 data-value="Store Work" onclick="toggleJobPref1Choice(this,'Store Work')">
                 <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Store Work: help customers find what they need, place items neatly on shelves, and work at the cashier to take payments." data-tts-tl="Store Work: tutulungan mo ang mga customer na hanapin ang kanilang kailangan, maayos na ilalagay ang mga paninda sa mga lagayan, at magtatrabaho sa cashier para tumanggap ng bayad." aria-label="Play audio for Store Work">🔊</button>
                 <img src="image/storework.png" alt="Store Work" class="w-full rounded-md mb-4" />
                 <h3 class="text-blue-600 font-semibold text-center">Store Work</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
@@ -191,7 +199,8 @@
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
                 data-value="Cleaning Work" onclick="toggleJobPref1Choice(this,'Cleaning Work')">
                 <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Cleaning Work: sweep or mop the floor, wipe tables and windows, and make sure rooms stay neat and tidy." data-tts-tl="Cleaning Work: magwawalis o mag-mop ka ng sahig, magpupunas ng mga mesa at bintana, at sisiguraduhin na malinis at maayos ang mga silid." aria-label="Play audio for Cleaning Work">🔊</button>
                 <img src="image/cleaningwork.png" alt="Cleaning Work" class="w-full rounded-md mb-4" />
                 <h3 class="text-blue-600 font-semibold text-center">Cleaning Work</h3>
                 <p class="text-sm mt-2 text-justify" style="text-align: justify; text-align-last: center;">
@@ -208,7 +217,8 @@
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
                 data-value="Hospitality Work" onclick="toggleJobPref1Choice(this,'Hospitality Work')">
                 <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Hospitality Work: greet guests with a smile, help clean and prepare rooms, and carry small items like towels." data-tts-tl="Hospitality Work: sasalubungin mo ang mga bisita nang may ngiti, tutulong sa paglilinis at paghahanda ng mga kuwarto, at magdadala ng maliliit na gamit tulad ng tuwalya." aria-label="Play audio for Hospitality Work">🔊</button>
                 <img src="image/hospitalitywork.png" alt="Hospitality Work" class="w-full rounded-md mb-4" />
                 <h3 class="text-blue-600 font-semibold text-center">Hospitality Work</h3>
                 <p class="text-sm mt-2 text-justify" style="text-align: justify; text-align-last: center;">
@@ -225,7 +235,8 @@
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
                 data-value="Food Service Work" onclick="toggleJobPref1Choice(this,'Food Service Work')">
                 <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Food Service Work: serving food and drinks, helping prepare simple meals, and keeping the tables and kitchen clean." data-tts-tl="Food Service Work: pagsisilbi ng pagkain at inumin, pagtulong sa paghahanda ng simpleng pagkain, at pagpapanatiling malinis ng mga mesa at kusina." aria-label="Play audio for Food Service Work">🔊</button>
                 <img src="image/foodservice.png" alt="food service work" class="w-full rounded-md mb-4" />
                 <h3 class="text-blue-600 font-semibold text-center">Food Service Work</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
@@ -243,7 +254,8 @@
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
                 data-value="Packing Packages Work" onclick="toggleJobPref1Choice(this,'Packing Packages Work')">
                 <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Packing Packages Work: putting items in boxes or bags, carrying light packages, and organizing items on shelves." data-tts-tl="Packing Packages Work: paglalagay ng mga gamit sa kahon o bag, pagdadala ng magagaan na packages, at pag-aayos ng mga gamit sa mga lagayan." aria-label="Play audio for Packing Packages Work">🔊</button>
                 <img src="image/packingwork.png" alt="Packing Work" class="w-full rounded-md mb-4" />
                 <h3 class="text-blue-600 font-semibold text-center">Packing Packages Work</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
@@ -261,7 +273,8 @@
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
                 data-value="Creative Work" onclick="toggleJobPref1Choice(this,'Creative Work')">
                 <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Creative Work: make simple art or crafts, decorate for events, and use safe tools with guidance." data-tts-tl="Creative Work: gumawa ng simpleng sining o likha, magde-dekorasyon para sa mga okasyon, at gagamit ng ligtas na kagamitan sa tulong ng gabay." aria-label="Play audio for Creative Work">🔊</button>
                 <img src="image/creativework.png" alt="Creative Work" class="w-full rounded-md mb-4" />
                 <h3 class="text-blue-600 font-semibold text-center">Creative Work</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
@@ -279,8 +292,8 @@
               cursor-pointer relative text-center jobpref-card"
                 data-value="other" onclick="toggleJobPref1Choice(this,'other')">
                 <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition"
-                    aria-label="Play audio for Other option">🔊</button>
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Other" data-tts-tl="Iba pa" aria-label="Play audio for Other option">🔊</button>
 
                 <div class="flex flex-col flex-grow justify-center">
                     <h3 id="support_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
@@ -374,6 +387,135 @@
     </div>
 
     <script src="{{ asset('js/register.js') }}"></script>
+    <!-- TTS: Web Speech API handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.tts-btn');
+            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            let preferredVoice = null;
+            let currentBtn = null;
+            let availableVoices = [];
+
+            function populateVoices() {
+                availableVoices = window.speechSynthesis.getVoices() || [];
+                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
+                    || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                    || null;
+            }
+
+            function chooseVoiceForLang(langCode) {
+                if (!availableVoices.length) return null;
+                langCode = (langCode || '').toLowerCase();
+                let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                if (candidates.length) return pickBest(candidates);
+                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                if (candidates.length) return pickBest(candidates);
+                return availableVoices[0];
+            }
+
+            function pickBest(list) {
+                let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                if (preferred.length) return preferred[0];
+                return list[0];
+            }
+
+            function stopSpeaking() {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+                if (currentBtn) {
+                    currentBtn.classList.remove('speaking');
+                    currentBtn.removeAttribute('aria-pressed');
+                    currentBtn = null;
+                }
+            }
+
+            buttons.forEach(function (btn) {
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('tabindex', '0');
+
+                btn.addEventListener('click', function () {
+                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                    if (!textEn && !textTl) return;
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                        stopSpeaking();
+                        return;
+                    }
+                    stopSpeaking();
+                    setTimeout(function () {
+                        if (!window.speechSynthesis) return;
+                        function voiceFor(langHint) {
+                            if (preferredVoice) return preferredVoice;
+                            if (langHint) {
+                                const hint = (langHint || '').toLowerCase();
+                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                    return chooseVoiceForLang('tl');
+                                }
+                                return chooseVoiceForLang(langHint);
+                            }
+                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                        }
+
+                        const seq = [];
+                        if (textEn) {
+                            const uEn = new SpeechSynthesisUtterance(textEn);
+                            uEn.lang = 'en-US';
+                            const v = voiceFor('en');
+                            if (v) uEn.voice = v;
+                            seq.push(uEn);
+                        }
+                        if (textTl) {
+                            const uTl = new SpeechSynthesisUtterance(textTl);
+                            uTl.lang = 'tl-PH';
+                            const v2 = voiceFor('tl');
+                            if (v2) uTl.voice = v2;
+                            seq.push(uTl);
+                        }
+
+                        if (!seq.length) return;
+
+                        seq[0].onstart = function () {
+                            btn.classList.add('speaking');
+                            btn.setAttribute('aria-pressed', 'true');
+                            currentBtn = btn;
+                        };
+
+                        for (let i = 0; i < seq.length; i++) {
+                            const ut = seq[i];
+                            ut.onerror = function () {
+                                if (btn) btn.classList.remove('speaking');
+                                if (btn) btn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            };
+                            if (i < seq.length - 1) {
+                                ut.onend = function () { window.speechSynthesis.speak(seq[i + 1]); };
+                            } else {
+                                ut.onend = function () {
+                                    if (btn) btn.classList.remove('speaking');
+                                    if (btn) btn.removeAttribute('aria-pressed');
+                                    currentBtn = null;
+                                };
+                            }
+                        }
+
+                        window.speechSynthesis.speak(seq[0]);
+                    }, 50);
+                });
+
+                btn.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+
+            window.addEventListener('beforeunload', function () { if (window.speechSynthesis) window.speechSynthesis.cancel(); });
+            if (window.speechSynthesis) {
+                populateVoices();
+                window.speechSynthesis.onvoiceschanged = function () { populateVoices(); };
+            }
+        });
+    </script>
 </body>
 
 </html>

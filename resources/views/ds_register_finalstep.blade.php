@@ -72,9 +72,10 @@
         </div>
       </div>
       <button type="button"
-        class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200">
-        🔊
-      </button>
+        class="tts-btn absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200"
+        data-tts-en="Please check the boxes below if you agree to the terms of this agreement."
+        data-tts-tl="Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito."
+        aria-label="Read agreement instructions aloud in English then Filipino"></button>
     </div>
 
     <!-- Agreement Box -->
@@ -94,9 +95,11 @@
               <p class="text-[15px] sm:text-base font-medium text-gray-800 leading-snug">
                 I agree to share my information with employers who are hiring.
               </p>
-              <button type="button"
-                class="bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform flex-shrink-0"
-                title="Play Audio">🔊</button>
+                      <button type="button"
+                        class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform flex-shrink-0"
+                        data-tts-en="I agree to share my information with employers who are hiring."
+                        data-tts-tl="Sumasang-ayon akong ibahagi ang aking impormasyon sa mga employer na naghahanap ng empleyado."
+                        aria-label="Read agreement 1 aloud in English then Filipino" title="Play Audio"></button>
             </div>
             <p class="text-gray-600 italic text-sm leading-snug mt-1">
               (Sumasang-ayon akong ibahagi ang aking impormasyon sa mga employer na naghahanap ng empleyado.)
@@ -117,8 +120,10 @@
                 I understand that my information will be kept private and safe.
               </p>
               <button type="button"
-                class="bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform flex-shrink-0"
-                title="Play Audio">🔊</button>
+                class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform flex-shrink-0"
+                data-tts-en="I understand that my information will be kept private and safe."
+                data-tts-tl="Nauunawaan ko na ang aking impormasyon ay papanatilihing pribado at ligtas."
+                aria-label="Read agreement 2 aloud in English then Filipino" title="Play Audio"></button>
             </div>
             <p class="text-gray-600 italic text-sm leading-snug mt-1">
               (Nauunawaan ko na ang aking impormasyon ay papanatilihing pribado at ligtas.)
@@ -136,8 +141,10 @@
           You will receive notifications when new opportunities are available.
         </p>
         <button type="button"
-          class="bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
-          title="Play Audio">🔊</button>
+          class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
+          data-tts-en="After creating your account, we will match you with jobs that fit your skills and preferences. You will receive notifications when new opportunities are available."
+          data-tts-tl="Pagkatapos gumawa ng iyong account, itutugma ka namin sa mga trabaho na ayon sa iyong kakayahan at kagustuhan. Makakatanggap ka ng notification kapag may bagong trabaho na available."
+          aria-label="Read info aloud in English then Filipino" title="Play Audio"></button>
       </div>
       <p class="mt-2 italic text-gray-700 text-xs sm:text-[13px] leading-relaxed">
         (Pagkatapos gumawa ng iyong account, itutugma ka namin sa mga trabaho na ayon sa iyong kakayahan at kagustuhan. Makakatanggap ka ng notification kapag may bagong trabaho na available.)
@@ -154,6 +161,36 @@
       </button>
     </div>
 
+    <!-- Error / Hidden fields used by scripts -->
+    <div class="text-center mt-3">
+      <p id="finalError" class="text-red-600 text-sm"></p>
+    </div>
+
+    <!-- Hidden inputs for autofill/verification (used by inline scripts) -->
+    <input type="hidden" id="emailFromServer" name="emailFromServer" value="{{ $serverEmail ?? '' }}" />
+    <input type="hidden" id="email" name="email" value="" />
+    <input type="hidden" id="password" name="password" value="" />
+    <input type="hidden" id="confirm_password" name="confirm_password" value="" />
+
+    <!-- Email verification modal (hidden by default) -->
+    <div id="emailVerifyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
+      <div class="absolute inset-0 bg-black opacity-40"></div>
+      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-60">
+        <div class="flex items-start justify-between">
+          <h3 class="text-lg font-semibold text-gray-800">Verify Your Email</h3>
+          <button id="emailVerifyClose" type="button" class="text-gray-500 hover:text-gray-700">✕</button>
+        </div>
+        <div class="mt-4">
+          <p class="text-sm text-gray-700">We will send a verification code to:</p>
+          <p id="verificationEmail" class="mt-2 font-medium text-gray-900 break-words"></p>
+        </div>
+        <div class="mt-6 flex justify-end gap-3">
+          <button id="emailVerifyCancel" type="button" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
+          <button id="emailVerifyProceed" type="button" class="px-4 py-2 bg-[#2E2EFF] text-white rounded-md hover:bg-blue-600">Proceed</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Helper Text -->
     <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
       Click <span class="text-[#1E40AF] font-medium">“Create My Account”</span> to complete your registration
@@ -163,6 +200,8 @@
     </p>
   </div>
 
+    <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+    <script src="{{ asset('js/register.js') }}"></script>
     <script>
       (function(){
         const modal = document.getElementById('emailVerifyModal');
@@ -178,6 +217,127 @@
         window.mvsgShowEmailVerificationModal = show;
       })();
     </script>
+    <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
+    <script>
+      (function(){
+        const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+        let voices = [];
+        const populateVoices = () => { voices = speechSynthesis.getVoices() || []; };
+        const pickBest = (list, langPrefix) => {
+          if (!list || !list.length) return null;
+          const exact = list.find(v=>v.name === preferredVoiceName); if (exact) return exact;
+          const fuzzy = list.find(v=>v.name && v.name.toLowerCase().includes('microsoft') && v.name.toLowerCase().includes('multilingual')); if (fuzzy) return fuzzy;
+          const langMatch = list.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix)); if (langMatch) return langMatch;
+          return list[0] || null;
+        };
+        const voiceFor = (lang) => { const forLang = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang)); return pickBest(forLang.length ? forLang : voices, lang); };
+        const stopSpeaking = () => { try { speechSynthesis.cancel(); document.querySelectorAll('.tts-btn.speaking').forEach(b=>b.classList.remove('speaking')); } catch(e){} };
+        const startSequence = (btn, en, tl) => {
+          stopSpeaking(); if (!en && !tl) return; btn.classList.add('speaking'); btn.setAttribute('aria-pressed','true');
+          const uEn = en ? new SpeechSynthesisUtterance(en) : null; const uTl = tl ? new SpeechSynthesisUtterance(tl) : null;
+          if (uEn) { uEn.lang='en-US'; uEn.voice = voiceFor('en') || null; }
+          if (uTl) { uTl.lang='tl-PH'; uTl.voice = voiceFor('tl') || (voiceFor('en') || null); }
+          const finalize = () => { btn.classList.remove('speaking'); btn.setAttribute('aria-pressed','false'); };
+          if (uEn && uTl) { uEn.onend = () => { setTimeout(()=>speechSynthesis.speak(uTl), 180); }; uTl.onend = finalize; speechSynthesis.speak(uEn); }
+          else if (uEn) { uEn.onend = finalize; speechSynthesis.speak(uEn); }
+          else if (uTl) { uTl.onend = finalize; speechSynthesis.speak(uTl); }
+        };
+        const init = () => {
+          populateVoices(); window.speechSynthesis.onvoiceschanged = populateVoices;
+          document.querySelectorAll('.tts-btn').forEach(b=>{
+            b.addEventListener('click', ()=>{ if (b.classList.contains('speaking')) { stopSpeaking(); return; } startSequence(b, b.getAttribute('data-tts-en')||'', b.getAttribute('data-tts-tl')||''); });
+            b.addEventListener('keydown', ev=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); b.click(); } });
+          });
+          window.addEventListener('beforeunload', stopSpeaking);
+        };
+        if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
+      })();
+    </script>
+      <script>
+        // Try to extract email from Firestore (or drafts) and populate hidden email fields
+        (async function(){
+          try {
+            // helpers from register.js: ensureFirebase, getDraft, readStored, findFirstMatching
+            const waitMs = (ms)=>new Promise(res=>setTimeout(res, ms));
+            // prefer URL override param `uid` for admin review
+            const params = new URLSearchParams(window.location.search || '');
+            const overrideUid = params.get('uid') || params.get('user') || params.get('id');
+
+            // ensure register.js loaded
+            if (typeof ensureFirebase === 'function') await ensureFirebase();
+            // small delay to let firebase auth initialize if present
+            await waitMs(150);
+
+            let email = '';
+
+            // 1) if overrideUid provided, read that user's doc directly (no auth needed for public rules)
+            if (overrideUid && window.firebase && firebase.firestore) {
+              try {
+                const db = firebase.firestore();
+                const snap = await db.collection('users').doc(overrideUid).get().catch(()=>null);
+                if (snap && snap.exists) {
+                  const d = snap.data() || {};
+                  email = d.personalInfo?.email || d.email || d.personal?.email || '';
+                }
+              } catch(e) { console.warn('override uid read failed', e); }
+            }
+
+            // 2) Try currently signed-in user doc
+            if (!email && window.firebase && firebase.auth && firebase.firestore) {
+              try {
+                let user = firebase.auth().currentUser;
+                if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                if (user) {
+                  const snap = await firebase.firestore().collection('users').doc(user.uid).get().catch(()=>null);
+                  if (snap && snap.exists) {
+                    const d = snap.data() || {};
+                    email = d.personalInfo?.email || d.email || d.personal?.email || '';
+                  }
+                }
+              } catch(e) { console.warn('signed-in user read failed', e); }
+            }
+
+            // 3) fallback: use register.js getDraft() which checks local/session and Firestore
+            if (!email && typeof getDraft === 'function') {
+              try {
+                const draftRes = await getDraft();
+                const draft = draftRes && (draftRes.data || draftRes) || {};
+                // try common locations
+                email = draft.personalInfo?.email || draft.personal?.email || draft.email || draft.emailAddress || '';
+              } catch(e) { console.warn('getDraft failed', e); }
+            }
+
+            // 4) last attempt: read common storage keys directly
+            if (!email) {
+              try {
+                const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','registerDraft','regDraft','reg_data'];
+                for (const k of keys) {
+                  try {
+                    const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+                    if (!v) continue;
+                    let parsed = null;
+                    try { parsed = JSON.parse(v); } catch(e){ parsed = v; }
+                    if (parsed && typeof parsed === 'object') {
+                      email = parsed.personalInfo?.email || parsed.personal?.email || parsed.email || parsed.emailAddress || '';
+                      if (email) break;
+                    }
+                  } catch(e){}
+                }
+              } catch(e){}
+            }
+
+            // set fields if found
+            if (email) {
+              try { const el = document.getElementById('email'); if (el) el.value = email; } catch(e){}
+              try { const s = document.getElementById('emailFromServer'); if (s && !s.value) s.value = email; } catch(e){}
+              try { const v = document.getElementById('verificationEmail'); if (v) v.textContent = email; } catch(e){}
+              console.info('Final step: populated email from Firestore/draft:', email);
+            } else {
+              console.info('Final step: no email found in Firestore/drafts');
+            }
+          } catch(e) { console.error('finalstep autofill email failed', e); }
+        })();
+      </script>
     <script>
       (function(){
         const createBtn = document.getElementById('createAccountBtn');

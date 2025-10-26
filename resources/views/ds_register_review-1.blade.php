@@ -47,6 +47,9 @@
             background-repeat: no-repeat;
             pointer-events: none;
         }
+        /* TTS button visual state */
+        .tts-btn { cursor: pointer; }
+        .tts-btn.speaking { transform: scale(1.04); box-shadow: 0 8px 24px rgba(30,64,175,0.12); }
     </style>
 </head>
 
@@ -65,7 +68,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='adminapproval.html'">
+        onclick="window.location.href='{{ route('registerjobpreference1') }}'">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -87,7 +90,10 @@
             <div class="bg-white rounded-3xl p-5 sm:p-7 border-4 border-blue-300 shadow-lg text-left">
                 <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex items-center gap-x-3">
                     Please Review Your Details
-                    <button type="button" class="text-xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button" class="tts-btn text-xl hover:scale-110 transition-transform"
+                        data-tts-en="Please review your details. Make sure all your information below is correct before going to the next page."
+                        data-tts-tl="Siguraduhing tama ang lahat ng impormasyong nakasaad bago lumipat ng pahina."
+                        aria-label="Read this section aloud in English then Filipino"></button>
                 </h2>
                 <p class="text-gray-800 text-sm sm:text-base mt-2">
                     Make sure all your information below is correct before going to the next page.
@@ -141,6 +147,19 @@
                 </div>
             </div>
 
+            <!-- DS Type & School/Work Info -->
+            {{-- <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                    Additional Profile
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
+                    <p><span class="font-semibold">Type of Down Syndrome:</span> <span id="r_dsType"></span></p>
+                    <p><span class="font-semibold">School Name:</span> <span id="r_school_name"></span></p>
+                    <p><span class="font-semibold">Work Type:</span> <span id="r_work_type"></span></p>
+                    <p><span class="font-semibold">Certificates (file):</span> <span id="r_cert_file"></span></p>
+                </div>
+            </div> --}}
+
 
             <!-- Proof of Membership -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
@@ -158,7 +177,7 @@
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
 
             <!-- Edit Button -->
-            <button id="editInfo"
+            <button id="editInfo" onclick="window.location.href='{{ route('registeradminapprove') }}'"
                 class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
            px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
            shadow-md w-full sm:w-64 text-center">
@@ -208,22 +227,39 @@
                 }
             };
             const fetchFirestoreDraft = async () => {
-                if (!window.firebase || !firebase.auth || !firebase.firestore) return null;
+                if (!window.firebase || !firebase.firestore) return null;
                 initFirebase();
                 try {
-                    const auth = firebase.auth(),
-                        db = firebase.firestore();
-                    let user = auth.currentUser;
-                    if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-                    if (!user) return null;
-                    // try common collections where drafts may be stored
-                    const cols = ['registrations', 'users', 'registrationDrafts', 'profiles'];
-                    for (const c of cols) {
+                    const db = firebase.firestore();
+
+                    // Allow an override via URL query param for admin/review pages.
+                    // Example: /registerreview1?uid=n71qnTkNT9WUQhP4NAjOjA95lmK2
+                    const params = new URLSearchParams(window.location.search || '');
+                    const overrideUid = params.get('uid') || params.get('user') || params.get('id');
+                    if (overrideUid) {
                         try {
-                            const snap = await db.collection(c).doc(user.uid).get().catch(() => null);
+                            const snap = await db.collection('users').doc(overrideUid).get().catch(() => null);
                             if (snap && snap.exists) return snap.data();
                         } catch (e) {
-                            /* ignore per-collection errors */ }
+                            console.warn('fetchFirestoreDraft override read failed', e);
+                        }
+                    }
+
+                    // Fallback: try to use currently signed-in user (if any)
+                    if (window.firebase && firebase.auth) {
+                        const auth = firebase.auth();
+                        let user = auth.currentUser;
+                        if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                        if (!user) return null;
+                        // try common collections where drafts may be stored
+                        const cols = ['registrations', 'users', 'registrationDrafts', 'profiles'];
+                        for (const c of cols) {
+                            try {
+                                const snap = await db.collection(c).doc(user.uid).get().catch(() => null);
+                                if (snap && snap.exists) return snap.data();
+                            } catch (e) {
+                                /* ignore per-collection errors */ }
+                        }
                     }
                 } catch (e) {
                     console.warn('fetchFirestoreDraft', e);
@@ -274,10 +310,22 @@
             };
 
             const safeSet = (id, value) => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = value ?? '';
-                else el.textContent = value ?? '';
+                try {
+                    const el = document.getElementById(id);
+                    if (!el) { console.debug('[review] element not found for id', id, 'value:', value); return; }
+                    let out = value;
+                    if (out === null || out === undefined) out = '';
+                    else if (typeof out === 'object') {
+                        if (Array.isArray(out)) out = out.join(', ');
+                        else out = JSON.stringify(out);
+                    }
+                    out = String(out);
+                    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = out ?? '';
+                    else el.textContent = out ?? '';
+                    console.debug('[review] set', id, out);
+                } catch (e) {
+                    console.warn('[review] safeSet error for', id, e);
+                }
             };
             const setChoiceImage = (placeholderId, value, cardSelectors = ['.guardian-card',
                 '.selectable-card']) => {
@@ -313,32 +361,181 @@
             };
 
             try {
-                const data = await readStored();
+                let data = await readStored();
+                // Always attempt to fetch Firestore draft and merge missing keys from remote into local.
+                try {
+                    const remoteDoc = await fetchFirestoreDraft();
+                    const remote = (remoteDoc && typeof remoteDoc === 'object' && remoteDoc.data && typeof remoteDoc.data === 'object') ? remoteDoc.data : remoteDoc;
+                    if (remote && typeof remote === 'object') {
+                        // unwrap local wrapper if present
+                        if (data && typeof data === 'object' && data.data && typeof data.data === 'object') data = data.data;
+                        data = data || {};
+                        for (const k of Object.keys(remote)) {
+                            const localVal = data[k];
+                            const remoteVal = remote[k];
+                            // If no local value at all, copy remote entirely
+                            if (localVal === undefined || localVal === null) {
+                                data[k] = remoteVal;
+                                continue;
+                            }
+                            // If local is an empty object, replace with remote
+                            if (typeof localVal === 'object' && !Array.isArray(localVal) && Object.keys(localVal || {}).length === 0) {
+                                data[k] = remoteVal;
+                                continue;
+                            }
+                            // If local is an empty string, replace with remote
+                            if (typeof localVal === 'string' && String(localVal).trim() === '') {
+                                data[k] = remoteVal;
+                                continue;
+                            }
+                            // If both are objects, perform a shallow deep-merge that fills empty/missing inner fields
+                            if (typeof localVal === 'object' && !Array.isArray(localVal) && typeof remoteVal === 'object' && !Array.isArray(remoteVal)) {
+                                for (const subKey of Object.keys(remoteVal)) {
+                                    try {
+                                        const lv = localVal[subKey];
+                                        const rv = remoteVal[subKey];
+                                        if (lv === undefined || lv === null) {
+                                            localVal[subKey] = rv;
+                                        } else if (typeof lv === 'string' && String(lv).trim() === '') {
+                                            localVal[subKey] = rv;
+                                        }
+                                    } catch (e) { /* ignore per-field */ }
+                                }
+                                data[k] = localVal;
+                                continue;
+                            }
+                            // otherwise keep localVal as-is (it appears intentionally set)
+                        }
+                    }
+                } catch (e) { console.warn('fetch/merge draft failed', e); }
                 if (!data) return;
+                // expose loaded draft to window for debugging (no visible debug panel)
+                try { window.__mvsg_lastLoadedDraft = data; } catch(e){}
+                try { window.__mvsg_lastDraftSource = (window.__mvsg_mergedFromFirestore ? 'firestore_merged' : 'local_or_remote'); } catch(e){}
+
+                // helper to normalize filenames (strip paths like C:\\fakepath\\...)
+                const normalizeFilename = (s) => {
+                    try {
+                        if (!s) return '';
+                        const str = String(s || '');
+                        const parts = str.split(/[/\\\\]+/);
+                        return parts[parts.length - 1] || '';
+                    } catch(e) { return s; }
+                };
                 // map common guardian fields
                 const p = data.personalInfo || data.personal || data;
-                safeSet('review_fname', p?.first_name || p?.firstName || p?.fname || '');
-                safeSet('review_lname', p?.last_name || p?.lastName || p?.lname || '');
-                safeSet('review_email', p?.email || p?.emailAddress || '');
-                safeSet('review_phone', p?.phone || p?.mobile || '');
-                safeSet('review_age', p?.age || '');
+                safeSet('r_first_name', p?.first || p?.first_name || p?.firstName || p?.fname || '');
+                safeSet('r_last_name', p?.last || p?.last_name || p?.lastName || p?.lname || '');
+                safeSet('r_email', p?.email || p?.emailAddress || '');
+                safeSet('r_phone', p?.phone || p?.mobile || '');
+                safeSet('r_age', p?.age || '');
+                const addrVal = p?.address || p?.address1 || p?.addr || findFirstMatching(data, ['address','addr','location','street','barangay','city']) || '';
+                safeSet('r_address', addrVal);
+                // account fields
+                safeSet('r_username', p?.username || p?.userName || data?.username || '');
+                // never display actual password; leave blank or show placeholder
+                safeSet('r_password', '');
+                // dsType and school/work info
+                const dsType = data.dsType || p?.dsType || p?.typeOfDs || findFirstMatching(data, ['dsType', 'down syndrome', 'type']);
+                safeSet('r_dsType', dsType || '');
+                const sw = data.schoolWorkInfo || data.school || data.work || {};
+                safeSet('r_school_name', sw?.school_name || sw?.school || sw?.schoolName || '');
+                safeSet('r_work_type', sw?.work_type || sw?.work || sw?.occupation || '');
+                const cert = sw?.cert_file || data?.cert_file || sw?.certificate || findFirstMatching(data, ['cert', 'certificate', 'cert_file']);
+                safeSet('r_cert_file', normalizeFilename(cert) || '');
                 const g = data.guardianInfo || data.guardian || {};
-                safeSet('review_guardian_fname', g?.guardian_first_name || g?.first_name || data
-                    ?.guardian_first_name || '');
-                safeSet('review_guardian_lname', g?.guardian_last_name || g?.last_name || data
-                    ?.guardian_last_name || '');
-                safeSet('review_guardian_email', g?.guardian_email || g?.email || '');
-                safeSet('review_guardian_phone', g?.guardian_phone || g?.phone || '');
-                const guardianRel = g?.guardian_choice || g?.relationship || data?.guardian_choice ||
-                    findFirstMatching(data, ['guardian_choice', 'relationship', 'guardian']);
-                safeSet('review_guardian_relationship', guardianRel || '');
+                const guardianFirst = g?.guardian_first_name || g?.first_name || data?.guardian_first_name || findFirstMatching(data, ['guardian_first_name','guardian_first','guardianfirst','guardian.first','guardian.first_name','guardian.firstName']) || '';
+                const guardianLast = g?.guardian_last_name || g?.last_name || data?.guardian_last_name || findFirstMatching(data, ['guardian_last_name','guardian_last','guardianlast','guardian.last','guardian.last_name','guardian.lastName']) || '';
+                const guardianEmail = g?.guardian_email || g?.email || data?.guardian_email || findFirstMatching(data, ['guardian_email','guardian.email','guardian.email_address','guardian_email_address','guardianEmail','guardian_email']) || '';
+                const guardianPhone = g?.guardian_phone || g?.phone || data?.guardian_phone || findFirstMatching(data, ['guardian_phone','guardian.phone','guardianPhone','guardian_mobile','guardian_mobile_phone']) || '';
+                safeSet('r_guardian_first', guardianFirst);
+                safeSet('r_guardian_last', guardianLast);
+                safeSet('r_guardian_email', guardianEmail);
+                safeSet('r_guardian_phone', guardianPhone);
+                const guardianRel = g?.guardian_choice || g?.relationship || data?.guardian_choice || findFirstMatching(data, ['guardian_choice', 'relationship', 'guardian']);
+                safeSet('r_guardian_relationship', guardianRel || '');
                 setChoiceImage('review_guardian_relationship_img', guardianRel, ['.guardian-card',
                     '.selectable-card'
                 ]);
+                // proof filename: try multiple locations (also check schoolWorkInfo.cert_file)
+                try {
+                    let proof = data.proofFilename || (data.personalInfo && data.personalInfo.proofFilename) || (data.personal && data.personal.proofFilename) || '';
+                    // fallback to school/work certificate filename if proof missing
+                    if (!proof) {
+                        const swc = (data.schoolWorkInfo && (data.schoolWorkInfo.cert_file || data.schoolWorkInfo.certs)) || data.cert_file || data.certs || '';
+                        proof = swc || '';
+                    }
+                    proof = normalizeFilename(proof || '');
+                    safeSet('r_proof', proof || 'No file uploaded');
+                } catch (e) {}
+
+                // No fallback DOM writes here — rely on explicit element ids already present in the template
             } catch (e) {
                 console.error('preview loader failed', e);
             }
         });
+    </script>
+    <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
+    <script>
+        (function(){
+            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            let voices = [];
+            const populateVoices = () => {
+                voices = speechSynthesis.getVoices() || [];
+            };
+            const pickBest = (list, langPrefix) => {
+                if (!list || !list.length) return null;
+                // exact preferred name
+                const exact = list.find(v=>v.name === preferredVoiceName);
+                if (exact) return exact;
+                // fuzzy name
+                const fuzzy = list.find(v=>v.name && v.name.toLowerCase().includes('microsoft') && v.name.toLowerCase().includes('multilingual'));
+                if (fuzzy) return fuzzy;
+                // language match
+                const langMatch = list.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix));
+                if (langMatch) return langMatch;
+                return list[0] || null;
+            };
+            const voiceFor = (lang) => {
+                const forLang = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang));
+                return pickBest(forLang.length ? forLang : voices, lang);
+            };
+            const stopSpeaking = () => {
+                try { speechSynthesis.cancel(); document.querySelectorAll('.tts-btn.speaking').forEach(b=>b.classList.remove('speaking')); } catch(e){}
+            };
+            const startSequence = (btn, en, tl) => {
+                stopSpeaking();
+                if (!en && !tl) return;
+                btn.classList.add('speaking');
+                btn.setAttribute('aria-pressed','true');
+                const uEn = en ? new SpeechSynthesisUtterance(en) : null;
+                const uTl = tl ? new SpeechSynthesisUtterance(tl) : null;
+                if (uEn) { uEn.lang='en-US'; uEn.voice = voiceFor('en') || null; }
+                if (uTl) { uTl.lang='tl-PH'; uTl.voice = voiceFor('tl') || (voiceFor('en') || null); }
+                const finalize = () => { btn.classList.remove('speaking'); btn.setAttribute('aria-pressed','false'); };
+                if (uEn && uTl) {
+                    uEn.onend = () => { setTimeout(()=>speechSynthesis.speak(uTl), 180); };
+                    uTl.onend = finalize;
+                    speechSynthesis.speak(uEn);
+                } else if (uEn) { uEn.onend = finalize; speechSynthesis.speak(uEn); }
+                else if (uTl) { uTl.onend = finalize; speechSynthesis.speak(uTl); }
+            };
+            const init = () => {
+                populateVoices();
+                window.speechSynthesis.onvoiceschanged = populateVoices;
+                document.querySelectorAll('.tts-btn').forEach(b=>{
+                    b.addEventListener('click', e=>{
+                        const en = b.getAttribute('data-tts-en') || '';
+                        const tl = b.getAttribute('data-tts-tl') || '';
+                        if (b.classList.contains('speaking')) { stopSpeaking(); return; }
+                        startSequence(b, en, tl);
+                    });
+                    b.addEventListener('keydown', ev=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); b.click(); } });
+                });
+                window.addEventListener('beforeunload', stopSpeaking);
+            };
+            if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
+        })();
     </script>
 </body>
 

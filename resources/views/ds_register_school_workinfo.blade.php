@@ -142,11 +142,11 @@
                 <!-- File Upload -->
                 <div
                     class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
-                        <p class="font-medium text-gray-800 text-sm sm:text-base">Upload your certificates (optional)
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-800 text-sm sm:text-base">
+                            <span id="certLabel">Upload your certificates (optional)</span>
                         </p>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">(I-upload ang iyong certificate o larawan
-                            nito)</p>
+                        <p id="certHint" class="text-gray-600 italic text-xs sm:text-sm">(I-upload ang iyong certificate o larawan nito)</p>
                     </div>
 
                     <label for="cert_file"
@@ -158,6 +158,31 @@
                     <input id="cert_file" name="cert_file" type="file" accept=".jpg, .jpeg, .png, .pdf"
                         class="hidden">
                 </div>
+
+                <script>
+                    (function(){
+                        const fileInput = document.getElementById('cert_file');
+                        const labelEl = document.getElementById('certLabel');
+                        const hintEl = document.getElementById('certHint');
+                        const original = labelEl ? labelEl.textContent : '';
+                        if (!fileInput || !labelEl) return;
+                        fileInput.addEventListener('change', function(){
+                            const f = this.files && this.files[0];
+                            if (!f) {
+                                labelEl.textContent = original;
+                                labelEl.removeAttribute('title');
+                                if (hintEl) hintEl.style.display = '';
+                                return;
+                            }
+                            const name = f.name || '';
+                            const max = 60;
+                            const display = name.length > max ? name.slice(0, max-3) + '...' : name;
+                            labelEl.textContent = display;
+                            labelEl.setAttribute('title', name);
+                            if (hintEl) hintEl.style.display = 'none';
+                        });
+                    })();
+                </script>
             </div>
 
             <!-- Work Experience Header -->

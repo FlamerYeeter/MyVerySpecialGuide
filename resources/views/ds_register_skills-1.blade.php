@@ -21,6 +21,11 @@
             transform: translateY(-4px);
             background-color: #eff6ff;
     }
+    .tts-btn.speaking {
+        background-color: #2563eb !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        transform: scale(1.03);
+    }
     </style>
 </head>
 
@@ -60,7 +65,7 @@
             <h2
                 class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
                 Continue setting up your profile
-                <button type= "button" class= "text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile" aria-label="Play audio for header">🔊</button>
             </h2>
             <p
                 class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
@@ -95,7 +100,8 @@
             </div>
 
             <button type="button"
-                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200">
+                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 tts-btn"
+                data-tts-en="The skills you select here help us understand what you’re good at and what kind of work you might enjoy or excel in." data-tts-tl="Ang mga kakayahang iyong pipiliin dito ay makatutulong upang malaman namin kung saan ka magaling at anong klaseng trabaho ang babagay sa iyo." aria-label="Play audio for information note">
                 🔊
             </button>
         </div>
@@ -108,7 +114,7 @@
                     <p class="mt-2 text-base sm:text-lg font-medium text-gray-800">
                         What skills do you have? (Select all that apply)
                         <button type="button"
-                            class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                            class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="What skills do you have? Select all that apply." data-tts-tl="Ano ang kakayahan na meron ka? Piliin lahat ng naaangkop na kakayahan na meron ka" aria-label="Play audio for question">🔊</button>
                     </p>
                 </div>
                 <p class="text-gray-600 italic text-sm sm:text-base mt-1">
@@ -123,7 +129,7 @@
                         click
                         your answer.</p>
                     <button type="button"
-                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Choose from the pictures provided and click your answer." data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot" aria-label="Play audio for instruction">🔊</button>
                 </div>
                 <p class="text-[10px] sm:text-sm text-gray-600 italic mt-1">(Pumili mula sa mga larawan at pindutin ang
                     iyong sagot)</p>
@@ -138,7 +144,8 @@
                     data-value="Good at talking to people"
                     onclick="toggleSkills1Choice(this,'Good at talking to people')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Good at talking to people" data-tts-tl="Magaling makipag-usap sa tao" aria-label="Play audio for Good at talking to people">🔊</button>
                     <img src="image/skill1.png" alt="talking to people" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">Good at talking to people</h3>
                     <p class="text-[13px] text-gray-600 italic text-center">(Magaling makipag-usap sa tao)</p>
@@ -148,7 +155,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="Using Computer" onclick="toggleSkills1Choice(this,'Using Computer')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Using Computer" data-tts-tl="Paggamit ng computer" aria-label="Play audio for Using Computer">🔊</button>
                     <img src="image/skill2.png" alt="using computer" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">Using Computer</h3>
                     <p class="text-[13px] text-gray-600 italic text-center">(Paggamit ng computer)</p>
@@ -158,7 +166,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="Organizing things" onclick="toggleSkills1Choice(this,'Organizing things')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Organizing things" data-tts-tl="Pag-ayos ng mga bagay" aria-label="Play audio for Organizing things">🔊</button>
                     <img src="image/skill3.png" alt="organize" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">Organizing things</h3>
                     <p class="text-[13px] text-gray-600 italic text-center">(Pag-ayos ng mga bagay)</p>
@@ -168,7 +177,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="Working with others" onclick="toggleSkills1Choice(this,'Working with others')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Working with others" data-tts-tl="Pakikipagtulungan sa iba" aria-label="Play audio for Working with others">🔊</button>
                     <img src="image/skill4.png" alt="work with others" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">Working with others</h3>
                     <p class="text-[13px] text-gray-600 italic text-center">(Pakikipagtulungan sa iba)</p>
@@ -178,7 +188,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="Art and creativity" onclick="toggleSkills1Choice(this,'Art and creativity')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Art and creativity" data-tts-tl="Sining at pagiging malikhain" aria-label="Play audio for Art and creativity">🔊</button>
                     <img src="image/skill5.png" alt="creativity" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">Art and creativity</h3>
                     <p class="text-[13px] text-gray-600 italic text-center">(Sining at pagiging malikhain)</p>
@@ -188,7 +199,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="Helping people" onclick="toggleSkills1Choice(this,'Helping people')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Helping people" data-tts-tl="Pagtulong sa kapwa" aria-label="Play audio for Helping people">🔊</button>
                     <img src="image/skill6.png" alt="help people" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">Helping people</h3>
                     <p class="text-[13px] text-gray-600 italic text-center">(Pagtulong sa kapwa)</p>
@@ -198,7 +210,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="Attention to details" onclick="toggleSkills1Choice(this,'Attention to details')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Attention to details" data-tts-tl="Pagbibigay pansin sa mga detalye" aria-label="Play audio for Attention to details">🔊</button>
                     <img src="image/skill7.png" alt="attention to details" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">Attention to details</h3>
                     <p class="text-[13px] text-gray-600 italic text-center">(Pagbibigay pansin sa mga detalye)</p>
@@ -208,7 +221,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="other" onclick="toggleSkills1Choice(this,'other')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Other" data-tts-tl="Iba pa" aria-label="Play audio for Other option">🔊</button>
                     <h3 id="skills1_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
                     <p class="mt-6 text-sm text-justify">
                         Type your answer inside the box if not in the choices
@@ -241,6 +255,136 @@
 
             <!-- ensure shared register logic is available so the Next button is handled and autofill runs -->
             <script src="{{ asset('js/register.js') }}"></script>
+
+            <!-- TTS: Web Speech API handler -->
+            <script>
+                document.addEventListener('DOMContentLoaded', function () {
+                    const buttons = document.querySelectorAll('.tts-btn');
+                    const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+                    let preferredVoice = null;
+                    let currentBtn = null;
+                    let availableVoices = [];
+
+                    function populateVoices() {
+                        availableVoices = window.speechSynthesis.getVoices() || [];
+                        preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
+                            || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                            || null;
+                    }
+
+                    function chooseVoiceForLang(langCode) {
+                        if (!availableVoices.length) return null;
+                        langCode = (langCode || '').toLowerCase();
+                        let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                        if (candidates.length) return pickBest(candidates);
+                        candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                        if (candidates.length) return pickBest(candidates);
+                        return availableVoices[0];
+                    }
+
+                    function pickBest(list) {
+                        let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                        if (preferred.length) return preferred[0];
+                        return list[0];
+                    }
+
+                    function stopSpeaking() {
+                        if (window.speechSynthesis) window.speechSynthesis.cancel();
+                        if (currentBtn) {
+                            currentBtn.classList.remove('speaking');
+                            currentBtn.removeAttribute('aria-pressed');
+                            currentBtn = null;
+                        }
+                    }
+
+                    buttons.forEach(function (btn) {
+                        btn.setAttribute('role', 'button');
+                        btn.setAttribute('tabindex', '0');
+
+                        btn.addEventListener('click', function () {
+                            const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                            const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                            if (!textEn && !textTl) return;
+                            if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                                stopSpeaking();
+                                return;
+                            }
+                            stopSpeaking();
+                            setTimeout(function () {
+                                if (!window.speechSynthesis) return;
+                                function voiceFor(langHint) {
+                                    if (preferredVoice) return preferredVoice;
+                                    if (langHint) {
+                                        const hint = (langHint || '').toLowerCase();
+                                        if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                            return chooseVoiceForLang('tl');
+                                        }
+                                        return chooseVoiceForLang(langHint);
+                                    }
+                                    return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                                }
+
+                                const seq = [];
+                                if (textEn) {
+                                    const uEn = new SpeechSynthesisUtterance(textEn);
+                                    uEn.lang = 'en-US';
+                                    const v = voiceFor('en');
+                                    if (v) uEn.voice = v;
+                                    seq.push(uEn);
+                                }
+                                if (textTl) {
+                                    const uTl = new SpeechSynthesisUtterance(textTl);
+                                    uTl.lang = 'tl-PH';
+                                    const v2 = voiceFor('tl');
+                                    if (v2) uTl.voice = v2;
+                                    seq.push(uTl);
+                                }
+
+                                if (!seq.length) return;
+
+                                seq[0].onstart = function () {
+                                    btn.classList.add('speaking');
+                                    btn.setAttribute('aria-pressed', 'true');
+                                    currentBtn = btn;
+                                };
+
+                                for (let i = 0; i < seq.length; i++) {
+                                    const ut = seq[i];
+                                    ut.onerror = function () {
+                                        if (btn) btn.classList.remove('speaking');
+                                        if (btn) btn.removeAttribute('aria-pressed');
+                                        currentBtn = null;
+                                    };
+                                    if (i < seq.length - 1) {
+                                        ut.onend = function () { window.speechSynthesis.speak(seq[i + 1]); };
+                                    } else {
+                                        ut.onend = function () {
+                                            if (btn) btn.classList.remove('speaking');
+                                            if (btn) btn.removeAttribute('aria-pressed');
+                                            currentBtn = null;
+                                        };
+                                    }
+                                }
+
+                                window.speechSynthesis.speak(seq[0]);
+                            }, 50);
+                        });
+
+                        btn.addEventListener('keydown', function (ev) {
+                            if (ev.key === 'Enter' || ev.key === ' ') {
+                                ev.preventDefault();
+                                btn.click();
+                            }
+                        });
+                    });
+
+                    window.addEventListener('beforeunload', function () { if (window.speechSynthesis) window.speechSynthesis.cancel(); });
+                    if (window.speechSynthesis) {
+                        populateVoices();
+                        window.speechSynthesis.onvoiceschanged = function () { populateVoices(); };
+                    }
+                });
+            </script>
 
             <!-- existing toggleSkills1Choice + init script relies on register.js being present earlier -->
             <script>

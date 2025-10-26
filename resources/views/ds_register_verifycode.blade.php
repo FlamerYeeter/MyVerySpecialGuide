@@ -16,6 +16,8 @@
       .audio-btn {
         @apply bg-blue-500 hover:bg-blue-600 text-white rounded-full w-7 h-7 flex justify-center items-center text-sm shadow-md active:scale-90 transition;
       }
+      .tts-btn { cursor: pointer; }
+      .tts-btn.speaking { transform: scale(1.04); box-shadow: 0 8px 24px rgba(30,64,175,0.12); }
     </style>
   </head>
 
@@ -52,7 +54,10 @@
           <p class="text-gray-700 text-[12px]">
             Please check the inbox of the email you used to find the verification code.
           </p>
-          <button type="button" class="text-gray-500 text-lg leading-none hover:scale-110 transition-transform">🔊</button>
+          <button type="button" class="tts-btn text-gray-500 text-lg leading-none hover:scale-110 transition-transform"
+            data-tts-en="Please check the inbox of the email you used to find the verification code."
+            data-tts-tl="Paki-check ang inbox ng ginamit mong email para makita ang verification code."
+            aria-label="Read instructions aloud in English then Filipino"></button>
         </div>
         <div class="flex justify-center items-center gap-2">
           <p class="text-gray-500 italic text-[13px]">
@@ -67,7 +72,10 @@
           <h2 class="text-xl font-semibold text-gray-800">
             Enter Verification Code Inside the Box
           </h2>
-          <button type="button" class="text-gray-500 text-lg leading-none hover:scale-110 transition-transform">🔊</button>
+          <button type="button" class="tts-btn text-gray-500 text-lg leading-none hover:scale-110 transition-transform"
+            data-tts-en="Enter the verification code inside the box."
+            data-tts-tl="Ilagay ang Verification Code sa loob ng kahon."
+            aria-label="Read the title aloud in English then Filipino"></button>
         </div>
         <div class="flex justify-center items-center gap-2">
           <p class="text-gray-500 italic text-sm">
@@ -91,11 +99,14 @@
       <!-- Resend Link -->
       <div class="mt-6 space-y-1">
         <div class="flex justify-center items-center gap-2">
-          <p class="text-gray-600 text-sm">
+            <p class="text-gray-600 text-sm">
             Didn’t receive code? Click 
             <a href="#" class="text-blue-600 font-medium hover:underline">Resend</a>
           </p>
-           <button type="button" class="text-gray-500 text-lg leading-none hover:scale-110 transition-transform">🔊</button>
+           <button type="button" class="tts-btn text-gray-500 text-lg leading-none hover:scale-110 transition-transform"
+            data-tts-en="If you didn't receive the code, click Resend."
+            data-tts-tl="Hindi nakatanggap ng code? I-click ang 'Resend'."
+            aria-label="Read resend instructions aloud in English then Filipino"></button>
         </div>
         <div class="flex justify-center items-center gap-2">
           <p class="text-gray-500 italic text-sm">
@@ -124,5 +135,44 @@
       </div>
     </div>
  
-  </body>
-</html>
+    </div>
+
+    <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
+    <script>
+      (function(){
+        const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+        let voices = [];
+        const populateVoices = () => { voices = speechSynthesis.getVoices() || []; };
+        const pickBest = (list, langPrefix) => {
+          if (!list || !list.length) return null;
+          const exact = list.find(v=>v.name === preferredVoiceName); if (exact) return exact;
+          const fuzzy = list.find(v=>v.name && v.name.toLowerCase().includes('microsoft') && v.name.toLowerCase().includes('multilingual')); if (fuzzy) return fuzzy;
+          const langMatch = list.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix)); if (langMatch) return langMatch;
+          return list[0] || null;
+        };
+        const voiceFor = (lang) => { const forLang = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang)); return pickBest(forLang.length ? forLang : voices, lang); };
+        const stopSpeaking = () => { try { speechSynthesis.cancel(); document.querySelectorAll('.tts-btn.speaking').forEach(b=>b.classList.remove('speaking')); } catch(e){} };
+        const startSequence = (btn, en, tl) => {
+          stopSpeaking(); if (!en && !tl) return; btn.classList.add('speaking'); btn.setAttribute('aria-pressed','true');
+          const uEn = en ? new SpeechSynthesisUtterance(en) : null; const uTl = tl ? new SpeechSynthesisUtterance(tl) : null;
+          if (uEn) { uEn.lang='en-US'; uEn.voice = voiceFor('en') || null; }
+          if (uTl) { uTl.lang='tl-PH'; uTl.voice = voiceFor('tl') || (voiceFor('en') || null); }
+          const finalize = () => { btn.classList.remove('speaking'); btn.setAttribute('aria-pressed','false'); };
+          if (uEn && uTl) { uEn.onend = () => { setTimeout(()=>speechSynthesis.speak(uTl), 180); }; uTl.onend = finalize; speechSynthesis.speak(uEn); }
+          else if (uEn) { uEn.onend = finalize; speechSynthesis.speak(uEn); }
+          else if (uTl) { uTl.onend = finalize; speechSynthesis.speak(uTl); }
+        };
+        const init = () => {
+          populateVoices(); window.speechSynthesis.onvoiceschanged = populateVoices;
+          document.querySelectorAll('.tts-btn').forEach(b=>{
+            b.addEventListener('click', ()=>{ if (b.classList.contains('speaking')) { stopSpeaking(); return; } startSequence(b, b.getAttribute('data-tts-en')||'', b.getAttribute('data-tts-tl')||''); });
+            b.addEventListener('keydown', ev=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); b.click(); } });
+          });
+          window.addEventListener('beforeunload', stopSpeaking);
+        };
+        if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
+      })();
+    </script>
+
+    </body>
+  </html>

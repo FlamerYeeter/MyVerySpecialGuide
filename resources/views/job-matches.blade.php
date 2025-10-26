@@ -252,7 +252,7 @@
             }
         @endphp
 
-        @if(!empty($eval) && (array_filter($display) || !empty($perModelMetrics)))
+        {{-- @if(!empty($eval) && (array_filter($display) || !empty($perModelMetrics)))
             <div class="mt-4 bg-white p-4 rounded-lg shadow w-full">
                 <h4 class="text-gray-800 font-semibold">Evaluation Metrics</h4>
                 <p class="text-sm text-gray-600">Displayed below are evaluation results (from <code>public/eval_metrics.json</code>).</p>
@@ -293,7 +293,7 @@
                     @endif
                 </div>
             </div>
-        @endif
+        @endif --}}
 
 <section class="max-w-6xl mx-auto mt-10 bg-[#00ae7a] rounded-md p-6">
     <h4 class="text-lg font-semibold text-white flex items-center gap-2">

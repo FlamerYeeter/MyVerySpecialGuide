@@ -46,10 +46,15 @@
 
         <!-- Dropdown Menu -->
         <div id="dropdownMenu"
-             class="hidden absolute right-0 md:right-0 left-1/2 md:left-auto transform md:transform-none -translate-x-1/2 md:translate-x-0 mt-2 w-40 bg-white border border-blue-600 rounded-xl shadow-lg z-10">
-          <a href="#" class="block px-4 py-2 hover:bg-gray-100">View Profile</a>
-          <a href="#" class="block px-4 py-2 hover:bg-gray-100">Settings</a>
-          <a href="#" class="block px-4 py-2 hover:bg-gray-100">Logout</a>
+             class="hidden absolute right-0 mt-2 w-40 bg-white border border-blue-600 rounded-xl shadow-lg z-10 text-left">
+          <a href="{{ route('user.role') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-right">View Profile</a>
+          <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-right">Settings</a>
+          {{-- Logout via POST to avoid CSRF issues; falls back to JS submit when link clicked --}}
+          <form method="POST" action="{{ route('logout') }}" class="m-0">
+            @csrf
+            {{-- Use same look as other dropdown links so color/position match --}}
+            <button type="submit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-right">Logout</button>
+          </form>
         </div>
       </div>
     </div>

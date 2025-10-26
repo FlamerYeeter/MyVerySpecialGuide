@@ -17,6 +17,9 @@
       .selectable-card.selected { border-color: #2563eb; box-shadow: 0 10px 30px rgba(37,99,235,0.14); transform: translateY(-6px); }
       .selectable-card.selected::after,
       .skills-card.selected::after { content: ""; position:absolute; right:10px; bottom:10px; width:44px; height:44px; background-image:url('/image/checkmark.png'); background-size:contain; background-repeat:no-repeat; }
+      /* TTS button visual state */
+      .tts-btn { cursor: pointer; }
+      .tts-btn.speaking { transform: scale(1.04); box-shadow: 0 8px 24px rgba(30,64,175,0.12); }
     </style>
   </head>
 <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
@@ -73,9 +76,10 @@
         </div>
       </div>
       <button type="button"
-        class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200">
-        🔊
-      </button>
+        class="tts-btn absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200"
+        data-tts-en="You can change your skills by clicking the Change button."
+        data-tts-tl="Maaari mong baguhin ang iyong mga kasanayan sa pamamagitan ng pag-click sa button na Change"
+        aria-label="Read instructions aloud in English then Filipino"></button>
     </div>
 
     <!-- Skills Review Section -->
@@ -100,7 +104,7 @@
 
       <!-- Change Skills -->
       <div class="flex justify-center">
-        <button type="button"
+        <button type="button" onclick="window.location.href='{{ route('registerskills1') }}'"
           class="bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-transform duration-200 hover:scale-105">
           ✏️ Change
         </button>
@@ -194,5 +198,42 @@
       } catch(e){ console.error('review-4 preview', e); }
     });
     </script>
+  </script>
+  <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
+  <script>
+    (function(){
+      const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+      let voices = [];
+      const populateVoices = () => { voices = speechSynthesis.getVoices() || []; };
+      const pickBest = (list, langPrefix) => {
+        if (!list || !list.length) return null;
+        const exact = list.find(v=>v.name === preferredVoiceName); if (exact) return exact;
+        const fuzzy = list.find(v=>v.name && v.name.toLowerCase().includes('microsoft') && v.name.toLowerCase().includes('multilingual')); if (fuzzy) return fuzzy;
+        const langMatch = list.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix)); if (langMatch) return langMatch;
+        return list[0] || null;
+      };
+      const voiceFor = (lang) => { const forLang = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang)); return pickBest(forLang.length ? forLang : voices, lang); };
+      const stopSpeaking = () => { try { speechSynthesis.cancel(); document.querySelectorAll('.tts-btn.speaking').forEach(b=>b.classList.remove('speaking')); } catch(e){} };
+      const startSequence = (btn, en, tl) => {
+        stopSpeaking(); if (!en && !tl) return; btn.classList.add('speaking'); btn.setAttribute('aria-pressed','true');
+        const uEn = en ? new SpeechSynthesisUtterance(en) : null; const uTl = tl ? new SpeechSynthesisUtterance(tl) : null;
+        if (uEn) { uEn.lang='en-US'; uEn.voice = voiceFor('en') || null; }
+        if (uTl) { uTl.lang='tl-PH'; uTl.voice = voiceFor('tl') || (voiceFor('en') || null); }
+        const finalize = () => { btn.classList.remove('speaking'); btn.setAttribute('aria-pressed','false'); };
+        if (uEn && uTl) { uEn.onend = () => { setTimeout(()=>speechSynthesis.speak(uTl), 180); }; uTl.onend = finalize; speechSynthesis.speak(uEn); }
+        else if (uEn) { uEn.onend = finalize; speechSynthesis.speak(uEn); }
+        else if (uTl) { uTl.onend = finalize; speechSynthesis.speak(uTl); }
+      };
+      const init = () => {
+        populateVoices(); window.speechSynthesis.onvoiceschanged = populateVoices;
+        document.querySelectorAll('.tts-btn').forEach(b=>{
+          b.addEventListener('click', ()=>{ if (b.classList.contains('speaking')) { stopSpeaking(); return; } startSequence(b, b.getAttribute('data-tts-en')||'', b.getAttribute('data-tts-tl')||''); });
+          b.addEventListener('keydown', ev=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); b.click(); } });
+        });
+        window.addEventListener('beforeunload', stopSpeaking);
+      };
+      if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
+    })();
+  </script>
   </body>
 </html>

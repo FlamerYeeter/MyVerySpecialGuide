@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Registration: Working Environment</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <<style>
+    <style>
     /* Floating animations */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -22,6 +22,11 @@
             box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
             transform: translateY(-4px);
             background-color: #eff6ff;
+    }
+    .tts-btn.speaking {
+        background-color: #2563eb !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        transform: scale(1.03);
     }
     </style>
 </head>
@@ -62,7 +67,7 @@
             <h2
                 class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
                 Continue setting up your profile
-                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile" aria-label="Play audio for header">🔊</button>
             </h2>
             <p
                 class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
@@ -95,7 +100,8 @@
             </div>
 
             <button type="button"
-                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200">
+                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 tts-btn"
+                data-tts-en="The information you share here helps us find workplaces that match your comfort level — whether you prefer a quiet environment or one that’s more active and lively." data-tts-tl="Ang impormasyong iyong ibibigay dito ay makatutulong upang mahanap namin ang mga lugar ng trabaho na akma sa iyong kaginhawaan — tahimik man o masigla ang iyong gusto." aria-label="Play audio for information note">
                 🔊
             </button>
         </div>
@@ -108,7 +114,7 @@
                     <p class="mt-2 text-base sm:text-lg font-medium text-gray-800">
                         What kind of working environment feels comfortable for you? (Select all that apply)
                         <button
-                            class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                            class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="What kind of working environment feels comfortable for you? Select all that apply." data-tts-tl="Ano klaseng lugar ng trabaho ang komportable para sa iyo? Piliin lahat ng naaangkop." aria-label="Play audio for question">🔊</button>
                     </p>
                 </div>
                 <p class="text-gray-600 italic text-sm sm:text-base mt-1">
@@ -124,7 +130,7 @@
                         click
                         your answer.</p>
                     <button type="button"
-                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
+                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Choose from the pictures provided and click your answer." data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot" aria-label="Play audio for instruction">🔊</button>
                 </div>
                 <p class="text-[10px] sm:text-sm text-gray-600 italic mt-1">(Pumili mula sa mga larawan at pindutin ang
                     iyong sagot)</p>
@@ -138,7 +144,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
                     onclick="selectWorkplaceChoice(this,'quiet')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="The place is quiet and calm" data-tts-tl="Tahimik at kalmado ang lugar" aria-label="Play audio for Quiet place option">🔊</button>
                     <img src="image/workplc1.png" alt="quietplace" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">The place is quiet and calm</h3>
                     <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Tahimik at kalmado ang lugar)</p>
@@ -148,7 +155,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
                     onclick="selectWorkplaceChoice(this,'busy')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="There are many people and many things happening" data-tts-tl="Maraming tao at maraming ginagawa" aria-label="Play audio for Busy place option">🔊</button>
                     <img src="image/workplc2.png" alt="busyplace" class="w-full rounded-md mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">There are many people and many things happening
                     </h3>
@@ -159,7 +167,8 @@
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
                     data-value="other" onclick="selectWorkplaceChoice(this,'other')">
                     <button type="button"
-                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Other" data-tts-tl="Iba pa" aria-label="Play audio for Other option">🔊</button>
                     <h3 id="workplace_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
                     <p class="mt-6 text-sm text-justify">
                         Type your answer inside the box if not in the choices
@@ -215,6 +224,136 @@
     </div>
 
     <script src="{{ asset('js/register.js') }}"></script>
+
+    <!-- TTS: Web Speech API handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.tts-btn');
+            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            let preferredVoice = null;
+            let currentBtn = null;
+            let availableVoices = [];
+
+            function populateVoices() {
+                availableVoices = window.speechSynthesis.getVoices() || [];
+                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
+                    || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                    || null;
+            }
+
+            function chooseVoiceForLang(langCode) {
+                if (!availableVoices.length) return null;
+                langCode = (langCode || '').toLowerCase();
+                let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                if (candidates.length) return pickBest(candidates);
+                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                if (candidates.length) return pickBest(candidates);
+                return availableVoices[0];
+            }
+
+            function pickBest(list) {
+                let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                if (preferred.length) return preferred[0];
+                return list[0];
+            }
+
+            function stopSpeaking() {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+                if (currentBtn) {
+                    currentBtn.classList.remove('speaking');
+                    currentBtn.removeAttribute('aria-pressed');
+                    currentBtn = null;
+                }
+            }
+
+            buttons.forEach(function (btn) {
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('tabindex', '0');
+
+                btn.addEventListener('click', function () {
+                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                    if (!textEn && !textTl) return;
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                        stopSpeaking();
+                        return;
+                    }
+                    stopSpeaking();
+                    setTimeout(function () {
+                        if (!window.speechSynthesis) return;
+                        function voiceFor(langHint) {
+                            if (preferredVoice) return preferredVoice;
+                            if (langHint) {
+                                const hint = (langHint || '').toLowerCase();
+                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                    return chooseVoiceForLang('tl');
+                                }
+                                return chooseVoiceForLang(langHint);
+                            }
+                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                        }
+
+                        const seq = [];
+                        if (textEn) {
+                            const uEn = new SpeechSynthesisUtterance(textEn);
+                            uEn.lang = 'en-US';
+                            const v = voiceFor('en');
+                            if (v) uEn.voice = v;
+                            seq.push(uEn);
+                        }
+                        if (textTl) {
+                            const uTl = new SpeechSynthesisUtterance(textTl);
+                            uTl.lang = 'tl-PH';
+                            const v2 = voiceFor('tl');
+                            if (v2) uTl.voice = v2;
+                            seq.push(uTl);
+                        }
+
+                        if (!seq.length) return;
+
+                        seq[0].onstart = function () {
+                            btn.classList.add('speaking');
+                            btn.setAttribute('aria-pressed', 'true');
+                            currentBtn = btn;
+                        };
+
+                        for (let i = 0; i < seq.length; i++) {
+                            const ut = seq[i];
+                            ut.onerror = function () {
+                                if (btn) btn.classList.remove('speaking');
+                                if (btn) btn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            };
+                            if (i < seq.length - 1) {
+                                ut.onend = function () { window.speechSynthesis.speak(seq[i + 1]); };
+                            } else {
+                                ut.onend = function () {
+                                    if (btn) btn.classList.remove('speaking');
+                                    if (btn) btn.removeAttribute('aria-pressed');
+                                    currentBtn = null;
+                                };
+                            }
+                        }
+
+                        window.speechSynthesis.speak(seq[0]);
+                    }, 50);
+                });
+
+                btn.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+
+            window.addEventListener('beforeunload', function () { if (window.speechSynthesis) window.speechSynthesis.cancel(); });
+            if (window.speechSynthesis) {
+                populateVoices();
+                window.speechSynthesis.onvoiceschanged = function () { populateVoices(); };
+            }
+        });
+    </script>
 
 </body>
 

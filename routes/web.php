@@ -551,6 +551,35 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])->pref
     Route::get('/api/pending-approvals', [\App\Http\Controllers\AdminApprovalController::class, 'pending'])->name('admin.api.pending');
     Route::post('/api/approve/{id}', [\App\Http\Controllers\AdminApprovalController::class, 'approve'])->name('admin.api.approve');
     Route::post('/api/reject/{id}', [\App\Http\Controllers\AdminApprovalController::class, 'reject'])->name('admin.api.reject');
+
+    // Server-side admin user review: fetch Firestore user doc and render the review page
+    // Usage: /admin/user-review/{uid}
+    Route::get('/user-review/{uid}', function (Request $request, $uid) {
+        try {
+            // Use GuardianJobController helper to fetch and convert Firestore document
+            $controller = app(\App\Http\Controllers\GuardianJobController::class);
+            $profile = $controller->fetchUserProfileFromFirestore($uid);
+            // Pass the profile array to the review view; the blade will expose it to the client
+            return view('ds_register_review-2', ['serverProfile' => $profile, 'serverProfileUid' => $uid]);
+        } catch (\Throwable $e) {
+            logger()->warning('admin.user-review route failed: ' . $e->getMessage());
+            return redirect()->route('admin.approval')->with('error', 'Failed to fetch user profile');
+        }
+    })->name('admin.user.review');
+
+    // Development helper: unprotected test route that renders the same review page using
+    // server-side Firestore fetch. This exists to make local debugging easier; it is NOT
+    // intended for production use. Remove or protect this route in production.
+    Route::get('/test-user-review/{uid}', function (Request $request, $uid) {
+        try {
+            $controller = app(\App\Http\Controllers\GuardianJobController::class);
+            $profile = $controller->fetchUserProfileFromFirestore($uid);
+            return view('ds_register_review-2', ['serverProfile' => $profile, 'serverProfileUid' => $uid]);
+        } catch (\Throwable $e) {
+            logger()->warning('admin.test-user-review route failed: ' . $e->getMessage());
+            return response('failed to fetch profile', 500);
+        }
+    })->name('admin.test.user.review');
 });
 
 

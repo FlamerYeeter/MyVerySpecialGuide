@@ -15,6 +15,11 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+    .tts-btn.speaking {
+        background-color: #2563eb !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        transform: scale(1.03);
+    }
     </style>
 </head>
 
@@ -56,7 +61,7 @@
                 <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex flex-wrap items-center gap-x-3">
                     For Admin Approval
                     <span class="text-gray-600 italic text-sm sm:text-base">(Pahintulot sa Admin)</span>
-                    <button type="button" class="text-xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button" class="text-xl hover:scale-110 transition-transform tts-btn" data-tts-en="For Admin Approval. Please type your information inside the box. The fields marked with a star must be filled in and attach a valid proof of membership." data-tts-tl="Pahintulot sa Admin. Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may bituin ay dapat sagutan at mag-upload ng patunay na miyembro." aria-label="Play audio for admin instruction">🔊</button>
                 </h2>
                 <p class="text-gray-800 text-sm sm:text-base mt-2">
                     Please type your information inside the box. The text with a ⭐ star must be filled in and attach a
@@ -73,12 +78,14 @@
         <div
             class="relative bg-[#EEF4FF] border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
 
-  <!-- Audio Button -->
-  <button type="button" aria-label="Play audio for information note"
-    class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
-    text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400">
-    🔊
-  </button>
+            <!-- Audio Button -->
+            <button type="button" aria-label="Play audio for information note"
+                class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
+                text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                data-tts-en="Please fill out all the required information below accurately. The details you provide help our administrators verify your account, confirm your eligibility, and ensure proper communication during the approval process."
+                data-tts-tl="Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account, kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso ng pag-apruba.">
+                🔊
+            </button>
 
             <div class="flex items-start gap-3 pr-20"> <!-- Added right padding here -->
                 <!-- Info Icon -->
@@ -187,18 +194,20 @@
             </div>
 
             <!-- Type of Down Syndrome -->
-<div
-  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
-  
-  <!-- Text Section -->
-  <div class="flex-1">
-    <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-      Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
-    </h3>
-    <p class="text-black-600 italic text-xs sm:text-sm leading-snug mt-1">
-      (You may fill this in if you already have records or a doctor’s assessment that shows your type of Down syndrome. 
-      It’s perfectly okay if you’re not aware of it yet — you can leave it blank.)
-    </p>
+            <div
+                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
+
+                <!-- Text Section -->
+                <div class="flex-1">
+                    <h3
+                        class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                        Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
+                    </h3>
+                    <p class="text-black-600 text-xs sm:text-sm leading-snug mt-1">
+                        You may fill this in if you already have records or a doctor’s assessment that shows your type
+                        of Down syndrome.
+                        It’s perfectly okay if you’re not aware of it yet — you can leave it blank.
+                    </p>
 
                     <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4">
                         (Opsyonal lamang ito. Maaari mo itong sagutan kung mayroon ka nang tala o pagsusuri mula sa
@@ -332,9 +341,9 @@
                     class="grid grid-cols-1 md:grid-cols-2 bg-blue-50 border border-blue-300 rounded-xl p-6 mt-6 text-sm gap-6 shadow-inner">
                     <!-- English -->
                     <div>
-                        <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">English <button
-                                type="button" class="text-gray-600 text-lg hover:scale-110 transition-transform"
-                                title="Play audio">🔊</button></p>
+            <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">English <button
+                type="button" class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
+                title="Play audio" aria-label="Play audio for password rules (English)" data-tts-en="Password must have: One uppercase letter, one lowercase letter, one number, and at least eight characters. Example: Lovedog12." data-tts-tl="Ang password ay dapat mayroong isang malaking letra, isang maliit na letra, isang numero, at hindi bababa sa walong karakter. Halimbawa: Lovedog12.">🔊</button></p>
                         <p class="mb-2">Password must have:</p>
                         <ul class="list-disc list-inside space-y-1 text-gray-700">
                             <li>One uppercase letter (A, B, C)</li>
@@ -347,9 +356,9 @@
 
                     <!-- Tagalog -->
                     <div>
-                        <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">Tagalog <button
-                                type="button" class="text-gray-600 text-lg hover:scale-110 transition-transform"
-                                title="Play audio">🔊</button></p>
+            <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">Tagalog <button
+                type="button" class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
+                title="Play audio" aria-label="Play audio for password rules (Tagalog)" data-tts-en="Password must have: One uppercase letter, one lowercase letter, one number, and at least eight characters. Example: Lovedog12." data-tts-tl="Ang password ay dapat mayroong: isang malaking letra, isang maliit na letra, isang numero, at hindi bababa sa 8 karakter na halo ng letra at numero. Halimbawa: Lovedog12.">🔊</button></p>
                         <p class="mb-2">Ang password ay dapat mayroong:</p>
                         <ul class="list-disc list-inside space-y-1 text-gray-700">
                             <li>Isang malaking letra (A, B, C)</li>
@@ -389,11 +398,13 @@
                 <!-- File Upload Box (matches certificate style) -->
                 <div
                     class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div>
+                    <div class="flex-1">
                         <p class="font-medium text-gray-800 text-sm sm:text-base">
-                            Upload Proof (Image or PDF) <span>⭐</span>
+                            <span id="proofLabel" class="flex items-center gap-2">
+                                <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+                            </span>
                         </p>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">
+                        <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
                             (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)
                         </p>
                     </div>
@@ -480,6 +491,7 @@
                         email: data.email || '',
                         phone: data.phone || '',
                         age: data.age || '',
+                        address: data.address || '',
                         username: data.username || '',
                         guardian_first: data.guardian_first || data.guardianFirst || '',
                         guardian_last: data.guardian_last || data.guardianLast || '',
@@ -525,9 +537,203 @@
         })();
     </script>
 
+    <!-- Show/hide password toggles -->
+    <script>
+        (function(){
+            function toggleField(checkboxId, fieldId) {
+                const cb = document.getElementById(checkboxId);
+                const field = document.getElementById(fieldId);
+                if (!cb || !field) return;
+                // initialize based on checkbox state
+                field.type = cb.checked ? 'text' : 'password';
+                cb.addEventListener('change', function() {
+                    field.type = this.checked ? 'text' : 'password';
+                });
+            }
+
+            // Run after DOM loaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function(){
+                    toggleField('togglePassword','password');
+                    toggleField('toggleConfirm','confirmPassword');
+                });
+            } else {
+                toggleField('togglePassword','password');
+                toggleField('toggleConfirm','confirmPassword');
+            }
+        })();
+    </script>
+
+    <!-- Replace label text with selected filename -->
+    <script>
+        (function(){
+            const fileInput = document.getElementById('proof');
+            const labelEl = document.getElementById('proofLabel');
+            const hintEl = document.getElementById('proofHint');
+            const originalText = labelEl ? labelEl.textContent : '';
+            if (!fileInput || !labelEl) return;
+            fileInput.addEventListener('change', function(e){
+                const f = this.files && this.files[0];
+                if (!f) {
+                    labelEl.textContent = originalText;
+                    labelEl.removeAttribute('title');
+                    if (hintEl) hintEl.style.display = '';
+                    return;
+                }
+                // show truncated name if long and set full name in title for hover
+                const name = f.name;
+                const max = 60;
+                const display = name.length > max ? name.slice(0, max-3) + '...' : name;
+                labelEl.textContent = display;
+                labelEl.setAttribute('title', name);
+                if (hintEl) hintEl.style.display = 'none';
+            });
+        })();
+    </script>
+
     <!-- Include Firebase config and registration script -->
     <script src="js/firebase-config-global.js"></script>
     <script src="js/register.js"></script>
+
+    <!-- TTS: Web Speech API handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.tts-btn');
+            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            let preferredVoice = null;
+            let currentBtn = null;
+            let availableVoices = [];
+
+            function populateVoices() {
+                availableVoices = window.speechSynthesis.getVoices() || [];
+                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
+                    || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                    || null;
+            }
+
+            function chooseVoiceForLang(langCode) {
+                if (!availableVoices.length) return null;
+                langCode = (langCode || '').toLowerCase();
+                let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                if (candidates.length) return pickBest(candidates);
+                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                if (candidates.length) return pickBest(candidates);
+                return availableVoices[0];
+            }
+
+            function pickBest(list) {
+                let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                if (preferred.length) return preferred[0];
+                return list[0];
+            }
+
+            function stopSpeaking() {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+                if (currentBtn) {
+                    currentBtn.classList.remove('speaking');
+                    currentBtn.removeAttribute('aria-pressed');
+                    currentBtn = null;
+                }
+            }
+
+            buttons.forEach(function (btn) {
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('tabindex', '0');
+
+                btn.addEventListener('click', function () {
+                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                    if (!textEn && !textTl) return;
+
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                        stopSpeaking();
+                        return;
+                    }
+
+                    stopSpeaking();
+                    setTimeout(function () {
+                        if (!window.speechSynthesis) return;
+
+                        function voiceFor(langHint) {
+                            if (preferredVoice) return preferredVoice;
+                            if (langHint) {
+                                const hint = (langHint || '').toLowerCase();
+                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                    return chooseVoiceForLang('tl');
+                                }
+                                return chooseVoiceForLang(langHint);
+                            }
+                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                        }
+
+                        const seq = [];
+                        if (textEn) {
+                            const uEn = new SpeechSynthesisUtterance(textEn);
+                            uEn.lang = 'en-US';
+                            const v = voiceFor('en');
+                            if (v) uEn.voice = v;
+                            seq.push(uEn);
+                        }
+                        if (textTl) {
+                            const uTl = new SpeechSynthesisUtterance(textTl);
+                            uTl.lang = 'tl-PH';
+                            const v2 = voiceFor('tl');
+                            if (v2) uTl.voice = v2;
+                            seq.push(uTl);
+                        }
+
+                        if (!seq.length) return;
+
+                        seq[0].onstart = function () {
+                            btn.classList.add('speaking');
+                            btn.setAttribute('aria-pressed', 'true');
+                            currentBtn = btn;
+                        };
+
+                        for (let i = 0; i < seq.length; i++) {
+                            const ut = seq[i];
+                            ut.onerror = function () {
+                                if (btn) btn.classList.remove('speaking');
+                                if (btn) btn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            };
+                            if (i < seq.length - 1) {
+                                ut.onend = function () {
+                                    window.speechSynthesis.speak(seq[i + 1]);
+                                };
+                            } else {
+                                ut.onend = function () {
+                                    if (btn) btn.classList.remove('speaking');
+                                    if (btn) btn.removeAttribute('aria-pressed');
+                                    currentBtn = null;
+                                };
+                            }
+                        }
+
+                        window.speechSynthesis.speak(seq[0]);
+                    }, 50);
+                });
+
+                btn.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+
+            window.addEventListener('beforeunload', function () {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            });
+
+            if (window.speechSynthesis) {
+                populateVoices();
+                window.speechSynthesis.onvoiceschanged = function () {
+                    populateVoices();
+                };
+            }
+        });
+    </script>
 
 </body>
 

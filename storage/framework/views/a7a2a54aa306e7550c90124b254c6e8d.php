@@ -16,6 +16,12 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+    /* TTS speaking state for audio buttons */
+    .tts-btn.speaking {
+        background-color: #2563eb !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        transform: scale(1.03);
+    }
     </style>
 </head>
 
@@ -53,8 +59,8 @@
             <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-24 sm:w-28 md:w-36 mb-6">
             <h2
                 class="text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-center">
-                Let’s Get Started!
-                <button type="button" class="text-2xl sm:text-3xl hover:scale-110 transition-transform">🔊</button>
+                Let's Get Started!
+                <button type="button" class="text-2xl sm:text-3xl hover:scale-110 transition-transform tts-btn" data-tts-en="Let's get started!" data-tts-tl="Magsimula tayo!">🔊</button>
             </h2>
             <p class="mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
                 (Magsimula tayo!)
@@ -79,7 +85,8 @@
 
             <!-- Floating Audio Button (position adjusted to avoid overlap) -->
             <button
-                class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none">
+                class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                data-tts-en="Don't worry! We'll help you set up your account easily and guide you along the way." data-tts-tl="Huwag mag-alala! Tutulungan ka naming mag-set up ng iyong account nang madali.">
                 🔊
             </button>
         </div>
@@ -110,7 +117,9 @@
 
                 <!-- Floating Audio Button -->
                 <button
-                    class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200">
+                    class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 tts-btn"
+                    data-tts-en="You can go back and change your answers. Take your time — there's no rush. We will help you every step of the way. Press the audio button anytime to hear instructions."
+                    data-tts-tl="Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali. Tutulungan ka namin sa bawat hakbang.">
                     🔊
                 </button>
             </div>
@@ -129,6 +138,173 @@
             </p>
         </div>
     </div>
+
+    <!-- TTS: Web Speech API handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.tts-btn');
+            // prefer a single high-quality voice for both English and Filipino
+            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            let preferredVoice = null;
+            let currentBtn = null;
+            let availableVoices = [];
+
+            function populateVoices() {
+                availableVoices = window.speechSynthesis.getVoices() || [];
+                // try exact match first, then fuzzy match for known Microsoft AvaMultilingual
+                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
+                    || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                    || null;
+            }
+
+            // heuristics to pick a good voice for a given lang (e.g., 'tl' or 'en')
+            function chooseVoiceForLang(langCode) {
+                if (!availableVoices.length) return null;
+                langCode = (langCode || '').toLowerCase();
+                // prefer exact lang match
+                let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                if (candidates.length) return pickBest(candidates);
+                // prefer voices whose name contains high-quality markers
+                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                if (candidates.length) return pickBest(candidates);
+                // fallback to first available
+                return availableVoices[0];
+            }
+
+            function pickBest(list) {
+                // prefer non-local (cloud-backed) or names with Neural/WaveNet
+                let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                if (preferred.length) return preferred[0];
+                return list[0];
+            }
+
+            function stopSpeaking() {
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+                if (currentBtn) {
+                    currentBtn.classList.remove('speaking');
+                    currentBtn.removeAttribute('aria-pressed');
+                    currentBtn = null;
+                }
+            }
+
+            buttons.forEach(function (btn) {
+                // make keyboard accessible
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('tabindex', '0');
+
+                btn.addEventListener('click', function () {
+                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                    // nothing to speak
+                    if (!textEn && !textTl) return;
+
+                    // If same button clicked while speaking, stop
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                        stopSpeaking();
+                        return;
+                    }
+
+                    // Stop any existing speech then speak new text(s)
+                    stopSpeaking();
+
+                    // Small timeout to ensure previous utterance canceled
+                    setTimeout(function () {
+                        if (!window.speechSynthesis) return;
+
+                        // Helper to pick voice for a given language (or selected by user)
+                        function voiceFor(langHint) {
+                            // prefer the configured Microsoft AvaMultilingual voice when available
+                            if (preferredVoice) return preferredVoice;
+                            if (langHint) {
+                                const hint = (langHint || '').toLowerCase();
+                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                    return chooseVoiceForLang('tl');
+                                }
+                                return chooseVoiceForLang(langHint);
+                            }
+                            // fallback to any reasonable voice
+                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                        }
+
+                        // Build utterances sequence: English first (if any), then Tagalog
+                        const seq = [];
+                        if (textEn) {
+                            const uEn = new SpeechSynthesisUtterance(textEn);
+                            uEn.lang = 'en-US';
+                            const v = voiceFor('en');
+                            if (v) uEn.voice = v;
+                            seq.push(uEn);
+                        }
+                        if (textTl) {
+                            const uTl = new SpeechSynthesisUtterance(textTl);
+                            uTl.lang = 'tl-PH';
+                            const v2 = voiceFor('tl');
+                            if (v2) uTl.voice = v2;
+                            seq.push(uTl);
+                        }
+
+                        if (!seq.length) return;
+
+                        // Attach lifecycle handlers to the sequence
+                        seq[0].onstart = function () {
+                            btn.classList.add('speaking');
+                            btn.setAttribute('aria-pressed', 'true');
+                            currentBtn = btn;
+                        };
+
+                        // chain subsequent utterances
+                        for (let i = 0; i < seq.length; i++) {
+                            const ut = seq[i];
+                            ut.onerror = function () {
+                                if (btn) btn.classList.remove('speaking');
+                                if (btn) btn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            };
+                            if (i < seq.length - 1) {
+                                ut.onend = function () {
+                                    // speak next
+                                    window.speechSynthesis.speak(seq[i + 1]);
+                                };
+                            } else {
+                                ut.onend = function () {
+                                    if (btn) btn.classList.remove('speaking');
+                                    if (btn) btn.removeAttribute('aria-pressed');
+                                    currentBtn = null;
+                                };
+                            }
+                        }
+
+                        // start sequence
+                        window.speechSynthesis.speak(seq[0]);
+                    }, 50);
+                });
+
+                // also allow Enter/Space to trigger
+                btn.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+
+            // Stop speech when navigating away or reloading
+            window.addEventListener('beforeunload', function () {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            });
+            // populate voices now or when they change
+            if (window.speechSynthesis) {
+                populateVoices();
+                window.speechSynthesis.onvoiceschanged = function () {
+                    populateVoices();
+                };
+            }
+
+            // No preview UI: when voices are populated we attempt to use the preferred Microsoft AvaMultilingual voice
+        });
+    </script>
 
 </body>
 

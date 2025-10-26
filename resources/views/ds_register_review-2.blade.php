@@ -1,3 +1,39 @@
+            <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
+            <script>
+                (function(){
+                    const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+                    let voices = [];
+                    const populateVoices = () => { voices = speechSynthesis.getVoices() || []; };
+                    const pickBest = (list, langPrefix) => {
+                        if (!list || !list.length) return null;
+                        const exact = list.find(v=>v.name === preferredVoiceName); if (exact) return exact;
+                        const fuzzy = list.find(v=>v.name && v.name.toLowerCase().includes('microsoft') && v.name.toLowerCase().includes('multilingual')); if (fuzzy) return fuzzy;
+                        const langMatch = list.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix)); if (langMatch) return langMatch;
+                        return list[0] || null;
+                    };
+                    const voiceFor = (lang) => { const forLang = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang)); return pickBest(forLang.length ? forLang : voices, lang); };
+                    const stopSpeaking = () => { try { speechSynthesis.cancel(); document.querySelectorAll('.tts-btn.speaking').forEach(b=>b.classList.remove('speaking')); } catch(e){} };
+                    const startSequence = (btn, en, tl) => {
+                        stopSpeaking(); if (!en && !tl) return; btn.classList.add('speaking'); btn.setAttribute('aria-pressed','true');
+                        const uEn = en ? new SpeechSynthesisUtterance(en) : null; const uTl = tl ? new SpeechSynthesisUtterance(tl) : null;
+                        if (uEn) { uEn.lang='en-US'; uEn.voice = voiceFor('en') || null; }
+                        if (uTl) { uTl.lang='tl-PH'; uTl.voice = voiceFor('tl') || (voiceFor('en') || null); }
+                        const finalize = () => { btn.classList.remove('speaking'); btn.setAttribute('aria-pressed','false'); };
+                        if (uEn && uTl) { uEn.onend = () => { setTimeout(()=>speechSynthesis.speak(uTl), 180); }; uTl.onend = finalize; speechSynthesis.speak(uEn); }
+                        else if (uEn) { uEn.onend = finalize; speechSynthesis.speak(uEn); }
+                        else if (uTl) { uTl.onend = finalize; speechSynthesis.speak(uTl); }
+                    };
+                    const init = () => {
+                        populateVoices(); window.speechSynthesis.onvoiceschanged = populateVoices;
+                        document.querySelectorAll('.tts-btn').forEach(b=>{
+                            b.addEventListener('click', ()=>{ if (b.classList.contains('speaking')) { stopSpeaking(); return; } startSequence(b, b.getAttribute('data-tts-en')||'', b.getAttribute('data-tts-tl')||''); });
+                            b.addEventListener('keydown', ev=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); b.click(); } });
+                        });
+                        window.addEventListener('beforeunload', stopSpeaking);
+                    };
+                    if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
+                })();
+            </script>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -41,6 +77,10 @@
             background-repeat: no-repeat;
         }
 
+        /* TTS button visual state */
+        .tts-btn { cursor: pointer; }
+        .tts-btn.speaking { transform: scale(1.04); box-shadow: 0 8px 24px rgba(30,64,175,0.12); }
+
         /* no global floating preview; use small per-field preview containers */
     </style>
 </head>
@@ -83,7 +123,10 @@
             <div class="bg-white rounded-3xl p-5 sm:p-7 border-4 border-blue-300 shadow-lg text-left">
                 <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex items-center gap-x-3">
                     Please Review Your Details
-                    <button type="button" class="text-xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button" class="tts-btn text-xl hover:scale-110 transition-transform"
+                        data-tts-en="Please review your details. Make sure all your information below is correct before going to the next page."
+                        data-tts-tl="Siguraduhing tama ang lahat ng impormasyong nakasaad bago lumipat ng pahina."
+                        aria-label="Read this section aloud in English then Filipino"></button>
                 </h2>
                 <p class="text-gray-800 text-sm sm:text-base mt-2">
                     Make sure all your information below is correct before going to the next page.
@@ -195,7 +238,7 @@
             <!-- Buttons -->
             <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
                 <!-- Edit Button -->
-                <button
+                <button onclick="window.location.href='{{ route('registereducation') }}'"
                     class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
       px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
       shadow-md w-full sm:w-64 text-center">
@@ -225,6 +268,13 @@
 
             <script src="{{ asset('js/firebase-config-global.js') }}"></script>
             <script src="{{ asset('js/register.js') }}"></script>
+            @if(!empty($serverProfile))
+            <script>
+                // Server-provided Firestore profile (admin route)
+                window.__mvsg_serverProfile = {!! json_encode($serverProfile, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) !!};
+                window.__mvsg_serverProfileUid = {!! json_encode($serverProfileUid ?? null) !!};
+            </script>
+            @endif
             <script>
                 document.addEventListener('DOMContentLoaded', async () => {
                     const tryParse = s => {
@@ -241,17 +291,29 @@
                         } catch (e) {}
                     };
                     const fetchFirestoreDraft = async () => {
-                        if (!window.firebase) return null;
+                        if (!window.firebase || !firebase.firestore) return null;
                         initFirebase();
                         try {
-                            const auth = firebase.auth(),
-                                db = firebase.firestore();
-                            let user = auth.currentUser;
-                            if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-                            if (!user) return null;
-                            for (const c of ['registrations', 'users', 'registrationDrafts', 'profiles']) {
-                                const s = await db.collection(c).doc(user.uid).get().catch(() => null);
-                                if (s && s.exists) return s.data();
+                            const db = firebase.firestore();
+                            // allow override via ?uid= for admin review
+                            const params = new URLSearchParams(window.location.search || '');
+                            const overrideUid = params.get('uid') || params.get('user') || params.get('id');
+                            if (overrideUid) {
+                                try {
+                                    const snap = await db.collection('users').doc(overrideUid).get().catch(() => null);
+                                    if (snap && snap.exists) return snap.data();
+                                } catch (e) { console.warn('override fetch failed', e); }
+                            }
+                            // fallback to signed-in user
+                            if (window.firebase && firebase.auth) {
+                                const auth = firebase.auth();
+                                let user = auth.currentUser;
+                                if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                                if (!user) return null;
+                                for (const c of ['registrations', 'users', 'registrationDrafts', 'profiles']) {
+                                    const s = await db.collection(c).doc(user.uid).get().catch(() => null);
+                                    if (s && s.exists) return s.data();
+                                }
                             }
                         } catch (e) {
                             console.warn(e);
@@ -259,6 +321,8 @@
                         return null;
                     };
                     const readStored = async () => {
+                        // If the server injected a profile (admin view), prefer it immediately
+                        if (window.__mvsg_serverProfile) return window.__mvsg_serverProfile;
                         const keys = ['registrationDraft', 'registration_draft', 'dsRegistrationDraft',
                             'ds_registration', 'registerDraft', 'regDraft', 'reg_data'
                         ];
@@ -276,6 +340,71 @@
                         if (!el) return;
                         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = value ?? '';
                         else el.textContent = value ?? '';
+                    };
+                    const flatten = (obj, out = {}, prefix = '') => {
+                        if (!obj || typeof obj !== 'object') return out;
+                        for (const k of Object.keys(obj)) {
+                            const v = obj[k];
+                            const p = prefix ? `${prefix}.${k}` : k;
+                            if (v && typeof v === 'object' && !Array.isArray(v)) flatten(v, out, p);
+                            else out[p] = v;
+                        }
+                        return out;
+                    };
+                    const findFirstMatching = (obj, subs = []) => {
+                        try {
+                            const flat = flatten(obj || {});
+                            for (const sub of subs) {
+                                const s = sub.toLowerCase();
+                                for (const k of Object.keys(flat)) {
+                                    if (k.toLowerCase().includes(s) && flat[k]) return flat[k];
+                                }
+                            }
+                        } catch (e) { /* ignore */ }
+                        return '';
+                    };
+                    const normalizeFilename = (s) => {
+                        try {
+                            if (!s) return '';
+                            const str = String(s || '');
+                            const parts = str.split(/[/\\]+/);
+                            return parts[parts.length - 1] || '';
+                        } catch (e) { return s; }
+                    };
+                    const parseMaybeJson = (v) => {
+                        if (v === null || v === undefined) return v;
+                        if (Array.isArray(v) || typeof v === 'object') return v;
+                        if (typeof v === 'string') {
+                            const s = v.trim();
+                            if (!s) return '';
+                            if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+                                try { return JSON.parse(s); } catch(e) { /* fall through */ }
+                            }
+                            if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
+                        }
+                        return v;
+                    };
+                    const renderWorkExperiences = (arr) => {
+                        const container = document.getElementById('review_job_experiences');
+                        if (!container) return;
+                        container.innerHTML = '';
+                        if (!arr || !arr.length) {
+                            container.innerHTML = '<p class="text-gray-600 italic">No job experiences added.</p>';
+                            return;
+                        }
+                        for (const e of arr) {
+                            try {
+                                const title = e.title || e.job_title || e.jobTitle || '';
+                                const company = e.company || e.company_name || e.companyName || '';
+                                const desc = e.description || e.job_description || e.desc || '';
+                                const el = document.createElement('div');
+                                el.className = 'p-3 bg-white rounded-lg border';
+                                el.innerHTML = `<p class="font-semibold">${title || company || 'Experience'}</p>` +
+                                    (company ? `<p class="text-sm text-gray-600">Company: ${company}</p>` : '') +
+                                    (desc ? `<p class="text-sm text-gray-700 mt-1">${desc}</p>` : '');
+                                container.appendChild(el);
+                            } catch (e) { /* ignore item */ }
+                        }
                     };
                     const setChoiceImage = (placeholderId, value, cardSelectors = ['.education-card',
                         '.workyr-card'
@@ -312,19 +441,66 @@
                         }
                     };
                     try {
-                        const data = await readStored();
+                        let data = await readStored();
+                        // attempt a minimal merge for only the fields shown on screen
+                        try {
+                            const remoteDoc = await fetchFirestoreDraft();
+                            const remote = (remoteDoc && typeof remoteDoc === 'object' && remoteDoc.data && typeof remoteDoc.data === 'object') ? remoteDoc.data : remoteDoc;
+                            if (remote && typeof remote === 'object') {
+                                if (data && typeof data === 'object' && data.data && typeof data.data === 'object') data = data.data;
+                                data = data || {};
+                                const keysToFill = ['educationInfo','schoolWorkInfo','workExperience','supportNeed','workplace'];
+                                for (const k of keysToFill) {
+                                    try {
+                                        const localVal = data[k];
+                                        const remoteVal = remote[k];
+                                        if ((localVal === undefined || localVal === null || (typeof localVal === 'object' && !Array.isArray(localVal) && Object.keys(localVal||{}).length === 0) || (typeof localVal === 'string' && String(localVal).trim() === '')) && remoteVal !== undefined) {
+                                            data[k] = remoteVal;
+                                        }
+                                    } catch (e) {}
+                                }
+                            }
+                        } catch (e) { /* ignore remote merge errors */ }
+
                         if (!data) return;
-                        const edu = data.educationInfo || data.education || findFirstMatching(data, ['education', 'edu',
-                            'edu_level'
-                        ]) || '';
-                        if (edu) setChoiceImage('review_education_level_img', edu, ['.education-card',
-                            '.selectable-card'
-                        ]);
-                        const workYears = data.workExperience?.[0]?.years || data.work_years || findFirstMatching(data,
-                            ['work_years', 'workexperience', 'years']) || '';
-                        if (workYears) setChoiceImage('review_work_years_img', workYears, ['.workyr-card',
-                            '.selectable-card'
-                        ]);
+
+                        // Only populate the fields that exist on this review screen
+                        const eduLevel = (data.educationInfo && (data.educationInfo.edu_level || data.educationInfo.eduLevel)) || data.edu_level || '';
+                        safeSet('review_edu', eduLevel);
+                        const eduOther = (data.educationInfo && (data.educationInfo.edu_other_text || data.educationInfo.eduOtherText)) || data.edu_other_text || '';
+                        if (eduOther && String(eduOther).trim()) {
+                            const el = document.getElementById('review_edu_other'); if (el) { el.classList.remove('hidden'); el.textContent = 'Other: ' + String(eduOther); }
+                        }
+
+                        const sw = data.schoolWorkInfo || {};
+                        safeSet('review_school', sw.school_name || sw.schoolName || data.school_name || '');
+
+                        safeSet('review_certs_name', sw.certs || sw.certificates || data.certs || '');
+                        const certFileRaw = sw.cert_file || sw.certFile || data.cert_file || data.proofFilename || '';
+                        const certFile = normalizeFilename(certFileRaw || '');
+                        safeSet('review_certs_file', certFile || '');
+                        if (certFile) safeSet('review_certfile', certFile);
+
+                        safeSet('review_work', sw.work_type || sw.workType || data.work_type || data.work || '');
+
+                        // work experiences (stringified or array)
+                        let weArr = [];
+                        try {
+                            const raw = (data.workExperience && data.workExperience.work_experiences) || data.work_experiences || '';
+                            const parsed = parseMaybeJson(raw);
+                            if (Array.isArray(parsed)) weArr = parsed;
+                            else if (parsed) weArr = [parsed];
+                        } catch (e) { /* ignore */ }
+                        renderWorkExperiences(weArr);
+
+                        const support = (data.supportNeed && (data.supportNeed.support_choice || data.supportNeed.supportChoice)) || data.support_choice || '';
+                        safeSet('review_support_choice', support || '');
+                        setChoiceImage('review_support_choice_img', support, ['.support-card','.selectable-card']);
+
+                        const workplace = (data.workplace && (data.workplace.workplace_choice || data.workplace.workplaceChoice)) || data.workplace_choice || '';
+                        safeSet('review_workplace_choice', workplace || '');
+                        setChoiceImage('review_workplace_choice_img', workplace, ['.workplace-card','.selectable-card']);
+
                     } catch (e) {
                         console.error('review-2 preview', e);
                     }

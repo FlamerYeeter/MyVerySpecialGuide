@@ -29,6 +29,16 @@
   }
 
   let firebaseInitialized = false, auth = null, db = null;
+  // normalize filenames coming from file inputs (strip fakepath or any directory)
+  function normalizeFilename(input) {
+    if (!input) return '';
+    try {
+      const s = String(input || '');
+      // browsers often provide C:\fakepath\filename.ext when reading input.value
+      const parts = s.split(/[/\\]+/);
+      return parts[parts.length - 1] || '';
+    } catch (e) { return String(input || ''); }
+  }
   const draftsKey = 'register_drafts';
   const log = (...a) => console.log('[reg.js]', ...a);
   const err = (...a) => console.error('[reg.js]', ...a);
@@ -204,8 +214,15 @@ service cloud.firestore {
   function collectPageInputs() {
     const result = {};
     document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
-      if (el.type === 'checkbox') result[el.id] = el.checked;
-      else result[el.id] = el.value;
+      try {
+        if (el.type === 'checkbox') result[el.id] = el.checked;
+        else if (el.type === 'file') {
+          // store filename only (do not attempt to serialize file contents)
+          // normalize to remove any C:\fakepath\ prefixes or directory parts
+          if (el.files && el.files[0]) result[el.id] = normalizeFilename(el.files[0].name);
+          else result[el.id] = normalizeFilename(el.value || '');
+        } else result[el.id] = el.value;
+      } catch (e) { console.debug('[reg.js] collectPageInputs error for', el.id, e); }
     });
     return result;
   }
@@ -232,7 +249,7 @@ service cloud.firestore {
       if (!email || !pass) return showError('Email and password required');
       if (pass !== confirm) return showError('Passwords do not match');
       const fb = await ensureFirebase(); if (!fb) return;
-      try {
+    try {
   const cred = await auth.createUserWithEmailAndPassword(email, pass);
   const uid = cred.user.uid;
   // ensure auth state is established before Firestore writes (avoids permission-denied when rules require request.auth)
@@ -248,7 +265,11 @@ service cloud.firestore {
           };
 
           await db.collection('users').doc(uid).set({
-            personalInfo: { first, last, email, phone, age },
+            personalInfo: { first, last, email, phone, age, address: document.getElementById('address')?.value || '', dsType: readSelectValueOrText('dsType') || (document.getElementById('dsType')?document.getElementById('dsType').value:'') },
+            // store proof filename if a file was selected (do not upload file content here)
+            proofFilename: (function(){ try { const e = document.getElementById('proof'); return (e && e.files && e.files[0]) ? normalizeFilename(e.files[0].name) : normalizeFilename((e && e.value) || ''); } catch(e){ return ''; } })(),
+            // store top-level dsType too for easier queries
+            dsType: readSelectValueOrText('dsType') || (document.getElementById('dsType')?document.getElementById('dsType').value:''),
             guardianInfo: guardian,
             role: 'User',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -316,7 +337,7 @@ service cloud.firestore {
   try { await new Promise(res => auth.onAuthStateChanged(u => res(u))); } catch(e){}
 
         // Build a personalInfo object from available sources (drafts, forms)
-        let personal = {};
+  let personal = {};
         let guardian = {};
         try {
           const d = await getDraft().catch(()=>null);
@@ -326,6 +347,8 @@ service cloud.firestore {
           personal.email = email;
           personal.phone = draft.phone || document.getElementById('phone')?.value || '';
           personal.age = draft.age || document.getElementById('age')?.value || '';
+          // include address if present in draft or DOM
+          personal.address = draft.address || document.getElementById('address')?.value || '';
 
           // Build guardian from draft or DOM
           guardian.guardian_first_name = draft.guardian_first || draft.guardian_first_name || document.getElementById('guardian_first')?.value || '';
@@ -335,11 +358,29 @@ service cloud.firestore {
         guardian.guardian_relationship = draft.guardian_relationship || draft.guardian_choice || readSelectValueOrText('guardian_relationship') || '';
         } catch (e) { console.debug('[reg.js] build personal info failed', e); }
 
+        // include selected proof filename if present (normalize to basename)
+        try {
+          const proofFileEl = document.getElementById('proof');
+          const proofNameRaw = proofFileEl && proofFileEl.files && proofFileEl.files[0] ? proofFileEl.files[0].name : (proofFileEl && proofFileEl.value ? proofFileEl.value : '');
+          const proofName = normalizeFilename(proofNameRaw || '');
+          if (proofName) personal.proofFilename = proofName;
+        } catch (e) { console.debug('[reg.js] proof filename read failed', e); }
+
+        // include selected Down Syndrome type if present
+        try {
+          const dsVal = readSelectValueOrText('dsType') || (document.getElementById('dsType')?document.getElementById('dsType').value:'');
+          if (dsVal) personal.dsType = dsVal;
+        } catch (e) { console.debug('[reg.js] dsType read failed', e); }
+
         // Save to Firestore (best-effort). If it fails due to rules we'll continue but persist pending writes locally
         try {
           await db.collection('users').doc(uid).set({
             personalInfo: personal,
             guardianInfo: guardian,
+            // store top-level copy of proof filename for easier queries
+            proofFilename: personal.proofFilename || '',
+            // top-level dsType for easier querying
+            dsType: personal.dsType || '',
             agreements: finalData && finalData.agreements ? finalData.agreements : {},
             role: 'User',
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
