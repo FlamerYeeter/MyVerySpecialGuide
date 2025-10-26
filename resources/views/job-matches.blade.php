@@ -73,6 +73,7 @@
             </form>
 
         </div>
+        <br>
        <div class="text-center flex flex-col items-center justify-center">
             <p class="text-sm text-gray-600">
             Click the dropdown arrow above, look at the list, and choose the option you want, the system will show jobs that match what you picked.
