@@ -65,10 +65,10 @@
         </svg>
         <div class="flex-1 text-center sm:text-left">
           <p class="font-medium text-xs sm:text-base leading-relaxed">
-            You can remove skills by clicking the ❌ button or add more by clicking "Add More Skills". 
+            You can change your skills by clicking the "Change" button. 
           </p>
           <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-            (Maaari kang magtanggal ng skills sa pag-click ng ❌ button o magdagdag pa sa pag-click ng "Add More Skills")
+            (Maaari mong baguhin ang iyong mga kasanayan sa pamamagitan ng pag-click sa button na “Change”)
           </p>
         </div>
       </div>
@@ -90,41 +90,25 @@
         <span
           class="bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
           Chosen Skill
-          <button type="button" onclick="removeSkill(this)"
-            class="w-6 h-6 flex items-center justify-center bg-[#990F0F] text-white rounded-full hover:bg-[#7A0C0C] transition-all duration-200 text-sm font-bold">
-            ×
-          </button>
         </span>
         <span
           class="bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
           Chosen Skill
-          <button type="button" onclick="removeSkill(this)"
-            class="w-6 h-6 flex items-center justify-center bg-[#990F0F] text-white rounded-full hover:bg-[#7A0C0C] transition-all duration-200 text-sm font-bold">
-            ×
-          </button>
         </span>
       </div>
 
 
-      <!-- Add More Skills -->
+      <!-- Change Skills -->
       <div class="flex justify-center">
-        <button type="button" onclick="addNewSkill()"
+        <button type="button"
           class="bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-transform duration-200 hover:scale-105">
-          ➕ Add More Skills
+          ✏️ Change
         </button>
       </div>
     </div>
 
-    <!-- Buttons -->
+    <!-- Continue Button -->
     <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
-      <button
-        class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
-          px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
-          shadow-md w-full sm:w-64 text-center">
-        ✏️ Edit Information
-      </button>
-
-      <!-- Continue Button -->
       <button type="button"
         class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
           px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 

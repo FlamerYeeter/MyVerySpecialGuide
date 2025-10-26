@@ -187,6 +187,38 @@
                 </div>
             </div>
 
+            <!-- Type of Down Syndrome -->
+<div
+  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
+  
+  <!-- Text Section -->
+  <div class="flex-1">
+    <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+      Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
+    </h3>
+    <p class="text-black-600 italic text-xs sm:text-sm leading-snug mt-1">
+      (You may fill this in if you already have records or a doctor’s assessment that shows your type of Down syndrome. 
+      It’s perfectly okay if you’re not aware of it yet — you can leave it blank.)
+    </p>
+
+    <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4">
+      (Opsyonal lamang ito. Maaari mo itong sagutan kung mayroon ka nang tala o pagsusuri mula sa doktor na nagpapakita 
+      ng uri ng iyong Down syndrome. Ayos lang din kung hindi mo pa ito alam — maaari mo itong laktawan.)
+    </p>
+  </div>
+
+  <!-- Dropdown Selector -->
+  <div class="flex-shrink-0 w-full sm:w-auto">
+    <select id="dsType" name="dsType"
+      class="w-full sm:w-60 border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+      <option value="">-- Select Type --</option>
+      <option value="trisomy21">Trisomy 21 (Nondisjunction)</option>
+      <option value="mosaic">Mosaic Down Syndrome</option>
+      <option value="translocation">Translocation Down Syndrome</option>
+    </select>
+  </div>
+</div>
+
 
             <!-- Guardian Information -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
@@ -367,7 +399,7 @@
 
                     <label for="proof"
                         class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
-             px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
                         📁 Choose File
                     </label>
 

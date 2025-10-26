@@ -87,11 +87,11 @@
                 </svg>
                 <div class="flex-1 text-center sm:text-left">
                     <p class="font-medium text-xs sm:text-base leading-relaxed">
-                        You can remove jobs by clicking the ❌ button or add more by clicking "Add More Jobs".
+                        You can change your job preference by clicking the "Change" button.
                     </p>
                     <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-                        (Maaari kang magtanggal ng trabaho sa pag-click ng ❌ button o magdagdag pa sa pag-click ng "Add
-                        More Jobs")
+                        (Maaari mong baguhin ang iyong mga trabahong gusto sa pamamagitan ng pag-click sa button na
+                        “Change”)
                     </p>
                 </div>
             </div>
@@ -103,23 +103,36 @@
 
 
         <!-- Info Box -->
-        <div class="bg-green-50 border border-green-400 rounded-lg px-5 py-4 mt-6 shadow-sm">
-            <div class="flex justify-between items-start gap-3">
-                <p class="text-[14px] text-black leading-relaxed flex-1">
-                    We use your job preferences to connect you with the right job, but some choices may not be hiring
-                    now.
-                </p>
-                <button type="button"
-                    class="bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md 
-      hover:bg-blue-700 hover:scale-110 transition-transform self-center"
-                    title="Play Audio">🔊</button>
-            </div>
-            <p class="mt-2 italic text-gray-700 text-[13px] leading-relaxed">
-                (Gagamitin namin ang iyong piniling trabaho upang mahanap ang angkop na posisyon, ngunit may pagkakataon
-                maaaring walang hiring sa posisyon na ito.)
-            </p>
-        </div>
+        <div class="relative bg-green-50 border border-green-300 text-green-800 rounded-xl p-5 sm:p-6 mt-6 shadow-sm">
+            <div class="flex flex-col sm:flex-row items-start gap-3 pr-14">
+                <!-- Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 sm:h-6 sm:w-6 text-green-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+                </svg>
 
+                <!-- Text Content -->
+                <div class="flex-1 text-center sm:text-left">
+                    <p class="font-medium text-xs sm:text-base leading-relaxed">
+                        We use your job preferences to connect you with the right job, but some choices may not be
+                        hiring now.
+                    </p>
+                    <p class="italic text-gray-700 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
+                        (Gagamitin namin ang iyong piniling trabaho upang mahanap ang angkop na posisyon, ngunit may
+                        pagkakataon maaaring walang hiring sa posisyon na ito.)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Audio Button -->
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md 
+           hover:bg-green-800 hover:scale-105 transition-transform duration-200">
+                🔊
+            </button>
+        </div>
 
         <!-- Job Preferences Section -->
         <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 mt-6">
@@ -140,36 +153,25 @@
             <div id="review_jobprefs_list" class="flex flex-wrap gap-3 mt-6">
                 <span
                     class="bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
-                    Office Work
-                    <button type="button" onclick="removeJobPref(this)"
-                        class="w-6 h-6 flex items-center justify-center bg-[#990F0F] text-white rounded-full hover:bg-[#7A0C0C] transition-all duration-200 text-sm font-bold">×</button>
+                    Chosen Work
                 </span>
                 <span
                     class="bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
-                    Store Work
-                    <button type="button" onclick="removeJobPref(this)"
-                        class="w-6 h-6 flex items-center justify-center bg-[#990F0F] text-white rounded-full hover:bg-[#7A0C0C] transition-all duration-200 text-sm font-bold">×</button>
+                    Chosen Work
                 </span>
             </div>
 
-            <!-- Add More Jobs -->
+            <!-- Change Jobs -->
             <div class="flex justify-center mt-6">
                 <button type="button"
                     class="bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-transform duration-200 hover:scale-105">
-                    ➕ Add More Jobs
+                    ✏️ Change
                 </button>
             </div>
         </div>
 
-        <!-- Buttons -->
+        <!-- Continue Buttons -->
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
-            <button
-                class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
-            px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
-            shadow-md w-full sm:w-64 text-center">
-                ✏️ Edit Information
-            </button>
-
             <button type="button"
                 class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
             px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
@@ -281,7 +283,8 @@
                         const el = document.getElementById('review_jobprefs');
                         if (el) el.textContent = fallback.join(', ');
                         setChoiceImage('review_jobprefs_img', fallback[0], ['.jobpref-card',
-                            '.selectable-card']);
+                            '.selectable-card'
+                        ]);
                         document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card => {
                             const title = card.querySelector('h3')?.textContent?.trim();
                             if (title && fallback.includes(title)) card.classList.add('selected');
@@ -290,7 +293,8 @@
                     }
                 }
             } catch (e) {
-                /* ignore non-fatal */ }
+                /* ignore non-fatal */
+            }
         });
     </script>
 </body>

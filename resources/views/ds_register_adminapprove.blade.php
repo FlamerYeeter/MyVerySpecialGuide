@@ -69,42 +69,41 @@
             </div>
         </div>
 
-      <!-- Overall Information Note -->
-<div
-  class="relative bg-[#EEF4FF] border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
+        <!-- Overall Information Note -->
+        <div
+            class="relative bg-[#EEF4FF] border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
 
-  <!-- Audio Button -->
-  <button type="button" aria-label="Play audio for information note"
-    class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
+            <!-- Audio Button -->
+            <button type="button" aria-label="Play audio for information note"
+                class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
     text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400">
-    🔊
-  </button>
+                🔊
+            </button>
 
-  <div class="flex items-start gap-3 pr-20"> <!-- Added right padding here -->
-    <!-- Info Icon -->
-    <svg xmlns="http://www.w3.org/2000/svg"
-      class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none"
-      viewBox="0 0 24 24" stroke="currentColor">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
-    </svg>
+            <div class="flex items-start gap-3 pr-20"> <!-- Added right padding here -->
+                <!-- Info Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+                </svg>
 
-    <!-- Text Content -->
-    <div class="flex-1">
-      <p class="font-semibold text-sm sm:text-base leading-relaxed text-blue-800">
-        Please fill out all the required information below accurately. The details you provide help our
-        administrators verify your account, confirm your eligibility, and ensure proper communication
-        during the approval process.
-      </p>
-      <p class="italic text-gray-600 text-xs sm:text-sm mt-2 leading-relaxed">
-        (Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng
-        iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account,
-        kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso
-        ng pag-apruba.)
-      </p>
-    </div>
-  </div>
-</div>
+                <!-- Text Content -->
+                <div class="flex-1">
+                    <p class="font-semibold text-sm sm:text-base leading-relaxed text-blue-800">
+                        Please fill out all the required information below accurately. The details you provide help our
+                        administrators verify your account, confirm your eligibility, and ensure proper communication
+                        during the approval process.
+                    </p>
+                    <p class="italic text-gray-600 text-xs sm:text-sm mt-2 leading-relaxed">
+                        (Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng
+                        iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account,
+                        kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso
+                        ng pag-apruba.)
+                    </p>
+                </div>
+            </div>
+        </div>
 
 
 
@@ -184,6 +183,42 @@
                     <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
                     <input id="address" type="text" placeholder="Complete Address"
                         class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                </div>
+            </div>
+
+            <!-- Type of Down Syndrome -->
+            <div
+                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
+
+                <!-- Text Section -->
+                <div class="flex-1">
+                    <h3
+                        class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                        Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
+                    </h3>
+                    <p class="text-black-600 italic text-xs sm:text-sm leading-snug mt-1">
+                        (You may fill this in if you already have records or a doctor’s assessment that shows your type
+                        of Down syndrome.
+                        It’s perfectly okay if you’re not aware of it yet — you can leave it blank.)
+                    </p>
+
+                    <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4">
+                        (Opsyonal lamang ito. Maaari mo itong sagutan kung mayroon ka nang tala o pagsusuri mula sa
+                        doktor na nagpapakita
+                        ng uri ng iyong Down syndrome. Ayos lang din kung hindi mo pa ito alam — maaari mo itong
+                        laktawan.)
+                    </p>
+                </div>
+
+                <!-- Dropdown Selector -->
+                <div class="flex-shrink-0 w-full sm:w-auto">
+                    <select id="dsType" name="dsType"
+                        class="w-full sm:w-60 border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">-- Select Type --</option>
+                        <option value="trisomy21">Trisomy 21 (Nondisjunction)</option>
+                        <option value="mosaic">Mosaic Down Syndrome</option>
+                        <option value="translocation">Translocation Down Syndrome</option>
+                    </select>
                 </div>
             </div>
 
@@ -367,7 +402,7 @@
 
                     <label for="proof"
                         class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
-             px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
                         📁 Choose File
                     </label>
 
@@ -429,7 +464,8 @@
 
             btn.addEventListener('click', function() {
                 try {
-                    btn.disabled = true; btn.classList.add('opacity-60');
+                    btn.disabled = true;
+                    btn.classList.add('opacity-60');
                     const data = {};
                     // collect all inputs/selects/textareas that have an id
                     document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
@@ -454,22 +490,38 @@
                         guardian_relationship: data.guardian_relationship || data.guardianRelationship || ''
                     };
 
-                    try { localStorage.setItem('rpi_personal', JSON.stringify(draft)); } catch (err) { console.warn('Could not save rpi_personal', err); }
+                    try {
+                        localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                    } catch (err) {
+                        console.warn('Could not save rpi_personal', err);
+                    }
                     console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
                     // dispatch event for other scripts to pick up
-                    try { window.dispatchEvent(new CustomEvent('mvsg:adminSaved', { detail: { key: 'rpi_personal', data: draft } })); } catch(e){}
+                    try {
+                        window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
+                            detail: {
+                                key: 'rpi_personal',
+                                data: draft
+                            }
+                        }));
+                    } catch (e) {}
 
                     // Debug: report firebase config presence and firebase.auth availability
                     try {
-                        console.info('[adminapprove] FIREBASE_CONFIG present?', !!window.FIREBASE_CONFIG, window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId);
+                        console.info('[adminapprove] FIREBASE_CONFIG present?', !!window.FIREBASE_CONFIG, window
+                            .FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId);
                         console.info('[adminapprove] window.firebase available?', !!window.firebase);
-                        if (window.firebase && firebase.auth) console.info('[adminapprove] firebase.currentUser', firebase.auth().currentUser);
-                    } catch(e) { console.warn('[adminapprove] debug probe failed', e); }
+                        if (window.firebase && firebase.auth) console.info(
+                            '[adminapprove] firebase.currentUser', firebase.auth().currentUser);
+                    } catch (e) {
+                        console.warn('[adminapprove] debug probe failed', e);
+                    }
 
                     // Do not navigate here — allow register.js to run account creation and handle navigation.
                 } catch (err) {
                     console.error('[adminapprove] submit failed', err);
-                    btn.disabled = false; btn.classList.remove('opacity-60');
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-60');
                 }
             });
         })();

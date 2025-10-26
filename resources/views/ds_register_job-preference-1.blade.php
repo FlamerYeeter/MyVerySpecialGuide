@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <title>Registration: Job Preference</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
+        <style>
     /* Floating animations */
     @keyframes float {
       0%, 100% { transform: translateY(0); }
@@ -82,7 +82,7 @@
 
                 <div class="flex-1 text-center sm:text-left">
                     <p class="font-medium text-blue-800 text-sm sm:text-base leading-relaxed">
-                        This section helps us understand what kind of jobs you prefer based on your skills and comfort
+                        This section helps us understand what kind of jobs you prefer based on your comfort
                         level.
                         By choosing your job preferences, we can match you with workplaces where you’ll feel
                         comfortable,
@@ -91,7 +91,7 @@
 
                     <p class="italic text-gray-600 text-xs sm:text-sm mt-2 leading-relaxed">
                         (Ang seksyong ito ay tumutulong upang malaman namin kung anong klase ng trabaho ang gusto mo
-                        batay sa iyong mga kakayahan at antas ng kaginhawaan. Sa pagpili ng iyong mga job preference,
+                        batay sa iyong antas ng kaginhawaan. Sa pagpili ng iyong mga job preference,
                         matutulungan ka naming makahanap ng lugar ng trabaho kung saan ka magiging komportable,
                         suportado, at makakagawa ng iyong pinakamahusay.)
                     </p>
@@ -99,8 +99,8 @@
                     <p class="mt-3 text-xs sm:text-sm text-red-500 italic">
                         *Note: Some job options might not be available in your area right now, but they may open
                         soon.*<br>
-                        *(Tandaan: Maaaring hindi pa available ang ilang trabaho sa iyong lugar sa ngayon, ngunit
-                        maaaring magbukas ito kung kinakailangan.)*
+                        (Tandaan: Maaaring hindi pa available ang ilang trabaho sa iyong lugar sa ngayon, ngunit
+                        maaaring magbukas ito kung kinakailangan.)
                     </p>
                 </div>
             </div>
@@ -112,69 +112,44 @@
         </div>
 
         <!-- Instructions Section -->
-        <div class="bg-white rounded-2xl p-6 sm:p-8 mt-10 shadow-md border border-gray-200 max-w-4xl mx-auto">
-            <div class="flex flex-col items-center sm:items-start gap-3">
-                <div class="flex items-center justify-center sm:justify-start gap-2">
-                    <p class="text-base sm:text-lg font-medium text-gray-800 leading-relaxed text-center sm:text-left">
-                        Choose <span class="font-semibold text-blue-700">3 to 5 job options</span> from the pictures
-                        that match your skills.
-                        You may also pick a few jobs that interest you, even if they are not directly related to your
-                        skills.
-                    </p>
-                    <button type="button"
-                        class="text-blue-600 text-xl hover:scale-110 transition-transform">🔊</button>
-                </div>
-                <p class="text-sm sm:text-base text-gray-600 italic text-center sm:text-left leading-snug">
-                    (Pumili ng <span class="font-semibold text-blue-700">3 hanggang 5 trabaho</span> mula sa mga larawan
-                    na akma sa iyong mga kakayahan.
-                    Maaari ka ring pumili ng ilang trabahong gusto mo, kahit na hindi ito direktang kaugnay ng iyong mga
-                    kakayanan.)
-                </p>
-            </div>
-        </div>
-
-        <!-- Skills Section -->
         <div
-            class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 sm:p-8 mt-10 shadow-md border border-blue-200 max-w-4xl mx-auto">
-            <div class="flex flex-col gap-6">
+            class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 sm:p-10 mt-10 shadow-lg border border-blue-100 max-w-4xl mx-auto">
+            <div class="flex flex-col items-center sm:items-start text-center sm:text-left space-y-4">
 
-                <!-- Matched Skills Header -->
-                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-">
-                    <h2 class="text-xl sm:text-2xl font-bold text-blue-700 text-center sm:text-left flex-1">
-                        Based on your skills, here are jobs that match you:
-                    </h2>
+                <!-- Header with Icon and Audio Button -->
+                <div class="flex items-center justify-center sm:justify-start gap-3 w-full">
+                    <div class="flex items-center gap-2">
+                        <h2 class="text-xl sm:text-2xl font-bold text-gray-800">
+                            Selection Instructions
+                        </h2>
+                    </div>
                     <button type="button"
-                        class="text-blue-600 text-xl sm:text-2xl p-2 hover:scale-110 transition-all self-center sm:self-start">
+                        class="ml-auto bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200"
+                        title="Play instruction">
                         🔊
                     </button>
                 </div>
 
-                <p class="text-base sm:text-lg font-medium text-gray-700 italic text-center sm:text-left">
-                    (Batay sa iyong mga kakayahan, narito ang mga trabahong bagay sa iyo)
+                <!-- English Instruction -->
+                <p class="text-base sm:text-lg font-medium text-gray-800 leading-relaxed">
+                    Choose <span class="font-semibold text-blue-700">3 to 5 job options from the images below.</span>
+                    You must choose at least 3 and no more than 5 options to proceed.
                 </p>
 
-                <hr class="border-t border-blue-300 my-3 sm:my-4">
+                <!-- Divider -->
+                <div class="w-full border-t border-gray-200"></div>
 
-                <!-- Your Skills Section -->
-                <div class="flex flex-col sm:flex-row items-center sm:items-start gap-3">
-                    <p class="font-semibold text-gray-800 text-lg sm:text-xl text-center sm:text-left flex-1">
-                        Your Skills:
-                    </p>
-                    <button type="button"
-                        class="text-blue-600 text-xl sm:text-2xl p-2  hover:scale-110 transition-all self-center sm:self-start">
-                        🔊
-                    </button>
-                </div>
-
-                <p
-                    class="mt-2 text-blue-700 font-semibold underline text-base sm:text-lg text-center sm:text-left tracking-wide">
-                    Matched skills, Matched skills, Matched skills
+                <!-- Tagalog Instruction -->
+                <p class="text-sm sm:text-base text-gray-700 italic leading-snug">
+                    (<span class="font-semibold text-blue-700">Pumili ng 3 hanggang 5 pagpipiliang trabaho mula sa mga
+                        larawan sa ibaba.</span>
+                    Kailangang pumili ka ng hindi bababa sa 3 at hindi hihigit sa 5 na opsyon upang magpatuloy.)
                 </p>
-
             </div>
         </div>
 
-        <!-- Cards Grid -->
+
+        <!-- Job Options Cards Grid -->
         <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
 
             <!-- Office Work -->
@@ -188,10 +163,10 @@
                     In this job, you will use the computer for simple tasks, answer the phone politely, and keep
                     papers organized in folders.
                 </p>
-                <p class="text-[13px] text-[#4D515C]italic mt-2 text-center">
-                    (Kasama sa trabahong ito ang pagsisilbi ng pagkain at inumin, pagtulong sa paghahanda ng simpleng
-                    pagkain,
-                    at pagpapanatiling malinis ng mga mesa at kusina.)
+                <p class="text-[13px] text-[#4D515C] italic mt-2 text-center">
+                    (Sa trabahong ito, gagamit ka ng computer para sa simpleng gawain, sasagot ng telepono nang
+                    magalang,
+                    at aayusin ang mga papeles sa mga folder.)
                 </p>
             </div>
 
@@ -207,9 +182,8 @@
                     cashier to take payments.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Kasama sa trabahong ito ang pagsisilbi ng pagkain at inumin, pagtulong sa paghahanda ng simpleng
-                    pagkain,
-                    at pagpapanatiling malinis ng mga mesa at kusina.)
+                    (Tutulungan mo ang mga customer na hanapin ang kanilang kailangan, maayos na ilalagay ang mga
+                    paninda sa mga lagayan, at magtatrabaho sa cashier para tumanggap ng bayad.)
                 </p>
             </div>
 
@@ -225,9 +199,8 @@
                     tidy.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Kasama sa trabahong ito ang pagsisilbi ng pagkain at inumin, pagtulong sa paghahanda ng simpleng
-                    pagkain,
-                    at pagpapanatiling malinis ng mga mesa at kusina.)
+                    (Magwawalis o mag-mop ka ng sahig, magpupunas ng mga mesa at bintana, at sisiguraduhin na
+                    malinis at maayos ang mga silid.)
                 </p>
             </div>
 
@@ -243,32 +216,10 @@
                     towels.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Kasama sa trabahong ito ang pagsisilbi ng pagkain at inumin, pagtulong sa paghahanda ng simpleng
-                    pagkain,
-                    at pagpapanatiling malinis ng mga mesa at kusina.)
+                    (Sasalubungin mo ang mga bisita nang may ngiti, tutulong sa paglilinis at paghahanda ng mga kuwarto,
+                    at magdadala
+                    ng maliliit na gamit tulad ng tuwalya.)
             </div>
-
-        </div>
-
-        <!-- Other Job Section -->
-        <div
-            class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-6 sm:p-8 mt-8 shadow-md border border-blue-200 max-w-4xl mx-auto">
-            <div class="flex flex-col items-center sm:items-start gap-3">
-                <h2 class="text-xl sm:text-2xl font-bold text-blue-700 text-center sm:text-left">
-                    Job options not related to your skills that you might be interested in.
-                    <button type="button"
-                        class="text-blue-600 text-xl hover:scale-110 transition-transform">🔊</button>
-                </h2>
-                <div class="flex items-center justify-center sm:justify-start gap-2">
-                    <p class="text-base sm:text-lg font-medium text-gray-700 italic text-center sm:text-left">
-                        (Mga trabaho na maaaring hindi tugma sa iyong kakayahan pero maaaring magustuhan mo)
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Cards Grid -->
-        <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
 
             <!-- Food Service Work -->
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
@@ -301,8 +252,50 @@
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
                     (Kasama sa trabahong ito ang paglalagay ng mga gamit sa kahon o bag, pagdadala ng magagaan na
-                    packages, at pag-aayos ng mga gamit sa mga lagayan.)
+                    packages,
+                    at pag-aayos ng mga gamit sa mga lagayan.)
                 </p>
+            </div>
+
+            <!-- Creative Work -->
+            <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+                data-value="Creative Work" onclick="toggleJobPref1Choice(this,'Creative Work')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition">🔊</button>
+                <img src="image/creativework.png" alt="Creative Work" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Creative Work</h3>
+                <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
+                    This job lets you make simple art or crafts, decorate for events, and use safe tools with guidance.
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-2 text-center">
+                    (Sa trabahong ito, gagawa ka ng simpleng sining o likha, magde-dekorasyon para sa mga okasyon,
+                    at gagamit ng ligtas na kagamitan sa tulong ng gabay.)
+                </p>
+            </div>
+
+            <!-- Other -->
+            <div class="bg-white p-4 sm:p-5 rounded-2xl min-h-[340px] flex flex-col justify-between
+              transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 
+              cursor-pointer relative text-center jobpref-card"
+                data-value="other" onclick="toggleJobPref1Choice(this,'other')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition"
+                    aria-label="Play audio for Other option">🔊</button>
+
+                <div class="flex flex-col flex-grow justify-center">
+                    <h3 id="support_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
+                    <p class="mt-3 text-sm text-justify">
+                        Type your answer inside the box if not in the choices
+                    </p>
+                    <p class="text-[13px] text-gray-600 italic mt-1 mb-3 text-justify">
+                        (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
+                    </p>
+
+                    <label for="jobpref_other_text" class="sr-only">Type your other answer here</label>
+                    <input id="jobpref_other_text" name="jobpref_other_text" type="text"
+                        aria-labelledby="jobpref_other_label" placeholder="Type your answer here"
+                        class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                </div>
             </div>
         </div>
 
