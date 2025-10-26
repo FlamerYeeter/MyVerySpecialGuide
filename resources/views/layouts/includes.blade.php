@@ -22,10 +22,10 @@
 
             <!-- Desktop nav -->
             <nav class="hidden md:flex items-center space-x-3" aria-label="Primary">
-                <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Job Matches</button>
-                <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Goals & Progress</button>
-                <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Why This Job & How to Get There</button>
-                <button class="bg-gray-100 px-4 py-2 rounded-full text-sm hover:bg-gray-200">Guardian Review</button>
+                <button class="bg-blue-700 px-4 py-2 rounded-full text-xl text-white hover:bg-blue-600">Jobs</button>
+                <button class="bg-gray-100 px-4 py-2 rounded-full text-xl hover:bg-gray-200">Goals & Progress</button>
+                <button class="bg-gray-100 px-4 py-2 rounded-full text-xl hover:bg-gray-200">Why This Job & How to Get There</button>
+                <button class="bg-gray-100 px-4 py-2 rounded-full text-xl hover:bg-gray-200">Guardian Review</button>
             </nav>
 
       <div class="flex items-center space-x-3">

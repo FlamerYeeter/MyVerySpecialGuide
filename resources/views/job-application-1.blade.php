@@ -79,7 +79,7 @@
 
       <!-- Personal Information -->
       <div class="border-t pt-4">
-        <h3 class="font-semibold text-gray-800 mb-4">Personal Information</h3>
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Personal Information</h3>
         <div class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">First Name <span class="text-red-500">*</span></label>
@@ -108,7 +108,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700">Gender</label>
             <select id="gender" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
-              <option>Select</option>
+              <option></option>
               <option>Male</option>
               <option>Female</option>
               <option>Prefer not to say</option>
@@ -116,10 +116,10 @@
           </div>
         </div>
       </div>
-
+<br>
       <!-- Work Experience -->
       <div class="border-t pt-4">
-        <h3 class="font-semibold text-gray-800 mb-4">Work Experience</h3>
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Work Experience</h3>
         <div class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Job Title</label>
