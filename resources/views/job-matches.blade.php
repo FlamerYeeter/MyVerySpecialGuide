@@ -9,8 +9,9 @@
                 <div class="flex items-center justify-center space-x-4 mb-6">
                     <img src="{{ asset('image/logo.png') }}" class="w-20 h-20">
                     <div>
-                        <h2 class="text-3xl font-bold text-gray-800">Job Recommended For You</h2>
-                        <p class="text-sm text-gray-600 italic">(Mga Trabahong Para sa Iyo)</p>
+                        <h2 class="text-3xl font-bold text-blue-800">Job Recommended For You</h2>
+                        <br>
+                        <p class="text-sm text-gray-600">(Mga Trabahong Para sa Iyo)</p>
                     </div>
                 </div>
             </form>
@@ -86,6 +87,7 @@
     </section>
 
     <!-- Match Notice -->
+     <!--
     <div class="container mx-auto mt-6 px-4">
         <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-lg">
             <p class="text-gray-800 font-medium flex items-center">
@@ -93,6 +95,7 @@
             </p>
             <p class="italic text-sm text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)</p>
         </div>
+-->
 
         @php
             // Try to load evaluation metrics from public/eval_metrics.json
@@ -292,14 +295,14 @@
             </div>
         @endif
 
-<section class="max-w-6xl mx-auto mt-10 bg-[#DFF7F5] rounded-md p-6">
+<section class="max-w-6xl mx-auto mt-10 bg-[#00ae7a] rounded-md p-6">
     <h4 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
       💡 Jobs Matched to Your Skills & Preferences
     </h4>
     <p class="text-sm italic text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan)</p>
 
     <div class="mt-4">
-      <button class="bg-[#00BFA6] text-white font-medium px-6 py-2 rounded-md">All Matches (2)</button>
+      <button class="bg-white text-[#00ae7a] font-medium px-6 py-2 rounded-md">All Matches (2)</button>
     </div>
   </section>
 
