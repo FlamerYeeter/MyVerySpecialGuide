@@ -317,6 +317,45 @@
     </div>
   </section>
 
+  <!-- JOB CARDS -->
+  <section class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
+
+    <!-- JOB CARD 1 -->
+    <div class="bg-white border border-gray-300 rounded-xl p-6 flex justify-between items-center">
+      <div>
+        <h3 class="text-lg font-semibold text-gray-800">Pet Care Assistant</h3>
+        <p class="text-gray-600">iPet Club</p>
+        <p class="text-sm text-gray-500 mb-2">Taguig City, Metro Manila</p>
+        <div class="flex gap-2 text-xs text-gray-700 mb-3">
+          <span class="bg-gray-100 px-3 py-1 rounded-md">Healthcare</span>
+          <span class="bg-gray-100 px-3 py-1 rounded-md">Quiet</span>
+        </div>
+        <p class="text-sm text-gray-700">Help feed animals, clean spaces, and provide companionship.</p>
+
+        <div class="flex gap-2 mt-3 text-xs">
+          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Organization</span>
+          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Cleaning</span>
+          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Following Instructions</span>
+        </div>
+
+        <div class="flex gap-2 mt-3 text-xs">
+          <span class="bg-[#D1FFD6] text-green-800 px-3 py-1 rounded-md">⭐ Excellent Fit</span>
+          <span class="bg-[#E6E9FF] text-[#4F46E5] px-3 py-1 rounded-md">📈 High Potential</span>
+        </div>
+
+        <p class="text-xs text-gray-500 mt-3">4d ago</p>
+      </div>
+
+      <div class="flex flex-col items-end space-y-3">
+        <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="w-16 h-16" alt="iPet logo">
+        <div class="flex gap-2">
+          <button class="bg-[#007BFF] text-white px-4 py-2 rounded-md text-sm">View Details</button>
+          <button class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Saved</button>
+        </div>
+      </div>
+    </div>
+    </section>
+
     <!-- Job Cards -->
     @php
         // defensive fallbacks used by scoring logic to avoid undefined variable errors
