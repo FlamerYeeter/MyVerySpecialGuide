@@ -92,12 +92,18 @@
       </div>
     </div>
 
-    <!-- JOB APPLICATION CARD 2 -->
-    <div class="border border-gray-300 rounded-md shadow-sm mb-10">
-      <div class="p-5">
-        <div class="flex justify-between items-start">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-800">Cashier</h3>
+ <div class="border border-gray-300 rounded-md shadow-sm mb-10">
+  <div class="p-5">
+    <!-- HEADER -->
+    <div class="flex justify-between items-start">
+      <div>
+        <!-- Job Title + Status Badge -->
+        <div class="flex items-center gap-3">
+          <h3 class="text-lg font-semibold text-gray-800">Cashier</h3>
+          <span class="bg-[#FDDCDC] text-[#9B1C1C] px-3 py-1 rounded-md text-xs font-medium">
+            Not selected
+          </span>
+        </div>
             <p class="text-gray-600">McDonald’s • Taguig City, Metro Manila</p>
             <p class="flex items-center text-sm text-gray-700 mt-2">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -107,7 +113,6 @@
               Applied: Aug 15, 2025
             </p>
           </div>
-          <span class="bg-[#FDDCDC] text-[#9B1C1C] px-3 py-1 rounded-md text-xs font-medium">Not selected</span>
         </div>
       </div>
 
