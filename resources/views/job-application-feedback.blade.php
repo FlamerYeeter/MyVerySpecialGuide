@@ -3,18 +3,17 @@
 @section('content')
 
 
-    <!-- Back Button -->
-  <div class="bg-yellow-400 mt-6 py-4">
-    <div class="max-w-5xl mx-auto px-4 flex items-center space-x-2">
-      <a href="/my-job-applications" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke-width="2" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        <span>Back</span>
-      </a>
-    </div>
-  </div>
+<!-- Back Button -->
+<div class="bg-yellow-400 mt-6 py-8 px-6">
+  <a href="/job-details" class="flex items-center space-x-3 text-blue-900 text-3xl font-semibold hover:underline">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+      stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+    <span>Back</span>
+  </a>
+</div>
+
 <!-- Main Content -->
   <div class="max-w-4xl mx-auto px-4 py-10 space-y-8">
 
@@ -57,9 +56,9 @@
         future applications from you as you grow professionally.
       </p>
 
-      <p class="text-sm text-gray-800 font-semibold mt-6">
+      <p class="text-sm text-red-800 font-semibold mt-6">
         Best regards,<br>
-        <span class="text-gray-900 font-bold">McDonald’s Taguig City Hiring Team</span>
+        <span class="text-red-900 font-bold">McDonald’s Taguig City Hiring Team</span>
       </p>
     </div>
 
