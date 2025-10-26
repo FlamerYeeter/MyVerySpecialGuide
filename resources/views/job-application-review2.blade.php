@@ -3,18 +3,16 @@
 @section('content')
 
 
-    <!-- Back Button -->
-  <div class="bg-yellow-400 mt-6 py-4">
-    <div class="max-w-5xl mx-auto px-4 flex items-center space-x-2">
-      <a href="/job-application-review1" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke-width="2" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        <span>Back</span>
-      </a>
-    </div>
-  </div>
+<!-- Back Button -->
+<div class="bg-yellow-400 mt-6 py-8 px-6">
+  <a href="/job-details" class="flex items-center space-x-3 text-blue-900 text-3xl font-semibold hover:underline">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+      stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+    <span>Back</span>
+  </a>
+</div>
 
   <!-- Applying For -->
   <section class="max-w-5xl mx-auto mt-8 px-4">
@@ -93,7 +91,7 @@
     <!-- Education (populated from step2) -->
     <div class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">Education</h3>
+        <h3 class="text-xl font-semibold text-gray-800">Education</h3>
         <a id="edit-step2" href="{{ route('job.application.2') }}" class="text-gray-600 bg-gray-100 px-3 py-1 rounded text-sm hover:bg-gray-200">Edit</a>
       </div>
       <div class="space-y-2 text-sm text-gray-700">
@@ -107,7 +105,7 @@
     <!-- Skills & Certifications -->
     <div class="bg-white border rounded-lg p-6 mb-8 shadow-sm">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-lg font-semibold text-gray-800">Skills & Certifications</h3>
+        <h3 class="text-xl font-semibold text-gray-800">Skills & Certifications</h3>
         <a id="edit-step2-skills" href="{{ route('job.application.2') }}" class="text-gray-600 bg-gray-100 px-3 py-1 rounded text-sm hover:bg-gray-200">Edit</a>
       </div>
 
@@ -127,7 +125,7 @@
     <!-- Uploaded Documents -->
     <div class="bg-white border rounded-lg p-6 shadow-sm">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-lg font-semibold text-gray-800">Uploaded Documents</h3>
+            <h3 class="text-xl font-semibold text-gray-800">Uploaded Documents</h3>
             <a id="edit-step2-docs" href="{{ route('job.application.2') }}" class="text-gray-600 bg-gray-100 px-3 py-1 rounded text-sm hover:bg-gray-200">Edit</a>
         </div>
         <div id="rv_documents" class="bg-green-100 border border-green-300 rounded-lg p-4">

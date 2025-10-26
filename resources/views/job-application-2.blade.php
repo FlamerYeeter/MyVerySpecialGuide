@@ -3,18 +3,17 @@
 @section('content')
 
 
-    <!-- Back Button -->
-  <div class="bg-yellow-400 mt-6 py-4">
-    <div class="max-w-5xl mx-auto px-4 flex items-center space-x-2">
-      <a href="/job-application-1" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke-width="2" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        <span>Back</span>
-      </a>
-    </div>
-  </div>
+<!-- Back Button -->
+<div class="bg-yellow-400 mt-6 py-8 px-6">
+  <a href="/job-details" class="flex items-center space-x-3 text-blue-900 text-3xl font-semibold hover:underline">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+      stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+    <span>Back</span>
+  </a>
+</div>
+
   <section class="max-w-5xl mx-auto mt-8 px-4">
     <h2 class="text-lg font-semibold text-gray-800 mb-2">Applying for</h2>
     @php
@@ -74,12 +73,12 @@
 
       <!-- Education -->
       <div class="border-t pt-4">
-        <h3 class="font-semibold text-gray-800 mb-4">Education</h3>
+        <h3 class="font-semibold text-xl text-gray-800 mb-4">Education</h3>
         <div class="grid md:grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Highest Educational Attainment <span class="text-red-500">*</span></label>
             <select id="education_attainment" class="w-full border rounded-lg px-3 py-2 focus:ring-blue-300 focus:border-blue-400">
-              <option>Select</option>
+              <option></option>
               <option>High School Graduate</option>
               <option>Vocational/Technical</option>
               <option>College Undergraduate</option>
@@ -104,7 +103,7 @@
 
       <!-- Skills & Certifications -->
       <div class="border-t pt-4">
-        <h3 class="font-semibold text-gray-800 mb-4">Skills & Certifications</h3>
+        <h3 class="font-semibold text-xl text-gray-800 mb-4">Skills & Certifications</h3>
         <div class="space-y-4">
           <div>
             <label class="block text-sm font-medium text-gray-700">Relevant Skills</label>
@@ -121,12 +120,42 @@
 
       <!-- Required Documents -->
       <div class="border-t pt-4">
-        <h3 class="font-semibold text-gray-800 mb-4">Required Documents</h3>
-        <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Resume/CV <span class="text-red-500">*</span></label>
-          <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx" class="w-full">
-        </div>
+        <h3 class="font-semibold text-xl text-gray-800 mb-4">Required Documents</h3>
+        <!-- Upload Box -->
+        <div class="mb-8">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            Resume/CV <span class="text-red-500">*</span>
+          </label>
+
+      <!-- Clickable Upload Area (the input sits on top, invisible) -->
+      <div
+        id="uploadBox"
+        class="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-400 transition flex flex-col items-center justify-center bg-white"
+        aria-hidden="false"
+      >
+        <!-- Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-4-4l-4 4m0 0l4 4m-4-4h12" />
+        </svg>
+
+        <p class="text-gray-600 font-medium">Click to upload your resume</p>
+        <p class="text-xs text-gray-400 mt-1">PDF, DOC, or DOCX (Max 5MB)</p>
+
+        <!-- Invisible file input placed absolutely so clicks hit it -->
+        <input
+          id="resumeUpload"
+          type="file"
+          accept=".pdf,.doc,.docx"
+          class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          aria-label="Upload resume"
+        />
       </div>
+
+      <!-- File name / error messages -->
+      <p id="fileName" class="text-sm text-gray-600 mt-2"></p>
+      <p id="fileError" class="text-sm text-red-600 mt-1 hidden"></p>
+    </div>
 
       <!-- Submit -->
       <div class="flex justify-end">

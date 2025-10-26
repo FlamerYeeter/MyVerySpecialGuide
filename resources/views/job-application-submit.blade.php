@@ -7,18 +7,16 @@
         <p class="italic text-xs">(pindutin upang malaman ang tungkol sa navigation buttons sa taas)</p>
     </div> --}}
 
-    <!-- Back Button -->
-  <div class="bg-yellow-400 mt-6 py-4">
-    <div class="max-w-5xl mx-auto px-4 flex items-center space-x-2">
-      <a href="/job-application-review2" class="flex items-center space-x-2 text-gray-800 font-medium hover:underline">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-          stroke-width="2" stroke="currentColor" class="w-5 h-5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        <span>Back</span>
-      </a>
-    </div>
-  </div>
+<!-- Back Button -->
+<div class="bg-yellow-400 mt-6 py-8 px-6">
+  <a href="/job-details" class="flex items-center space-x-3 text-blue-900 text-3xl font-semibold hover:underline">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+      stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+    <span>Back</span>
+  </a>
+</div>
 
   <!-- Applying For -->
   <section class="max-w-5xl mx-auto mt-8 px-4">
@@ -107,7 +105,7 @@
     <h2 class="text-xl font-semibold text-gray-800 mb-4">Submit Application</h2>
 
     <!-- Confirmation box -->
-    <div class="bg-green-100 border border-green-300 rounded-lg p-6 text-gray-800">
+    <div class="bg-green-100 border-4 border-green-300 rounded-lg p-6 text-gray-800">
       <h3 class="font-semibold text-green-900 mb-2">Final Confirmation</h3>
       <p class="text-sm text-gray-700 mb-3">
         By submitting this application, you confirm that all information provided is accurate and complete.

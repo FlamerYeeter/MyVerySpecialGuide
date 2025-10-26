@@ -4,16 +4,14 @@
 
 
 <!-- Back Button -->
-<div class="bg-yellow-400 mt-6 py-8">
-  <div class="max-w-5xl mx-auto px-6">
-    <a href="/job-details" class="flex items-center space-x-3 text-blue-900 text-3xl font-semibold hover:underline w-fit">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-      </svg>
-      <span>Back</span>
-    </a>
-  </div>
+<div class="bg-yellow-400 mt-6 py-8 px-6">
+  <a href="/job-details" class="flex items-center space-x-3 text-blue-900 text-3xl font-semibold hover:underline">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+      stroke-width="2.5" stroke="currentColor" class="w-7 h-7">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+    <span>Back</span>
+  </a>
 </div>
 
 
