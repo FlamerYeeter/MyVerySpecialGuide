@@ -6,7 +6,7 @@
   <!-- HEADER BANNER -->
     <br>
   <section class="bg-green-600 flex flex-col md:flex-row items-center justify-center py-10 text-center md:text-left">
-    <img src="/images/target-icon.png" alt="Goals Icon" class="h-24 mx-auto md:mx-8">
+    <img src="{{ asset('image/targeticon.png') }}" alt="Goals Icon" class="h-24 mx-auto md:mx-8">
     <div>
       <h2 class="text-3xl font-bold text-black">Goals & Progress</h2>
       <p class="text-gray-700">Track your career goals and improve your skill gap step by step</p>
@@ -17,7 +17,7 @@
   <section class="py-10 px-8 grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
     <div class="border rounded-xl text-center shadow-sm py-8">
       <div class="flex justify-center mb-3">
-        <img src="/images/icon-progress.png" alt="" class="h-10">
+        <img src="{{ asset('image/progress.png') }}" alt="" class="h-10">
       </div>
       <h3 class="text-3xl font-bold text-blue-600">1</h3>
       <p class="font-semibold mt-1">In Progress</p>
@@ -26,7 +26,7 @@
 
     <div class="border rounded-xl text-center shadow-sm py-8">
       <div class="flex justify-center mb-3">
-        <img src="/images/icon-completed.png" alt="" class="h-10">
+        <img src="{{ asset('image/completed.png') }}" alt="" class="h-10">
       </div>
       <h3 class="text-3xl font-bold text-green-500">1</h3>
       <p class="font-semibold mt-1">Completed</p>
@@ -35,7 +35,7 @@
 
     <div class="border rounded-xl text-center shadow-sm py-8">
       <div class="flex justify-center mb-3">
-        <img src="/images/icon-percentage.png" alt="" class="h-10">
+        <img src="{{ asset('image/overall.png') }}" alt="" class="h-10">
       </div>
       <h3 class="text-3xl font-bold text-blue-500">75%</h3>
       <p class="font-semibold mt-1">Overall Progress</p>
