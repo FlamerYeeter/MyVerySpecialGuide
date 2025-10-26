@@ -47,21 +47,21 @@
                         <option value="Other" {{ request('industry') == 'Other' ? 'selected' : '' }}>Other
                         </option>
                     </select>
-                    <select name="fit_level" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
+                    <select name="fit_level" class="px-4 py-2 rounded-lg bg-white border-2 border-blue-500 text-sm">
                         <option value="">Job Fit Level</option>
                         <option value="Excellent Fit" {{ request('fit_level') == 'Excellent Fit' ? 'selected' : '' }}>
                             Excellent Fit</option>
                         <option value="Good Fit" {{ request('fit_level') == 'Good Fit' ? 'selected' : '' }}>Good Fit
                         </option>
                     </select>
-                    <select name="growth_potential" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
+                    <select name="growth_potential" class="px-4 py-2 rounded-lg bg-white border-2 border-blue-500 text-sm">
                         <option value="">Growth Potential</option>
                         <option value="High Potential" {{ request('growth_potential') == 'High Potential' ? 'selected' : '' }}>
                             High Potential</option>
                         <option value="Medium Potential" {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>
                             Medium Potential</option>
                     </select>
-                    <select name="work_environment" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
+                    <select name="work_environment" class="px-4 py-2 rounded-lg bg-white border-2 border-blue-500 text-sm">
                         <option value="">Work Environment</option>
                         <option value="Quiet" {{ request('work_environment') == 'Quiet' ? 'selected' : '' }}>Quiet</option>
                         <option value="Busy" {{ request('work_environment') == 'Busy' ? 'selected' : '' }}>Busy</option>
@@ -76,7 +76,7 @@
         <p class="text-sm text-gray-600">
       Click the dropdown arrow above, look at the list, and choose the option you want, the system will show jobs that match what you picked.
     </p>
-    <p class="text-xs text-gray-500 italic">(I-click ang dropdown arrow sa itaas, tingnan ang listahan, at piliin ang gusto mong option...)</p>
+    <p class="text-xs text-gray-500 italic">(I-click ang dropdown arrow sa itaas, tingnan ang listahan, at piliin ang gusto mong option, ipapakita ng system ang mga trabahong bagay sa iyong pinili)</p>
     </section>
 
     <!-- Match Notice -->
