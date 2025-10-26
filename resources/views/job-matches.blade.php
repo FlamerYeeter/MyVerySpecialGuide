@@ -67,13 +67,13 @@
                         <option value="Busy" {{ request('work_environment') == 'Busy' ? 'selected' : '' }}>Busy</option>
                     </select>
                     <!-- location filter removed per request -->
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2">Filter</button>
+                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2">Filter</button> <!-- Dapat automatic toh, wala ng button -->
                 </div>
-                <p class="text-center text-xs mt-3 italic text-gray-600">(i-click ang dropdown arrow sa itaas...)</p>
+                
             </form>
 
         </div>
-        <p class="text-sm text-gray-600">
+        <p class="text-sm flex item-center text-gray-600">
       Click the dropdown arrow above, look at the list, and choose the option you want, the system will show jobs that match what you picked.
     </p>
     <p class="text-xs text-gray-500 italic">(I-click ang dropdown arrow sa itaas, tingnan ang listahan, at piliin ang gusto mong option, ipapakita ng system ang mga trabahong bagay sa iyong pinili)</p>
