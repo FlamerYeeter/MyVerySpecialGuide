@@ -296,10 +296,10 @@
         @endif
 
 <section class="max-w-6xl mx-auto mt-10 bg-[#00ae7a] rounded-md p-6">
-    <h4 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+    <h4 class="text-lg font-semibold text-white flex items-center gap-2">
       💡 Jobs Matched to Your Skills & Preferences
     </h4>
-    <p class="text-sm italic text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan)</p>
+    <p class="text-sm italic text-white">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan)</p>
 
     <div class="mt-4">
       <button class="bg-white text-[#00ae7a] font-medium px-6 py-2 rounded-md">All Matches (2)</button>
