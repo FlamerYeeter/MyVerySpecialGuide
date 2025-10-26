@@ -20,8 +20,10 @@
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">LOG IN</h2>
 
         <!-- Form -->
-        <form method="POST" action="#" class="space-y-5">
+        <form method="POST" action="{{ route('login.post') }}" class="space-y-5">
             @csrf
+            <!-- After successful login, send user to the admin approval view -->
+            <input type="hidden" name="redirect" value="{{ route('admin.adminview') }}">
             @if($errors->any())
                 <div class="text-red-600 text-sm">{{ $errors->first() }}</div>
             @endif

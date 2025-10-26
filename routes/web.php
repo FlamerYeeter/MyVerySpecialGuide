@@ -384,6 +384,18 @@ Route::post('/login', function (Request $request) {
                                 $user->save();
                                 logger()->info('Login: persisted firebase_uid to user record', ['user_id' => $user->id, 'firebase_uid_hint' => substr($firebaseUid, 0, 6) . '...']);
                             }
+                            // Check Firestore admin assignments and grant local admin flags if present
+                            try {
+                                $fsAdmin = app(\App\Services\FirestoreAdminService::class);
+                                if (!empty($firebaseUid) && $fsAdmin->isAdmin($firebaseUid)) {
+                                    // Simplified: only set the role locally. Approval flags not required.
+                                    $user->role = 'admin';
+                                    $user->save();
+                                    logger()->info('Login: granted admin role from Firestore assignment', ['user_id' => $user->id, 'uid_hint' => substr($firebaseUid, 0, 6) . '...']);
+                                }
+                            } catch (\Throwable $__fs_e) {
+                                logger()->warning('Login: Firestore admin check failed: ' . $__fs_e->getMessage());
+                            }
                         } catch (\Throwable $__save_e) {
                             logger()->warning('Login: failed to persist firebase_uid to user record: ' . $__save_e->getMessage());
                         }
@@ -471,6 +483,19 @@ Route::post('/session/firebase-signin', function (Request $request) {
             logger()->warning('firebase-signin: failed to persist firebase_uid: ' . $e->getMessage());
         }
 
+        // Check Firestore admin assignments and grant local admin flags if present
+        try {
+            $fsAdmin = app(\App\Services\FirestoreAdminService::class);
+            if (!empty($firebaseUid) && $fsAdmin->isAdmin($firebaseUid)) {
+                // Simplified: only set the role locally. Approval flags are not required.
+                $user->role = 'admin';
+                $user->save();
+                logger()->info('firebase-signin: granted admin role from Firestore assignment', ['user_id' => $user->id, 'uid_hint' => substr($firebaseUid, 0, 6) . '...']);
+            }
+        } catch (\Throwable $__fs_e) {
+            logger()->warning('firebase-signin: Firestore admin check failed: ' . $__fs_e->getMessage());
+        }
+
         $request->session()->regenerate();
         return response()->json(['ok' => true, 'firebase_uid' => $firebaseUid]);
     } catch (\Throwable $e) {
@@ -501,6 +526,11 @@ Route::get('/admin/register', function () {
     return view('admin.admin-register-page1');
 })->name('admin.register');
 
+// Admin login page (separate from the regular /login view)
+Route::get('/admin/login', function () {
+    return view('admin.admin-login');
+})->name('admin.login');
+
 // Admin registration submit endpoint (client should create Firebase account first and then POST the firebaseUid here)
 use App\Http\Controllers\AdminRegistrationController;
 Route::post('/admin/register/submit', [AdminRegistrationController::class, 'submit'])->name('admin.register.submit');
@@ -513,6 +543,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])->pref
     Route::get('/expert', function () { return view('admin.admin-approval-expert'); })->name('admin.expert');
     Route::get('/jobpostings', function () { return view('admin.admin-approval-jobpostings'); })->name('admin.jobpostings');
     Route::get('/adminview', function () { return view('admin.admin-approval-adminview'); })->name('admin.adminview');
+    // Admin assignment management (Firestore-backed)
+    Route::get('/admins', [\App\Http\Controllers\AdminAssignmentController::class, 'index'])->name('admin.admins');
+    Route::post('/admins', [\App\Http\Controllers\AdminAssignmentController::class, 'store'])->name('admin.admins.store');
+    Route::delete('/admins/{uid}', [\App\Http\Controllers\AdminAssignmentController::class, 'destroy'])->name('admin.admins.destroy');
     // Approvals API
     Route::get('/api/pending-approvals', [\App\Http\Controllers\AdminApprovalController::class, 'pending'])->name('admin.api.pending');
     Route::post('/api/approve/{id}', [\App\Http\Controllers\AdminApprovalController::class, 'approve'])->name('admin.api.approve');
