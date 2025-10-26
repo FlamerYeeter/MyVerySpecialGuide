@@ -292,26 +292,30 @@
             </div>
         @endif
 
-        <div class="mt-4 flex flex-col md:flex-row md:space-x-4">
-            <div class="bg-white p-4 rounded-lg shadow w-full md:w-1/2">
-                <h3 class="text-blue-600 font-semibold">Saved Jobs</h3>
-                <p class="text-sm text-gray-600 mt-1">
-                    Click the “Save” button on any job listing to keep it for later. <br>
-                    <span class="italic text-xs">(-I-click ang Save button sa anumang job listing upang mai-save ito para sa susunod.)</span>
-                </p>
-            </div>
-            <div class="bg-white p-4 rounded-lg shadow w-full md:w-1/2 mt-4 md:mt-0">
-                <p class="text-sm text-gray-600">
-                    Click the “View Details” button to view more information about the Job. <br>
-                    <span class="italic text-xs">(-I-click ang button na “View Details” para makita ang karagdagang impormasyon tungkol sa trabaho.)</span>
-                </p>
-            </div>
-        </div>
-        <br>
-        <div class="flex items-center gap-3 mt-4 md:mt-0">
-          <button class="bg-blue-500 text-white px-4 py-2 rounded-lg">All Matches</button>
-        </div>
+<section class="max-w-6xl mx-auto mt-10 bg-[#DFF7F5] rounded-md p-6">
+    <h4 class="text-lg font-semibold text-gray-800 flex items-center gap-2">
+      💡 Jobs Matched to Your Skills & Preferences
+    </h4>
+    <p class="text-sm italic text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan)</p>
+
+    <div class="mt-4">
+      <button class="bg-[#00BFA6] text-white font-medium px-6 py-2 rounded-md">All Matches (2)</button>
     </div>
+  </section>
+
+  <!-- JOB INFO -->
+  <section class="max-w-6xl mx-auto mt-10 px-6">
+    <div class="bg-white p-4 border border-gray-300 rounded-md mb-5">
+      <p class="text-sm">Click the <a href="#" class="text-[#007BFF] underline">“View Details”</a> button to view more information about the Job.</p>
+      <p class="text-xs text-gray-500 italic">(Pindutin ang button na “View Details” para makita ang karagdagang impormasyon...)</p>
+    </div>
+
+    <div class="bg-white p-4 border border-gray-300 rounded-md mb-8">
+      <a href="#" class="text-[#007BFF] font-medium underline">Saved Jobs</a>
+      <p class="text-sm">Click the “Save” button on any job listing to keep it for later.</p>
+      <p class="text-xs text-gray-500 italic">(I-click ang “Save” button sa anumang job listing upang mai-save ito...)</p>
+    </div>
+  </section>
 
     <!-- Job Cards -->
     @php
