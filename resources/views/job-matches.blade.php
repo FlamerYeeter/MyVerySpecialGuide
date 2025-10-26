@@ -19,7 +19,7 @@
     <section class="max-w-6xl mx-auto mt-8 px-6">
         <h3 class="text-lg font-semibold mb-3">Filter</h3>
                 <div class="flex flex-wrap justify-center gap-3">
-                    <select name="industry" class="px-4 py-2 rounded-lg bg-yellow-400 border-2 border-blue-500 text-sm">
+                    <select name="industry" class="px-4 py-2 rounded-lg bg-white border-2 border-blue-500 text-sm">
                         <option value="">Industry</option>
                         <option value="Healthcare" {{ request('industry') == 'Healthcare' ? 'selected' : '' }}>Healthcare
                         </option>
@@ -71,7 +71,12 @@
                 </div>
                 <p class="text-center text-xs mt-3 italic text-gray-600">(i-click ang dropdown arrow sa itaas...)</p>
             </form>
+
         </div>
+        <p class="text-sm text-gray-600">
+      Click the dropdown arrow above, look at the list, and choose the option you want, the system will show jobs that match what you picked.
+    </p>
+    <p class="text-xs text-gray-500 italic">(I-click ang dropdown arrow sa itaas, tingnan ang listahan, at piliin ang gusto mong option...)</p>
     </section>
 
     <!-- Match Notice -->
