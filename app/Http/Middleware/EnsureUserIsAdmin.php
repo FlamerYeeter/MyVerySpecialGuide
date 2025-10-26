@@ -18,8 +18,9 @@ class EnsureUserIsAdmin
             return redirect()->route('login');
         }
 
-        // If the user is not an admin or not yet approved, block access.
-        if (($user->role ?? null) !== 'admin' || !($user->admin_approved ?? false)) {
+        // If the user is not an admin, block access.
+        // Simplified: only require role === 'admin'. Approval flags are optional now.
+        if (($user->role ?? null) !== 'admin') {
             abort(403, 'Admin access only');
         }
 
