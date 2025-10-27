@@ -83,11 +83,11 @@
                 <!-- Info Text -->
                 <div class="flex-1 text-left">
                     <p class="font-medium text-sm sm:text-base leading-relaxed">
-                        Please fill in your school and work information. This helps us recommend suitable programs and
+                        Please fill in your work information. This helps us recommend suitable programs and
                         opportunities that match your experience.
                     </p>
                     <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-                        (Ilagay ang iyong impormasyon tungkol sa paaralan at trabaho. Makakatulong ito upang
+                        (Ilagay ang iyong impormasyon tungkol sa trabaho. Makakatulong ito upang
                         mairerekomenda namin ang mga programang tugma sa iyong karanasan.)
                     </p>
                 </div>
@@ -102,88 +102,6 @@
 
         <!-- Form Section -->
         <form class="mt-10 max-w-3xl mx-auto">
-
-            <!-- School Name -->
-            <div class="mt-8 text-left px-2 sm:px-2">
-                <label for="school_name" class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                    Name of your school
-                    <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
-                </label>
-
-                <p class="text-gray-600 italic text-sm sm:text-base mb-1">
-                    (Pangalan ng iyong paaralan)
-                </p>
-
-                <input id="school_name" name="school_name" type="text" placeholder="School Name"
-                    class="w-full border border-gray-300 rounded-lg p-3 sm:p-4 text-sm sm:text-base 
-           focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none transition-all duration-200" />
-            </div>
-
-            <!-- Certificates -->
-            <div class="mt-8 text-left px-2 sm:px-2">
-                <!-- Main Label -->
-                <label for="certs" class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                    Do you have any certificates or special trainings?
-                    <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform">🔊</button>
-                </label>
-
-                <!-- Translation -->
-                <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-                    (May mga certificate o special training ka ba?)
-                </p>
-
-                <!-- Text Input -->
-                <input id="certs" name="certs" type="text"
-                    placeholder="List your certificates or trainings (e.g. NC II, TESDA, etc.)"
-                    class="w-full border border-gray-300 rounded-lg p-3 sm:p-4 text-sm sm:text-base 
-           focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none 
-           transition-all duration-200 mb-4" />
-
-                <!-- File Upload -->
-                <div
-                    class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-800 text-sm sm:text-base">
-                            <span id="certLabel">Upload your certificates (optional)</span>
-                        </p>
-                        <p id="certHint" class="text-gray-600 italic text-xs sm:text-sm">(I-upload ang iyong certificate o larawan nito)</p>
-                    </div>
-
-                    <label for="cert_file"
-                        class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
-             px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
-                        📁 Choose File
-                    </label>
-
-                    <input id="cert_file" name="cert_file" type="file" accept=".jpg, .jpeg, .png, .pdf"
-                        class="hidden">
-                </div>
-
-                <script>
-                    (function(){
-                        const fileInput = document.getElementById('cert_file');
-                        const labelEl = document.getElementById('certLabel');
-                        const hintEl = document.getElementById('certHint');
-                        const original = labelEl ? labelEl.textContent : '';
-                        if (!fileInput || !labelEl) return;
-                        fileInput.addEventListener('change', function(){
-                            const f = this.files && this.files[0];
-                            if (!f) {
-                                labelEl.textContent = original;
-                                labelEl.removeAttribute('title');
-                                if (hintEl) hintEl.style.display = '';
-                                return;
-                            }
-                            const name = f.name || '';
-                            const max = 60;
-                            const display = name.length > max ? name.slice(0, max-3) + '...' : name;
-                            labelEl.textContent = display;
-                            labelEl.setAttribute('title', name);
-                            if (hintEl) hintEl.style.display = 'none';
-                        });
-                    })();
-                </script>
-            </div>
 
             <!-- Work Experience Header -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
@@ -261,8 +179,6 @@
             <!-- Hidden input for work type (collected by register.js) -->
             <input id="work_type" type="hidden" value="" />
 
-
-
             <!-- Next Button -->
             <div class="flex flex-col items-center justify-center mt-10 sm:mt-12 mb-6 sm:mb-8 space-y-4">
                 <div id="schoolError" class="text-red-600 text-sm mb-2"></div>
@@ -271,8 +187,7 @@
                     Next →
                 </button>
                 <p class="text-gray-600 text-sm mt-2 text-center">
-                    Click <span class="text-[#1E40AF] font-medium">"Next"</span> to move to the next page Your
-                    Qualifications<br>
+                    Click <span class="text-[#1E40AF] font-medium">"Next"</span> to move to the next page<br>
                     <span class="italic text-[#4B4F58]">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
                 </p>
             </div>

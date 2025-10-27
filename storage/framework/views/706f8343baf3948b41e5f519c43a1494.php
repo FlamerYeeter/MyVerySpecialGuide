@@ -61,7 +61,10 @@
                 <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex flex-wrap items-center gap-x-3">
                     For Admin Approval
                     <span class="text-gray-600 italic text-sm sm:text-base">(Pahintulot sa Admin)</span>
-                    <button type="button" class="text-xl hover:scale-110 transition-transform tts-btn" data-tts-en="For Admin Approval. Please type your information inside the box. The fields marked with a star must be filled in and attach a valid proof of membership." data-tts-tl="Pahintulot sa Admin. Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may bituin ay dapat sagutan at mag-upload ng patunay na miyembro." aria-label="Play audio for admin instruction">🔊</button>
+                    <button type="button" class="text-xl hover:scale-110 transition-transform tts-btn"
+                        data-tts-en="For Admin Approval. Please type your information inside the box. The fields marked with a star must be filled in and attach a valid proof of membership."
+                        data-tts-tl="Pahintulot sa Admin. Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may bituin ay dapat sagutan at mag-upload ng patunay na miyembro."
+                        aria-label="Play audio for admin instruction">🔊</button>
                 </h2>
                 <p class="text-gray-800 text-sm sm:text-base mt-2">
                     Please type your information inside the box. The text with a ⭐ star must be filled in and attach a
@@ -341,9 +344,13 @@
                     class="grid grid-cols-1 md:grid-cols-2 bg-blue-50 border border-blue-300 rounded-xl p-6 mt-6 text-sm gap-6 shadow-inner">
                     <!-- English -->
                     <div>
-            <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">English <button
-                type="button" class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
-                title="Play audio" aria-label="Play audio for password rules (English)" data-tts-en="Password must have: One uppercase letter, one lowercase letter, one number, and at least eight characters. Example: Lovedog12." data-tts-tl="Ang password ay dapat mayroong isang malaking letra, isang maliit na letra, isang numero, at hindi bababa sa walong karakter. Halimbawa: Lovedog12.">🔊</button></p>
+                        <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">English <button
+                                type="button"
+                                class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
+                                title="Play audio" aria-label="Play audio for password rules (English)"
+                                data-tts-en="Password must have: One uppercase letter, one lowercase letter, one number, and at least eight characters. Example: Lovedog12."
+                                >🔊</button>
+                        </p>
                         <p class="mb-2">Password must have:</p>
                         <ul class="list-disc list-inside space-y-1 text-gray-700">
                             <li>One uppercase letter (A, B, C)</li>
@@ -356,9 +363,12 @@
 
                     <!-- Tagalog -->
                     <div>
-            <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">Tagalog <button
-                type="button" class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
-                title="Play audio" aria-label="Play audio for password rules (Tagalog)" data-tts-en="Password must have: One uppercase letter, one lowercase letter, one number, and at least eight characters. Example: Lovedog12." data-tts-tl="Ang password ay dapat mayroong: isang malaking letra, isang maliit na letra, isang numero, at hindi bababa sa 8 karakter na halo ng letra at numero. Halimbawa: Lovedog12.">🔊</button></p>
+                        <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">Tagalog <button
+                                type="button"
+                                class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
+                                title="Play audio" aria-label="Play audio for password rules (Tagalog)"
+                                data-tts-tl="Ang password ay dapat mayroong: isang malaking letra, isang maliit na letra, isang numero, at hindi bababa sa 8 karakter na halo ng letra at numero. Halimbawa: Lovedog12.">🔊</button>
+                        </p>
                         <p class="mb-2">Ang password ay dapat mayroong:</p>
                         <ul class="list-disc list-inside space-y-1 text-gray-700">
                             <li>Isang malaking letra (A, B, C)</li>
@@ -395,7 +405,7 @@
                     Proof of Membership
                 </h3>
 
-                <!-- File Upload Box (matches certificate style) -->
+                <!-- File Upload Box -->
                 <div
                     class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div class="flex-1">
@@ -405,21 +415,158 @@
                             </span>
                         </p>
                         <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-                            (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)
+                            (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br><br>
+                            Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br>
                         </p>
+
+                        <!-- File preview details -->
+                        <div id="proofFileInfo"
+                            class="hidden mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm">
+                            <div class="flex items-center gap-2">
+                                <span id="proofFileIcon" class="text-2xl"></span>
+                                <span id="proofFileName"
+                                    class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"></span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="proofViewBtn" type="button"
+                                    class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">View
+                                    / Tingnan</button>
+                                <button id="proofRemoveBtn" type="button"
+                                    class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">Remove
+                                    / Alisin</button>
+                            </div>
+                        </div>
                     </div>
 
                     <label for="proof"
                         class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
                         px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
-                        📁 Choose File
+                        📁 Choose File / Pumili ng File
                     </label>
 
                     <input id="proof" name="proof" type="file" accept=".jpg,.jpeg,.png,.pdf"
                         class="hidden" required>
                 </div>
-            </div>
 
+                <!-- Modal for File Preview -->
+                <div id="fileModal"
+                    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+                    <div
+                        class="bg-white rounded-lg shadow-lg max-w-3xl w-[90%] max-h-[85vh] flex flex-col overflow-hidden">
+                        <div class="flex justify-between items-center bg-[#2E2EFF] text-white px-4 py-2">
+                            <h2 class="font-semibold text-base">File Preview / Pagtingin ng File</h2>
+                            <button id="closeModalBtn"
+                                class="text-white font-bold text-lg hover:text-gray-300">✕</button>
+                        </div>
+                        <div id="modalContent"
+                            class="flex-1 bg-gray-100 overflow-auto flex items-center justify-center p-4">
+                            <!-- File content will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Script -->
+                <script>
+                    (function() {
+                        const fileInput = document.getElementById('proof');
+                        const fileInfo = document.getElementById('proofFileInfo');
+                        const fileName = document.getElementById('proofFileName');
+                        const fileIcon = document.getElementById('proofFileIcon');
+                        const viewBtn = document.getElementById('proofViewBtn');
+                        const removeBtn = document.getElementById('proofRemoveBtn');
+                        const modal = document.getElementById('fileModal');
+                        const modalContent = document.getElementById('modalContent');
+                        const closeModal = document.getElementById('closeModalBtn');
+                        const hintEl = document.getElementById('proofHint');
+
+                        let currentFileURL = null;
+                        let currentFileType = null;
+
+                        // When user selects a file
+                        fileInput.addEventListener('change', function() {
+                            const file = this.files[0];
+                            if (file) {
+                                const name = file.name.length > 50 ? file.name.slice(0, 47) + '...' : file.name;
+                                const ext = file.name.split('.').pop().toLowerCase();
+                                currentFileType = ext;
+
+                                // Set icon based on file type
+                                if (['jpg', 'jpeg', 'png'].includes(ext)) {
+                                    fileIcon.textContent = '🖼️';
+                                } else if (ext === 'pdf') {
+                                    fileIcon.textContent = '📄';
+                                } else {
+                                    fileIcon.textContent = '📁';
+                                }
+
+                                fileName.textContent = name;
+                                fileInfo.classList.remove('hidden');
+                                if (hintEl) hintEl.style.display = 'none';
+
+                                // Create object URL for preview
+                                if (currentFileURL) URL.revokeObjectURL(currentFileURL);
+                                currentFileURL = URL.createObjectURL(file);
+                            } else {
+                                fileInfo.classList.add('hidden');
+                                fileName.textContent = '';
+                                fileIcon.textContent = '';
+                                if (hintEl) hintEl.style.display = '';
+                            }
+                        });
+
+                        // View file in modal
+                        viewBtn.addEventListener('click', () => {
+                            if (currentFileURL) {
+                                modalContent.innerHTML = ''; // Clear previous preview
+                                if (['jpg', 'jpeg', 'png'].includes(currentFileType)) {
+                                    const img = document.createElement('img');
+                                    img.src = currentFileURL;
+                                    img.alt = 'Uploaded Image';
+                                    img.className = 'max-h-[80vh] rounded shadow';
+                                    modalContent.appendChild(img);
+                                } else if (currentFileType === 'pdf') {
+                                    const iframe = document.createElement('iframe');
+                                    iframe.src = currentFileURL;
+                                    iframe.className = 'w-full h-[80vh] rounded';
+                                    modalContent.appendChild(iframe);
+                                } else {
+                                    modalContent.innerHTML =
+                                        '<p class="text-gray-600">Preview not available for this file type.</p>';
+                                }
+                                modal.classList.remove('hidden');
+                            }
+                        });
+
+                        // Close modal without removing file
+                        closeModal.addEventListener('click', () => {
+                            modal.classList.add('hidden');
+                            modalContent.innerHTML = ''; // Clear preview safely
+                        });
+
+                        // Close modal by clicking outside 
+                        modal.addEventListener('click', (e) => {
+                            if (e.target === modal) {
+                                modal.classList.add('hidden');
+                                modalContent.innerHTML = '';
+                            }
+                        });
+
+                        // Remove file manually
+                        removeBtn.addEventListener('click', () => {
+                            fileInput.value = '';
+                            if (currentFileURL) {
+                                URL.revokeObjectURL(currentFileURL);
+                                currentFileURL = null;
+                            }
+                            fileInfo.classList.add('hidden');
+                            fileName.textContent = '';
+                            fileIcon.textContent = '';
+                            if (hintEl) hintEl.style.display = '';
+                        });
+                    })();
+                </script>
+
+            </div>
 
             <!-- Submit Button -->
             <div class="flex flex-col items-center mt-6">
@@ -539,7 +686,7 @@
 
     <!-- Show/hide password toggles -->
     <script>
-        (function(){
+        (function() {
             function toggleField(checkboxId, fieldId) {
                 const cb = document.getElementById(checkboxId);
                 const field = document.getElementById(fieldId);
@@ -553,41 +700,14 @@
 
             // Run after DOM loaded
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', function(){
-                    toggleField('togglePassword','password');
-                    toggleField('toggleConfirm','confirmPassword');
+                document.addEventListener('DOMContentLoaded', function() {
+                    toggleField('togglePassword', 'password');
+                    toggleField('toggleConfirm', 'confirmPassword');
                 });
             } else {
-                toggleField('togglePassword','password');
-                toggleField('toggleConfirm','confirmPassword');
+                toggleField('togglePassword', 'password');
+                toggleField('toggleConfirm', 'confirmPassword');
             }
-        })();
-    </script>
-
-    <!-- Replace label text with selected filename -->
-    <script>
-        (function(){
-            const fileInput = document.getElementById('proof');
-            const labelEl = document.getElementById('proofLabel');
-            const hintEl = document.getElementById('proofHint');
-            const originalText = labelEl ? labelEl.textContent : '';
-            if (!fileInput || !labelEl) return;
-            fileInput.addEventListener('change', function(e){
-                const f = this.files && this.files[0];
-                if (!f) {
-                    labelEl.textContent = originalText;
-                    labelEl.removeAttribute('title');
-                    if (hintEl) hintEl.style.display = '';
-                    return;
-                }
-                // show truncated name if long and set full name in title for hover
-                const name = f.name;
-                const max = 60;
-                const display = name.length > max ? name.slice(0, max-3) + '...' : name;
-                labelEl.textContent = display;
-                labelEl.setAttribute('title', name);
-                if (hintEl) hintEl.style.display = 'none';
-            });
         })();
     </script>
 
@@ -597,7 +717,7 @@
 
     <!-- TTS: Web Speech API handler -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('.tts-btn');
             const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
             let preferredVoice = null;
@@ -606,9 +726,9 @@
 
             function populateVoices() {
                 availableVoices = window.speechSynthesis.getVoices() || [];
-                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
-                    || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
-                    || null;
+                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName) ||
+                    availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name)) ||
+                    null;
             }
 
             function chooseVoiceForLang(langCode) {
@@ -616,7 +736,8 @@
                 langCode = (langCode || '').toLowerCase();
                 let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
                 if (candidates.length) return pickBest(candidates);
-                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i
+                    .test(v.name));
                 if (candidates.length) return pickBest(candidates);
                 return availableVoices[0];
             }
@@ -636,34 +757,37 @@
                 }
             }
 
-            buttons.forEach(function (btn) {
+            buttons.forEach(function(btn) {
                 btn.setAttribute('role', 'button');
                 btn.setAttribute('tabindex', '0');
 
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', function() {
                     const textEn = (btn.getAttribute('data-tts-en') || '').trim();
                     const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
                     if (!textEn && !textTl) return;
 
-                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn ===
+                        btn) {
                         stopSpeaking();
                         return;
                     }
 
                     stopSpeaking();
-                    setTimeout(function () {
+                    setTimeout(function() {
                         if (!window.speechSynthesis) return;
 
                         function voiceFor(langHint) {
                             if (preferredVoice) return preferredVoice;
                             if (langHint) {
                                 const hint = (langHint || '').toLowerCase();
-                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint
+                                    .includes('tagalog')) {
                                     return chooseVoiceForLang('tl');
                                 }
                                 return chooseVoiceForLang(langHint);
                             }
-                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                            return chooseVoiceForLang('en') || (availableVoices.length ?
+                                availableVoices[0] : null);
                         }
 
                         const seq = [];
@@ -684,7 +808,7 @@
 
                         if (!seq.length) return;
 
-                        seq[0].onstart = function () {
+                        seq[0].onstart = function() {
                             btn.classList.add('speaking');
                             btn.setAttribute('aria-pressed', 'true');
                             currentBtn = btn;
@@ -692,17 +816,17 @@
 
                         for (let i = 0; i < seq.length; i++) {
                             const ut = seq[i];
-                            ut.onerror = function () {
+                            ut.onerror = function() {
                                 if (btn) btn.classList.remove('speaking');
                                 if (btn) btn.removeAttribute('aria-pressed');
                                 currentBtn = null;
                             };
                             if (i < seq.length - 1) {
-                                ut.onend = function () {
+                                ut.onend = function() {
                                     window.speechSynthesis.speak(seq[i + 1]);
                                 };
                             } else {
-                                ut.onend = function () {
+                                ut.onend = function() {
                                     if (btn) btn.classList.remove('speaking');
                                     if (btn) btn.removeAttribute('aria-pressed');
                                     currentBtn = null;
@@ -714,7 +838,7 @@
                     }, 50);
                 });
 
-                btn.addEventListener('keydown', function (ev) {
+                btn.addEventListener('keydown', function(ev) {
                     if (ev.key === 'Enter' || ev.key === ' ') {
                         ev.preventDefault();
                         btn.click();
@@ -722,13 +846,13 @@
                 });
             });
 
-            window.addEventListener('beforeunload', function () {
+            window.addEventListener('beforeunload', function() {
                 if (window.speechSynthesis) window.speechSynthesis.cancel();
             });
 
             if (window.speechSynthesis) {
                 populateVoices();
-                window.speechSynthesis.onvoiceschanged = function () {
+                window.speechSynthesis.onvoiceschanged = function() {
                     populateVoices();
                 };
             }

@@ -125,15 +125,15 @@
             </div>
 
             <!-- Instruction -->
-            <div class="mt-6 text-center sm:text-left px-1 sm:px-4">
+            <div class="mt-4 text-center sm:text-left px-1 sm:px-4">
                 <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2">
-                    <p class="text-xs sm:text-base font-medium text-gray-800">Choose from the pictures provided and
+                    <p class="mt-4 text-gray-800 font-medium text-base sm:text-lg leading-snug">Choose from the pictures provided and
                         click
                         your answer.</p>
                     <button type="button"
-                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Choose from the pictures provided and click your answer." data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot" aria-label="Play audio for instruction">🔊</button>
+                        class="mt-4 text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Choose from the pictures provided and click your answer." data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot" aria-label="Play audio for instruction">🔊</button>
                 </div>
-                <p class="text-[10px] sm:text-sm text-gray-600 italic mt-1">(Pumili mula sa mga larawan at pindutin ang
+                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Pumili mula sa mga larawan at pindutin ang
                     iyong sagot)</p>
             </div>
 
@@ -189,7 +189,8 @@
                     data-value="other" onclick="selectSupportChoice(this,'other')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Other" data-tts-tl="Iba pa" aria-label="Play audio for Other option">🔊</button>
+                        data-tts-en="Other, Type your answer inside the box if not in the choices" 
+                        data-tts-tl="Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian" aria-label="Play audio for Other option">🔊</button>
 
                     <div class="flex flex-col flex-grow justify-center">
                         <h3 id="support_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
