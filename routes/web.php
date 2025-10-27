@@ -720,6 +720,7 @@ Route::post('/api/guardian/jobs/{jobId}/flag', [GuardianJobController::class, 'f
 // Recommendations API: hybrid generator endpoint
 use App\Http\Controllers\RecommendationController;
 Route::post('/api/recommendations/user', [RecommendationController::class, 'userRecommendations']);
+Route::post('/api/recommendations/all', [RecommendationController::class, 'generateAll']);
 
 // Endpoint to issue Firebase custom token for current Laravel user
 Route::get('/firebase-token', [FirebaseTokenController::class, 'token'])->middleware('auth')->name('firebase.token');

@@ -55,18 +55,56 @@ class RecommendationController extends Controller
             return response()->json(['error' => 'unauthorized', 'message' => 'Missing or invalid Firebase idToken or Laravel session.'], 401);
         }
 
-        // sanitize uid for file paths
-        $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $uid ?: 'anonymous');
-        $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
+    // sanitize uid for file paths
+    $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $uid ?: 'anonymous');
+    $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
+    $debugUsersPath = storage_path('app/reco_debug_users_' . $safeUid . '.json');
+    $debugOutPath = storage_path('app/reco_debug_out_' . $safeUid . '.log');
+    $debugParsedPath = storage_path('app/reco_debug_parsed_' . $safeUid . '.json');
+
+    Log::info('recommendations: request for uid=' . $uid . ' cachePath=' . $cachePath);
 
         // TTL for cached results (seconds). If cached file is recent, return it immediately.
         $cacheTtl = 60 * 60; // 1 hour
+
+        // honor a 'force' flag in the request to force regeneration for this uid (dev-friendly)
+        $force = $request->input('force') ? true : false;
+    // placeholder for synchronous run result
+    $result = null;
+        $debug = $request->input('debug') ? true : false;
+
+        if ($force) {
+            Log::info('recommendations: force regeneration requested for uid=' . $uid);
+            try {
+                // Run synchronously to produce an updated cache immediately (safe in dev/sync queue)
+                $job = new GenerateRecommendations($uid, $profile);
+                $result = $job->runAndReturn();
+                if ($result !== null) {
+                    $out = null;
+                    if (is_array($result) && array_key_exists($uid, $result)) $out = $result[$uid]; else $out = $result;
+                    if ($debug && app()->environment('local')) {
+                        // include parsed result inline for easier dev debugging (local only)
+                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                    }
+                    return response()->json($out);
+                }
+                // small sleep to allow file write on slower filesystems (harmless)
+                usleep(150000);
+            } catch (\Throwable $e) {
+                Log::warning('GenerateRecommendations force run failed: ' . $e->getMessage());
+            }
+        }
         try {
             // If cache exists and is fresh, return immediately
             if (file_exists($cachePath) && (time() - filemtime($cachePath) < $cacheTtl)) {
                 $raw = @file_get_contents($cachePath);
                 $json = json_decode($raw, true);
                 if ($json !== null) {
+                    // If the stored JSON is a mapping keyed by uid (per-user mode), return only that user's array for simplicity
+                    if (is_array($json) && array_key_exists($uid, $json)) {
+                        Log::info('recommendations: returning cached per-uid results for ' . $uid);
+                        return response()->json($json[$uid]);
+                    }
                     return response()->json($json);
                 }
             }
@@ -80,16 +118,88 @@ class RecommendationController extends Controller
                 // dispatch the job asynchronously
                 GenerateRecommendations::dispatch($uid, $profile);
                 if ($json !== null) {
+                    if (is_array($json) && array_key_exists($uid, $json)) {
+                        Log::info('recommendations: returning stale per-uid cache for ' . $uid);
+                        return response()->json($json[$uid]);
+                    }
                     return response()->json($json);
                 }
             }
 
-            // No cache exists: dispatch job and return 202 Accepted with placeholder
+            // No cache exists: dispatch job. In local/dev or when queue driver is 'sync', run it synchronously
             GenerateRecommendations::dispatch($uid, $profile);
+
+            try {
+                $queueDriver = config('queue.default');
+            } catch (\Throwable $_e) { $queueDriver = null; }
+
+            // If using sync queue or in local environment, run the job inline so results are immediately available for dev/testing.
+            if ($queueDriver === 'sync' || app()->environment('local')) {
+                try {
+                    // Run synchronously (safe for dev). Use runAndReturn to get JSON directly.
+                    $job = new GenerateRecommendations($uid, $profile);
+                    $result = $job->runAndReturn();
+                    if ($result !== null) {
+                        $out = null;
+                        if (is_array($result) && array_key_exists($uid, $result)) $out = $result[$uid]; else $out = $result;
+                        if ($debug && app()->environment('local')) {
+                            return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                        }
+                        Log::info('recommendations: returning sync-generated per-uid results for ' . $uid);
+                        return response()->json($out);
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('GenerateRecommendations sync run failed: ' . $e->getMessage());
+                }
+            }
+            // As a last resort: if cache does not exist yet (queue running in background), attempt a synchronous generation
+            // This is a fallback to help dev/testing so users see per-user recommendations immediately.
+            try {
+                Log::info('recommendations: attempting synchronous fallback generation for uid=' . $uid);
+                $job = new GenerateRecommendations($uid, $profile);
+                $result = $job->runAndReturn();
+                if ($result !== null) {
+                    $out = null;
+                    if (is_array($result) && array_key_exists($uid, $result)) $out = $result[$uid]; else $out = $result;
+                    if ($debug && app()->environment('local')) {
+                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                    }
+                    Log::info('recommendations: returning fallback-generated per-uid results for ' . $uid);
+                    return response()->json($out);
+                }
+            } catch (\Throwable $_e) {
+                Log::warning('recommendations: synchronous fallback failed: ' . $_e->getMessage());
+            }
+
             return response()->json(['status' => 'scheduled', 'message' => 'Recommendation generation scheduled.'], 202);
         } catch (\Exception $e) {
             Log::error('Recommendation exception: ' . $e->getMessage());
             return response()->json(['error' => 'exception', 'message' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Trigger bulk generation for all users. Restricted to local environment or loopback requests.
+     * POST /api/recommendations/all
+     */
+    public function generateAll(Request $request)
+    {
+        try {
+            // Restrict this endpoint to local dev or loopback callers to avoid abuse
+            $allowed = app()->environment('local') || in_array($request->ip(), ['127.0.0.1', '::1', 'localhost']);
+            if (!$allowed) {
+                return response()->json(['error' => 'forbidden'], 403);
+            }
+
+            // Run bulk generator synchronously (dev-friendly). It will write per-uid cache files.
+            $result = \App\Jobs\GenerateRecommendations::runForAllUsers();
+            if ($result === null) {
+                return response()->json(['status' => 'failed', 'message' => 'bulk generation failed or produced no output'], 500);
+            }
+            return response()->json(['status' => 'ok', 'users' => array_keys($result)]);
+        } catch (\Throwable $e) {
+            logger()->error('RecommendationController::generateAll failed: ' . $e->getMessage());
+            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }
     }
 

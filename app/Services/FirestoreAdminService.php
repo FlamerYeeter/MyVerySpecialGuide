@@ -135,6 +135,66 @@ class FirestoreAdminService
         }
     }
 
+    /**
+     * List user documents under the 'users' collection and convert them to simple PHP arrays.
+     * Returns an associative array uid => profileArray
+     */
+    public function listUsers(): array
+    {
+        try {
+            if (!$this->projectId) return [];
+            $access = $this->getAccessToken();
+            if (!$access) return [];
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/users";
+            $resp = Http::withToken($access)->get($url, ['pageSize' => 1000]);
+            if (!$resp->successful()) return [];
+            $data = $resp->json();
+            $out = [];
+            if (!empty($data['documents']) && is_array($data['documents'])) {
+                foreach ($data['documents'] as $doc) {
+                    $name = $doc['name'] ?? '';
+                    $parts = explode('/', $name);
+                    $docId = end($parts);
+                    $fields = $doc['fields'] ?? [];
+                    $profile = [];
+                    foreach ($fields as $k => $v) {
+                        $profile[$k] = $this->convertFirestoreValue($v);
+                    }
+                    $out[$docId] = $profile;
+                }
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            logger()->warning('FirestoreAdminService:listUsers failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * Convert a Firestore value object to a PHP scalar/array.
+     */
+    private function convertFirestoreValue($v)
+    {
+        if (!is_array($v)) return $v;
+        if (isset($v['stringValue'])) return $v['stringValue'];
+        if (isset($v['booleanValue'])) return (bool)$v['booleanValue'];
+        if (isset($v['integerValue'])) return is_numeric($v['integerValue']) ? (int)$v['integerValue'] : $v['integerValue'];
+        if (isset($v['doubleValue'])) return is_numeric($v['doubleValue']) ? (float)$v['doubleValue'] : $v['doubleValue'];
+        if (isset($v['timestampValue'])) return $v['timestampValue'];
+        if (isset($v['arrayValue']) && isset($v['arrayValue']['values']) && is_array($v['arrayValue']['values'])) {
+            $arr = [];
+            foreach ($v['arrayValue']['values'] as $it) $arr[] = $this->convertFirestoreValue($it);
+            return $arr;
+        }
+        if (isset($v['mapValue']) && isset($v['mapValue']['fields']) && is_array($v['mapValue']['fields'])) {
+            $m = [];
+            foreach ($v['mapValue']['fields'] as $kk => $vv) $m[$kk] = $this->convertFirestoreValue($vv);
+            return $m;
+        }
+        // fallback: return raw
+        return $v;
+    }
+
     public function assign(string $firebaseUid, ?string $email = null, string $assignedBy = ''): bool
     {
         try {
