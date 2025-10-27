@@ -587,6 +587,10 @@ Route::get('/registereducation', function () {
     return view('ds_register_education');
 })->name('registereducation');
 
+Route::get('/registerworkinfo', function () {
+    return view('ds_register_workinfo');
+})->name('registerworkinfo');
+
 Route::get('/registerschoolworkinfo', function () {
     return view('ds_register_school_workinfo');
 })->name('registerschoolworkinfo');
