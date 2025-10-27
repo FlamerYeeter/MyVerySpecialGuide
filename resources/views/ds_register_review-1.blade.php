@@ -122,6 +122,16 @@
                 </div>
             </div>
 
+            <!-- DS Type -->
+            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+                <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                    Additional Information
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
+                    <p><span class="font-semibold">Type of Down Syndrome:</span> <span id="r_dsType"></span></p>
+                </div>
+            </div> 
+
             <!-- Guardian Info -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
                 <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
@@ -146,20 +156,6 @@
                     <p><span class="font-semibold">Password:</span> <span id="r_password"></span></p>
                 </div>
             </div>
-
-            <!-- DS Type & School/Work Info -->
-            {{-- <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Additional Profile
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
-                    <p><span class="font-semibold">Type of Down Syndrome:</span> <span id="r_dsType"></span></p>
-                    <p><span class="font-semibold">School Name:</span> <span id="r_school_name"></span></p>
-                    <p><span class="font-semibold">Work Type:</span> <span id="r_work_type"></span></p>
-                    <p><span class="font-semibold">Certificates (file):</span> <span id="r_cert_file"></span></p>
-                </div>
-            </div> --}}
-
 
             <!-- Proof of Membership -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">

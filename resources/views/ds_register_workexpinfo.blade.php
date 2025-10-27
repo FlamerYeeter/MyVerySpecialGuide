@@ -45,7 +45,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('registerschoolworkinfo') }}'">
+        onclick="window.location.href='{{ route('registereducation') }}'">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-3 h-3 sm:w-6 sm:h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -67,7 +67,9 @@
             <h2
                 class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
                 Continue setting up your profile
-                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile" aria-label="Play audio for header">🔊</button>
+                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                    data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile"
+                    aria-label="Play audio for header">🔊</button>
             </h2>
             <p
                 class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
@@ -96,20 +98,17 @@
                     </p>
                     <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
                         (Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan
-                        namin
-                        ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na babagay sa
-                        iyong
-                        kasanayan at karanasan.)
+                        namin ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na
+                        babagay sa
+                        iyong kasanayan at karanasan.)
                     </p>
-                    <p class="text-gray-700 text-[11px] sm:text-sm mt-4 leading-relaxed">
+                    <p class="text-black-700 text-[16px] font-medium sm:text-sm mt-4 leading-relaxed">
                         Even if you haven’t worked before, you can still share volunteer work, school activities, or
-                        other
-                        experiences that helped you develop your skills.
-                        <span class="italic text-gray-600 text-[10px] sm:text-xs mt-1">
-                            (Kahit wala ka pang pormal na trabaho, maaari mong ilagay ang mga karanasang boluntaryo,
-                            gawain sa
-                            paaralan, o iba pang aktibidad na nakatulong sa iyong paghubog ng kasanayan.)
-                        </span>
+                        other experiences that helped you develop your skills.
+                    </p>
+                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
+                        (Kahit wala ka pang pormal na trabaho, maaari mong ilagay ang mga karanasang boluntaryo,
+                        gawain sa paaralan, o iba pang aktibidad na nakatulong sa iyong paghubog ng kasanayan.)
                     </p>
                 </div>
             </div>
@@ -117,48 +116,171 @@
             <!-- Audio Button -->
             <button type="button"
                 class="absolute top-3 right-3 bg-[#1E40AF] text-white text-lg sm:text-xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                data-tts-en="Please share your work experience information. This helps us understand the kind of work you’ve done before and identify roles or opportunities where your skills and background will be most valued." data-tts-tl="Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan namin ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na babagay sa iyong kasanayan at karanasan." aria-label="Play audio for information note">
+                data-tts-en="Please share your work experience information. This helps us understand the kind of work you’ve done before and identify roles or opportunities where your skills and background will be most valued."
+                data-tts-tl="Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan namin ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na babagay sa iyong kasanayan at karanasan."
+                aria-label="Play audio for information note">
                 🔊
             </button>
         </div>
 
         <form class="mt-10 max-w-3xl mx-auto">
-            <!-- Work Experience Question -->
+
+            <!-- Work Experience Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
-                <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Work Experience</h2>
-                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
-                    <p class="mt-2 text-base sm:text-lg font-medium text-gray-800">If you have worked before, how long
-                        did you work
-                        there?</p>
-                    <button type="button"
-                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="If you have worked before, how long did you work there?" data-tts-tl="Kung may karanasan ka sa trabaho, gaano ka katagal nagtrabaho doon?" aria-label="Play audio for work experience question">🔊</button>
+
+                <!-- Work Experience Title -->
+                <div class="flex items-center justify-center sm:justify-start gap-3 mb-3">
+                    <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Work Experience</h2>
                 </div>
-                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Kung may karanasan ka sa trabaho, gaano ka
-                    katagal
-                    nagtrabaho doon?)</p>
+
+                <!-- Question Box -->
+                <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 rounded-lg px-4 py-4 shadow-sm">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-2">
+                        <p class="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
+                            Have you worked before?
+                        </p>
+                        <button type="button" class="text-blue-600 text-2xl hover:scale-110 transition-transform focus:outline-none tts-btn"
+                            title="Play audio" data-tts-en="Have you worked before?"
+                            data-tts-tl="Nakapagtrabaho ka na dati?" aria-label="Play audio for question">
+                            🔊
+                        </button>
+                    </div>
+                    <p class="text-gray-600 italic text-base sm:text-lg mt-1">
+                        (Nakapagtrabaho ka na dati?)
+                    </p>
+                </div>
+
+                <!-- Instruction -->
+                <div class="mt-8">
+                    <div
+                        class="flex flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-start gap-2">
+                        <p class="text-gray-800 font-medium text-base sm:text-lg leading-snug">
+                            Choose from the pictures provided and click your answer.
+                        </p>
+                        <button type="button"
+                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                        data-tts-en="Choose from the pictures provided and click your answer."
+                        data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot"
+                        aria-label="Play audio for instruction">🔊</button>
+                    </div>
+                    <p class="text-gray-600 italic text-sm sm:text-base mt-1">
+                        (Pumili mula sa mga larawan at pindutin ang iyong sagot)
+                    </p>
+                </div>
             </div>
 
-            <!-- Instruction -->
-            <div class="mt-6 text-center sm:text-left px-1 sm:px-4">
-                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2">
-                    <p class="text-xs sm:text-base font-medium text-gray-800">Choose from the pictures provided and
-                        click
-                        your answer.</p>
-                    <button type="button"
-                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Choose from the pictures provided and click your answer." data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot" aria-label="Play audio for instruction">🔊</button>
+            <!-- Cards -->
+            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
+                <!-- Card 1 -->
+                <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectWorkTypeChoice(this,'paid')">
+                     <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
+                        data-tts-en="Yes, I have had a paid job" data-tts-tl="Oo, nagkaroon ako ng trabahong may bayad"
+                        aria-label="Play audio for 1-2 years option">🔊</button>
+                    <img src="image/jobexp1.png" alt="paid job" class="w-full h-36 object-contain rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Yes, I have had a paid job</h3>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Oo, nagkaroon ako ng trabahong may
+                        bayad)
+                    </p>
                 </div>
-                <p class="text-[10px] sm:text-sm text-gray-600 italic mt-1">(Pumili mula sa mga larawan at pindutin ang
-                    iyong sagot)</p>
+
+                <!-- Card 2 -->
+                <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectWorkTypeChoice(this,'volunteer')">
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
+                        data-tts-en="Yes, I have done volunteer work" data-tts-tl="Oo, nakapag volunteer work ako"
+                        aria-label="Play audio for 1-2 years option">🔊</button>
+                    <img src="image/jobexp2.png" alt="volunteer job" class="w-full h-36 object-contain rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Yes, I have done volunteer work</h3>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Oo, nakapag volunteer work ako)</p>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectWorkTypeChoice(this,'internship')">
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
+                        data-tts-en="I have done internship or job training" data-tts-tl="Nag internship o job training ako"
+                        aria-label="Play audio for 1-2 years option">🔊</button>
+                    <img src="image/jobexp3.png" alt="internship" class="w-full h-36 object-contain rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">I have done internship or job training
+                    </h3>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Nag internship o job training ako)
+                    </p>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectWorkTypeChoice(this,'none')">
+                   <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
+                        data-tts-en="No, this would be my first time" data-tts-tl="Hindi, ito ang magiging unang beses ko"
+                        aria-label="Play audio for 1-2 years option">🔊</button>
+                    <img src="image/jobexp4.png" alt="no job experience"
+                        class="w-full h-36 object-contain rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">No, this would be my first time</h3>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Hindi, ito ang magiging unang beses
+                        ko)
+                    </p>
+                </div>
+            </div>
+
+            <!-- Hidden input for work type (collected by register.js) -->
+            <input id="work_type" type="hidden" value="" />
+
+            <!-- Work Experience Question -->
+            <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
+
+                <!-- Question Box -->
+                <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 rounded-lg px-4 py-4 shadow-sm">
+                    <div
+                       class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-2">
+                        <p class="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
+                            If you have worked before, how long did you work there?
+                        </p>
+                        <button type="button"
+                            class="text-blue-600 text-2xl hover:scale-110 transition-transform tts-btn"
+                            data-tts-en="If you have worked before, how long did you work there?"
+                            data-tts-tl="Kung may karanasan ka sa trabaho, gaano ka katagal nagtrabaho doon?"
+                            aria-label="Play audio for work experience question">🔊</button>
+                    </div>
+                    <p class="text-gray-600 italic text-base sm:text-lg mt-1">
+                        (Kung may karanasan ka sa trabaho, gaano ka katagal nagtrabaho doon?)
+                    </p>
+                </div>
+
+                <!-- Instruction -->
+                <div class="mt-8">
+                    <div
+                        class="flex flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-start gap-2">
+                        <p class="text-gray-800 font-medium text-base sm:text-lg leading-snug">
+                            Choose from the pictures provided and click your answer.
+                        </p>
+                        <button type="button"
+                            class="text-blue-600 text-2xl hover:scale-110 transition-transform tts-btn"
+                            data-tts-en="Choose from the pictures provided and click your answer."
+                            data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot"
+                            aria-label="Play audio for instruction">🔊</button>
+                    </div>
+                    <p class="text-gray-600 italic text-sm sm:text-base mt-1">
+                        (Pumili mula sa mga larawan at pindutin ang iyong sagot)
+                    </p>
+                </div>
+
             </div>
 
             <!-- Work Years Cards -->
-            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
+            <div
+                class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
                 <!-- Card 1 -->
                 <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectWorkYearsChoice(this, 'lt1')">
                     <button type="button"
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="Less than 1 year" data-tts-tl="Mas mababa sa 1 taon" aria-label="Play audio for Less than 1 year option">🔊</button>
+                        data-tts-en="Less than 1 year" data-tts-tl="Mas mababa sa 1 taon"
+                        aria-label="Play audio for Less than 1 year option">🔊</button>
                     <img src="image/workyr1.png" alt="less 1 yr"
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">Less than 1 year</h3>
@@ -169,7 +291,8 @@
                     onclick="selectWorkYearsChoice(this, '1-2')">
                     <button type="button"
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="1 to 2 years" data-tts-tl="1 hanggang 2 taon" aria-label="Play audio for 1-2 years option">🔊</button>
+                        data-tts-en="1 to 2 years" data-tts-tl="1 hanggang 2 taon"
+                        aria-label="Play audio for 1-2 years option">🔊</button>
                     <img src="image/workyr2.png" alt="1-2 yrs"
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">1-2 years</h3>
@@ -180,7 +303,8 @@
                     onclick="selectWorkYearsChoice(this, 'gt3')">
                     <button type="button"
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="More than 3 years" data-tts-tl="Mahigit 3 taon" aria-label="Play audio for More than 3 years option">🔊</button>
+                        data-tts-en="More than 3 years" data-tts-tl="Mahigit 3 taon"
+                        aria-label="Play audio for More than 3 years option">🔊</button>
                     <img src="image/workyr3.png" alt="more than 3 yrs"
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">More than 3 years</h3>
@@ -198,16 +322,16 @@
                 </div>
             </div>
 
-            <!-- Job Experience Section -->
+            <!-- Experiences Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
-                <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Job Experiences</h2>
-                <p class="text-gray-600 italic mt-4 text-base sm:text-lg">Add one or more previous jobs.</p>
+                <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Experiences</h2>
+                <p class="text-gray-600 italic mt-4 text-base sm:text-lg">Add one or more previous work experience.</p>
                 <div id="job_experiences_container" class="space-y-4 mt-4"></div>
                 <template id="job_exp_template">
                     <div
                         class="job_exp_item bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out mt-3">
                         <div class="flex justify-between items-center">
-                            <h4 class="font-semibold text-blue-800 text-sm sm:text-base">Job Experience</h4>
+                            <h4 class="font-semibold text-blue-800 text-sm sm:text-base">Work Experience</h4>
                             <button type="button"
                                 class="remove-job text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium transition-colors duration-200">
                                 Remove
@@ -290,6 +414,24 @@
                 </div>
         </form>
     </div>
+
+    <!-- Small inline helper to toggle selection and write the value -->
+    <script>
+        // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workinfo.blade.php
+        function selectWorkTypeChoice(el, value) {
+            try {
+                document.querySelectorAll('.workexp-card').forEach(c => c.classList.remove('selected'));
+                if (el && el.classList) el.classList.add('selected');
+                const hidden = document.getElementById('work_type');
+                if (hidden) hidden.value = value || '';
+                const err = document.getElementById('schoolError');
+                if (err) err.textContent = '';
+            } catch (e) {
+                console.error('selectWorkTypeChoice error', e);
+            }
+        }
+    </script>
+
     <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workexpinfo.blade.php
         function selectWorkYearsChoice(el, value) {
@@ -413,7 +555,7 @@
 
     <!-- TTS: Web Speech API handler -->
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             const buttons = document.querySelectorAll('.tts-btn');
             const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
             let preferredVoice = null;
@@ -422,9 +564,9 @@
 
             function populateVoices() {
                 availableVoices = window.speechSynthesis.getVoices() || [];
-                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
-                    || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
-                    || null;
+                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName) ||
+                    availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name)) ||
+                    null;
             }
 
             function chooseVoiceForLang(langCode) {
@@ -432,7 +574,8 @@
                 langCode = (langCode || '').toLowerCase();
                 let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
                 if (candidates.length) return pickBest(candidates);
-                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i
+                    .test(v.name));
                 if (candidates.length) return pickBest(candidates);
                 return availableVoices[0];
             }
@@ -452,31 +595,35 @@
                 }
             }
 
-            buttons.forEach(function (btn) {
+            buttons.forEach(function(btn) {
                 btn.setAttribute('role', 'button');
                 btn.setAttribute('tabindex', '0');
 
-                btn.addEventListener('click', function () {
+                btn.addEventListener('click', function() {
                     const textEn = (btn.getAttribute('data-tts-en') || '').trim();
                     const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
                     if (!textEn && !textTl) return;
-                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn ===
+                        btn) {
                         stopSpeaking();
                         return;
                     }
                     stopSpeaking();
-                    setTimeout(function () {
+                    setTimeout(function() {
                         if (!window.speechSynthesis) return;
+
                         function voiceFor(langHint) {
                             if (preferredVoice) return preferredVoice;
                             if (langHint) {
                                 const hint = (langHint || '').toLowerCase();
-                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint
+                                    .includes('tagalog')) {
                                     return chooseVoiceForLang('tl');
                                 }
                                 return chooseVoiceForLang(langHint);
                             }
-                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                            return chooseVoiceForLang('en') || (availableVoices.length ?
+                                availableVoices[0] : null);
                         }
 
                         const seq = [];
@@ -497,7 +644,7 @@
 
                         if (!seq.length) return;
 
-                        seq[0].onstart = function () {
+                        seq[0].onstart = function() {
                             btn.classList.add('speaking');
                             btn.setAttribute('aria-pressed', 'true');
                             currentBtn = btn;
@@ -505,15 +652,17 @@
 
                         for (let i = 0; i < seq.length; i++) {
                             const ut = seq[i];
-                            ut.onerror = function () {
+                            ut.onerror = function() {
                                 if (btn) btn.classList.remove('speaking');
                                 if (btn) btn.removeAttribute('aria-pressed');
                                 currentBtn = null;
                             };
                             if (i < seq.length - 1) {
-                                ut.onend = function () { window.speechSynthesis.speak(seq[i + 1]); };
+                                ut.onend = function() {
+                                    window.speechSynthesis.speak(seq[i + 1]);
+                                };
                             } else {
-                                ut.onend = function () {
+                                ut.onend = function() {
                                     if (btn) btn.classList.remove('speaking');
                                     if (btn) btn.removeAttribute('aria-pressed');
                                     currentBtn = null;
@@ -525,7 +674,7 @@
                     }, 50);
                 });
 
-                btn.addEventListener('keydown', function (ev) {
+                btn.addEventListener('keydown', function(ev) {
                     if (ev.key === 'Enter' || ev.key === ' ') {
                         ev.preventDefault();
                         btn.click();
@@ -533,10 +682,14 @@
                 });
             });
 
-            window.addEventListener('beforeunload', function () { if (window.speechSynthesis) window.speechSynthesis.cancel(); });
+            window.addEventListener('beforeunload', function() {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            });
             if (window.speechSynthesis) {
                 populateVoices();
-                window.speechSynthesis.onvoiceschanged = function () { populateVoices(); };
+                window.speechSynthesis.onvoiceschanged = function() {
+                    populateVoices();
+                };
             }
         });
     </script>

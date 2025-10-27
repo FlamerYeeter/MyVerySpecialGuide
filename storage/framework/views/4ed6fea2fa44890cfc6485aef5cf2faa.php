@@ -112,7 +112,10 @@
                     <span class="text-gray-700 italic text-base sm:text-lg block sm:inline">
                         (Pagkakasunod-sunod ng paggawa ng account)
                     </span>
-                    <button type="button" class="text-2xl sm:text-3xl hover:scale-110 transition-transform">🔊</button>
+                    <button type="button" class="text-2xl sm:text-3xl hover:scale-110 transition-transform tts-btn"
+                    data-tts-en="Here's what we'll do:" data-tts-tl="Pagkakasunod-sunod ng paggawa ng account">
+                   🔊
+                  </button>
                 </h3>
             </div>
 

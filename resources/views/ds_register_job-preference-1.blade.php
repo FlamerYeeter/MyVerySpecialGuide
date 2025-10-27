@@ -293,7 +293,8 @@
                 data-value="other" onclick="toggleJobPref1Choice(this,'other')">
                 <button type="button"
                     class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Other" data-tts-tl="Iba pa" aria-label="Play audio for Other option">🔊</button>
+                    data-tts-en="Other, Type your answer inside the box if not in the choices" 
+                    data-tts-tl="Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian" aria-label="Play audio for Other option">🔊</button>
 
                 <div class="flex flex-col flex-grow justify-center">
                     <h3 id="support_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
