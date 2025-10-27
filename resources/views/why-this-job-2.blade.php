@@ -4,16 +4,19 @@
 
 <div class="font-sans bg-white text-gray-800">
 
-  <!-- HEADER BANNER: NOTE AAYUSIN KO PA MAMAYA -->
-    <br>
-  <section class="bg-pink-500 flex flex-col md:flex-row items-center justify-center py-10 text-center md:text-left">
-    <img src="/images/target-icon.png" alt="Goals Icon" class="h-24 mx-auto md:mx-8">
-    <div>
-      <h2 class="text-3xl font-bold text-black">Why this Job?</h2>
-      <p class="text-gray-700">Discover how your unique skills and interests align with this job role</p>
-      <p class="text-gray-700">and learn the step-by-step path to achieve your aspirations</p>
-    </div>
-  </section>
+  <!-- Filter Form -->
+    <section class="bg-pink-500 py-7 mt-4">
+        <div class="container mx-auto px-4">
+                <div class="flex items-center justify-center space-x-4 mb-6">
+                    <img src="{{ asset('image/brain.png') }}" class="w-20 h-20">
+                    <div>
+                        <h2 class="text-3xl font-bold text-black">Why this Job and How to Get There?</h2>
+                        <p class="text-sm text-black">Discover how your unique skills and interests align with this job role</p>
+                        <p class="text-sm text-black">and learn the step-by-step path to achieve your aspirations </p>
+                    </div>
+                </div>
+        </div>
+    </section>
 
   <!-- Main Content Container -->
   <section class="max-w-5xl mx-auto mt-10 mb-20 px-4 space-y-8">
@@ -22,8 +25,9 @@
     <div class="bg-white shadow-md rounded-xl p-6 border">
       <div class="flex justify-between items-start mb-4">
         <div class="flex items-center space-x-3">
-          <img src="/images/job-icon.png" alt="Job Icon" class="w-8 h-8">
+          <img src="{{ asset('image/nameofjob.png') }}" alt="Job Icon" class="w-8 h-8">
           <h3 class="text-xl font-semibold text-gray-800">Kitchen Helper</h3>
+          <button class="text-blue-600 hover:text-blue-800">🔊</button>
         </div>
         <div class="flex items-center gap-4">
           <span class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">90% Match for You</span>
@@ -48,9 +52,10 @@
     <!-- What is this Job Card -->
     <div class="bg-white shadow-md rounded-xl p-6 border">
       <div class="flex items-center mb-3 space-x-2">
-        <img src="/images/info-icon.png" alt="Info" class="w-6 h-6">
+        <img src="{{ asset('image/whatisthisjob.png') }}" alt="Info" class="w-6 h-6">
         <h4 class="text-lg font-semibold text-gray-800">What is this Job?</h4>
         <span class="text-sm text-gray-500 italic">(Ano ang Trabahong Ito?)</span>
+        <button class="text-blue-600 hover:text-blue-800">🔊</button>
       </div>
 
       <p class="text-sm text-gray-700 mb-2">
@@ -69,9 +74,10 @@
     <!-- Possible You will do this Job Card -->
     <div class="bg-white shadow-md rounded-xl p-6 border">
       <div class="flex items-center mb-3 space-x-2">
-        <img src="/images/check-icon.png" alt="Check" class="w-6 h-6">
+        <img src="{{ asset('image/checkmark.png') }}" alt="Check" class="w-6 h-6">
         <h4 class="text-lg font-semibold text-gray-800">Possible You will do this Job</h4>
         <span class="text-sm text-gray-500 italic">(Mga Posibleng Gawin sa Trabahong Ito)</span>
+        <button class="text-blue-600 hover:text-blue-800">🔊</button>
       </div>
 
       <ul class="list-disc ml-6 text-sm space-y-3">
@@ -99,10 +105,10 @@
 
       <!-- Illustrations -->
       <div class="flex justify-center gap-4 mt-6 flex-wrap">
-        <img src="/images/kitchen1.png" alt="Kitchen Work 1" class="w-40 rounded-lg border">
-        <img src="/images/kitchen2.png" alt="Kitchen Work 2" class="w-40 rounded-lg border">
-        <img src="/images/kitchen3.png" alt="Kitchen Work 3" class="w-40 rounded-lg border">
-        <img src="/images/kitchen4.png" alt="Kitchen Work 4" class="w-40 rounded-lg border">
+        <img src="{{ asset('image/kitchenwork1.png') }}" alt="Kitchen Work 1" class="w-40 rounded-lg border">
+        <img src="{{ asset('image/kitchenwork2.png') }}" alt="Kitchen Work 2" class="w-40 rounded-lg border">
+        <img src="{{ asset('image/kitchenwork3.png') }}" alt="Kitchen Work 3" class="w-40 rounded-lg border">
+        <img src="{{ asset('image/kitchenwork4.png') }}" alt="Kitchen Work 4" class="w-40 rounded-lg border">
       </div>
     </div>
   </section>

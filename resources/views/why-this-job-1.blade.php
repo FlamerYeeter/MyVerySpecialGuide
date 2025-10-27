@@ -3,24 +3,27 @@
 @section('content')
 <div class="font-sans bg-white text-gray-800">
 
-  <!-- HEADER BANNER: NOTE AAYUSIN KO PA MAMAYA -->
-    <br>
-  <section class="bg-pink-500 flex flex-col md:flex-row items-center justify-center py-10 text-center md:text-left">
-    <img src="/images/target-icon.png" alt="Goals Icon" class="h-24 mx-auto md:mx-8">
-    <div>
-      <h2 class="text-3xl font-bold text-black">Why this Job?</h2>
-      <p class="text-gray-700">Discover how your unique skills and interests align with this job role</p>
-      <p class="text-gray-700">and learn the step-by-step path to achieve your aspirations</p>
-    </div>
-  </section>
+<!-- Filter Form -->
+    <section class="bg-pink-500 py-7 mt-4">
+        <div class="container mx-auto px-4">
+                <div class="flex items-center justify-center space-x-4 mb-6">
+                    <img src="{{ asset('image/brain.png') }}" class="w-20 h-20">
+                    <div>
+                        <h2 class="text-3xl font-bold text-black">Why this Job and How to Get There?</h2>
+                        <p class="text-sm text-black">Discover how your unique skills and interests align with this job role</p>
+                        <p class="text-sm text-black">and learn the step-by-step path to achieve your aspirations </p>
+                    </div>
+                </div>
+        </div>
+    </section>
   
   <!-- Job Roles Section -->
   <section class="max-w-4xl mx-auto mt-10 mb-16 px-4">
     <div class="bg-white shadow-md rounded-xl p-6 border">
       <div class="flex items-center mb-6 space-x-3">
-        <img src="/images/job-icon.png" alt="Job Icon" class="w-8 h-8">
+        <img src="{{ asset('image/matchedjob.png') }}" alt="Job Icon" class="w-8 h-8">
         <h3 class="text-xl font-semibold text-gray-800">Your Matched Job Roles</h3>
-        <img src="/images/sound-icon.png" alt="Speaker" class="w-6 h-6 ml-auto">
+        <button class="text-blue-600 hover:text-blue-800">🔊</button>
       </div>
 
       @if(!empty($approvedJobs) && is_array($approvedJobs) && count($approvedJobs) > 0)
