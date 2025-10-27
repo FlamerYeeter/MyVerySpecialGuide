@@ -3,23 +3,23 @@
         <h1 class="text-2xl font-bold text-sky-600 p-6">AdminHub</h1>
         <nav class="px-4 space-y-2">
             <a href="#" class="flex items-center space-x-2 p-2 rounded-md hover:bg-sky-100">
-                <span>📊</span><span>Dashboard</span>
+                <span><img src="{{ asset('image/dashboard.png') }}" alt="Info" class="w-5 h-5"></span><span>Dashboard</span>
             </a>
             <a href="#" class="flex items-center space-x-2 p-2 rounded-md hover:bg-sky-100">
-                <span>💬</span><span>Moderation</span>
+                <span><img src="{{ asset('image/moderation.png') }}" alt="Info" class="w-5 h-5"></span><span>Moderation</span>
             </a>
             <a href="#" class="flex items-center space-x-2 p-2 rounded-md bg-sky-500 text-white">
-                <span>🧾</span><span>Approval Workflow</span>
+                <span><img src="{{ asset('image/approval.png') }}" alt="Info" class="w-5 h-5"></span><span>Approval Workflow</span>
             </a>
             <a href="#" class="flex items-center space-x-2 p-2 rounded-md hover:bg-sky-100">
-                <span>📑</span><span>Compliance & Reports</span>
+                <span><img src="{{ asset('image/compliance.png') }}" alt="Info" class="w-5 h-5"></span><span>Compliance & Reports</span>
             </a>
         </nav>
     </div>
 
     <div class="p-4">
         <button class="flex items-center space-x-2 text-gray-600 hover:text-red-600">
-            <span>⏻</span><span>Logout</span>
+            <span><img src="{{ asset('image/logout.png') }}" alt="Info" class="w-5 h-5"></span><span>Logout</span>
         </button>
     </div>
 </aside>
