@@ -15,7 +15,7 @@
 
 
     <!-- Login Card -->
-<div class="bg-yellow-100 bg-opacity-90 rounded-2xl shadow-md p-10 sm:p-14 w-11/12 max-w-md text-center min-h-[600px] flex flex-col justify-center">
+<div class="bg-yellow-100 bg-opacity-90 rounded-2xl shadow-md p-10 sm:p-14 w-11/12 max-w-md text-center min-h-[500px] flex flex-col justify-center">
         <!-- Header -->
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">LOG IN</h2>
 
