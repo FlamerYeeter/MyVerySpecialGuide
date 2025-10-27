@@ -19,7 +19,7 @@
         <a href="{{ route('job.matches') }}" class="block">
         <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-orange-200 p-3 rounded-md">
-                <img src="{{ asset('images/jobmatches.png') }}" class="w-10 h-10" alt="">
+                <img src="{{ asset('image/bagicon.png') }}" class="w-10 h-10" alt="">
             </div>
             <div class="ml-4">
                 <h4 class="text-blue-600 font-semibold">Job Matches</h4>
@@ -33,7 +33,7 @@
         <a href="{{ route('career.goals.progress') }}" class="block">
         <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-red-200 p-3 rounded-md">
-                <img src="{{ asset('images/goals.png') }}" class="w-10 h-10" alt="">
+                <img src="{{ asset('image/targeticon.png') }}" class="w-10 h-10" alt="">
             </div>
             <div class="ml-4">
                 <h4 class="text-blue-600 font-semibold">Goals and Progress</h4>
@@ -47,7 +47,7 @@
         <a href="{{ route('why.this.job.1') }}" class="block">
         <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-pink-200 p-3 rounded-md">
-                <img src="{{ asset('images/whythisjob.png') }}" class="w-10 h-10" alt="">
+                <img src="{{ asset('image/brain.png') }}" class="w-10 h-10" alt="">
             </div>
             <div class="ml-4">
                 <h4 class="text-blue-600 font-semibold">Why This Job & How to Get There</h4>
@@ -61,7 +61,7 @@
     <a href="{{ route('guardianreview.pending') }}" class="block">
         <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
             <div class="bg-blue-200 p-3 rounded-md">
-                <img src="{{ asset('images/guardian.png') }}" class="w-10 h-10" alt="">
+                <img src="{{ asset('image/shieldicon.png') }}" class="w-10 h-10" alt="">
             </div>
             <div class="ml-4">
                 <h4 class="text-blue-600 font-semibold">Guardian Review</h4>
@@ -75,7 +75,7 @@
         <a href="{{ route('user.role') }}" class="block">
         <div class="bg-blue-50 rounded-lg flex p-5 mb-8 items-center hover:shadow-md transition">
             <div class="bg-purple-200 p-3 rounded-md">
-                <img src="{{ asset('images/profile.png') }}" class="w-10 h-10" alt="">
+                <img src="{{ asset('image/profileicon.png') }}" class="w-10 h-10" alt="">
             </div>
             <div class="ml-4">
                 <h4 class="text-blue-600 font-semibold">Profile</h4>
