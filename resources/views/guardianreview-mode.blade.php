@@ -168,7 +168,7 @@
       <img src="/images/feedback-icon.png" alt="Feedback Icon" class="w-5 h-5">
       <h4 class="font-semibold text-gray-700">Add your Feedback (Optional)</h4>
     </div>
-    <textarea id="guardian-feedback" placeholder="Share your thoughts about this job suggestion" class="w-full rounded-md border border-gray-300 p-3 text-sm text-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:outline-none bg-white" rows="3">{{ $approval['feedback'] ?? '' }}</textarea>
+  <textarea id="guardian-feedback" placeholder="Share your thoughts about this job suggestion" class="w-full rounded-md border border-gray-300 p-3 text-sm text-gray-600 placeholder-gray-400 focus:ring-2 focus:ring-yellow-400 focus:outline-none bg-white" rows="3">{{ data_get($approval, 'feedback', '') }}</textarea>
   </section>
 
   @push('scripts')

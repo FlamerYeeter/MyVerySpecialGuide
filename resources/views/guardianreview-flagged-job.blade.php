@@ -104,7 +104,7 @@
           <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Location:</span> {{ $p['location'] }}</div>
           <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Hours:</span> {{ $p['hours'] }}</div>
         </div>
-        <div class="bg-gray-100 rounded-lg mt-6 p-4"><p class="text-sm text-gray-700">{{ Str::limit($p['why'], 400) }}</p></div>
+  <div class="bg-gray-100 rounded-lg mt-6 p-4"><p class="text-sm text-gray-700">{{ Str::limit($p['why'] ?? ($p['raw']['description'] ?? $p['raw']['JobDescription'] ?? $p['raw']['jobpost'] ?? ''), 400) }}</p></div>
       </div>
     @endforeach
 
