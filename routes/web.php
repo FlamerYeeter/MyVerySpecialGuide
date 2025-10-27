@@ -592,7 +592,8 @@ Route::get('/registerworkinfo', function () {
 })->name('registerworkinfo');
 
 Route::get('/registerschoolworkinfo', function () {
-    return view('ds_register_school_workinfo');
+    // Skip the old combined page and continue to the work-experience step.
+    return redirect()->route('registerworkexpinfo');
 })->name('registerschoolworkinfo');
 
 Route::get('/registerworkexpinfo', function () {
