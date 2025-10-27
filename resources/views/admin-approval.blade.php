@@ -116,7 +116,7 @@
                 </select>
                 <button class="text-red-500 hover:text-red-700">
                     🗑️
-                    </button>
+                </button>
               </td>
             </tr>
 
