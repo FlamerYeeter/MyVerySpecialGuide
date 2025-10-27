@@ -46,13 +46,7 @@
         </div>
     </div>
 
-    <!-- Create Account Card -->
-    <div class="mt-4 bg-yellow-100 bg-opacity-90 rounded-2xl shadow-md p-6 w-11/12 max-w-md text-center">
-        <p class="text-gray-800 text-base">
-            Don’t have an account?
-            <a href="{{ route('register') }}" class="text-blue-600 font-semibold hover:underline">Create Account</a>
-        </p>
-    </div>
+    
 
 </body>
 </html>
