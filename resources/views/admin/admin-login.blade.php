@@ -46,6 +46,45 @@
         </div>
     </div>
 
+       <!-- ✅ Notification Modal (Place this before </body>) -->
+    <div id="notificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg shadow-lg w-11/12 max-w-lg overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between bg-yellow-400 px-6 py-3">
+                <div class="flex items-center space-x-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                            d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4c-.77-1.33-2.69-1.33-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z" />
+                    </svg>
+                    <h2 class="text-white font-semibold text-lg">Notification</h2>
+                </div>
+                <button onclick="closeModal()" class="text-white text-2xl leading-none hover:text-gray-200">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div class="bg-rose-50 px-6 py-6 text-center">
+                <p class="text-lg text-gray-900 font-medium">
+                    Only authorized administrators can log in account.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS for Modal -->
+    <script>
+        function openModal() {
+            document.getElementById('notificationModal').classList.remove('hidden');
+        }
+        function closeModal() {
+            document.getElementById('notificationModal').classList.add('hidden');
+        }
+
+        // Example: automatically open modal if error exists
+        @if($errors->any())
+            openModal();
+        @endif
+    </script>
     
 
 </body>
