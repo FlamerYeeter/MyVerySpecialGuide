@@ -126,10 +126,113 @@
   <!-- Pending Review -->
   <div class="max-w-5xl mx-auto mt-10 px-4">
     @php
-    // Build jobs using the same JSON-first recommendations pipeline as job-matches
-    $json_path = public_path('recommendations.json');
-    $jobs = [];
+  // Build jobs using per-user recommendation cache (storage/app/reco_user_<safeUid>.json)
+  // Prefer per-user cache tied to firebase UID. Resolve UID from multiple places for reliability:
+  // Auth::user()->firebase_uid, session keys, request query/input, cookies, or explicit safe_uid param.
+  $jobs = [];
+  $recommendations = [];
+  $uid = null;
+  try { $uid = Auth::user()->firebase_uid ?? null; } catch (\Exception $e) { $uid = null; }
+  // Try common session keys
+  if (empty($uid)) {
+    try { $uid = session('firebase_uid') ?? session('uid') ?? null; } catch (\Exception $e) { /* ignore */ }
+  }
+  // Try request query or input
+  if (empty($uid)) {
+    $uid = request()->query('uid', request()->input('uid', null));
+  }
+  // Try cookies
+  if (empty($uid)) {
+    $uid = request()->cookie('firebase_uid') ?? request()->cookie('uid') ?? null;
+  }
+  // Accept a pre-safe uid parameter if present
+  if (empty($uid)) {
+    $uid = request()->query('safe_uid', null);
+  }
+  // If caller passed a full filename like 'reco_user_<safe>.json', extract the safe portion
+  if (!empty($uid) && preg_match('/^reco_user_(.+)\.json$/i', $uid, $m)) {
+    $uid = $m[1];
+  }
+  // If we have no uid, do not show global recommendations (per-user-only policy)
+  if (!empty($uid)) {
+    // make a filesystem-safe uid (match earlier safe-uid behavior)
+    $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', (string) $uid);
+    $userRecoPath = storage_path('app/reco_user_' . $safeUid . '.json');
+    if (file_exists($userRecoPath)) {
+      $cacheKey = 'reco_user_file_' . md5($userRecoPath . '|' . @filemtime($userRecoPath));
+      $decoded = cache()->remember($cacheKey, 120, function() use ($userRecoPath) {
+        $json = @file_get_contents($userRecoPath);
+        $rows = json_decode($json, true) ?: [];
+        return is_array($rows) ? $rows : [];
+      });
 
+      // Normalize decoded shapes: some generators produce { uid: [recs] } maps
+      if (is_array($decoded)) {
+        // If it's a map keyed by UID and contains our UID, prefer that
+        if (isset($decoded[$uid]) && is_array($decoded[$uid])) {
+          $rows = $decoded[$uid];
+        } else {
+          // If top-level is an array of recommendations, use it
+          $isList = array_values($decoded) === $decoded;
+          if ($isList) $rows = $decoded;
+          else {
+            // If it's a map with single value that is an array, use that
+            $vals = array_values($decoded);
+            $arrVal = null;
+            foreach ($vals as $v) { if (is_array($v)) { $arrVal = $v; break; } }
+            $rows = is_array($arrVal) ? $arrVal : [];
+          }
+        }
+
+        if (is_array($rows) && count($rows) > 0) {
+          foreach ($rows as $index => $row) {
+            // Normalize common fields but preserve raw payload under 'raw'
+            $title = trim($row['title'] ?? $row['Title'] ?? $row['job_title'] ?? '');
+            $company = trim($row['company'] ?? $row['Company'] ?? $row['company_name'] ?? '');
+            $job_description = trim($row['job_description'] ?? $row['JobDescription'] ?? $row['description'] ?? '');
+            $hours = trim($row['formatted_work_type'] ?? $row['Duration'] ?? $row['Term'] ?? $row['Hours'] ?? '');
+            $match = $row['match_score'] ?? $row['computed_score'] ?? $row['content_score'] ?? 0;
+            if (is_numeric($match) && $match > 0 && $match <= 1.01) $match = $match * 100;
+
+            // Find a canonical job_id from common keys used across generators
+            $possibleIdKeys = ['job_id','JobID','id','jobId','JobId','id_job','posting_id','postingId','position_id','positionId','external_id','externalId'];
+            $foundId = null;
+            foreach ($possibleIdKeys as $k) {
+              if (isset($row[$k]) && strlen((string)$row[$k]) > 0) { $foundId = (string)$row[$k]; break; }
+            }
+            // Compute a deterministic fallback id when the generator does not supply one.
+            // This uses stable fields (title, company, location/description) so both pages
+            // can reproduce the same id independently.
+            $titleFallback = trim($row['title'] ?? $row['Title'] ?? $row['job_title'] ?? '');
+            $companyFallback = trim($row['company'] ?? $row['Company'] ?? $row['company_name'] ?? '');
+            $descFallback = trim($row['job_description'] ?? $row['JobDescription'] ?? $row['description'] ?? '');
+            if ($foundId) {
+                $jid = $foundId;
+            } else {
+                $jid = md5(($titleFallback ?: $descFallback) . '|' . $companyFallback . '|' . ($row['location'] ?? ''));
+            }
+
+            $jobs[] = [
+              'job_id' => $jid,
+              // Preserve the full title or full job description from the per-user JSON
+              'title' => $title ?: ($job_description ?: 'Untitled Job'),
+              'company' => $company,
+              'location' => $row['location'] ?? '',
+              'hours' => $hours,
+              'match_score' => intval(round(floatval($match))),
+              'why' => $job_description,
+              'raw' => $row,
+            ];
+          }
+        }
+        // Make recommendations available in the same variable used by job-matches so sorting/filtering is consistent
+        $recommendations = $jobs;
+      }
+    }
+  }
+  // Ensure $recommendations is at least an empty array when not found
+  $recommendations = $recommendations ?? [];
+  // If $jobs remains empty, we intentionally DO NOT fall back to global recommendations.json or CSV.
     // small industry keyword mapping reused from job-matches
     $industryKeywords = [
       'Healthcare' => ['health', 'nurse', 'doctor', 'clinic', 'hospital', 'patient', 'medical', 'therapist', 'pharmacy', 'caregiver', 'care'],
@@ -157,98 +260,8 @@
       return '';
     };
 
-    if (file_exists($json_path)) {
-      $cacheKey = 'recommendations_json_' . md5($json_path . '|' . @filemtime($json_path));
-      $decoded = cache()->remember($cacheKey, 600, function() use ($json_path) {
-        $json = @file_get_contents($json_path);
-        $rows = json_decode($json, true) ?: [];
-        return is_array($rows) ? $rows : [];
-      });
-
-      if (is_array($decoded)) {
-        foreach ($decoded as $index => $row) {
-          $title = trim($row['title'] ?? $row['Title'] ?? $row['job_title'] ?? '');
-          $company = trim($row['company'] ?? $row['Company'] ?? $row['company_name'] ?? '');
-          $job_description = trim($row['job_description'] ?? $row['JobDescription'] ?? $row['description'] ?? '');
-          $hours = trim($row['formatted_work_type'] ?? $row['Duration'] ?? $row['Term'] ?? $row['Hours'] ?? '');
-          $match = $row['match_score'] ?? $row['computed_score'] ?? $row['content_score'] ?? 0;
-          // normalize small fractional scores into 0-100
-          if (is_numeric($match) && $match > 0 && $match <= 1.01) $match = $match * 100;
-          $jobs[] = [
-            'job_id' => isset($row['job_id']) ? (string)$row['job_id'] : (string)$index,
-            'title' => $title ?: (strlen($job_description) ? Str::limit($job_description, 80) : 'Untitled Job'),
-            'company' => $company,
-            'location' => $row['location'] ?? '',
-            'hours' => $hours,
-            'match_score' => intval(round(floatval($match))),
-            'why' => $job_description,
-            'raw' => $row,
-          ];
-        }
-      }
-    } else {
-      // fallback to CSV postings.csv (defensive parsing)
-      $csv_path = public_path('postings.csv');
-      if (file_exists($csv_path)) {
-        $cacheKey = 'recommendations_csv_' . md5($csv_path . '|' . @filemtime($csv_path));
-        $csvRows = cache()->remember($cacheKey, 600, function() use ($csv_path) {
-          $out = [];
-          if (($handle = fopen($csv_path, 'r')) !== false) {
-            $header = fgetcsv($handle);
-            if ($header === false) { fclose($handle); return $out; }
-            $cols = $header ? array_map('trim', $header) : [];
-            $numCols = count($cols);
-            if ($numCols === 0) { fclose($handle); return $out; }
-            $maxRows = 5000;
-            while (($row = fgetcsv($handle)) !== false) {
-              if ($numCols > 0) {
-                if (count($row) < $numCols) $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
-                elseif (count($row) > $numCols) $row = array_slice($row, 0, $numCols);
-                if (count($row) !== $numCols) continue;
-              }
-              if ($maxRows-- <= 0) break;
-              $assoc = $numCols ? (array_combine($cols, $row) ?: []) : [];
-              $out[] = $assoc;
-            }
-            fclose($handle);
-          }
-          return $out;
-        });
-
-        $i = 0;
-        foreach ($csvRows as $assoc) {
-          $assoc = is_array($assoc) ? $assoc : [];
-          $title = $assoc['title'] ?? $assoc['jobtitle'] ?? $assoc['Title'] ?? '';
-          $company = $assoc['company_name'] ?? $assoc['company'] ?? '';
-          $description = $assoc['description'] ?? $assoc['JobDescription'] ?? '';
-          $hours = trim($assoc['formatted_work_type'] ?? $assoc['Duration'] ?? $assoc['Term'] ?? $assoc['Hours'] ?? '');
-          // lightweight content score heuristic
-          $textForScoring = trim($title . ' ' . $description . ' ' . ($assoc['skills_desc'] ?? ''));
-          $tokens = preg_split('/\W+/', strtolower($textForScoring));
-          $tokens = array_filter($tokens, function($t){ return strlen($t) > 2; });
-          $totalTokens = max(1, count($tokens));
-          $unique = array_unique($tokens);
-          $skillTokens = preg_split('/\W+/', strtolower($assoc['skills_desc'] ?? ''));
-          $skillTokens = array_filter($skillTokens, function($t){ return strlen($t) > 2; });
-          $skillCount = count($skillTokens);
-          $scoreBase = count($unique) / $totalTokens;
-          $skillBoost = min(1.5, $skillCount / max(1, min(50, $totalTokens)) );
-          $contentScore = round(($scoreBase * 0.7 + $skillBoost * 0.3) * 100, 2);
-
-          $jobs[] = [
-            'job_id' => isset($assoc['job_id']) ? (string)$assoc['job_id'] : (string)$i,
-            'title' => trim($title) ?: (strlen(trim($description)) ? Str::limit(trim($description), 80) : 'Untitled Job'),
-            'company' => trim($company),
-            'location' => $assoc['location'] ?? '',
-            'hours' => $hours,
-            'match_score' => intval(round(floatval($assoc['match_score'] ?? $contentScore ?? 0))),
-            'why' => $description,
-            'raw' => $assoc,
-          ];
-          $i++;
-        }
-      }
-    }
+    // Global fallbacks (public recommendations.json / postings.csv) removed.
+    // This view intentionally uses per-user recommendation files only (storage/app/reco_user_<uid>.json).
 
         // load approvals map
         $approvals_path = storage_path('app/guardian_job_approvals.json');
@@ -269,14 +282,10 @@
     foreach ($pending as $k => $job) {
         $title = trim(strval($job['title'] ?? $job['raw']['title'] ?? $job['raw']['Title'] ?? ''));
         $job_description = trim(strval($job['why'] ?? $job['raw']['job_description'] ?? $job['raw']['JobDescription'] ?? $job['raw']['description'] ?? ''));
-        if ($title === '') {
-            if (preg_match('/^(.{1,140}?)(?:\.|
-| needed with| needed| required with| required|:| - )/i', $job_description, $m)) {
-                $title = trim($m[1]);
-            } else {
-                $title = Str::limit($job_description, 120);
-            }
-        }
+    // Use the raw job description as title if title missing (do not truncate)
+    if ($title === '') {
+      $title = $job_description ?: 'Untitled Job';
+    }
         $company = trim(strval($job['company'] ?? $job['raw']['company'] ?? $job['raw']['Company'] ?? $job['raw']['company_name'] ?? ''));
 
         // compute raw/computed scores if present and normalize to 0-100
@@ -322,29 +331,70 @@
 
   <h3 class="text-lg font-bold text-yellow-600 mb-4">Pending Review: {{ $pendingCount }} &middot; Page {{ $page }} of {{ $totalPages }}</h3>
 
+  @if(app()->environment('local'))
+    @php
+      $debugPath = isset($safeUid) ? storage_path('app/reco_user_' . $safeUid . '.json') : null;
+      $debugExists = $debugPath ? file_exists($debugPath) : false;
+      $debugCount = is_array($jobs) ? count($jobs) : 0;
+    @endphp
+    <div class="mb-4 p-3 bg-gray-50 border rounded text-xs text-gray-600">
+      Debug: per-user reco path: <code>{{ $debugPath ?? 'n/a' }}</code> • exists: <strong>{{ $debugExists ? 'yes' : 'no' }}</strong> • loaded jobs: <strong>{{ $debugCount }}</strong>
+    </div>
+  @endif
+
+  <script>
+    // Signal to client-side scripts that server rendered per-user recommendations are present
+    window.__SERVER_RECO_LOADED = @json(!empty($jobs) && count($jobs) > 0);
+    window.__SERVER_RECO_SAFEUID = @json($safeUid ?? null);
+    // Provide the actual recommendations payload to the client so scripts can render
+    // the exact per-user data even when the server did not pre-render the HTML.
+    window.__SERVER_RECO_PAYLOAD = @json(array_values($recommendations ?? []));
+  </script>
+
   @foreach($paged as $p)
-      <div id="job-card-{{ $p['job_id'] }}" class="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50/20 shadow-sm mb-6" data-content-score="{{ number_format(($p['match_score'] ?? 0)/100, 3) }}">
+    @php
+    // Normalize fields so guardian view shows the same information as job-matches
+    $raw = is_array($p['raw'] ?? null) ? $p['raw'] : [];
+    $title = trim($p['title'] ?? $raw['title'] ?? $raw['Title'] ?? $raw['job_title'] ?? '');
+    $desc = trim($p['why'] ?? $raw['job_description'] ?? $raw['JobDescription'] ?? $raw['description'] ?? '');
+    if ($title === '') {
+      if (preg_match('/^(.{1,140}?)(?:\.|\n| needed with| needed| required with| required|:| - )/i', $desc, $m)) {
+        $title = trim($m[1]);
+      } else {
+        $title = Str::limit($desc, 120);
+      }
+    }
+    $company = trim($p['company'] ?? $raw['company'] ?? $raw['Company'] ?? $raw['company_name'] ?? '');
+    $location = $p['location'] ?? $raw['location'] ?? '';
+    $hours = $p['hours'] ?? $raw['hours'] ?? $raw['formatted_work_type'] ?? $raw['Duration'] ?? $raw['Term'] ?? '';
+    $match_score = intval(round(floatval($p['match_score'] ?? $raw['match_score'] ?? $raw['computed_score'] ?? 0)));
+    $skills_desc = $raw['skills_desc'] ?? $p['skills_desc'] ?? '';
+    @endphp
+    <div id="job-card-{{ $p['job_id'] }}" class="border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50/20 shadow-sm mb-6" data-content-score="{{ number_format(($match_score ?? 0)/100, 3) }}">
         <div class="flex justify-between items-start">
           <div class="flex items-center space-x-2">
             <img src="/images/job-icon.png" class="w-6 h-6" alt="Job Icon">
-            <h4 class="text-lg font-semibold">{{ $p['title'] ?: 'Untitled Job' }}</h4>
+            <h4 class="text-lg font-semibold">{{ $title ?: 'Untitled Job' }}</h4>
           </div>
           <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold">Pending Review</span>
         </div>
 
-        <div class="mt-4">
-          <span class="bg-green-200 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">{{ $p['match_score'] }}% Match</span>
+          <div class="mt-4">
+          <span class="bg-green-200 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">{{ $match_score }}% Match</span>
+          {{-- debug job id for comparison with job-matches --}}
+          <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: {{ $p['job_id'] }}</span>
         </div>
 
         <div class="mt-4 grid grid-cols-3 gap-4 mt-4 text-sm">
-          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Company Name:</span> {{ $p['company'] }}</div>
-          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Location:</span> {{ $p['location'] }}</div>
-          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Hours:</span> {{ $p['hours'] }}</div>
+          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Company Name:</span> {{ $company }}</div>
+          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Location:</span> {{ $location }}</div>
+          <div class="bg-gray-100 p-2 rounded-md"><span class="font-semibold">Hours:</span> {{ $hours }}</div>
         </div>
 
         <div class="bg-gray-100 rounded-lg mt-6 p-4">
           <div class="flex items-center space-x-2 mb-2"><img src="/images/lightbulb-icon.png" class="w-5 h-5" alt="Idea Icon"><h5 class="font-semibold text-gray-800">Why this Job Matches</h5></div>
-          <p class="text-sm text-gray-700">{{ Str::limit($p['why'], 400) }}</p>
+          {{-- Show full job description verbatim so page matches per-user JSON exactly --}}
+          <p class="text-sm text-gray-700">{{ $desc }}</p>
         </div>
 
         <div class="bg-yellow-100 rounded-lg mt-6 p-4">
@@ -396,6 +446,12 @@
       } catch(e) { console.debug('no profile from firebase module', e); }
           if (!profile) return; // nothing to do
 
+            // If server already rendered per-user recommendations, skip client-side replacement
+            if (window.__SERVER_RECO_LOADED) {
+                console.debug('guardian: server-rendered per-user recommendations present; skipping client replace');
+                return;
+            }
+
             const resp = await fetch('{{ url('/api/recommendations/user') }}', {
               method: 'POST',
               credentials: 'same-origin',
@@ -405,11 +461,17 @@
               },
               body: JSON.stringify(Object.assign({ uid: profile.uid || profile.userId || profile.user_id || '' }, profile))
           });
-          if (!resp.ok) { console.warn('Hybrid recommender error', resp.status); return; }
-          const data = await resp.json();
-          const keys = Object.keys(data || {});
-          if (keys.length === 0) return;
-          const first = data[keys[0]] || [];
+          // If server provided a payload, prefer it and avoid calling the hybrid API.
+          let first = [];
+          if (window.__SERVER_RECO_PAYLOAD && Array.isArray(window.__SERVER_RECO_PAYLOAD) && window.__SERVER_RECO_PAYLOAD.length > 0) {
+            first = window.__SERVER_RECO_PAYLOAD;
+          } else {
+            if (!resp.ok) { console.warn('Hybrid recommender error', resp.status); return; }
+            const data = await resp.json();
+            const keys = Object.keys(data || {});
+            if (keys.length === 0) return;
+            first = data[keys[0]] || [];
+          }
           // build new pending elements and replace existing list
           const container = document.querySelector('.max-w-5xl.mx-auto.mt-10.px-4');
           if (!container) return;
@@ -418,12 +480,15 @@
           const headerHtml = container.querySelector('h3')?.outerHTML || '';
           container.innerHTML = headerHtml + '<div id="reco-list" class="mt-4"></div>';
           const list = container.querySelector('#reco-list');
-          first.slice(0, 50).forEach((r, idx) => {
-              const jid = String(r.job_id || ('p' + idx));
-              const title = r.Title || r.title || r.job_title || (r.job_description || '').substring(0,80) || 'Untitled Job';
-              const company = r.Company || r.company || r.company_name || '';
-              const match = Math.round((Number(r.hybrid_score ?? r.content_score ?? r.match_score ?? 0) || 0) * ((Number(r.hybrid_score) > 1) ? 1 : 100));
-              const why = (r.job_description || r.description || '').substring(0,400);
+      first.slice(0, 50).forEach((r, idx) => {
+        // Reproduce server's canonical id logic: prefer job_id-like keys, otherwise deterministic md5-like fallback.
+        // We can't run md5 easily here without a lib, so if server supplied a job_id use it; otherwise fall back to 'p'+idx
+        const jid = String(r.job_id || r.JobID || r.id || r.jobId || r.external_id || ('p' + idx));
+        // Render the title/company/why using the raw fields from the per-user JSON without truncation
+        const title = r.Title || r.title || r.job_title || r.job_description || 'Untitled Job';
+        const company = r.Company || r.company || r.company_name || '';
+        const match = Math.round((Number(r.hybrid_score ?? r.content_score ?? r.match_score ?? 0) || 0) * ((Number(r.hybrid_score) > 1) ? 1 : 100));
+        const why = r.job_description || r.description || '';
               const card = document.createElement('div');
               card.className = 'border-2 border-yellow-400 rounded-2xl p-6 bg-yellow-50/20 shadow-sm mb-6';
               card.innerHTML = `
@@ -446,6 +511,7 @@
               `;
               list.appendChild(card);
           });
+      return; // done rendering payload or hybrid results
       } catch(e) { console.debug('guardian per-user reco failed', e); }
   })();
   </script>

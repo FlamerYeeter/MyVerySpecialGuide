@@ -111,7 +111,25 @@
         // also update data-content-score attribute for downstream code
         try { el.setAttribute('data-content-score', (newScore/100).toFixed(3)); } catch(e){}
 
-        dbg('card_scored', { jobId: el.dataset.jobId || el.getAttribute('data-job-id') || null, initialContent, newScore, rawBefore, snippet: (desc||'').slice(0,120) });
+        // Normalize job id for consistent matching/logs: always use a trimmed string
+        const rawJobId = el.dataset.jobId || el.getAttribute('data-job-id') || '';
+        const jobIdCanonical = String(rawJobId).trim();
+        // expose canonical id on element for debugging and other scripts
+        try { el.setAttribute('data-job-id-canonical', jobIdCanonical); } catch(e){}
+
+        // insert a tiny debug label if not present to visually confirm ids during testing
+        try {
+          if (!el.querySelector('.job-id-debug')) {
+            const dbgSpan = document.createElement('span');
+            dbgSpan.className = 'job-id-debug';
+            dbgSpan.style.cssText = 'display:block;font-size:10px;color:#666;margin-top:4px;';
+            dbgSpan.textContent = `debug-id: ${jobIdCanonical || '<none>'}`;
+            // append to card but avoid breaking layout: put at end
+            el.appendChild(dbgSpan);
+          }
+        } catch(e){}
+
+        dbg('card_scored', { jobId: jobIdCanonical || null, initialContent, newScore, rawBefore, snippet: (desc||'').slice(0,120) });
       } catch(e) { dbg('card_error', { error: String(e) }); }
     }
 

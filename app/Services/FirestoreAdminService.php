@@ -246,6 +246,63 @@ class FirestoreAdminService
         }
     }
 
+    /**
+     * Get saved jobs array for a user (returns array of job ids as strings).
+     */
+    public function getSavedJobs(string $firebaseUid): array
+    {
+        try {
+            if (!$this->projectId) return [];
+            $access = $this->getAccessToken();
+            if (!$access) return [];
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/saved_jobs/" . urlencode($firebaseUid);
+            $resp = Http::withToken($access)->get($url);
+            if (!$resp->successful()) return [];
+            $doc = $resp->json();
+            $fields = $doc['fields'] ?? [];
+            if (isset($fields['saved_jobs']['arrayValue']['values']) && is_array($fields['saved_jobs']['arrayValue']['values'])) {
+                $out = [];
+                foreach ($fields['saved_jobs']['arrayValue']['values'] as $v) {
+                    if (isset($v['stringValue'])) $out[] = $v['stringValue'];
+                    elseif (isset($v['integerValue'])) $out[] = (string)$v['integerValue'];
+                }
+                return $out;
+            }
+        } catch (\Throwable $e) {
+            logger()->warning('FirestoreAdminService:getSavedJobs failed: ' . $e->getMessage());
+        }
+        return [];
+    }
+
+    /**
+     * Set saved jobs array for a user. Overwrites previous list.
+     */
+    public function setSavedJobs(string $firebaseUid, array $jobIds): bool
+    {
+        try {
+            if (!$this->projectId) return false;
+            $access = $this->getAccessToken();
+            if (!$access) return false;
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/saved_jobs/" . urlencode($firebaseUid) . '?updateMask.fieldPaths=saved_jobs';
+            // Build arrayValue
+            $vals = [];
+            foreach ($jobIds as $j) {
+                // store as stringValue
+                $vals[] = ['stringValue' => (string)$j];
+            }
+            $body = ['fields' => ['saved_jobs' => ['arrayValue' => ['values' => $vals]]]];
+            $resp = Http::withToken($access)->patch($url, $body);
+            if ($resp->successful()) return true;
+            // Try create (post) if patch failed
+            $createUrl = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/saved_jobs?documentId=" . urlencode($firebaseUid);
+            $createResp = Http::withToken($access)->post($createUrl, $body);
+            return $createResp->successful();
+        } catch (\Throwable $e) {
+            logger()->warning('FirestoreAdminService:setSavedJobs failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
     private function base64UrlEncode(string $input): string
     {
         return rtrim(strtr(base64_encode($input), '+/', '-_'), '=');
