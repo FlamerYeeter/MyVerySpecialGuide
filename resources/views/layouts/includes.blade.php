@@ -62,18 +62,18 @@
 
     <!-- Navigation Bar -->
     <nav id="menu" class="flex flex-col md:flex-row items-center justify-center gap-4 mt-6 hidden md:flex">
-      <button class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
+      <a href="{{ route('job.matches') }}" class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
         Jobs
-      </button>
-      <button class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
+      </a>
+      <a href="{{ route('career.goals.progress') }}" class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
         Goals & Progress
-      </button>
-      <button class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
+      </a>
+      <a href="{{ route('why.this.job.1') }}" class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
         Why this Job & How to Get there
-      </button>
-      <button class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
+      </a>
+      <a href="{{ route('guardianreview.instructions') }}" class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
         Guardian Review
-      </button>
+      </a>
     </nav>
   </header>
 
