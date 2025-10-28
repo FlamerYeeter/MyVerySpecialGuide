@@ -333,6 +333,57 @@
       <button class="bg-white text-[#00ae7a] font-medium px-6 py-2 rounded-md">All Matches (2)</button>
     </div>
   </section>
+  <br>
+
+    <!-- JOB CARDS -->
+  <section class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
+
+    <!-- Job Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-300 mt-6 p-5">
+      <div class="flex justify-between">
+        <div>
+          <div class="flex items-center gap-3">
+            <img src="https://via.placeholder.com/60" alt="Logo" class="rounded-md">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800">Pet Care Assistant</h3>
+              <p class="text-gray-600">iPet Club • Taguig City, Metro Manila</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="bg-gray-200 px-3 py-1 text-xs rounded-md">Healthcare</span>
+            <span class="bg-gray-200 px-3 py-1 text-xs rounded-md">Quiet</span>
+          </div>
+
+          <p class="mt-3 text-gray-700 text-sm">
+            Help feed animals, clean spaces, and provide companionship.
+          </p>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Organization</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Cleaning</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Following Instructions</span>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Full Support</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Full Time</span>
+          </div>
+
+          <p class="text-gray-500 text-sm mt-3">4d ago</p>
+        </div>
+
+        <div class="text-right">
+          <a href="#" class="text-blue-600 underline text-sm font-medium">Why this Job matches you?</a>
+          <div class="flex justify-end gap-3 mt-4">
+            <button class="bg-[#00B981] text-white font-semibold px-5 py-2 rounded-md">Details</button>
+            <button class="bg-[#0f00b9] text-white font-semibold px-5 py-2 rounded-md">Apply</button>
+            <button class="bg-[#047b32] text-white font-semibold px-5 py-2 rounded-md">Save</button>
+        </div>
+        </div>
+      </div>
+    </div>
+
 
   <!-- JOB INFO -->
   <section class="max-w-6xl mx-auto mt-10 px-6">
@@ -348,44 +399,71 @@
     </div>
   </section>
 
-  <!-- JOB CARDS -->
-  <section class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
+  <!-- Recommended Job Section -->
+  <div class="max-w-5xl mx-auto mt-10 mb-20 px-4">
+    <h2 class="text-2xl font-semibold text-gray-800">Recommended Job</h2>
+    <p class="text-gray-600 mb-4">
+      Recommended companies based on your application history, preferences, and recent platform activity.
+    </p>
 
-    <!-- JOB CARD 1 -->
-    <div class="bg-white border border-gray-300 rounded-xl p-6 flex justify-between items-center">
-      <div>
-        <h3 class="text-lg font-semibold text-gray-800">Pet Care Assistant</h3>
-        <p class="text-gray-600">iPet Club</p>
-        <p class="text-sm text-gray-500 mb-2">Taguig City, Metro Manila</p>
-        <div class="flex gap-2 text-xs text-gray-700 mb-3">
-          <span class="bg-gray-100 px-3 py-1 rounded-md">Healthcare</span>
-          <span class="bg-gray-100 px-3 py-1 rounded-md">Quiet</span>
+    <!-- Recommended Job Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-300 p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <!-- ⭐ Clickable Star Icon -->
+        <button id="starBtn" class="focus:outline-none">
+          <!-- Unstarred (outline) -->
+          <svg id="starOutline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.5" stroke="#FACC15" class="w-8 h-8 cursor-pointer hover:scale-110 transition-transform">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M11.48 3.499a.562.562 0 011.04 0l2.12 4.3a.563.563 0 00.424.308l4.75.69a.563.563 0 01.312.96l-3.43 3.34a.563.563 0 00-.162.497l.81 4.72a.563.563 0 01-.817.592l-4.24-2.23a.563.563 0 00-.524 0l-4.24 2.23a.563.563 0 01-.818-.592l.81-4.72a.563.563 0 00-.162-.497l-3.43-3.34a.563.563 0 01.312-.96l4.75-.69a.563.563 0 00.424-.308l2.12-4.3z" />
+          </svg>
+
+          <!-- Starred (filled, hidden by default) -->
+          <svg id="starFilled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               fill="#FACC15" class="w-8 h-8 cursor-pointer hidden hover:scale-110 transition-transform">
+            <path fill-rule="evenodd"
+                  d="M12 2.25a.75.75 0 01.67.418l2.12 4.3 4.75.69a.75.75 0 01.416 1.28l-3.43 3.34.81 4.72a.75.75 0 01-1.09.79l-4.24-2.23-4.24 2.23a.75.75 0 01-1.09-.79l.81-4.72-3.43-3.34a.75.75 0 01.416-1.28l4.75-.69 2.12-4.3A.75.75 0 0112 2.25z"
+                  clip-rule="evenodd" />
+          </svg>
+        </button>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Shakey%27s_Pizza_Logo.svg"
+             alt="Company Logo"
+             class="w-12 h-12 rounded-md object-contain border border-gray-200">
+
+        <!-- Job Info -->
+        <div>
+          <h3 class="font-semibold text-gray-800">Shakey’s Service Crew</h3>
+          <p class="text-gray-600 text-sm">Eastwood • Taguig City, PH</p>
+
+          <div class="flex flex-wrap gap-2 mt-2">
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Full-Time</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Full Support</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Restaurant</span>
+          </div>
+
+          <p class="text-gray-500 text-xs mt-2">5 applied of 10 capacity</p>
         </div>
-        <p class="text-sm text-gray-700">Help feed animals, clean spaces, and provide companionship.</p>
-
-        <div class="flex gap-2 mt-3 text-xs">
-          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Organization</span>
-          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Cleaning</span>
-          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Following Instructions</span>
-        </div>
-
-        <div class="flex gap-2 mt-3 text-xs">
-          <span class="bg-[#D1FFD6] text-green-800 px-3 py-1 rounded-md">⭐ Excellent Fit</span>
-          <span class="bg-[#E6E9FF] text-[#4F46E5] px-3 py-1 rounded-md">📈 High Potential</span>
-        </div>
-
-        <p class="text-xs text-gray-500 mt-3">4d ago</p>
       </div>
 
-      <div class="flex flex-col items-end space-y-3">
-        <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="w-16 h-16" alt="iPet logo">
-        <div class="flex gap-2">
-          <button class="bg-[#007BFF] text-white px-4 py-2 rounded-md text-sm">View Details</button>
-          <button class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Saved</button>
-        </div>
+      <div class="flex gap-2">
+        <button class="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition">Details</button>
+        <button class="bg-blue-800 text-white px-5 py-2 rounded-md hover:bg-blue-900 transition">Apply</button>
       </div>
     </div>
-    </section>
+  </div>
+
+  <!-- Star Toggle Script -->
+  <script>
+    document.getElementById('starBtn').addEventListener('click', function () {
+      const outline = document.getElementById('starOutline');
+      const filled = document.getElementById('starFilled');
+      outline.classList.toggle('hidden');
+      filled.classList.toggle('hidden');
+    });
+  </script>
+
+
+
 
     <!-- Job Cards -->
     @php
