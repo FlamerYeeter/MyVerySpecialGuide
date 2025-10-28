@@ -90,7 +90,7 @@
 
   <!-- Back Button -->
   <div class="mt-10 flex justify-center w-full px-4">
-    <a href="{{ route('home') }}"
+    <a href="{{ route('login') }}"
        class="flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 
               text-white font-bold text-lg sm:text-xl py-3 px-10 sm:px-14 rounded-lg 
               shadow-md transition-all w-full sm:w-auto max-w-xs sm:max-w-sm">

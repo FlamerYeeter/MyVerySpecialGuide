@@ -34,7 +34,7 @@
     <!-- Back Button -->
     <button
       class="absolute left-3 sm:left-6 top-4 sm:top-6 bg-blue-500 text-white px-6 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-600 transition shadow-md active:scale-95"
-      onclick="window.location.href='{{ route('registerreview2') }}'">
+  onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview2') }}')">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white" class="w-4 h-4">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
       </svg>
@@ -58,7 +58,7 @@
       <div class="text-center mt-10">
         <button type="button"
           class="bg-blue-500 text-white font-semibold text-lg px-20 py-3 rounded-xl hover:bg-blue-600 transition shadow-md"
-          onclick="window.location.href='{{ route('registerreview4') }}'">
+          onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview4') }}')">
           Continue →
         </button>
         <p class="text-gray-700 text-sm mt-3">

@@ -1154,8 +1154,95 @@ Route::get('/registerreview1', function () {
 })->name('registerreview1');
 
 Route::get('/registerreview2', function () {
+    // Try to resolve a firebase UID and inject the Firestore profile into the
+    // view so front-end review fields (education, work, support, workplace)
+    // can be populated reliably without requiring a client-side Firestore read.
+    $uid = request()->query('uid');
+
+    // If not provided via query, attempt to resolve from authenticated user or session
+    if (empty($uid)) {
+        try {
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $u = \Illuminate\Support\Facades\Auth::user();
+                if (!empty($u->firebase_uid)) $uid = (string)$u->firebase_uid;
+            }
+        } catch (\Throwable $__e) {
+            // ignore
+        }
+    }
+
+    if (empty($uid)) {
+        $sess = session('firebase_uid', null);
+        if ($sess) $uid = (string)$sess;
+    }
+
+    if (!empty($uid)) {
+        try {
+            $controller = app(\App\Http\Controllers\GuardianJobController::class);
+            $profile = $controller->fetchUserProfileFromFirestore($uid);
+            return view('ds_register_review-2', ['serverProfile' => $profile, 'serverProfileUid' => $uid]);
+        } catch (\Throwable $e) {
+            logger()->warning('registerreview2: failed to fetch serverProfile for uid ' . $uid . ': ' . $e->getMessage());
+            // Fall through to render the normal view if fetch fails.
+        }
+    }
+
     return view('ds_register_review-2');
 })->name('registerreview2');
+
+// Server-side helper API used by review pages when client cannot read Firestore directly.
+// Returns the server-side Firestore profile for the currently resolved firebase_uid
+// (from authenticated user or session). Useful for pages that should work without
+// including a ?uid= override for admin debugging.
+Route::get('/api/server-profile', function (Request $request) {
+    try {
+        $resolved = null;
+        try {
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $u = \Illuminate\Support\Facades\Auth::user();
+                if (!empty($u->firebase_uid)) $resolved = (string)$u->firebase_uid;
+            }
+        } catch (\Throwable $__e) {}
+        if (!$resolved) {
+            $sess = session('firebase_uid', null);
+            if ($sess) $resolved = (string)$sess;
+        }
+        // Allow a debug override via ?uid=. For safety:
+        // - always allow in non-production environments (local, staging, etc.)
+        // - in production, allow only for authenticated admin users
+        $providedUid = $request->query('uid');
+        if (!$resolved && $providedUid) {
+            $allowOverride = false;
+            try {
+                // non-production environments are allowed
+                if (!app()->environment('production')) $allowOverride = true;
+            } catch (\Throwable $__e) {}
+            if (!$allowOverride) {
+                try {
+                    if (\Illuminate\Support\Facades\Auth::check()) {
+                        $u = \Illuminate\Support\Facades\Auth::user();
+                        if (!empty($u->role) && $u->role === 'admin') $allowOverride = true;
+                    }
+                } catch (\Throwable $__e) {}
+            }
+            if ($allowOverride) {
+                $resolved = (string)$providedUid;
+                logger()->info('api.server-profile: using uid from query via override', ['env' => app()->environment(), 'uid_hint' => substr($resolved,0,6) . '...']);
+            } else {
+                logger()->warning('api.server-profile: rejected uid override attempt', ['env' => app()->environment()]);
+            }
+        }
+        if (!$resolved) return response()->json(['ok' => false, 'error' => 'no firebase_uid resolved - sign in or provide ?uid in non-production or be admin'], 400);
+
+        $controller = app(\App\Http\Controllers\GuardianJobController::class);
+        $profile = $controller->fetchUserProfileFromFirestore($resolved);
+        if (!is_array($profile)) return response()->json(['ok' => false, 'error' => 'profile_not_found'], 404);
+        return response()->json(['ok' => true, 'profile' => $profile]);
+    } catch (\Throwable $e) {
+        logger()->warning('api.server-profile failed: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+    }
+})->name('api.server_profile');
 
 Route::get('/registerreview3', function () {
     return view('ds_register_review-3');

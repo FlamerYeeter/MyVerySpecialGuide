@@ -68,7 +68,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('registerjobpreference1') }}'">
+    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerjobpreference1') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -173,7 +173,7 @@
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
 
             <!-- Edit Button -->
-            <button id="editInfo" onclick="window.location.href='{{ route('registeradminapprove') }}'"
+            <button id="editInfo" onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registeradminapprove') }}')"
                 class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
            px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
            shadow-md w-full sm:w-64 text-center">
@@ -181,11 +181,10 @@
             </button>
 
             <!-- Continue Button -->
-            <button type="button"
+            <button id="review1Continue" type="button"
                 class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
            px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
-           shadow-md w-full sm:w-64 text-center"
-                onclick="window.location.href='{{ route('registerreview2') }}'">
+           shadow-md w-full sm:w-64 text-center">
                 Continue →
             </button>
         </div>
@@ -202,6 +201,41 @@
 
     <script src="{{ asset('js/firebase-config-global.js') }}"></script>
     <script src="{{ asset('js/register.js') }}"></script>
+    <script>
+        // Try to sync client Firebase ID token to the server before navigating to review-2.
+        // This helps populate Laravel session('firebase_uid') so the next page can fetch server-profile.
+        (function(){
+            async function trySyncClientIdTokenToServer() {
+                try {
+                    if (!window.firebase || !firebase.auth) return null;
+                    try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){}
+                    let user = firebase.auth().currentUser;
+                    if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                    if (!user) return null;
+                    const idToken = await user.getIdToken().catch(()=>null);
+                    if (!idToken) return null;
+                    const headers = { 'Content-Type': 'application/json' };
+                    try { const csrfMeta = document.querySelector && document.querySelector('meta[name="csrf-token"]'); if (csrfMeta && csrfMeta.getAttribute) headers['X-CSRF-TOKEN'] = csrfMeta.getAttribute('content'); } catch(e){}
+                    const resp = await fetch('{{ url('/session/firebase-signin') }}', { method: 'POST', credentials: 'same-origin', headers, body: JSON.stringify({ idToken }) });
+                    try { const j = await resp.json().catch(()=>null); return j || (resp.ok?{ok:true}:null); } catch(e){ return resp.ok?{ok:true}:null; }
+                } catch (e) { return null; }
+            }
+            const btn = document.getElementById('review1Continue');
+            if (btn) {
+                btn.addEventListener('click', async function(e){
+                    e.preventDefault();
+                    // attempt sync but don't block more than ~2s (give slightly more time for idToken retrieval)
+                    try {
+                        const p = trySyncClientIdTokenToServer();
+                        // write debug info to console and wait up to 2s for the sync promise
+                        p && p.then && p.then(function(r){ console.debug('[review1] client->server sync result', r); }).catch(function(err){ console.debug('[review1] client->server sync error', err); });
+                        await Promise.race([p, new Promise(res=>setTimeout(()=>res(null), 2000))]);
+                    } catch(e){}
+                    window.location.href = '{{ route('registerreview2') }}';
+                });
+            }
+        })();
+    </script>
     <script>
         // unified robust preview loader (tries local/session, registrationDraft globals, then Firestore)
         document.addEventListener('DOMContentLoaded', async () => {
@@ -302,6 +336,40 @@
                     }
                 } catch (e) {
                     /* ignore */ }
+                return '';
+            };
+
+            // Robust resolver for Down Syndrome type — check common key variants and nested objects
+            const resolveDsType = (root, personal) => {
+                const candidates = [];
+                // direct common keys (both camelCase and snake_case)
+                try {
+                    candidates.push(root?.dsType, root?.ds_type, root?.typeOfDs, root?.type_of_ds, root?.type, root?.downSyndromeType, root?.down_syndrome_type);
+                    candidates.push(personal?.dsType, personal?.ds_type, personal?.typeOfDs, personal?.type_of_ds, personal?.type, personal?.downSyndromeType, personal?.down_syndrome_type);
+                } catch (e) {}
+                // try flattened search for any key containing ds or "down" or "syndrome"
+                try {
+                    const found = findFirstMatching(root || {}, ['ds', 'dsType', 'ds_type', 'down', 'down syndrome', 'type']);
+                    if (found) candidates.push(found);
+                } catch (e) {}
+
+                for (const c of candidates) {
+                    if (c === undefined || c === null) continue;
+                    // If it's an object, try common string props
+                    if (typeof c === 'object') {
+                        if (Array.isArray(c) && c.length) return c.join(', ');
+                        const label = c.label || c.name || c.type || c.text || c.value || c.display || c.code || null;
+                        if (label && String(label).trim()) return String(label).trim();
+                        // fallback to JSON stringify if object has useful content
+                        try {
+                            const s = JSON.stringify(c);
+                            if (s && s !== '{}' && s !== 'null') return s;
+                        } catch (e) {}
+                        continue;
+                    }
+                    // If it's a non-empty string/number, return it
+                    if ((typeof c === 'string' && c.trim()) || (typeof c === 'number' && !Number.isNaN(c))) return String(c).trim();
+                }
                 return '';
             };
 
@@ -429,11 +497,65 @@
                 safeSet('r_address', addrVal);
                 // account fields
                 safeSet('r_username', p?.username || p?.userName || data?.username || '');
-                // never display actual password; leave blank or show placeholder
-                safeSet('r_password', '');
+                // show password as masked stars if present in draft/remote (do not reveal actual characters)
+                try {
+                    const pwdCandidate = p?.password || p?.pass || p?.confirm_password || p?.confirmPassword || data?.password || data?.pass || '';
+                    let masked = '';
+                    if (pwdCandidate && typeof pwdCandidate === 'string' && pwdCandidate.length) {
+                        // mask with same number of asterisks as chars provided
+                        masked = '*'.repeat(pwdCandidate.length);
+                    }
+                    // if no password found in drafts, show a masked placeholder so users know a password will be set
+                    safeSet('r_password', masked || '********');
+                } catch (e) { safeSet('r_password', ''); }
                 // dsType and school/work info
-                const dsType = data.dsType || p?.dsType || p?.typeOfDs || findFirstMatching(data, ['dsType', 'down syndrome', 'type']);
-                safeSet('r_dsType', dsType || '');
+                // Debug: log loaded data shape to help trace why dsType may be missing
+                try { console.debug('[review] loaded data keys:', Object.keys(data || {})); } catch(e){}
+                try { console.debug('[review] personalInfo (p):', p); } catch(e){}
+                const dsType = resolveDsType(data, p);
+                try { console.debug('[review] resolved dsType:', dsType); } catch(e){}
+                // ensure Down Syndrome info is shown in review (fallback to a placeholder if missing)
+                safeSet('r_dsType', dsType || 'Not provided');
+
+                // If dsType wasn't found in the merged/local draft, attempt an authoritative read
+                // from Firestore (this will respect ?uid= override or the current firebase auth user).
+                if (!dsType) {
+                    try {
+                        // Ensure Firebase SDKs are loaded (in case register.js didn't initialize Firebase yet)
+                        const ensureFirebaseSdk = async () => {
+                            if (window.firebase && firebase.firestore) return;
+                            const load = (src) => new Promise((res, rej) => {
+                                const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s);
+                            });
+                            try {
+                                await load('https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js');
+                                await load('https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js');
+                                await load('https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js');
+                                // call initFirebase if it's available in this scope (defined above)
+                                if (typeof initFirebase === 'function') {
+                                    try { initFirebase(); } catch(e) { console.warn('initFirebase failed', e); }
+                                }
+                            } catch (e) {
+                                console.warn('[review] failed to load Firebase SDKs', e);
+                            }
+                        };
+
+                        await ensureFirebaseSdk();
+                        const remoteDoc = await fetchFirestoreDraft();
+                        const remote = (remoteDoc && typeof remoteDoc === 'object' && remoteDoc.data && typeof remoteDoc.data === 'object') ? remoteDoc.data : remoteDoc;
+                        if (remote) {
+                            const remoteP = remote.personalInfo || remote.personal || remote;
+                            const remoteDs = resolveDsType(remote, remoteP || {});
+                            if (remoteDs) {
+                                try { console.debug('[review] firestore dsType found:', remoteDs); } catch(e){}
+                                safeSet('r_dsType', remoteDs);
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[review] failed to fetch dsType from Firestore', e);
+                    }
+                }
+                
                 const sw = data.schoolWorkInfo || data.school || data.work || {};
                 safeSet('r_school_name', sw?.school_name || sw?.school || sw?.schoolName || '');
                 safeSet('r_work_type', sw?.work_type || sw?.work || sw?.occupation || '');

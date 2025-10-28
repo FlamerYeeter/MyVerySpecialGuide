@@ -36,8 +36,8 @@
 
   <!-- Back Button -->
   <button
-    class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-    onclick="window.location.href='{{ route('registerreview2') }}'">
+  class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+  onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview2') }}')">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
       class="w-3 h-3 sm:w-6 sm:h-6">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -104,7 +104,7 @@
 
       <!-- Change Skills -->
       <div class="flex justify-center">
-        <button type="button" onclick="window.location.href='{{ route('registerskills1') }}'"
+  <button type="button" onclick="window.location.href='{{ route('registerskills1') }}'"
           class="bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-transform duration-200 hover:scale-105">
           ✏️ Change
         </button>
@@ -117,7 +117,7 @@
         class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
           px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
           shadow-md w-full sm:w-64 text-center"
-        onclick="window.location.href='{{ route('registerreview5') }}'">
+  onclick="window.location.href='{{ route('registerreview5') }}'">
         Continue →
       </button>
     </div>
@@ -138,67 +138,58 @@
   <script src="{{ asset('js/register.js') }}"></script>
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
-      const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
-      const initFirebase = () => { try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){} };
-      const fetchFirestoreDraft = async () => {
-        if (!window.firebase) return null;
-        initFirebase();
-        try {
-          const auth = firebase.auth(), db = firebase.firestore();
-          let user = auth.currentUser; if (!user) user = await new Promise(res=>firebase.auth().onAuthStateChanged(res));
-          if (!user) return null;
-          for (const c of ['registrations','users','registrationDrafts','profiles']) {
-            const s = await db.collection(c).doc(user.uid).get().catch(()=>null);
-            if (s && s.exists) return s.data();
+      try {
+        // Prefer the centralized populateReview() logic which merges local/session/global and Firestore.
+        if (typeof window.populateReview === 'function') {
+          await window.populateReview();
+        }
+        const data = window.__mvsg_lastLoadedDraft || {};
+        const parseMaybeJson = (v) => {
+          if (v === null || v === undefined) return v;
+          if (Array.isArray(v) || typeof v === 'object') return v;
+          if (typeof v === 'string') {
+            const s = v.trim(); if (!s) return '';
+            if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+              try { return JSON.parse(s); } catch(e) { /* fall through */ }
+            }
+            if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
           }
-        } catch(e){ console.warn(e); }
-        return null;
-      };
-      const readStored = async () => {
-        const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data','skills_page1','skills_page2','skills'];
-        for (const k of keys) { const v = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k)); if (v && typeof v === 'object' || typeof v === 'string') return v; }
-        if (window.registrationDraft || window.__REGISTRATION_DRAFT__) return typeof window.registrationDraft === 'string' ? tryParse(window.registrationDraft) : (window.registrationDraft || window.__REGISTRATION_DRAFT__);
-        return await fetchFirestoreDraft();
-      };
-      const setChoiceImage = (placeholderId, value, cardSelectors = ['.skills-card','.selectable-card']) => {
-        try {
-          const container = document.getElementById(`${placeholderId}_container`);
-          const ph = document.getElementById(placeholderId);
-          if(!value){ if(container) container.style.display='none'; if(ph) ph.src=''; return; }
-          const target = String(value).trim().toLowerCase();
-          const selectors = Array.isArray(cardSelectors) ? cardSelectors : [cardSelectors];
-          selectors.forEach(sel => document.querySelectorAll(sel).forEach(n=>n.classList.remove('selected')));
-          for (const sel of selectors) {
-            for (const n of document.querySelectorAll(sel)) {
-              const title = n.querySelector('h3')?.textContent?.trim()?.toLowerCase();
-              if(title && title === target){ const img = n.querySelector('img'); if(img && ph) ph.src = img.src||''; if(container) container.style.display='block'; n.classList.add('selected'); return; }
+          return v;
+        };
+
+        // unify candidate lookup for skills (handle multiple shapes)
+        const sCandidates = (data.skills && (data.skills.skills_page1 || data.skills_page2 || data.skills_page || data.skills)) || data.skillList || data.selectedSkills || data.skillsPage1 || data.skills_page1 || data.skills_page || data.selected_skills || null;
+        let arr = [];
+        const parsed = parseMaybeJson(sCandidates);
+        if (Array.isArray(parsed)) arr = parsed;
+        else if (typeof parsed === 'string' && parsed) arr = parsed.split(',');
+        // fallback: read common top-level keys stored as JSON strings
+        if (!arr.length) {
+          const fallback = parseMaybeJson(data.skills_page1) || parseMaybeJson(data.skills_page2) || parseMaybeJson(data.skills1) || parseMaybeJson(data.skills2) || null;
+          if (Array.isArray(fallback)) arr = fallback;
+        }
+        const uniq = [...new Set((arr||[]).map(x => typeof x === 'string' ? x.trim() : x).filter(Boolean))];
+        if (uniq.length) {
+          const el = document.getElementById('review_skills_list');
+          if (el) {
+            el.innerHTML = '';
+            for (const s of uniq) {
+              try {
+                const span = document.createElement('span');
+                span.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
+                span.textContent = s;
+                el.appendChild(span);
+              } catch(e) { /* ignore */ }
             }
           }
-          if(container) container.style.display='none';
-          if(ph) ph.src='';
-        } catch(e){ console.warn(e); }
-      };
-      try {
-        const data = await readStored();
-        if (!data) return;
-        // collect skills from many shapes
-        const sCandidates = data.skills || data.skillList || data.selectedSkills || data.skillsPage1 || data.skills_page1 || findFirstMatching?.(data,['skills','skill','selectedskills','skilllist']) || [];
-        let arr = Array.isArray(sCandidates) ? sCandidates : (typeof sCandidates === 'string' ? sCandidates.split(',') : []);
-        // also check nested job/skill arrays in draft
-        if (!arr.length && data.pages?.skills) arr = data.pages.skills;
-        const uniq = [...new Set(arr.map(x=> (typeof x==='string' ? x.trim() : x)).filter(Boolean))];
-        if (uniq.length) {
-          const el = document.getElementById('review_skills_list'); if (el) el.textContent = uniq.join(', ');
-          setChoiceImage('review_skills_img', uniq[0], ['.skills-card','.selectable-card']);
-          document.querySelectorAll('.skills-card, .selectable-card').forEach(card=>{
-            const title = card.querySelector('h3')?.textContent?.trim();
-            if (title && uniq.includes(title)) card.classList.add('selected'); else card.classList.remove('selected');
-          });
+          try { if (typeof window.setChoiceImage === 'function') window.setChoiceImage('review_skills_img', uniq[0], ['.skills-card','.selectable-card']); } catch(e){}
+          try { document.querySelectorAll('.skills-card, .selectable-card').forEach(card=>{ const title = card.querySelector('h3')?.textContent?.trim(); if (title && uniq.includes(title)) card.classList.add('selected'); else card.classList.remove('selected'); }); } catch(e){}
         }
-      } catch(e){ console.error('review-4 preview', e); }
+      } catch (e) {
+        console.error('review-4 populateReview usage failed', e);
+      }
     });
     </script>
-  </script>
   <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
   <script>
     (function(){

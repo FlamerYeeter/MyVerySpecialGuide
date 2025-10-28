@@ -64,7 +64,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('registerreview1') }}'">
+    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview1') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -113,12 +113,12 @@
                         data-section="education">✏️ Edit</button>
                 </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
-                    <p><span class="font-semibold">Education Level:</span> <span id="review_edu"></span></p>
-                    <p id="review_edu_other" class="text-gray-600 italic hidden">Other: </p>
-                    <p class="col-span-2"><span class="font-semibold">School Name:</span> <span
-                            id="review_school"></span></p>
-                </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
+            <p><span class="font-semibold">Education Level:</span> <span id="review_edu"></span></p>
+            <p id="review_edu_other" class="text-gray-600 italic hidden">Other: </p>
+            <p class="col-span-2"><span class="font-semibold">School Name:</span> <span
+                id="review_school"></span></p>
+        </div>
 
                 <h3
                     class="mt-8 text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2 flex justify-between items-center">
@@ -152,7 +152,10 @@
                 </div>
 
                 <div class="text-gray-800 mb-5">
-                    <p><span class="font-semibold">Type of Work:</span> <span id="review_work">N/A</span>
+                    <p class="flex items-start gap-2"><span class="font-semibold">Type of Work:</span>
+                        <span id="review_work_list" class="flex flex-wrap gap-2 items-center">
+                            <span class="text-gray-600">N/A</span>
+                        </span>
                     </p>
                 </div>
 
@@ -174,7 +177,10 @@
                 </div>
 
                 <div class="text-gray-800">
-                    <p><span class="font-semibold">Selected Support:</span> <span id="review_support_choice">—</span>
+                    <p class="flex items-start gap-2"><span class="font-semibold">Selected Support:</span>
+                        <span id="review_support_list" class="flex flex-wrap gap-2 items-center">
+                            <span class="text-gray-600">—</span>
+                        </span>
                     </p>
                 </div>
                 <div id="review_support_choice_img_container" class="mt-4 text-center hidden">
@@ -196,8 +202,11 @@
                 </div>
 
                 <div class="text-gray-800">
-                    <p><span class="font-semibold">Preferred Workplace:</span> <span
-                            id="review_workplace_choice">—</span></p>
+                    <p class="flex items-start gap-2"><span class="font-semibold">Preferred Workplace:</span>
+                        <span id="review_workplace_list" class="flex flex-wrap gap-2 items-center">
+                            <span class="text-gray-600">—</span>
+                        </span>
+                    </p>
                 </div>
                 <div id="review_workplace_choice_img_container" class="mt-4 text-center hidden">
                     <div
@@ -324,6 +333,21 @@
 
             <script src="{{ asset('js/firebase-config-global.js') }}"></script>
             <script src="{{ asset('js/register.js') }}"></script>
+            @if (!app()->environment('production'))
+                <script>
+                    // non-production diagnostic: fetch server-side session info and display it for debugging
+                    (async function(){
+                        try {
+                            const el = document.getElementById('__rv2_debug_pre');
+                            const resp = await fetch('{{ url('/debug/firebase-session') }}', { credentials: 'same-origin' });
+                            const json = await resp.json().catch(()=>null);
+                            if (el) el.textContent = JSON.stringify(json, null, 2);
+                        } catch(e) {
+                            try { document.getElementById('__rv2_debug_pre').textContent = 'debug endpoint failed: ' + (e && e.message); } catch(_){}
+                        }
+                    })();
+                </script>
+            @endif
             @if (!empty($serverProfile))
                 <script>
                     // Server-provided Firestore profile (admin route)
@@ -332,7 +356,54 @@
                 </script>
             @endif
             <script>
+                // Ensure the shared populateReview() (from public/js/register.js) also runs on this page
+                // This helps reuse the central draft/Firestore merge logic and keeps review-2 in sync
+                document.addEventListener('DOMContentLoaded', async function() {
+                    try {
+                        if (typeof window.populateReview === 'function') {
+                            try { await window.populateReview(); console.debug('[review-2] populateReview() invoked'); } catch(e){ console.debug('[review-2] populateReview error', e); }
+                        }
+                    } catch (e) { console.debug('[review-2] populateReview invocation failed', e); }
+                });
+            </script>
+            <script>
                 document.addEventListener('DOMContentLoaded', async () => {
+                    // Try to sync client Firebase ID token to the server early so server-side endpoints
+                    // (like /api/server-profile) can resolve the user's uid via session('firebase_uid').
+                    async function trySyncClientIdTokenToServer() {
+                        try {
+                            if (!window.firebase || !firebase.auth) return null;
+                            // initialize if needed
+                            try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){}
+                            let user = firebase.auth().currentUser;
+                            if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                            if (!user) return null;
+                            const idToken = await user.getIdToken().catch(()=>null);
+                            if (!idToken) return null;
+                            const headers = { 'Content-Type': 'application/json' };
+                            try {
+                                const csrfMeta = document.querySelector && document.querySelector('meta[name="csrf-token"]');
+                                if (csrfMeta && csrfMeta.getAttribute) headers['X-CSRF-TOKEN'] = csrfMeta.getAttribute('content');
+                            } catch(e){}
+                            const resp = await fetch('{{ url('/session/firebase-signin') }}', { method: 'POST', credentials: 'same-origin', headers, body: JSON.stringify({ idToken }) });
+                            try { const j = await resp.json().catch(()=>null); return j || (resp.ok?{ok:true}:null); } catch(e){ return resp.ok?{ok:true}:null; }
+                        } catch (e) { return null; }
+                    }
+
+                    // Attempt sync but do not block the rest of script heavily — run and allow the later /api/server-profile call to use session if sync completed quickly.
+                    // If needed we await it below before calling server-profile.
+                    let __rv2_sync_result = null;
+                    try {
+                        __rv2_sync_result = trySyncClientIdTokenToServer();
+                        // record client-side debug info when sync completes (or fails)
+                        __rv2_sync_result.then && __rv2_sync_result.then(function(res){
+                            try { window.__rv2_clientSyncStatus = { ok: true, result: res || null }; } catch(e){}
+                            try { const dbgEl = document.getElementById('__rv2_debug_pre'); if (dbgEl) { try { const prev = JSON.parse(dbgEl.textContent||'{}'); prev.__client_sync = window.__rv2_clientSyncStatus; dbgEl.textContent = JSON.stringify(prev, null, 2); } catch(e){} } } catch(e){}
+                        }).catch(function(err){
+                            try { window.__rv2_clientSyncStatus = { ok: false, error: (err && err.message) || String(err) }; } catch(e){}
+                            try { const dbgEl = document.getElementById('__rv2_debug_pre'); if (dbgEl) { try { const prev = JSON.parse(dbgEl.textContent||'{}'); prev.__client_sync = window.__rv2_clientSyncStatus; dbgEl.textContent = JSON.stringify(prev, null, 2); } catch(e){} } } catch(e){}
+                        });
+                    } catch(e){}
                     const tryParse = s => {
                         try {
                             return typeof s === 'string' ? JSON.parse(s) : s;
@@ -381,25 +452,51 @@
                         return null;
                     };
                     const readStored = async () => {
-                        // If the server injected a profile (admin view), prefer it immediately
-                        if (window.__mvsg_serverProfile) return window.__mvsg_serverProfile;
+                        // Prefer local/session drafts and in-page globals so users editing keep their draft.
                         const keys = ['registrationDraft', 'registration_draft', 'dsRegistrationDraft',
                             'ds_registration', 'registerDraft', 'regDraft', 'reg_data'
                         ];
                         for (const k of keys) {
                             const v = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k));
-                            if (v && typeof v === 'object') return v;
+                            if (v && typeof v === 'object') {
+                                try { console.debug && console.debug('[review-2] readStored: found local/session draft key', k); } catch(e){}
+                                try { window.__mvsg_lastLoadedDraft = v; window.__mvsg_lastDraftSource = 'local_storage:' + k; } catch(e){}
+                                return v;
+                            }
                         }
-                        if (window.registrationDraft || window.__REGISTRATION_DRAFT__) return typeof window
-                            .registrationDraft === 'string' ? tryParse(window.registrationDraft) : (window
-                                .registrationDraft || window.__REGISTRATION_DRAFT__);
+                        // also check for a global draft object set by other scripts
+                        if (window.registrationDraft || window.__REGISTRATION_DRAFT__) {
+                            try { console.debug && console.debug('[review-2] readStored: using global registrationDraft'); } catch(e){}
+                            const gv = typeof window.registrationDraft === 'string' ? tryParse(window.registrationDraft) : (window.registrationDraft || window.__REGISTRATION_DRAFT__);
+                            try { window.__mvsg_lastLoadedDraft = gv; window.__mvsg_lastDraftSource = 'global_registrationDraft'; } catch(e){}
+                            return gv;
+                        }
+                        // If the server injected a profile (admin view), prefer it only when no local draft exists
+                        if (window.__mvsg_serverProfile) {
+                            try { console.debug && console.debug('[review-2] readStored: using serverProfile injected by server'); } catch(e){}
+                            try { window.__mvsg_lastLoadedDraft = window.__mvsg_serverProfile; window.__mvsg_lastDraftSource = 'server_injected'; } catch(e){}
+                            return window.__mvsg_serverProfile;
+                        }
+                        // last resort: attempt Firestore read (client) which will try signed-in user or ?uid override
                         return await fetchFirestoreDraft();
                     };
                     const safeSet = (id, value) => {
-                        const el = document.getElementById(id);
-                        if (!el) return;
-                        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = value ?? '';
-                        else el.textContent = value ?? '';
+                        try {
+                            const el = document.getElementById(id);
+                            if (!el) { console.debug('[review-2] element not found for id', id, 'value:', value); return; }
+                            let out = value;
+                            if (out === null || out === undefined) out = '';
+                            else if (typeof out === 'object') {
+                                if (Array.isArray(out)) out = out.join(', ');
+                                else out = JSON.stringify(out);
+                            }
+                            out = String(out);
+                            if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = out ?? '';
+                            else el.textContent = out ?? '';
+                            console.debug('[review-2] set', id, out);
+                        } catch (e) {
+                            console.warn('[review-2] safeSet error for', id, e);
+                        }
                     };
                     const flatten = (obj, out = {}, prefix = '') => {
                         if (!obj || typeof obj !== 'object') return out;
@@ -512,36 +609,107 @@
                     };
                     try {
                         let data = await readStored();
-                        // attempt a minimal merge for only the fields shown on screen
+                        // Always attempt to fetch Firestore draft and merge missing keys from remote into local.
                         try {
                             const remoteDoc = await fetchFirestoreDraft();
-                            const remote = (remoteDoc && typeof remoteDoc === 'object' && remoteDoc.data &&
-                                typeof remoteDoc.data === 'object') ? remoteDoc.data : remoteDoc;
+                            const remote = (remoteDoc && typeof remoteDoc === 'object' && remoteDoc.data && typeof remoteDoc.data === 'object') ? remoteDoc.data : remoteDoc;
                             if (remote && typeof remote === 'object') {
-                                if (data && typeof data === 'object' && data.data && typeof data.data === 'object')
-                                    data = data.data;
+                                // unwrap local wrapper if present
+                                if (data && typeof data === 'object' && data.data && typeof data.data === 'object') data = data.data;
                                 data = data || {};
-                                const keysToFill = ['educationInfo', 'schoolWorkInfo', 'workExperience', 'supportNeed',
-                                    'workplace'
-                                ];
-                                for (const k of keysToFill) {
-                                    try {
-                                        const localVal = data[k];
-                                        const remoteVal = remote[k];
-                                        if ((localVal === undefined || localVal === null || (typeof localVal ===
-                                                'object' && !Array.isArray(localVal) && Object.keys(localVal || {})
-                                                .length === 0) || (typeof localVal === 'string' && String(localVal)
-                                                .trim() === '')) && remoteVal !== undefined) {
-                                            data[k] = remoteVal;
+                                for (const k of Object.keys(remote)) {
+                                    const localVal = data[k];
+                                    const remoteVal = remote[k];
+                                    // If no local value at all, copy remote entirely
+                                    if (localVal === undefined || localVal === null) {
+                                        data[k] = remoteVal;
+                                        continue;
+                                    }
+                                    // If local is an empty object, replace with remote
+                                    if (typeof localVal === 'object' && !Array.isArray(localVal) && Object.keys(localVal || {}).length === 0) {
+                                        data[k] = remoteVal;
+                                        continue;
+                                    }
+                                    // If local is an empty string, replace with remote
+                                    if (typeof localVal === 'string' && String(localVal).trim() === '') {
+                                        data[k] = remoteVal;
+                                        continue;
+                                    }
+                                    // If both are objects, perform a shallow deep-merge that fills empty/missing inner fields
+                                    if (typeof localVal === 'object' && !Array.isArray(localVal) && typeof remoteVal === 'object' && !Array.isArray(remoteVal)) {
+                                        for (const subKey of Object.keys(remoteVal)) {
+                                            try {
+                                                const lv = localVal[subKey];
+                                                const rv = remoteVal[subKey];
+                                                if (lv === undefined || lv === null) {
+                                                    localVal[subKey] = rv;
+                                                } else if (typeof lv === 'string' && String(lv).trim() === '') {
+                                                    localVal[subKey] = rv;
+                                                }
+                                            } catch (e) { /* ignore per-field */ }
                                         }
-                                    } catch (e) {}
+                                        data[k] = localVal;
+                                        continue;
+                                    }
+                                    // otherwise keep localVal as-is (it appears intentionally set)
                                 }
+                                try { window.__mvsg_lastLoadedDraft = data; window.__mvsg_lastDraftSource = 'firestore_merged'; } catch(e){}
                             }
-                        } catch (e) {
-                            /* ignore remote merge errors */
-                        }
+                        } catch (e) { console.warn('[review-2] fetch/merge draft failed', e); }
 
-                        if (!data) return;
+                        // If no draft/local/serverProfile found yet, try server-side helper API
+                        if (!data) {
+                            // give the client->server idToken sync a short chance to complete so server can populate session('firebase_uid')
+                            try {
+                                if (typeof __rv2_sync_result !== 'undefined' && __rv2_sync_result) {
+                                    await Promise.race([__rv2_sync_result, new Promise(res => setTimeout(() => res(null), 2000))]);
+                                }
+                            } catch (e) { /* ignore sync timing errors */ }
+                            try {
+                                const resp = await fetch('{{ url('/api/server-profile') }}', { credentials: 'same-origin' });
+                                if (resp && resp.ok) {
+                                    const json = await resp.json().catch(() => null);
+                                    if (json && json.ok && json.profile) {
+                                        data = json.profile;
+                                        try { console.debug && console.debug('[review-2] fetched server-profile via /api/server-profile, keys:', Object.keys(data)); } catch(e){}
+                                    }
+                                } else {
+                                    const status = resp ? resp.status : 'no-response';
+                                    try { console.debug && console.debug('[review-2] /api/server-profile not available or returned', status); } catch(e){}
+                                    // Diagnostic: ask server what it sees in session (helps identify missing firebase_uid)
+                                    try {
+                                        const dbg = await fetch('{{ url('/debug/firebase-session') }}', { credentials: 'same-origin' });
+                                        const dbgJson = await dbg.json().catch(() => null);
+                                        try { console.debug && console.debug('[review-2] debug/firebase-session:', dbgJson); } catch(e){}
+                                        // If debug reveals a session_firebase_uid, try the server-profile endpoint with ?uid= override (useful in non-prod)
+                                        if (dbgJson && dbgJson.session_firebase_uid) {
+                                            try {
+                                                const overrideResp = await fetch('{{ url('/api/server-profile') }}?uid=' + encodeURIComponent(dbgJson.session_firebase_uid), { credentials: 'same-origin' });
+                                                if (overrideResp && overrideResp.ok) {
+                                                    const js2 = await overrideResp.json().catch(() => null);
+                                                    if (js2 && js2.ok && js2.profile) {
+                                                        data = js2.profile;
+                                                        try { console.debug && console.debug('[review-2] fetched server-profile via override uid from debug endpoint'); } catch(e){}
+                                                    }
+                                                } else {
+                                                    try { console.debug && console.debug('[review-2] override fetch also failed', overrideResp && overrideResp.status); } catch(e){}
+                                                }
+                                            } catch (e) {
+                                                /* ignore override attempt errors */
+                                            }
+                                        }
+                                    } catch (e) {
+                                        /* ignore debug fetch errors */
+                                    }
+                                }
+                            } catch (e) {
+                                console.warn('[review-2] server-profile fetch failed', e);
+                            }
+                        }
+                        if (!data) {
+                            try { console.debug && console.debug('[review-2] no data available after all fallbacks; __mvsg_lastLoadedDraft=', window.__mvsg_lastLoadedDraft, 'source=', window.__mvsg_lastDraftSource); } catch(e){}
+                            return;
+                        }
 
                         // Only populate the fields that exist on this review screen
                         const eduLevel = (data.educationInfo && (data.educationInfo.edu_level || data.educationInfo
@@ -557,8 +725,10 @@
                             }
                         }
 
-                        const sw = data.schoolWorkInfo || {};
-                        safeSet('review_school', sw.school_name || sw.schoolName || data.school_name || '');
+                        const sw = data.schoolWorkInfo || data.school || {};
+                        // fallback to several key variants and a fuzzy search for 'school' if present
+                        const schoolVal = sw.school_name || sw.schoolName || data.school_name || data.school || findFirstMatching(data, ['school', 'school_name', 'schoolName']);
+                        safeSet('review_school', schoolVal || '');
 
                         safeSet('review_certs_name', sw.certs || sw.certificates || data.certs || '');
                         const certFileRaw = sw.cert_file || sw.certFile || data.cert_file || data.proofFilename || '';
@@ -593,9 +763,30 @@
                             '.selectable-card'
                         ]);
 
+
+                        
+
                     } catch (e) {
                         console.error('review-2 preview', e);
                     }
+
+                    // Update non-production debug panel with the last-loaded draft info (if present)
+                    try {
+                        const dbgEl = document.getElementById('__rv2_debug_pre');
+                        if (dbgEl) {
+                            const cur = window.__mvsg_lastLoadedDraft || null;
+                            const src = window.__mvsg_lastDraftSource || null;
+                            const extra = { lastDraftSource: src, lastDraftKeys: cur && typeof cur === 'object' ? Object.keys(cur) : null };
+                            // append to existing debug JSON if server-session info already present
+                            try {
+                                const prev = JSON.parse(dbgEl.textContent || '{}');
+                                prev.__client = extra;
+                                dbgEl.textContent = JSON.stringify(prev, null, 2);
+                            } catch (e) {
+                                try { dbgEl.textContent = JSON.stringify({ __client: extra }, null, 2); } catch (e2) {}
+                            }
+                        }
+                    } catch (e) {}
                 });
             </script>
 </body>
