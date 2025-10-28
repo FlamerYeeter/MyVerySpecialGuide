@@ -274,11 +274,29 @@
                     (May mga certificate o special training ka ba?)
                 </p>
 
-                <!-- Text Input -->
-                <input id="certs" name="certs" type="text"
-                    placeholder="List your certificates or trainings (e.g. NC II, TESDA, etc.)"
-                    class="w-full border border-gray-300 rounded-lg p-3 sm:p-4 text-sm sm:text-base 
-                     focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none transition-all duration-200 mb-4" />
+   <!-- Radio Buttons -->
+  <div class="flex items-center gap-6 mt-2">
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input
+        type="radio"
+        name="certs"
+        value="yes"
+        class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+      />
+      <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+    </label>
+
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input
+        type="radio"
+        name="certs"
+        value="no"
+        class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+      />
+      <span class="text-gray-800 text-sm sm:text-base">No</span>
+    </label>
+  </div>
+  <br>
                
                      <!-- File Upload -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col gap-3">
