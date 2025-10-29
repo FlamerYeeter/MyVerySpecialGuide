@@ -104,7 +104,7 @@
 
       <!-- Change Skills -->
       <div class="flex justify-center">
-  <button type="button" onclick="window.location.href='{{ route('registerskills1') }}'"
+        <button type="button" id="rv4_change_skills_btn"
           class="bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-transform duration-200 hover:scale-105">
           ✏️ Change
         </button>
@@ -189,6 +189,59 @@
         console.error('review-4 populateReview usage failed', e);
       }
     });
+    </script>
+    <script>
+      // Save visible skills review to localStorage['rpi_personal'] then navigate to the given url (preserve uid if available)
+      function saveDraftAndGotoSkills(url) {
+        try {
+          let draft = window.__mvsg_lastLoadedDraft || {};
+          if (!draft || typeof draft !== 'object') draft = {};
+
+          // ensure skills namespace exists
+          draft.skills = draft.skills || {};
+
+          // collect skill tags from DOM
+          try {
+            const listEl = document.getElementById('review_skills_list');
+            if (listEl) {
+              const spans = Array.from(listEl.querySelectorAll('span'));
+              const vals = spans.map(s => (s.textContent||'').trim()).filter(Boolean);
+              if (vals.length) draft.skills = draft.skills || {};
+              // store as array and also as comma string for legacy shapes
+              draft.skills.selected = vals;
+              draft.skills.selected_csv = vals.join(', ');
+            }
+          } catch(e) { console.debug('[review-4] collect skills failed', e); }
+
+          try {
+            localStorage.setItem('rpi_personal', JSON.stringify(draft));
+            try { console.info('[review-4] saveDraftAndGotoSkills wrote rpi_personal', JSON.parse(localStorage.getItem('rpi_personal'))); } catch(e) { console.info('[review-4] saveDraftAndGotoSkills wrote rpi_personal (readback failed)'); }
+          } catch(e) { console.warn('[review-4] failed to write rpi_personal', e); }
+        } catch(e) { console.warn('[review-4] build draft failed', e); }
+
+        // navigate and append uid when available
+        try {
+          let uid = '';
+          if (window.firebase && firebase.auth) {
+            const user = firebase.auth().currentUser;
+            if (user && user.uid) uid = user.uid;
+          }
+          if (uid) {
+            const sep = url.includes('?') ? '&' : '?';
+            window.location.href = url + sep + 'uid=' + encodeURIComponent(uid);
+          } else {
+            window.location.href = url;
+          }
+        } catch(e) { window.location.href = url; }
+      }
+
+      // Wire the Change button to save draft first then navigate
+      document.addEventListener('DOMContentLoaded', function(){
+        try {
+          const btn = document.getElementById('rv4_change_skills_btn');
+          if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoSkills('{{ route('registerskills1') }}'); });
+        } catch(e) { console.debug('[review-4] wiring change button failed', e); }
+      });
     </script>
   <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
   <script>

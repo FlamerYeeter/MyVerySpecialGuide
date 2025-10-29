@@ -33,16 +33,7 @@
     <img src="image/obj8.png" alt="Twin Mascot"
       class="fixed right-2 sm:right-6 lg:right-8 bottom-20 sm:bottom-24 lg:bottom-28 w-20 sm:w-28 lg:w-36 opacity-90 animate-float-medium z-0" />
 
-    <!-- Back Button -->
-    <button
-      class="absolute top-6 left-6 bg-blue-500 hover:bg-blue-600 text-white px-5 py-2 rounded-lg flex items-center gap-2 shadow-md transition active:scale-95 z-10"
-      onclick="window.location.href='{{ route('registerfinalstep') }}'">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-        stroke-width="3" stroke="white" class="w-4 h-4">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-      </svg>
-      <span class="font-medium">Back</span>
-    </button>
+    <!-- Back Button removed intentionally -->
 
     <!-- Main Container -->
     <div
@@ -118,8 +109,8 @@
       <!-- Verify Button -->
       <div class="mt-6 space-y-1">
         <button
-          class="bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold px-16 py-3 rounded-xl shadow-md transition active:scale-95"
-          onclick="window.location.href='{{ route('home') }}'">
+          id="verifyBtn"
+          class="bg-blue-500 hover:bg-blue-600 text-white text-lg font-semibold px-16 py-3 rounded-xl shadow-md transition active:scale-95">
           Verify
         </button>
         <div class="flex justify-center items-center gap-2 mt-2">
@@ -139,6 +130,41 @@
 
     <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
     <script>
+      // Navigate to original redirect if provided via ?redirect=...
+      (function(){
+        function safeNavigate(target) {
+          try {
+            if (!target) { window.location.href = '{{ route('home') }}'; return; }
+
+            // If the requested target is the navigation-buttons path, prefer the
+            // server-generated named route URL to avoid client path mismatches.
+            try {
+              var normalized = target.toString();
+              if (normalized === '/navigation-buttons' || normalized.endsWith('/navigation-buttons') || normalized.indexOf('navigation-buttons') !== -1) {
+                window.location.href = '{{ route('navigation_buttons') }}';
+                return;
+              }
+            } catch(e) { /* continue to other checks */ }
+
+            // Only allow same-host or absolute-path redirects for safety
+            try {
+              var u = new URL(target, window.location.origin);
+              if (u.origin === window.location.origin) { window.location.href = u.pathname + u.search + u.hash; return; }
+            } catch(e) {
+              // If URL parsing failed, treat target as a path
+              if (typeof target === 'string' && target.startsWith('/')) { window.location.href = target; return; }
+            }
+          } catch(e) {}
+          // fallback
+          window.location.href = '{{ route('home') }}';
+        }
+
+        document.getElementById('verifyBtn').addEventListener('click', function(){
+          var params = new URLSearchParams(window.location.search);
+          var redirect = params.get('redirect');
+          safeNavigate(redirect);
+        });
+      })();
       (function(){
         const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
         let voices = [];

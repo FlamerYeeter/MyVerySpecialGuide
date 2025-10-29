@@ -23,7 +23,7 @@
         <form method="POST" action="{{ route('login.post') }}" class="space-y-5">
             @csrf
             <!-- After successful login, send user to the admin approval view -->
-            <input type="hidden" name="redirect" value="{{ route('admin.adminview') }}">
+            <input type="hidden" name="redirect" value="{{ route('admin.approval') }}">
             @if($errors->any())
                 <div class="text-red-600 text-sm">{{ $errors->first() }}</div>
             @endif

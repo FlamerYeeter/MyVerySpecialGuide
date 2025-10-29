@@ -555,6 +555,28 @@ Route::post('/login', function (Request $request) {
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             logger()->info('Login: local Auth succeeded', ['email' => $credentials['email'] ?? null, 'redirect' => $redirect]);
+
+            // If the requested redirect is the navigation-buttons page, require that
+            // the user's account has completed verification (either email_verified_at
+            // or an application-level 'approved' flag). If not verified, send them
+            // to the verification page first and preserve the original redirect.
+            try {
+                $user = Auth::user();
+                $isVerified = false;
+                if ($user) {
+                    if (!empty($user->email_verified_at) || !empty($user->approved)) {
+                        $isVerified = true;
+                    }
+                }
+            } catch (\Throwable $__e) {
+                $isVerified = false;
+            }
+
+            if (!empty($redirect) && stripos($redirect, '/navigation-buttons') !== false && !$isVerified) {
+                logger()->info('Login: user requires verification before navigation-buttons', ['user_id' => $user ? $user->id : null]);
+                return redirect()->to(route('registerverifycode') . '?redirect=' . urlencode($redirect));
+            }
+
             // allow only internal redirects: either a path (starts with '/') or same-host URL
             if (!empty($redirect)) {
                 $host = parse_url($redirect, PHP_URL_HOST);
@@ -565,6 +587,17 @@ Route::post('/login', function (Request $request) {
                 }
                 logger()->warning('Login: blocked external redirect target', ['target' => $redirect, 'currentHost' => $currentHost]);
             }
+
+            // If the authenticated user is an admin, send them to the admin approval area.
+            try {
+                $user = Auth::user();
+                if ($user && !empty($user->role) && $user->role === 'admin') {
+                    return redirect()->route('admin.approval');
+                }
+            } catch (\Throwable $__e) {
+                // ignore and fall back to job matches
+            }
+
             return redirect()->route('job.matches');
         }
     } catch (\Throwable $e) {
@@ -633,6 +666,26 @@ Route::post('/login', function (Request $request) {
                 }
                 $request->session()->regenerate();
                 logger()->info('Login: firebase-auth succeeded and local user logged in', ['email' => $email, 'redirect' => $redirect]);
+
+                // Same verification gate as above: require verification before allowing
+                // redirect to the navigation-buttons page.
+                try {
+                    $user = Auth::user();
+                    $isVerified = false;
+                    if ($user) {
+                        if (!empty($user->email_verified_at) || !empty($user->approved)) {
+                            $isVerified = true;
+                        }
+                    }
+                } catch (\Throwable $__e) {
+                    $isVerified = false;
+                }
+
+                if (!empty($redirect) && stripos($redirect, '/navigation-buttons') !== false && !$isVerified) {
+                    logger()->info('Login: user requires verification before navigation-buttons', ['user_id' => $user ? $user->id : null]);
+                    return redirect()->to(route('registerverifycode') . '?redirect=' . urlencode($redirect));
+                }
+
                 if (!empty($redirect)) {
                     $host = parse_url($redirect, PHP_URL_HOST);
                     $currentHost = request()->getHost();
@@ -642,6 +695,17 @@ Route::post('/login', function (Request $request) {
                     }
                     logger()->warning('Login: blocked external redirect target', ['target' => $redirect, 'currentHost' => $currentHost]);
                 }
+
+                // If the authenticated user is an admin, send them to the admin approval area.
+                try {
+                    $user = Auth::user();
+                    if ($user && !empty($user->role) && $user->role === 'admin') {
+                        return redirect()->route('admin.approval');
+                    }
+                } catch (\Throwable $__e) {
+                    // ignore and fall back to job matches
+                }
+
                 return redirect()->route('job.matches');
             } else {
                 logger()->warning('Firebase login failed: ' . $resp->body());

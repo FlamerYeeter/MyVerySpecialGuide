@@ -173,24 +173,7 @@
     <input type="hidden" id="password" name="password" value="" />
     <input type="hidden" id="confirm_password" name="confirm_password" value="" />
 
-    <!-- Email verification modal (hidden by default) -->
-    <div id="emailVerifyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black opacity-40"></div>
-      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-60">
-        <div class="flex items-start justify-between">
-          <h3 class="text-lg font-semibold text-gray-800">Verify Your Email</h3>
-          <button id="emailVerifyClose" type="button" class="text-gray-500 hover:text-gray-700">✕</button>
-        </div>
-        <div class="mt-4">
-          <p class="text-sm text-gray-700">We will send a verification code to:</p>
-          <p id="verificationEmail" class="mt-2 font-medium text-gray-900 break-words"></p>
-        </div>
-        <div class="mt-6 flex justify-end gap-3">
-          <button id="emailVerifyCancel" type="button" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
-          <button id="emailVerifyProceed" type="button" class="px-4 py-2 bg-[#2E2EFF] text-white rounded-md hover:bg-blue-600">Proceed</button>
-        </div>
-      </div>
-    </div>
+    <!-- Email verification modal removed: Submit redirects directly to home in current flow -->
 
     <!-- Helper Text -->
     <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
@@ -203,21 +186,7 @@
 
     <script src="{{ asset('js/firebase-config-global.js') }}"></script>
     <script src="{{ asset('js/register.js') }}"></script>
-    <script>
-      (function(){
-        const modal = document.getElementById('emailVerifyModal');
-        const close = document.getElementById('emailVerifyClose');
-        const cancel = document.getElementById('emailVerifyCancel');
-        const proceed = document.getElementById('emailVerifyProceed');
-        function hide(){ if(modal) modal.classList.add('hidden'); }
-        function show(email){ if(!modal) return; document.getElementById('verificationEmail').textContent = email || ''; modal.classList.remove('hidden'); }
-        if (close) close.addEventListener('click', hide);
-        if (cancel) cancel.addEventListener('click', hide);
-        if (proceed) proceed.addEventListener('click', function(){ window.location.href = '{{ route('registerverifycode') }}'; });
-        // expose for register.js to call
-        window.mvsgShowEmailVerificationModal = show;
-      })();
-    </script>
+    <!-- Verification modal logic removed (flow redirects to home for now) -->
     <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
     <script>
       (function(){
@@ -385,23 +354,13 @@
             }
           };
 
-          // show existing verification modal with the email
-          if (typeof window.mvsgShowEmailVerificationModal === 'function') {
-            window.mvsgShowEmailVerificationModal(email);
-          } else {
-            const modal = document.getElementById('emailVerifyModal');
-            if (modal) {
-              document.getElementById('verificationEmail').textContent = email;
-              modal.classList.remove('hidden');
-            }
-          }
-
-          // optional hook if register.js exposes continuation
+          // For now, skip verification flow and go straight to home
           try {
-            if (typeof window.mvsgFinalizeRegistration === 'function') {
-              window.mvsgFinalizeRegistration(window.finalRegistrationData);
-            }
-          } catch (err) { /* silent */ }
+            window.location.href = '{{ route('home') }}';
+            return;
+          } catch (e) {
+            console.warn('redirect to home failed', e);
+          }
         });
       })();
     </script>

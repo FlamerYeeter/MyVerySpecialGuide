@@ -257,6 +257,68 @@
             <!-- ensure shared register logic is available so the Next button is handled and autofill runs -->
             <script src="{{ asset('js/register.js') }}"></script>
 
+            <script>
+                // Early attempt to restore previously-selected skills from local draft (rpi_personal)
+                (function(){
+                    const tryParse = s => {
+                        try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; }
+                    };
+                    const normalizeList = v => {
+                        try {
+                            if (!v) return [];
+                            if (Array.isArray(v)) return v.map(x=>String(x||'').trim()).filter(Boolean);
+                            if (typeof v === 'object') {
+                                if (v.selected && Array.isArray(v.selected)) return v.selected.map(x=>String(x||'').trim()).filter(Boolean);
+                                if (v.skills_page1 && Array.isArray(v.skills_page1)) return v.skills_page1.map(x=>String(x||'').trim()).filter(Boolean);
+                                // object values
+                                return Object.values(v).map(x=>String(x||'').trim()).filter(Boolean);
+                            }
+                            const s = String(v||'').trim();
+                            if (!s) return [];
+                            if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+                                try { return normalizeList(tryParse(s)); } catch(e){}
+                            }
+                            if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
+                            return [s];
+                        } catch(e){ return []; }
+                    };
+
+                    try {
+                        // prefer window-loaded draft if available
+                        const fromWindow = window.__mvsg_lastLoadedDraft || null;
+                        let draft = null;
+                        if (fromWindow && typeof fromWindow === 'object') draft = fromWindow;
+                        else {
+                            const raw = localStorage.getItem('rpi_personal') || localStorage.getItem('registrationDraft') || localStorage.getItem('registerDraft') || sessionStorage.getItem('rpi_personal');
+                            if (raw) {
+                                draft = tryParse(raw) || null;
+                            }
+                        }
+                        let skills = [];
+                        if (draft) {
+                            // try nested paths used elsewhere
+                            skills = skills.concat(normalizeList(draft.skills && draft.skills.selected ? draft.skills.selected : (draft.skills || draft.skills_page1 || draft.skills_page || draft.skills1)));
+                            skills = skills.concat(normalizeList(draft.skills_page1 || draft.skills1 || draft.skills_page || draft.selectedSkills || draft.skillList || draft.skills));
+                        }
+                        // dedupe
+                        skills = Array.from(new Set((skills||[]).map(x=>String(x||'').trim()).filter(Boolean)));
+                        if (skills.length) {
+                            const hidden = document.getElementById('skills_page1');
+                            if (hidden) hidden.value = JSON.stringify(skills);
+                            // mark cards selected immediately so the user sees selection before other init runs
+                            document.querySelectorAll('.skills-card[data-value]').forEach(c => {
+                                try {
+                                    const v = c.getAttribute('data-value')?.trim();
+                                    if (v && skills.indexOf(v) !== -1) c.classList.add('selected');
+                                    else c.classList.remove('selected');
+                                } catch(e){}
+                            });
+                            console.info('[skills1] restored skills from draft:', skills);
+                        }
+                    } catch(e) { console.debug('[skills1] restore draft failed', e); }
+                })();
+            </script>
+
             <!-- TTS: Web Speech API handler -->
             <script>
                 document.addEventListener('DOMContentLoaded', function () {

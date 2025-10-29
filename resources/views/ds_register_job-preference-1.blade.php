@@ -331,15 +331,26 @@
                     }
                     const idx = arr.indexOf(value);
                     if (idx === -1) {
+                        // enforce maximum of 5 selections
+                        if (arr.length >= 5) {
+                            const err = document.getElementById('jobpref1Error');
+                            if (err) err.textContent = 'You can select up to 5 options only.';
+                            // brief shake animation (if supported)
+                            try { if (el && el.animate) el.animate([{ transform: 'translateY(-3px)' }, { transform: 'translateY(0)' }], { duration: 220 }); } catch(_){}
+                            return;
+                        }
                         arr.push(value);
                         if (el && el.classList) el.classList.add('selected');
                     } else {
                         arr.splice(idx, 1);
                         if (el && el.classList) el.classList.remove('selected');
+                        const err = document.getElementById('jobpref1Error');
+                        if (err) err.textContent = '';
                     }
                     hidden.value = JSON.stringify(arr);
                     if (value === 'other') {
-                        const other = document.getElementById('jobpref1_other_text');
+                        // focus the 'Other' text input (id in template is jobpref_other_text)
+                        const other = document.getElementById('jobpref_other_text') || document.getElementById('jobpref1_other_text');
                         if (other && arr.indexOf('other') !== -1) other.focus();
                     }
                     const err = document.getElementById('jobpref1Error');
@@ -388,6 +399,52 @@
     </div>
 
     <script src="{{ asset('js/register.js') }}"></script>
+    <script>
+        // Validate selection count on Next click (must be between 3 and 5)
+        (function(){
+            const next = document.getElementById('jobpref1Next');
+            if (!next) return;
+            // When register.js is present it attaches its own click handler that
+            // saves drafts and performs Firestore writes then navigates. Prevent
+            // this local handler from navigating prematurely — defer to register.js
+            // when it's available. We still perform client-side validation so users
+            // get immediate feedback.
+            next.addEventListener('click', function(e){
+                try {
+                    // prevent any default navigation; let register.js control flow when present
+                    e.preventDefault();
+                    const hidden = document.getElementById('jobpref1');
+                    let arr = [];
+                    try { arr = JSON.parse(hidden.value || '[]'); } catch(err){ arr = []; }
+                    const errEl = document.getElementById('jobpref1Error');
+                    if (!arr || arr.length < 3) {
+                        if (errEl) errEl.textContent = 'Please select at least 3 options.';
+                        return;
+                    }
+                    if (arr.length > 5) {
+                        if (errEl) errEl.textContent = 'Please select no more than 5 options.';
+                        return;
+                    }
+                    // clear error
+                    if (errEl) errEl.textContent = '';
+
+                    // If the central register.js is loaded, let its handler run (it will save and navigate).
+                    // We detect its presence via a known global it exposes (populateReview/register.js helpers).
+                    if (typeof window.populateReview === 'function' || typeof window.__mvsg_debugRun === 'function') {
+                        // no-op here; register.js handleNextButton will proceed
+                        return;
+                    }
+
+                    // No register.js present: fallback to original behavior (submit form if exists, else navigate)
+                    const form = document.querySelector('form');
+                    if (form) { form.submit(); return; }
+                    window.location.href = '{{ route('registerreview1') }}';
+                } catch (e) {
+                    console.error('jobpref1Next click handler error', e);
+                }
+            });
+        })();
+    </script>
     <!-- TTS: Web Speech API handler -->
     <script>
         document.addEventListener('DOMContentLoaded', function () {

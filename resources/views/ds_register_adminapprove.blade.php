@@ -711,8 +711,144 @@
         })();
     </script>
 
-    <!-- Include Firebase config and registration script -->
+    <!-- Include Firebase config -->
     <script src="js/firebase-config-global.js"></script>
+
+    <!-- LocalStorage-first autofill: read rpi_personal early and apply to form -->
+    <script>
+    (function(){
+        function normalizeFilename(s){
+            if(!s) return '';
+            try{ const parts = String(s).split(/[/\\]+/); return parts[parts.length-1]||'';}catch(e){ return String(s||''); }
+        }
+
+        function setIf(id, val){
+            try{
+                const el = document.getElementById(id);
+                if(!el) return false;
+                if(el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') el.value = val || '';
+                else el.textContent = val || '';
+                return true;
+            }catch(e){ return false; }
+        }
+
+        function setProofPreview(name){
+            try{
+                const info = document.getElementById('proofFileInfo');
+                const fileName = document.getElementById('proofFileName');
+                const icon = document.getElementById('proofFileIcon');
+                const hint = document.getElementById('proofHint');
+                if(!name){ if(info) info.classList.add('hidden'); if(hint) hint.style.display = ''; return; }
+                const ext = (name.split('.').pop()||'').toLowerCase();
+                if(icon) icon.textContent = (['jpg','jpeg','png'].includes(ext)?'🖼️': (ext==='pdf'?'📄':'📁'));
+                if(fileName) fileName.textContent = name;
+                if(info) info.classList.remove('hidden');
+                if(hint) hint.style.display = 'none';
+            }catch(e){}
+        }
+
+        function applyDraftToDom(d){
+            try{
+                if(!d || typeof d !== 'object') return false;
+                const p = d.personal || d.personalInfo || d;
+                const first = p.firstName || p.first_name || p.first || p.fname || '';
+                const last = p.lastName || p.last_name || p.last || p.lname || '';
+                const email = p.email || '';
+                const phone = p.phone || p.mobile || '';
+                const age = p.age || '';
+                const address = p.address || '';
+                const username = p.username || p.userName || '';
+                let applied = false;
+                applied = setIf('first_name', first) || applied;
+                applied = setIf('last_name', last) || applied;
+                applied = setIf('email', email) || applied;
+                applied = setIf('phone', phone) || applied;
+                applied = setIf('age', age) || applied;
+                applied = setIf('address', address) || applied;
+                applied = setIf('username', username) || applied;
+
+                // dsType
+                const ds = d.dsType || d.ds_type || p.dsType || p.ds_type || '';
+                if(ds){
+                    try{
+                        const select = document.getElementById('dsType');
+                        if(select){
+                            let found = false;
+                            for(const opt of select.options){ if(String(opt.value||'').toLowerCase()===String(ds).toLowerCase()){ select.value = opt.value; found = true; break; } }
+                            if(!found){ for(const opt of select.options){ if(String(opt.textContent||'').toLowerCase()===String(ds).toLowerCase()){ select.value = opt.value; break; } } }
+                            applied = true;
+                        }
+                    }catch(e){}
+                }
+
+                // guardian
+                const g = d.guardian || d.guardianInfo || d;
+                const gfirst = g.guardian_first_name || g.guardian_first || g.first || g.first_name || '';
+                const glast = g.guardian_last_name || g.guardian_last || g.last || g.last_name || '';
+                const gemail = g.guardian_email || g.email || '';
+                const gphone = g.guardian_phone || g.phone || '';
+                const grel = g.guardian_relationship || g.guardian_choice || g.relationship || '';
+                applied = setIf('guardian_first', gfirst) || applied;
+                applied = setIf('guardian_last', glast) || applied;
+                applied = setIf('guardian_email', gemail) || applied;
+                applied = setIf('guardian_phone', gphone) || applied;
+                if(grel) applied = setIf('guardian_relationship', grel) || applied;
+
+                // proof filename preview
+                const proof = d.proofFilename || p.proofFilename || d.proof || d.cert_file || p.proof || '';
+                const proofName = normalizeFilename(proof||''); if(proofName){ setProofPreview(proofName); applied = true; }
+                return applied;
+            }catch(e){ console.warn('applyDraftToDom failed', e); return false; }
+        }
+
+        function parseStored(raw){
+            if(!raw) return null;
+            try{ let parsed = JSON.parse(raw); if(parsed && parsed.data) parsed = parsed.data; return parsed; }catch(e){ return raw; }
+        }
+
+        function tryLoadAndApplyOnce(){
+            try{
+                const raw = localStorage.getItem('rpi_personal') || sessionStorage.getItem('rpi_personal');
+                if(!raw) return null;
+                return parseStored(raw);
+            }catch(e){ console.warn('tryLoadAndApplyOnce failed', e); return null; }
+        }
+
+        // Boot: attempt application with retry
+        const parsed = tryLoadAndApplyOnce();
+        if(parsed){
+            try{ console.info('[adminapprove-autofill] rpi_personal found, attempting to apply', Object.keys(parsed || {})); }catch(_){}
+            let attempts = 0;
+            const maxAttempts = 12;
+            const interval = 120;
+            function attempt(){
+                attempts++;
+                try{
+                    const ok = applyDraftToDom(parsed);
+                    if(ok){
+                        try{ console.info('[adminapprove-autofill] applied local draft to form'); }catch(_){}
+                        window.__mvsg_local_applied = true;
+                        window.dispatchEvent(new CustomEvent('mvsg:localApplied',{detail:{key:'rpi_personal'}}));
+                        return;
+                    }
+                }catch(e){}
+                if(attempts < maxAttempts) setTimeout(attempt, interval);
+            }
+            attempt();
+        }
+
+        // Listen for storage changes and custom events
+        window.addEventListener('storage', function(e){
+            try{ if((e.key === 'rpi_personal' || e.key === null) && e.newValue){ const parsed = parseStored(e.newValue); if(parsed) applyDraftToDom(parsed); } }catch(_){}
+        });
+
+        window.addEventListener('mvsg:adminSaved', function(ev){
+            try{ const d = (ev && ev.detail && ev.detail.data) ? ev.detail.data : null; if(d) applyDraftToDom(d); }catch(_){}
+        });
+
+    })();
+    </script>
+
     <script src="js/register.js"></script>
 
     <!-- TTS: Web Speech API handler -->

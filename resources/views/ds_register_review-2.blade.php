@@ -328,6 +328,99 @@
                     else document.addEventListener('DOMContentLoaded', init);
                 })();
             </script>
+            <script>
+                // Save the visible review-2 section draft to localStorage then navigate to the given route.
+                // Mirrors the behavior used on review-1 so destination pages can autofill from `rpi_personal`.
+                function saveDraftAndGoto(url) {
+                    try {
+                        let draft = window.__mvsg_lastLoadedDraft || {};
+                        if (!draft || typeof draft !== 'object') draft = {};
+
+                        // Ensure some namespaces exist
+                        draft.schoolWorkInfo = draft.schoolWorkInfo || {};
+                        draft.workExperience = draft.workExperience || {};
+                        draft.supportNeed = draft.supportNeed || {};
+                        draft.workplace = draft.workplace || {};
+
+                        const text = id => (document.getElementById(id) && (document.getElementById(id).textContent || document.getElementById(id).value)) ? (document.getElementById(id).textContent || document.getElementById(id).value).toString().trim() : '';
+
+                        // Education
+                        draft.schoolWorkInfo.school = draft.schoolWorkInfo.school || text('review_school') || text('review_school_name');
+                        draft.schoolWorkInfo.edu_level = draft.schoolWorkInfo.edu_level || text('review_edu');
+                        draft.schoolWorkInfo.certs = draft.schoolWorkInfo.certs || text('review_certs_name');
+                        // cert filename (if present)
+                        const certfn = text('review_certs_file') || text('review_certfile');
+                        if (certfn && certfn !== 'No file uploaded') draft.schoolWorkInfo.cert_file = draft.schoolWorkInfo.cert_file || certfn;
+
+                        // Work
+                        draft.schoolWorkInfo.work_type = draft.schoolWorkInfo.work_type || text('review_work_list') || text('review_work');
+                        // Try to capture job experiences as plain HTML/text fallback
+                        try {
+                            const jobsEl = document.getElementById('review_job_experiences');
+                            if (jobsEl && !draft.workExperience.work_experiences) {
+                                // keep a simple textual capture if structured data not available
+                                const items = Array.from(jobsEl.querySelectorAll('div')).map(d => d.textContent && d.textContent.trim()).filter(Boolean);
+                                if (items.length) draft.workExperience.work_experiences = items;
+                            }
+                        } catch(e){}
+
+                        // Support I Need
+                        draft.supportNeed.support_choice = draft.supportNeed.support_choice || text('review_support_list') || text('review_support_choice');
+
+                        // Workplace
+                        draft.workplace.workplace_choice = draft.workplace.workplace_choice || text('review_workplace_list') || text('review_workplace_choice');
+
+                        try {
+                            localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                            try {
+                                const verified = JSON.parse(localStorage.getItem('rpi_personal'));
+                                console.info('[review-2] saveDraftAndGoto wrote rpi_personal and verified', verified);
+                            } catch (verErr) {
+                                console.info('[review-2] saveDraftAndGoto wrote rpi_personal (could not parse on readback)', localStorage.getItem('rpi_personal'));
+                            }
+                        } catch (e) {
+                            console.warn('[review-2] saveDraftAndGoto: failed to set localStorage', e);
+                        }
+                    } catch (e) { console.warn('[review-2] saveDraftAndGoto build draft failed', e); }
+
+                    // Try to append firebase uid when available (best-effort)
+                    try {
+                        let uid = '';
+                        if (window.firebase && firebase.auth) {
+                            const user = firebase.auth().currentUser;
+                            if (user && user.uid) uid = user.uid;
+                        }
+                        if (uid) {
+                            const sep = url.includes('?') ? '&' : '?';
+                            window.location.href = url + sep + 'uid=' + encodeURIComponent(uid);
+                        } else {
+                            window.location.href = url;
+                        }
+                    } catch (e) {
+                        window.location.href = url;
+                    }
+                }
+
+                // Wire section Edit buttons to their routes
+                document.addEventListener('DOMContentLoaded', function(){
+                    try {
+                        const routeMap = {
+                            'education': '{{ route('registereducation') }}',
+                            'work': '{{ route('registerworkexpinfo') }}',
+                            'support': '{{ route('registersupportneed') }}',
+                            'environment': '{{ route('registerworkplace') }}'
+                        };
+                        document.querySelectorAll('.edit-btn').forEach(btn => {
+                            try {
+                                const sec = (btn.getAttribute('data-section') || '').trim();
+                                const target = routeMap[sec];
+                                if (!target) return;
+                                btn.addEventListener('click', function(ev){ ev.preventDefault(); saveDraftAndGoto(target); });
+                            } catch(e) { /* ignore per-button errors */ }
+                        });
+                    } catch (e) { console.warn('[review-2] wiring edit buttons failed', e); }
+                });
+            </script>
 
 
 
@@ -788,6 +881,59 @@
                         }
                     } catch (e) {}
                 });
+            </script>
+            <script>
+                // Ensure pill labels are visibly title-cased/capitalized even when server-rendered
+                (function(){
+                    const titleCase = (s) => {
+                        if (!s) return s;
+                        return String(s).split(/\s+/).map(w => {
+                            if (!w) return w;
+                            return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+                        }).join(' ');
+                    };
+
+                    const fixPillsIn = (rootSelector) => {
+                        try {
+                            const root = document.querySelector(rootSelector);
+                            if (!root) return;
+                            // target direct pill spans and any inline-flex badges inside
+                            const candidates = Array.from(root.querySelectorAll('span'));
+                            candidates.forEach(el => {
+                                try {
+                                    const txt = (el.textContent || '').trim();
+                                    if (!txt) return;
+                                    // skip purely decorative em-dash or punctuation
+                                    if (/^[—\-–]+$/.test(txt)) return;
+                                    const newText = titleCase(txt);
+                                    if (newText !== txt) el.textContent = newText;
+                                    // also force visual capitalization via inline style in case global CSS overrides
+                                    el.style.textTransform = 'capitalize';
+                                } catch(e){}
+                            });
+                        } catch(e) { console.debug('[review-2] fixPillsIn error', e); }
+                    };
+
+                    const runAll = () => {
+                        try {
+                            // common review lists that contain pills
+                            ['#review_support_list', '#review_workplace_list', '#review_work_list', '#review_job_experiences', '#review_certs_name', '#review_certs_file'].forEach(sel => fixPillsIn(sel));
+                        } catch(e){}
+                    };
+
+                    // run now and also after any populate / storage events
+                    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', runAll);
+                    else runAll();
+
+                    window.addEventListener('storage', function(){ setTimeout(runAll, 20); });
+                    window.addEventListener('mvsg:populateDone', function(){ setTimeout(runAll, 20); });
+                    // also observe mutations in review lists (works if something replaces innerHTML)
+                    try {
+                        const obsTargets = ['review_support_list','review_workplace_list','review_work_list','review_job_experiences'];
+                        const obs = new MutationObserver(function(){ setTimeout(runAll, 10); });
+                        obsTargets.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el, { childList: true, subtree: true, characterData: true }); });
+                    } catch(e){}
+                })();
             </script>
 </body>
 

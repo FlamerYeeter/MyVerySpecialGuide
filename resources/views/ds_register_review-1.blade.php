@@ -173,7 +173,7 @@
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
 
             <!-- Edit Button -->
-            <button id="editInfo" onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registeradminapprove') }}')"
+            <button id="editInfo" onclick="saveDraftAndEdit();"
                 class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
            px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
            shadow-md w-full sm:w-64 text-center">
@@ -201,6 +201,65 @@
 
     <script src="{{ asset('js/firebase-config-global.js') }}"></script>
     <script src="{{ asset('js/register.js') }}"></script>
+    <script>
+        // Save the currently-displayed review draft into localStorage so the adminapprove page
+        // (and register.js) can prefill fields. If Firebase user is available, append ?uid= to the URL.
+        function saveDraftAndEdit() {
+            try {
+                // Prefer the merged draft if the preview loader exposed it
+                let draft = window.__mvsg_lastLoadedDraft || null;
+                if (!draft || typeof draft !== 'object') {
+                    // Fallback: build a minimal draft from the visible review DOM
+                    draft = draft || {};
+                    draft.personal = draft.personal || {};
+                    draft.guardian = draft.guardian || {};
+                    const text = id => (document.getElementById(id) && document.getElementById(id).textContent) ? document.getElementById(id).textContent.trim() : '';
+                    draft.personal.first = draft.personal.first || text('r_first_name');
+                    draft.personal.last = draft.personal.last || text('r_last_name');
+                    draft.personal.email = draft.personal.email || text('r_email');
+                    draft.personal.phone = draft.personal.phone || text('r_phone');
+                    draft.personal.age = draft.personal.age || text('r_age');
+                    draft.personal.address = draft.personal.address || text('r_address');
+                    draft.personal.username = draft.personal.username || text('r_username');
+                    // Password in review is a masked placeholder; keep it if present (won't reveal real password)
+                    const pw = text('r_password'); if (pw) draft.personal.password = draft.personal.password || pw;
+                    draft.guardian.guardian_first_name = draft.guardian.guardian_first_name || text('r_guardian_first');
+                    draft.guardian.guardian_last_name = draft.guardian.guardian_last_name || text('r_guardian_last');
+                    draft.guardian.guardian_email = draft.guardian.guardian_email || text('r_guardian_email');
+                    draft.guardian.guardian_phone = draft.guardian.guardian_phone || text('r_guardian_phone');
+                    draft.guardian.relationship = draft.guardian.relationship || text('r_guardian_relationship');
+                    draft.dsType = draft.dsType || text('r_dsType');
+                    // proof filename (may contain 'No file uploaded')
+                    const proof = text('r_proof'); if (proof && proof !== 'No file uploaded') draft.proofFilename = draft.proofFilename || proof;
+                }
+                try {
+                    localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                    // read back and show verified JSON so we can confirm storage succeeded in the browser console
+                    try {
+                        const verified = JSON.parse(localStorage.getItem('rpi_personal'));
+                        console.info('[review] saveDraftAndEdit wrote rpi_personal and verified', verified);
+                    } catch (verErr) {
+                        console.info('[review] saveDraftAndEdit wrote rpi_personal (could not parse on readback)', localStorage.getItem('rpi_personal'));
+                    }
+                } catch (e) { console.warn('saveDraftAndEdit: failed to set localStorage', e); }
+            } catch (e) { console.warn('saveDraftAndEdit build draft failed', e); }
+
+            // Try to get firebase uid to make adminapprove load the authoritative document when possible
+            try {
+                let uid = '';
+                if (window.firebase && firebase.auth) {
+                    const user = firebase.auth().currentUser;
+                    if (user && user.uid) uid = user.uid;
+                }
+                let url = '{{ route('registeradminapprove') }}';
+                if (uid) url += '?uid=' + encodeURIComponent(uid);
+                window.location.href = url;
+            } catch (e) {
+                // fallback navigation
+                window.location.href = '{{ route('registeradminapprove') }}';
+            }
+        }
+    </script>
     <script>
         // Try to sync client Firebase ID token to the server before navigating to review-2.
         // This helps populate Laravel session('firebase_uid') so the next page can fetch server-profile.
@@ -655,6 +714,105 @@
             if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
         })();
     </script>
+        <script>
+            // Safety-net: ensure proof filename is shown in the review UI when a draft contains it.
+            (function(){
+                const normalizeFilename = (s) => {
+                    try { if (!s) return ''; const parts = String(s).split(/[/\\]+/); return parts[parts.length-1] || ''; } catch(e){ return s; }
+                };
+                const tryGetProof = (obj) => {
+                    if (!obj) return '';
+                    // common places
+                    const candidates = [obj.proofFilename, obj.proof_filename, obj.proofFile, obj.proof, obj.cert_file, obj.certFile, obj.certs, obj.certificate];
+                    for (const c of candidates) if (c) return c;
+                    // nested personalInfo / personal
+                    if (obj.personalInfo && typeof obj.personalInfo === 'object') {
+                        const p = obj.personalInfo;
+                        for (const c of [p.proofFilename, p.proof, p.cert_file, p.certFile]) if (c) return c;
+                    }
+                    if (obj.personal && typeof obj.personal === 'object') {
+                        const p = obj.personal;
+                        for (const c of [p.proofFilename, p.proof, p.cert_file, p.certFile]) if (c) return c;
+                    }
+                    // schoolWorkInfo
+                    if (obj.schoolWorkInfo && typeof obj.schoolWorkInfo === 'object') {
+                        const s = obj.schoolWorkInfo;
+                        for (const c of [s.cert_file, s.certFile, s.certs]) if (c) return c;
+                    }
+                    return '';
+                };
+
+                const apply = () => {
+                    try {
+                        let draft = null;
+                        try { draft = window.__mvsg_lastLoadedDraft || null; } catch(e){}
+                        if (!draft) {
+                            try { draft = JSON.parse(localStorage.getItem('rpi_personal') || localStorage.getItem('registrationDraft') || 'null'); } catch(e){ draft = null; }
+                        }
+                        const proofRaw = tryGetProof(draft) || '';
+                        const proof = normalizeFilename(proofRaw || '');
+                        if (proof && document.getElementById('r_proof')) {
+                            document.getElementById('r_proof').textContent = proof;
+                            console.info('[review] applied proofFilename to r_proof:', proof);
+                            return true;
+                        }
+                    } catch (e) { /* ignore safety-net errors */ }
+                    return false;
+                };
+
+                // attempt immediate apply, but also retry and listen for populate/storage events
+                let attempts = 0;
+                const applyWithRetry = () => {
+                    try {
+                        const ok = apply();
+                        if (ok) return;
+                        attempts++;
+                        if (attempts < 8) setTimeout(applyWithRetry, 300);
+                        else {
+                            // Final fallback: try to fetch authoritative document from Firestore (best-effort)
+                            try {
+                                (async function fetchProofFromFirestore(){
+                                    try {
+                                        if (!window.firebase || !firebase.firestore) return;
+                                        // initialize if necessary
+                                        try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){}
+                                        const params = new URLSearchParams(window.location.search || '');
+                                        const overrideUid = params.get('uid') || params.get('user') || params.get('id');
+                                        let docUid = overrideUid || (firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) || null;
+                                        // attempt to wait for auth if not ready
+                                        if (!docUid && firebase.auth) {
+                                            const user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                                            if (user && user.uid) docUid = user.uid;
+                                        }
+                                        if (!docUid) return;
+                                        const db = firebase.firestore();
+                                        const snap = await db.collection('users').doc(docUid).get().catch(()=>null);
+                                        const doc = snap && snap.exists ? snap.data() : null;
+                                        if (!doc) return;
+                                        const proofRaw = doc.proofFilename || doc.proof_filename || doc.proofFile || (doc.personalInfo && (doc.personalInfo.proofFilename || doc.personalInfo.proof)) || (doc.personal && (doc.personal.proofFilename || doc.personal.proof)) || doc.cert_file || '';
+                                        const proof = normalizeFilename(proofRaw || '');
+                                        if (proof && document.getElementById('r_proof')) {
+                                            document.getElementById('r_proof').textContent = proof;
+                                            console.info('[review] fetched proofFilename from Firestore and applied to r_proof:', proof);
+                                        }
+                                    } catch(e) { /* ignore final fallback errors */ }
+                                })();
+                            } catch(e){}
+                        }
+                    } catch(e){}
+                };
+
+                // run on DOM ready
+                if (document.readyState === 'complete' || document.readyState === 'interactive') setTimeout(applyWithRetry, 50);
+                else document.addEventListener('DOMContentLoaded', () => setTimeout(applyWithRetry, 50));
+
+                // when register.js finishes populate it dispatches mvsg:populateDone — re-run apply
+                try { window.addEventListener('mvsg:populateDone', applyWithRetry); } catch(e){}
+
+                // if another window/tab writes rpi_personal or register writes it, catch storage events
+                try { window.addEventListener('storage', function(e){ if (e && (e.key === 'rpi_personal' || e.key === 'registrationDraft')) setTimeout(applyWithRetry, 80); }); } catch(e){}
+            })();
+        </script>
 </body>
 
 </html>

@@ -761,27 +761,58 @@ service cloud.firestore {
 
       // Normalize various shapes (string, JSON, array, object) into an array of display strings
       const normalizeToList = (v) => {
-        try {
-          if (v === null || v === undefined) return [];
-          if (Array.isArray(v)) return v.map(x => (x && x.label) ? String(x.label).trim() : String(x || '').trim()).filter(Boolean);
-          if (typeof v === 'object') {
-            if (v.label) return [String(v.label).trim()];
-            if (v.name) return [String(v.name).trim()];
-            return Object.values(v).map(x => String(x || '').trim()).filter(Boolean);
-          }
-          const parsed = parseMaybeJson(v);
-          if (Array.isArray(parsed)) return parsed.map(x => (x && x.label) ? String(x.label).trim() : String(x || '').trim()).filter(Boolean);
-          if (typeof parsed === 'object') return normalizeToList(parsed);
-          const s = String(v || '').trim();
-          if (!s) return [];
-          if (s.includes(',')) return s.split(',').map(x => x.trim()).filter(Boolean);
-          return [s];
-        } catch (e) { return []; }
+        const out = [];
+        const push = (itm) => {
+          try {
+            if (itm === null || itm === undefined) return;
+            if (Array.isArray(itm)) {
+              for (const i of itm) push(i); return;
+            }
+            if (typeof itm === 'object') {
+              if (itm.label) { out.push(String(itm.label).trim()); return; }
+              if (itm.name) { out.push(String(itm.name).trim()); return; }
+              if (itm.title) { out.push(String(itm.title).trim()); return; }
+              if (itm.value) { out.push(String(itm.value).trim()); return; }
+              // If object looks like a map of numbered keys, try to extract values
+              const vals = Object.values(itm).filter(x => typeof x === 'string' || typeof x === 'number' || Array.isArray(x));
+              if (vals.length) { for (const vv of vals) push(vv); return; }
+              return;
+            }
+            // string/number
+            const s = String(itm).trim(); if (!s) return;
+            // If it looks like JSON array/object, attempt to parse and recurse
+            if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+              try { const p = parseMaybeJson(s); push(p); return; } catch(e) { /* fallthrough */ }
+            }
+            // comma-separated fallback
+            if (s.includes(',')) { for (const part of s.split(',').map(x=>x.trim()).filter(Boolean)) push(part); return; }
+            out.push(s);
+          } catch(e) {}
+        };
+        try { push(v); } catch(e) { /* ignore */ }
+        // final normalization: unique, trimmed, non-empty
+        return [...new Set(out.map(x=>String(x||'').trim()).filter(Boolean))];
       };
 
       const createPill = (text) => {
-        const sp = document.createElement('span');
-        sp.textContent = text;
+            const sp = document.createElement('span');
+            // Normalize label text to Title Case for consistent display (e.g. "none" -> "None")
+            const toTitleCase = (s) => {
+              try {
+                if (!s && s !== 0) return '';
+                const str = String(s || '');
+                return str.split(/\s+/).map(w => {
+                  if (!w) return w;
+                  // preserve words that are all uppercase or contain digits/punctuation reasonably
+                  const lower = w.toLowerCase();
+                  return lower.charAt(0).toUpperCase() + lower.slice(1);
+                }).join(' ');
+              } catch (e) { return String(s || ''); }
+            };
+
+      sp.textContent = toTitleCase(text);
+      // Ensure CSS capitalization in case content was lowercased elsewhere
+      try { sp.style.textTransform = 'capitalize'; } catch(e){}
         sp.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100';
         sp.setAttribute('role', 'listitem');
         return sp;
@@ -968,27 +999,49 @@ service cloud.firestore {
   safeSet('review_workplace_choice', workplace || '');
   setChoiceImage('review_workplace_choice_img', workplace, ['.workplace-card','.selectable-card']);
 
-      // job preferences (jobpref1/jobpref2) — accept nested map data.jobPreferences or top-level keys
-      let jpList = [];
+      // job preferences: use centralized helper to ONLY read explicit job preference keys
       try {
-        const jp1raw = data.jobPreferences?.jobpref1 || data.jobPreferences?.jobPref1 || data.jobpref1 || data.jobPref1 || readStored('jobpref1') || readStored('jobPref1') || null;
-        const jp2raw = data.jobPreferences?.jobpref2 || data.jobPreferences?.jobPref2 || data.jobpref2 || data.jobPref2 || readStored('jobpref2') || readStored('jobPref2') || null;
-        const p1 = parseMaybeJson(jp1raw);
-        const p2 = parseMaybeJson(jp2raw);
-        if (Array.isArray(p1)) jpList.push(...p1);
-        else if (typeof p1 === 'string' && p1) jpList.push(...p1.split(',').map(x=>x.trim()).filter(Boolean));
-        if (Array.isArray(p2)) jpList.push(...p2);
-        else if (typeof p2 === 'string' && p2) jpList.push(...p2.split(',').map(x=>x.trim()).filter(Boolean));
-      } catch(e){ /* ignore */ }
-      const prefs = jpList.map(x => typeof x === 'string' ? x.trim() : x).filter(Boolean);
-      if (prefs.length) {
-        safeSet('review_jobprefs', prefs.join(', '));
-        setChoiceImage('review_jobprefs_img', prefs[0], ['.jobpref-card','.selectable-card']);
-        document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card => {
-          const title = card.querySelector('h3')?.textContent?.trim();
-          if (title && prefs.includes(title)) card.classList.add('selected'); else card.classList.remove('selected');
-        });
-      }
+        let prefs = [];
+        try {
+          if (window.getDraftJobPreferences) prefs = window.getDraftJobPreferences();
+        } catch (e) { prefs = []; }
+        // fallback: minimal conservative parse from data if helper not available
+        if ((!prefs || !prefs.length) && data) {
+          try {
+            const jp1raw = data.jobPreferences?.jobpref1 || data.jobpref1 || readStored('jobpref1') || null;
+            const parsed = parseMaybeJson(jp1raw);
+            if (Array.isArray(parsed)) prefs = parsed;
+            else if (typeof parsed === 'string' && parsed) prefs = parsed.split(',').map(x=>x.trim()).filter(Boolean);
+          } catch(e) { prefs = []; }
+        }
+        // sanitize: remove emails, phone numbers, filenames, object markers, numeric-only entries, and very long strings
+        try {
+          const emailRe = /\S+@\S+\.\S+/;
+          const phoneRe = /\+?\d[\d\s\-()]{5,}\d/;
+          const fileExtRe = /\.(pdf|docx|doc|png|jpg|jpeg|gif)$/i;
+          prefs = (prefs || []).map(x=>String(x||'').trim()).filter(Boolean).filter(s => {
+            if (!s) return false;
+            if (emailRe.test(s)) return false;
+            if (phoneRe.test(s)) return false;
+            if (fileExtRe.test(s)) return false;
+            if (/\[object\s+object\]/i.test(s)) return false;
+            if (/^\d{1,3}$/.test(s)) return false;
+            if (s.length > 120) return false;
+            return true;
+          });
+        } catch(e) { /* ignore sanitize errors */ }
+
+        if (prefs && prefs.length) {
+          safeSet('review_jobprefs', prefs.join(', '));
+          setChoiceImage('review_jobprefs_img', prefs[0], ['.jobpref-card','.selectable-card']);
+          document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card => {
+            try {
+              const title = card.querySelector('h3')?.textContent?.trim();
+              if (title && prefs.includes(title)) card.classList.add('selected'); else card.classList.remove('selected');
+            } catch(e) { /* ignore card errors */ }
+          });
+        }
+      } catch(e) { /* ignore jobpref mapping errors */ }
 
       // done
       window.__mvsg_lastLoadedDraft = data;
@@ -1082,6 +1135,88 @@ service cloud.firestore {
       }
     } catch(e) { /* ignore */ }
     
+  });
+
+  // If a review page wants the authoritative Firestore copy of job preferences,
+  // call this helper: it will try URL 'uid' param, then firebase.auth().currentUser,
+  // then no-op. It renders into the same pill list and image container used elsewhere.
+  async function fetchAndRenderJobPrefsFromFirestore() {
+    try {
+      const listEl = document.getElementById('review_jobprefs_list');
+      if (!listEl) return null;
+      // find uid from URL query or firebase currentUser
+      const qp = (new URL(window.location.href)).searchParams;
+      let uid = qp.get('uid') || '';
+      await ensureFirebase();
+      if (!uid && window.firebase && firebase.auth && firebase.auth().currentUser) uid = firebase.auth().currentUser.uid || '';
+      // try waiting briefly for auth if still null
+      if (!uid && window.firebase && firebase.auth) {
+        try {
+          const user = await new Promise(res => {
+            const t = setTimeout(() => res(null), 3000);
+            firebase.auth().onAuthStateChanged(u => { clearTimeout(t); res(u || null); });
+          });
+          if (user && user.uid) uid = user.uid;
+        } catch(e){}
+      }
+      if (!uid) return null;
+      if (!window.firebase || !firebase.firestore) return null;
+      const db = firebase.firestore();
+      const doc = await db.collection('users').doc(uid).get().catch(()=>null);
+      if (!doc || !doc.exists) return null;
+      const data = doc.data() || {};
+      const raw = (data.jobPreferences && data.jobPreferences.jobpref1) || data.jobpref1 || null;
+      // normalize using the existing helper if present
+      let items = [];
+      try {
+        if (window.normalizeToList) items = window.normalizeToList(raw);
+        else if (typeof normalizeToList === 'function') items = normalizeToList(raw);
+        else {
+          // fallback simple parse
+          try { items = JSON.parse(raw); if (!Array.isArray(items)) items = (typeof raw === 'string' ? raw.split(',').map(s=>s.trim()).filter(Boolean) : []); } catch(e){ items = (typeof raw === 'string' ? raw.split(',').map(s=>s.trim()).filter(Boolean) : []); }
+        }
+      } catch(e) { items = []; }
+
+      if (!items || !items.length) return null;
+
+      // render
+      try {
+        if (window.renderPillList) window.renderPillList('review_jobprefs_list', items);
+        else {
+          listEl.innerHTML = '';
+          for (const it of items) {
+            const sp = document.createElement('span');
+            sp.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-medium shadow-sm';
+            sp.textContent = it;
+            listEl.appendChild(sp);
+          }
+        }
+      } catch(e){}
+
+      // set preview image and selected cards
+      try {
+        const first = items[0];
+        if (first) setChoiceImage('review_jobprefs_img', first, ['.jobpref-card', '.selectable-card']);
+        document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card => {
+          try {
+            const title = card.querySelector('h3')?.textContent?.trim();
+            if (title && items.indexOf(title) !== -1) card.classList.add('selected'); else card.classList.remove('selected');
+          } catch(e){}
+        });
+      } catch(e){}
+
+      return items;
+    } catch(e) { console.warn('fetchAndRenderJobPrefsFromFirestore failed', e); return null; }
+  }
+
+  // Auto-run Firestore-backed render on pages with the review_jobprefs_list element
+  document.addEventListener('DOMContentLoaded', function(){
+    try {
+      if (document.getElementById('review_jobprefs_list')) {
+        // prefer authoritative Firestore copy — best-effort and non-blocking
+        try { fetchAndRenderJobPrefsFromFirestore().catch(()=>{}); } catch(e){}
+      }
+    } catch(e){}
   });
 })();
 
@@ -1184,6 +1319,49 @@ service cloud.firestore {
     // Do not overwrite existing implementations from the main module; only expose these helpers if not present
     window.getDraft = window.getDraft || getDraft;
     window.populateReview = window.populateReview || populateReview;
+    // Central helper: read only explicit job preference keys from the draft (sync, defensive)
+    window.getDraftJobPreferences = window.getDraftJobPreferences || (function(){
+      try {
+        return function(){
+          try {
+            const tp = (s) => {
+              try {
+                if (s === null || s === undefined) return [];
+                if (Array.isArray(s)) return s.map(x=>String(x||'').trim()).filter(Boolean);
+                // Repeated JSON parse to handle double-stringified values
+                let cur = s;
+                for (let i=0;i<4;i++) {
+                  if (Array.isArray(cur)) return cur.map(x=>String(x||'').trim()).filter(Boolean);
+                  if (typeof cur !== 'string') break;
+                  const str = cur.trim(); if (!str) return [];
+                  try { cur = tryParse(str); continue; } catch(e) { break; }
+                }
+                if (typeof cur === 'string') return cur.split(',').map(x=>x.trim()).filter(Boolean);
+                if (typeof cur === 'object' && cur !== null) {
+                  const vals = [];
+                  Object.values(cur).forEach(v => { if (Array.isArray(v)) v.forEach(x=>vals.push(String(x||'').trim())); else if (v !== undefined && v !== null) vals.push(String(v||'').trim()); });
+                  return vals.filter(Boolean);
+                }
+                return [];
+              } catch(e){ return []; }
+            };
+            let draft = window.__mvsg_lastLoadedDraft || null;
+            if (!draft) {
+              const raw = localStorage.getItem('rpi_personal') || localStorage.getItem('registrationDraft') || localStorage.getItem('registerDraft') || sessionStorage.getItem('rpi_personal');
+              draft = raw ? tryParse(raw) : null;
+            }
+            if (draft && draft.jobPreferences && draft.jobPreferences.jobpref1) return tp(draft.jobPreferences.jobpref1);
+            if (draft && draft.jobpref1) return tp(draft.jobpref1);
+            // last-ditch: check readStored keys for jobpref1
+            try {
+              const r1 = readStored && readStored('jobpref1'); if (r1) return tp(r1);
+              const r2 = readStored && readStored('jobPref1'); if (r2) return tp(r2);
+            } catch(e){}
+            return [];
+          } catch(e){ return []; }
+        };
+      } catch(e) { return function(){ return []; }; }
+    })();
     // notify other inline scripts that register.js is available
     try { window.dispatchEvent(new CustomEvent('mvsg:registerLoaded')); } catch(e){}
   } catch(e){ warn('register.js init failed', e); }
@@ -1192,25 +1370,30 @@ service cloud.firestore {
     try {
       if (!window.normalizeToList) {
         window.normalizeToList = function(v) {
-          try {
-            if (v === null || v === undefined) return [];
-            if (Array.isArray(v)) return v.map(x => (x && x.label) ? String(x.label).trim() : String(x || '').trim()).filter(Boolean);
-            if (typeof v === 'object') {
-              if (v.label) return [String(v.label).trim()];
-              if (v.name) return [String(v.name).trim()];
-              return Object.values(v).map(x => String(x || '').trim()).filter(Boolean);
-            }
-            // try parse JSON or comma-split
+          const out = [];
+          const push = (itm) => {
             try {
-              const s = String(v || '').trim();
-              if (!s) return [];
-              if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
-                try { const parsed = JSON.parse(s); return window.normalizeToList(parsed); } catch(e){}
+              if (itm === null || itm === undefined) return;
+              if (Array.isArray(itm)) { for (const i of itm) push(i); return; }
+              if (typeof itm === 'object') {
+                if (itm.label) { out.push(String(itm.label).trim()); return; }
+                if (itm.name) { out.push(String(itm.name).trim()); return; }
+                if (itm.title) { out.push(String(itm.title).trim()); return; }
+                if (itm.value) { out.push(String(itm.value).trim()); return; }
+                const vals = Object.values(itm).filter(x => typeof x === 'string' || typeof x === 'number' || Array.isArray(x));
+                if (vals.length) { for (const vv of vals) push(vv); return; }
+                return;
               }
-              if (s.includes(',')) return s.split(',').map(x => x.trim()).filter(Boolean);
-              return [s];
-            } catch (e) { return [] }
-          } catch (e) { return []; }
+              const s = String(itm).trim(); if (!s) return;
+              if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+                try { const p = JSON.parse(s); push(p); return; } catch(e) { /* fall through */ }
+              }
+              if (s.includes(',')) { for (const part of s.split(',').map(x=>x.trim()).filter(Boolean)) push(part); return; }
+              out.push(s);
+            } catch(e) {}
+          };
+          try { push(v); } catch(e) {}
+          return [...new Set(out.map(x=>String(x||'').trim()).filter(Boolean))];
         };
       }
       if (!window.renderPillList) {
