@@ -21,31 +21,57 @@
   <!-- Main Content Container -->
   <section class="max-w-5xl mx-auto mt-10 mb-20 px-4 space-y-8">
 
-    <!-- Kitchen Helper Card -->
+    @php
+      // Prepare variables for the view. The route passes a `job` array or null.
+      $job = $job ?? null;
+      $jobTitle = $job['assoc']['title'] ?? ($job['assoc']['job_title'] ?? 'Untitled Job');
+      $company = $job['assoc']['company'] ?? '';
+      $jobDescription = $job['job_description'] ?? '';
+      $jobSkills = is_array($job['assoc']['skills'] ?? null) ? $job['assoc']['skills'] : (is_array($job['skills'] ?? null) ? $job['skills'] : []);
+      $matchPercent = null;
+      if (isset($job['match_score']) && is_numeric($job['match_score'])) {
+          $m = floatval($job['match_score']);
+          if ($m > 0 && $m <= 1.01) $matchPercent = round($m * 100);
+          elseif ($m > 0 && $m <= 5.0) $matchPercent = round($m * 20);
+          else $matchPercent = round($m);
+      }
+    @endphp
+
+    <!-- Job card for selected job -->
     <div class="bg-white shadow-md rounded-xl p-6 border">
       <div class="flex justify-between items-start mb-4">
         <div class="flex items-center space-x-3">
           <img src="{{ asset('image/nameofjob.png') }}" alt="Job Icon" class="w-8 h-8">
-          <h3 class="text-xl font-semibold text-gray-800">Kitchen Helper</h3>
+          <h3 class="text-xl font-semibold text-gray-800">{{ $jobTitle }}</h3>
           <button class="text-blue-600 hover:text-blue-800">🔊</button>
         </div>
         <div class="flex items-center gap-4">
-          <span class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">90% Match for You</span>
-          <span class="text-sm bg-green-200 text-green-700 px-3 py-1 rounded-full font-medium mt-1">Excellent Match</span>
+          <span class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">{{ $matchPercent !== null ? ($matchPercent . '% Match for You') : 'Matched' }}</span>
+          <span class="text-sm bg-green-200 text-green-700 px-3 py-1 rounded-full font-medium mt-1">{{ $matchPercent !== null && $matchPercent >= 75 ? 'Excellent Match' : ($matchPercent !== null && $matchPercent >= 50 ? 'Good Match' : 'Potential Match') }}</span>
         </div>
       </div>
 
       <!-- Why this Job Match -->
-      <h4 class="text-lg font-semibold text-gray-800 mb-2">Why this Job Match You?</h4>
+      <h4 class="text-lg font-semibold text-gray-800 mb-2">Why this Job Matches You</h4>
+      @php $whySentence = $job['why_sentence'] ?? null; @endphp
+      @if($whySentence)
+        <div class="text-sm text-gray-700 italic mb-3">{{ $whySentence }}</div>
+      @endif
+      <div class="text-sm text-gray-700 mb-3">
+        @if($jobDescription)
+          <p>{{ $jobDescription }}</p>
+        @else
+          <p>This job was recommended because it aligns with your skills and preferences.</p>
+        @endif
+      </div>
       <ul class="list-disc ml-6 text-sm space-y-3">
-        <li>
-          You enjoy working with others and being helpful. In a kitchen, everyone works together as a team. You’ll support the cooks, help your coworkers when they’re busy, and be an important part of making the restaurant run smoothly.
-          <span class="block text-gray-500 italic text-xs">(Mahilig kang makipagtulungan at tumulong sa iba. Sa kusina, lahat ay nagtutulungan bilang isang team. Tutulungan mo ang mga cook at magiging mahalagang bahagi ka sa pagpapatakbo ng restawran nang maayos.)</span>
-        </li>
-        <li>
-          You work best when tasks are clear and organized. Kitchen work follows specific routines and checklists every day — wash these dishes, prep these vegetables, clean these areas. You’ll know exactly what to do and when to do it.
-          <span class="block text-gray-500 italic text-xs">(Mas mahusay kang nagtatrabaho kapag malinaw at maayos ang mga gawain. Sa kusina, may tiyak na routine at listahan ng mga gagawin araw-araw, malalaman mo nang eksakto kung ano ang gagawin at kailan ito gagawin.)</span>
-        </li>
+        @if(!empty($jobSkills))
+          @foreach(array_slice($jobSkills,0,6) as $s)
+            <li>{{ $s }} <span class="block text-gray-500 italic text-xs">(This skill matches your profile)</span></li>
+          @endforeach
+        @else
+          <li>We didn't find explicit required skills in the job listing — the recommendation algorithm matched this job based on related skills and interests.</li>
+        @endif
       </ul>
     </div>
 
@@ -113,5 +139,77 @@
     </div>
   </section>
 </div>
+
+<script type="module">
+  (async function(){
+    try {
+      const mod = await import('/js/job-application-firebase.js');
+      try { await mod.ensureInit?.(); } catch(e){}
+      try { await mod.signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { /* ignore */ }
+      let profile = null;
+      try { profile = await (mod.getUserProfile?.() || Promise.resolve(null)); } catch(e) { profile = null; }
+
+      // Normalize profile skills
+      const profileSkills = [];
+      try {
+        if (profile) {
+          if (profile.skills && typeof profile.skills === 'object') {
+            try { if (profile.skills.skills_page1) JSON.parse(profile.skills.skills_page1).forEach(x=>profileSkills.push(String(x).toLowerCase().trim())); } catch(e){}
+            try { if (profile.skills.skills_page2) JSON.parse(profile.skills.skills_page2).forEach(x=>profileSkills.push(String(x).toLowerCase().trim())); } catch(e){}
+          }
+          if (Array.isArray(profile.skills)) profile.skills.forEach(s=>profileSkills.push(String(s).toLowerCase().trim()));
+          if (typeof profile.skills === 'string') profile.skills.split(/[,;\n]+/).forEach(s=>profileSkills.push(String(s).toLowerCase().trim()));
+          if (Array.isArray(profile.interests)) profile.interests.forEach(s=>profileSkills.push(String(s).toLowerCase().trim()));
+          if (typeof profile.interests === 'string') profile.interests.split(/[,;\n]+/).forEach(s=>profileSkills.push(String(s).toLowerCase().trim()));
+        }
+      } catch(e) { console.debug('normalize profile skills failed', e); }
+      const cleanedProfileSkills = Array.from(new Set(profileSkills.filter(Boolean)));
+
+      const JOB_SKILLS = @json($jobSkills);
+      const jobSkills = (Array.isArray(JOB_SKILLS) ? JOB_SKILLS.map(s=>String(s).toLowerCase().trim()).filter(Boolean) : []);
+
+      // compute matched skills
+      const matched = jobSkills.filter(s => cleanedProfileSkills.includes(s));
+
+      // update matching-skills-list
+      const skillsList = document.querySelector('.matching-skills-list');
+      if (skillsList) {
+        skillsList.innerHTML = '';
+        if (jobSkills.length === 0) {
+          skillsList.innerHTML = '<span class="text-sm text-gray-500">No specific skills were listed for this job.</span>';
+        } else {
+          jobSkills.slice(0,6).forEach(s => {
+            const span = document.createElement('span');
+            span.className = (matched.includes(s) ? 'bg-blue-50 text-blue-500 px-4 py-1 rounded-full text-sm font-medium' : 'bg-gray-100 text-gray-500 px-4 py-1 rounded-full text-sm');
+            span.textContent = s;
+            skillsList.appendChild(span);
+          });
+        }
+      }
+
+      // update client matched skills area
+      const clientMatchContainer = document.querySelector('.client-matched-skills');
+      if (clientMatchContainer) {
+        if (!matched || matched.length === 0) clientMatchContainer.innerHTML = '<p class="text-sm text-gray-500">No matching skills from your profile were detected for this job.</p>';
+        else clientMatchContainer.innerHTML = '<p class="text-sm text-gray-700 font-medium">Skills from your profile that match this job:</p><div class="flex flex-wrap gap-3 mt-2">' + matched.map(s => '<span class="bg-green-50 text-green-600 px-4 py-1 rounded-full text-sm font-medium">'+String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</span>').join('') + '</div>';
+      }
+
+      // compute a fallback percent if none present
+      const badge = document.querySelector('.match-badge');
+      const prog = document.querySelector('.match-progress');
+      const label = document.querySelector('.match-percent-label');
+      let pct = null;
+      if ({{ $matchPercent !== null ? 'true' : 'false' }}) {
+        // leave server-provided percent as-is
+      } else {
+        if (jobSkills.length > 0) pct = Math.round((matched.length / jobSkills.length) * 100);
+        else pct = null;
+        if (badge && pct !== null) badge.textContent = pct + '% Match';
+        if (prog && pct !== null) prog.style.width = pct + '%';
+        if (label && pct !== null) label.textContent = pct + '%';
+      }
+    } catch(e) { console.debug('why-this-job-2 client update failed', e); }
+  })();
+</script>
 
 @endsection

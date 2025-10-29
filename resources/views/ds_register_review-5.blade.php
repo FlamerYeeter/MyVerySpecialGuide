@@ -59,7 +59,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('registerreview4') }}'">
+    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview4') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-3 h-3 sm:w-6 sm:h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -168,7 +168,7 @@
 
             <!-- Change Jobs -->
             <div class="flex justify-center mt-6">
-                <button type="button" onclick="window.location.href='{{ route('registerjobpreference1') }}'"
+                <button type="button" onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerjobpreference1') }}')"
                     class="bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-transform duration-200 hover:scale-105">
                     ✏️ Change
                 </button>
@@ -199,109 +199,101 @@
     <script src="{{ asset('js/firebase-config-global.js') }}"></script>
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
-        // Exhaustive loader for job preferences (includes nested jobPref1.jobpref1 and flat fields)
+        // Use centralized populateReview and render job preferences as pills
         document.addEventListener('DOMContentLoaded', async () => {
-            const tryParse = s => {
-                try {
-                    return typeof s === 'string' ? JSON.parse(s) : s;
-                } catch (e) {
-                    return null;
-                }
-            };
-            const readStored = (key) => {
-                try {
-                    const s = localStorage.getItem(key) || sessionStorage.getItem(key);
-                    if (s) {
-                        try {
-                            return JSON.parse(s);
-                        } catch (e) {
-                            return s;
-                        }
-                    }
-                    const g = window.registrationDraft || window.__REGISTRATION_DRAFT__;
-                    if (g) {
-                        try {
-                            const parsed = typeof g === 'string' ? JSON.parse(g) : g;
-                            if (parsed && parsed[key] !== undefined) return parsed[key];
-                        } catch (e) {}
-                    }
-                    return null;
-                } catch (e) {
-                    return null;
-                }
-            };
-            const getDraft = async () => {
-                const keys = ['registrationDraft', 'registration_draft', 'dsRegistrationDraft',
-                    'ds_registration', 'registerDraft', 'regDraft', 'reg_data'
-                ];
-                for (const k of keys) {
-                    const v = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k));
-                    if (v && typeof v === 'object') return v;
-                }
-                if (window.registrationDraft || window.__REGISTRATION_DRAFT__) {
-                    try {
-                        return typeof window.registrationDraft === 'string' ? tryParse(window
-                            .registrationDraft) : (window.registrationDraft || tryParse(window
-                            .__REGISTRATION_DRAFT__));
-                    } catch (e) {}
-                }
-                if (window.firebase && firebase.auth && firebase.firestore) {
-                    try {
-                        const auth = firebase.auth(),
-                            db = firebase.firestore();
-                        let user = auth.currentUser;
-                        if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(
-                            res));
-                        if (user) {
-                            const doc = await db.collection('users').doc(user.uid).get().catch(() =>
-                                null);
-                            if (doc && doc.exists) return doc.data();
-                        }
-                    } catch (e) {}
-                }
-                return null;
-            };
-            // gather possible job pref arrays/strings
-            const a1 = readStored('jobpref1') || readStored('jobPref1') || readStored('jobpref') || readStored(
-                'jobpref1') || [];
-            const a2 = readStored('jobpref2') || readStored('jobPref2') || readStored('jobpref2') || [];
-            const flat = [].concat(Array.isArray(a1) ? a1 : (typeof a1 === 'string' ? a1.split(',') : []));
-            flat.push(...(Array.isArray(a2) ? a2 : (typeof a2 === 'string' ? a2.split(',') : [])));
-            const prefs = flat.map(x => typeof x === 'string' ? x.trim() : x).filter(Boolean);
-            if (prefs.length) {
-                const el = document.getElementById('review_jobprefs');
-                if (el) el.textContent = prefs.join(', ');
-                setChoiceImage('review_jobprefs_img', prefs[0], ['.jobpref-card', '.selectable-card']);
-                document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card => {
-                    const title = card.querySelector('h3')?.textContent?.trim();
-                    if (title && prefs.includes(title)) card.classList.add('selected');
-                    else card.classList.remove('selected');
-                });
-            }
-            // also attempt to hydrate from draft if needed (non-blocking)
             try {
-                const data = await getDraft();
-                if (data && !prefs.length) {
-                    const fallback = Array.isArray(data.jobPreferences) ? data.jobPreferences : (Array.isArray(
-                        data.jobpref1?.jobpref1) ? data.jobpref1.jobpref1 : []);
-                    if (fallback && fallback.length) {
-                        const el = document.getElementById('review_jobprefs');
-                        if (el) el.textContent = fallback.join(', ');
-                        setChoiceImage('review_jobprefs_img', fallback[0], ['.jobpref-card',
-                            '.selectable-card'
-                        ]);
-                        document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card => {
-                            const title = card.querySelector('h3')?.textContent?.trim();
-                            if (title && fallback.includes(title)) card.classList.add('selected');
-                            else card.classList.remove('selected');
-                        });
-                    }
+                if (typeof window.populateReview === 'function') {
+                    await window.populateReview();
                 }
             } catch (e) {
-                /* ignore non-fatal */
+                console.debug('review-5: populateReview failed', e);
+            }
+            try {
+                const draft = window.__mvsg_lastLoadedDraft || {};
+                // Accept many shapes: nested jobPreferences.jobpref1 (string or array), jobpref1 arrays, or local keys
+                let prefsRaw = [];
+                try {
+                    // highest-priority: jobPreferences map with jobpref1 inside (may be stringified JSON)
+                    if (draft.jobPreferences) {
+                        const jp = draft.jobPreferences.jobpref1 || draft.jobPreferences.jobPref1 || draft.jobPreferences.jobpref || draft.jobPreferences;
+                        if (jp) {
+                            if (window.normalizeToList) prefsRaw = prefsRaw.concat(window.normalizeToList(jp));
+                            else if (Array.isArray(jp)) prefsRaw = prefsRaw.concat(jp);
+                            else if (typeof jp === 'string') {
+                                try { prefsRaw = prefsRaw.concat(JSON.parse(jp)); } catch(e) { prefsRaw = prefsRaw.concat(jp.split(',').map(s=>s.trim())); }
+                            }
+                        }
+                    }
+
+                    // other common shapes
+                    if (!prefsRaw.length && draft.jobpref1) {
+                        if (window.normalizeToList) prefsRaw = prefsRaw.concat(window.normalizeToList(draft.jobpref1));
+                        else if (Array.isArray(draft.jobpref1)) prefsRaw = prefsRaw.concat(draft.jobpref1);
+                        else if (typeof draft.jobpref1 === 'string') {
+                            try { prefsRaw = prefsRaw.concat(JSON.parse(draft.jobpref1)); } catch(e) { prefsRaw = prefsRaw.concat(draft.jobpref1.split(',').map(s=>s.trim())); }
+                        }
+                    }
+
+                    if (!prefsRaw.length && draft.jobpref2) {
+                        if (window.normalizeToList) prefsRaw = prefsRaw.concat(window.normalizeToList(draft.jobpref2));
+                        else if (Array.isArray(draft.jobpref2)) prefsRaw = prefsRaw.concat(draft.jobpref2);
+                        else if (typeof draft.jobpref2 === 'string') {
+                            try { prefsRaw = prefsRaw.concat(JSON.parse(draft.jobpref2)); } catch(e) { prefsRaw = prefsRaw.concat(draft.jobpref2.split(',').map(s=>s.trim())); }
+                        }
+                    }
+
+                    // fallback to stored local/session keys via readStored helper if available
+                    if (!prefsRaw.length && window.readStored) {
+                        const a1 = window.readStored('jobpref1') || window.readStored('jobPref1') || window.readStored('jobpref');
+                        const a2 = window.readStored('jobpref2') || window.readStored('jobPref2') || window.readStored('jobpref2');
+                        if (a1) prefsRaw = prefsRaw.concat(window.normalizeToList ? window.normalizeToList(a1) : (Array.isArray(a1) ? a1 : (typeof a1 === 'string' ? a1.split(',') : [])));
+                        if (a2) prefsRaw = prefsRaw.concat(window.normalizeToList ? window.normalizeToList(a2) : (Array.isArray(a2) ? a2 : (typeof a2 === 'string' ? a2.split(',') : [])));
+                    }
+                } catch (e) { console.debug('review-5 normalize prefs error', e); }
+
+                // normalize final list (dedupe and trim)
+                try {
+                    prefsRaw = (prefsRaw || []).map(x => (typeof x === 'string' ? x.trim() : x)).filter(Boolean);
+                    prefsRaw = [...new Set(prefsRaw)];
+                } catch (e) { /* ignore */ }
+
+                // Normalize and render using global helper if available
+                if (window.renderPillList) {
+                    window.renderPillList('review_jobprefs_list', prefsRaw);
+                } else {
+                    // fallback: simple comma text into the existing container
+                    const el = document.getElementById('review_jobprefs_list');
+                    if (el) {
+                        el.innerHTML = '';
+                        const items = Array.isArray(prefsRaw) ? prefsRaw : (typeof prefsRaw === 'string' ? prefsRaw.split(',').map(s=>s.trim()) : []);
+                        if (!items.length) {
+                            const none = document.createElement('span'); none.className = 'text-gray-600'; none.textContent = 'None'; el.appendChild(none);
+                        } else {
+                            for (const it of items) {
+                                const sp = document.createElement('span');
+                                sp.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
+                                sp.textContent = it;
+                                el.appendChild(sp);
+                            }
+                        }
+                    }
+                }
+
+                // Highlight matching jobpref cards and set preview image
+                try {
+                    const items = (Array.isArray(prefsRaw) ? prefsRaw : []).map(x => typeof x === 'string' ? x.trim() : x).filter(Boolean);
+                    if (items.length) {
+                        setChoiceImage('review_jobprefs_img', items[0], ['.jobpref-card', '.selectable-card']);
+                        document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card => {
+                            const title = card.querySelector('h3')?.textContent?.trim();
+                            if (title && items.includes(title)) card.classList.add('selected'); else card.classList.remove('selected');
+                        });
+                    }
+                } catch(e) { /* ignore */ }
+            } catch (e) {
+                console.debug('review-5 render error', e);
             }
         });
-    </script>
     </script>
     <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
     <script>

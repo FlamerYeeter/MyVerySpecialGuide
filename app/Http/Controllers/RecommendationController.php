@@ -48,6 +48,25 @@ class RecommendationController extends Controller
             return response()->json(['error' => 'uid_mismatch'], 403);
         }
 
+        // If Laravel session contains firebase_uid, use it (helps when Auth::user() lacks the field)
+        if (!$resolvedUid) {
+            try {
+                $sessUid = session('firebase_uid', null);
+                if (!empty($sessUid)) {
+                    $resolvedUid = (string)$sessUid;
+                    Log::info('recommendations: resolved uid from session firebase_uid=' . substr($resolvedUid,0,8) . '...');
+                }
+            } catch (\Throwable $_se) {}
+        }
+
+        // Development convenience: when running locally, allow the client-provided uid to be
+        // accepted if no Laravel session or ID token was available. This lets the local dev
+        // client post a profile.uid and still get per-user recs without a full auth flow.
+        if (!$resolvedUid && app()->environment('local') && $payloadUid) {
+            Log::info('recommendations: local dev fallback - using payload uid=' . $payloadUid);
+            $resolvedUid = $payloadUid;
+        }
+
         if ($resolvedUid) {
             $uid = $resolvedUid;
         } else {
@@ -63,6 +82,24 @@ class RecommendationController extends Controller
     $debugParsedPath = storage_path('app/reco_debug_parsed_' . $safeUid . '.json');
 
     Log::info('recommendations: request for uid=' . $uid . ' cachePath=' . $cachePath);
+
+    // Helper to extract a per-user recommendation array from multiple possible shapes:
+    // - mapping keyed by original uid
+    // - mapping keyed by safeUid
+    // - direct numeric array
+    // - mapping containing an array-valued entry (pick first)
+    $extractPerUser = function($maybe) use ($uid, $safeUid) {
+        if (!is_array($maybe)) return null;
+        if (array_key_exists($uid, $maybe)) return $maybe[$uid];
+        if (array_key_exists($safeUid, $maybe)) return $maybe[$safeUid];
+        // direct sequential array
+        if (array_values($maybe) === $maybe) return $maybe;
+        // mapping with nested arrays: prefer first array-valued entry
+        foreach ($maybe as $k => $v) {
+            if (is_array($v) && array_values($v) === $v) return $v;
+        }
+        return null;
+    };
 
         // TTL for cached results (seconds). If cached file is recent, return it immediately.
         $cacheTtl = 60 * 60; // 1 hour
@@ -80,13 +117,37 @@ class RecommendationController extends Controller
                 $job = new GenerateRecommendations($uid, $profile);
                 $result = $job->runAndReturn();
                 if ($result !== null) {
-                    $out = null;
-                    if (is_array($result) && array_key_exists($uid, $result)) $out = $result[$uid]; else $out = $result;
-                    if ($debug && app()->environment('local')) {
-                        // include parsed result inline for easier dev debugging (local only)
-                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                    // Generator may return either a mapping keyed by uid or a direct array for this user.
+                    if (is_array($result)) {
+                        if (array_key_exists($uid, $result)) {
+                            $out = $result[$uid];
+                            if ($debug && app()->environment('local')) {
+                                return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                            }
+                            return response()->json($out);
+                        }
+                        // direct list returned for this user
+                        if (array_values($result) === $result) {
+                            $out = $result;
+                            if ($debug && app()->environment('local')) {
+                                return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                            }
+                            return response()->json($out);
+                        }
+                        // mapping with nested arrays? try to pick the first array-valued entry
+                        foreach ($result as $k => $v) {
+                            if (is_array($v) && array_values($v) === $v) {
+                                $out = $v;
+                                if ($debug && app()->environment('local')) {
+                                    return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                                }
+                                return response()->json($out);
+                            }
+                        }
                     }
-                    return response()->json($out);
+                    // Generator produced no per-user payload we could detect
+                    Log::info('recommendations: generator returned no per-uid entry on force run for ' . $uid);
+                    return response()->json(['error' => 'no_per_user_results', 'message' => 'Generator produced no per-user results for this uid.'], 404);
                 }
                 // small sleep to allow file write on slower filesystems (harmless)
                 usleep(150000);
@@ -97,36 +158,47 @@ class RecommendationController extends Controller
         try {
             // If cache exists and is fresh, return immediately
             if (file_exists($cachePath) && (time() - filemtime($cachePath) < $cacheTtl)) {
+                // log which cache file is being used (helpful for multi-user debugging)
+                try {
+                    Log::info('recommendations: using fresh cache', ['cachePath' => $cachePath, 'mtime' => @filemtime($cachePath), 'size' => @filesize($cachePath)]);
+                } catch (\Throwable $_log_e) {}
                 $raw = @file_get_contents($cachePath);
                 $json = json_decode($raw, true);
-                if ($json !== null) {
-                    // If the stored JSON is a mapping keyed by uid (per-user mode), return only that user's array for simplicity
-                    if (is_array($json) && array_key_exists($uid, $json)) {
-                        Log::info('recommendations: returning cached per-uid results for ' . $uid);
-                        return response()->json($json[$uid]);
+                    if ($json !== null) {
+                        $out = $extractPerUser($json);
+                        if ($out !== null) {
+                            Log::info('recommendations: returning cached per-uid results for ' . $uid, ['cachePath' => $cachePath]);
+                            return response()->json($out);
+                        }
+                        // fall through to regeneration logic below
+                        Log::info('recommendations: cache present but no per-uid entry; skipping global return for ' . $uid, ['cachePath' => $cachePath]);
                     }
-                    return response()->json($json);
-                }
             }
 
             // If stale or missing cache: dispatch background job to generate recommendations
             // but return cached file immediately if present
             if (file_exists($cachePath)) {
                 // return stale cache while job regenerates in background
+                try {
+                    Log::info('recommendations: using stale cache (will dispatch regenerate)', ['cachePath' => $cachePath, 'mtime' => @filemtime($cachePath)]);
+                } catch (\Throwable $_le) {}
                 $raw = @file_get_contents($cachePath);
                 $json = json_decode($raw, true);
-                // dispatch the job asynchronously
+                // dispatch the job asynchronously to regenerate per-user output
                 GenerateRecommendations::dispatch($uid, $profile);
-                if ($json !== null) {
-                    if (is_array($json) && array_key_exists($uid, $json)) {
-                        Log::info('recommendations: returning stale per-uid cache for ' . $uid);
-                        return response()->json($json[$uid]);
+                    if ($json !== null) {
+                        $out = $extractPerUser($json);
+                        if ($out !== null) {
+                            Log::info('recommendations: returning stale per-uid cache for ' . $uid, ['cachePath' => $cachePath]);
+                            return response()->json($out);
+                        }
+                        // do NOT return stale global JSON; instead allow regeneration to proceed
+                        Log::info('recommendations: stale cache present but no per-uid entry; skipping global return for ' . $uid, ['cachePath' => $cachePath]);
                     }
-                    return response()->json($json);
-                }
             }
 
             // No cache exists: dispatch job. In local/dev or when queue driver is 'sync', run it synchronously
+            try { Log::info('recommendations: no cache found, dispatching job for uid=' . $uid, ['expectedCachePath' => $cachePath]); } catch (\Throwable $__l) {}
             GenerateRecommendations::dispatch($uid, $profile);
 
             try {
@@ -139,15 +211,38 @@ class RecommendationController extends Controller
                     // Run synchronously (safe for dev). Use runAndReturn to get JSON directly.
                     $job = new GenerateRecommendations($uid, $profile);
                     $result = $job->runAndReturn();
-                    if ($result !== null) {
-                        $out = null;
-                        if (is_array($result) && array_key_exists($uid, $result)) $out = $result[$uid]; else $out = $result;
-                        if ($debug && app()->environment('local')) {
-                            return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                        if ($result !== null) {
+                            if (is_array($result)) {
+                                if (array_key_exists($uid, $result)) {
+                                    $out = $result[$uid];
+                                    if ($debug && app()->environment('local')) {
+                                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                                    }
+                                    Log::info('recommendations: returning sync-generated per-uid results for ' . $uid);
+                                    return response()->json($out);
+                                }
+                                if (array_values($result) === $result) {
+                                    $out = $result;
+                                    if ($debug && app()->environment('local')) {
+                                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                                    }
+                                    Log::info('recommendations: returning sync-generated per-uid results (direct array) for ' . $uid);
+                                    return response()->json($out);
+                                }
+                                foreach ($result as $k => $v) {
+                                    if (is_array($v) && array_values($v) === $v) {
+                                        $out = $v;
+                                        if ($debug && app()->environment('local')) {
+                                            return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                                        }
+                                        Log::info('recommendations: returning sync-generated per-uid results (found array in mapping) for ' . $uid, ['foundKey' => $k]);
+                                        return response()->json($out);
+                                    }
+                                }
+                            }
+                            Log::info('recommendations: sync-generated result had no per-uid entry for ' . $uid);
+                            return response()->json(['error' => 'no_per_user_results', 'message' => 'Generator produced no per-user results for this uid.'], 404);
                         }
-                        Log::info('recommendations: returning sync-generated per-uid results for ' . $uid);
-                        return response()->json($out);
-                    }
                 } catch (\Throwable $e) {
                     Log::warning('GenerateRecommendations sync run failed: ' . $e->getMessage());
                 }
@@ -158,15 +253,38 @@ class RecommendationController extends Controller
                 Log::info('recommendations: attempting synchronous fallback generation for uid=' . $uid);
                 $job = new GenerateRecommendations($uid, $profile);
                 $result = $job->runAndReturn();
-                if ($result !== null) {
-                    $out = null;
-                    if (is_array($result) && array_key_exists($uid, $result)) $out = $result[$uid]; else $out = $result;
-                    if ($debug && app()->environment('local')) {
-                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                    if ($result !== null) {
+                        if (is_array($result)) {
+                            if (array_key_exists($uid, $result)) {
+                                $out = $result[$uid];
+                                if ($debug && app()->environment('local')) {
+                                    return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                                }
+                                Log::info('recommendations: returning fallback-generated per-uid results for ' . $uid);
+                                return response()->json($out);
+                            }
+                            if (array_values($result) === $result) {
+                                $out = $result;
+                                if ($debug && app()->environment('local')) {
+                                    return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                                }
+                                Log::info('recommendations: returning fallback-generated per-uid results (direct array) for ' . $uid);
+                                return response()->json($out);
+                            }
+                            foreach ($result as $k => $v) {
+                                if (is_array($v) && array_values($v) === $v) {
+                                    $out = $v;
+                                    if ($debug && app()->environment('local')) {
+                                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
+                                    }
+                                    Log::info('recommendations: returning fallback-generated per-uid results (found array in mapping) for ' . $uid, ['foundKey' => $k]);
+                                    return response()->json($out);
+                                }
+                            }
+                        }
+                        Log::info('recommendations: fallback generation produced no per-uid entry for ' . $uid);
+                        return response()->json(['error' => 'no_per_user_results', 'message' => 'Generator produced no per-user results for this uid.'], 404);
                     }
-                    Log::info('recommendations: returning fallback-generated per-uid results for ' . $uid);
-                    return response()->json($out);
-                }
             } catch (\Throwable $_e) {
                 Log::warning('recommendations: synchronous fallback failed: ' . $_e->getMessage());
             }

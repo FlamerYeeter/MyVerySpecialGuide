@@ -43,6 +43,35 @@
   const log = (...a) => console.log('[reg.js]', ...a);
   const err = (...a) => console.error('[reg.js]', ...a);
 
+  // Sync a client Firebase ID token to the server so the Laravel session can persist firebase_uid
+  async function syncFirebaseIdToServer(idToken) {
+    if (!idToken) return false;
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      try {
+        const csrfMeta = typeof document !== 'undefined' && document.querySelector ? document.querySelector('meta[name="csrf-token"]') : null;
+        if (csrfMeta && csrfMeta.getAttribute) headers['X-CSRF-TOKEN'] = csrfMeta.getAttribute('content');
+      } catch (e) { /* ignore */ }
+      const resp = await fetch('/session/firebase-signin', {
+        method: 'POST',
+        credentials: 'include',
+        headers,
+        body: JSON.stringify({ idToken })
+      });
+      try {
+        const j = await resp.json().catch(() => null);
+        if (j && j.ok) {
+          console.debug('[reg.js] syncFirebaseIdToServer: server acknowledged firebase_uid', j.firebase_uid || null);
+          return true;
+        }
+        console.debug('[reg.js] syncFirebaseIdToServer: server response', resp.status, j);
+      } catch (e) { console.debug('[reg.js] syncFirebaseIdToServer: parse failed', e); }
+    } catch (e) {
+      console.debug('[reg.js] syncFirebaseIdToServer: fetch failed', e && e.message ? e.message : e);
+    }
+    return false;
+  }
+
   function showError(msg, id = 'regError') {
     const el = document.getElementById(id) || document.getElementById('finalError') || document.getElementById('workplaceError');
     if (el) el.textContent = msg;
@@ -182,7 +211,42 @@ service cloud.firestore {
     if (!btn) return;
     btn.addEventListener('click', async (e) => {
       e.preventDefault();
+      // If the page provides a sync helper for work experiences (to flush debounced inputs)
+      try { if (sectionKey === 'workExperience' && typeof window.syncWorkExperiencesFromUI === 'function') window.syncWorkExperiencesFromUI(); } catch(e){}
       const data = collectPageInputs();
+      // Normalize workExperience fields so Firestore stores native arrays and explicit year info
+      if (sectionKey === 'workExperience') {
+        try {
+          // parse JSON string into array if needed
+          if (typeof data.work_experiences === 'string' && data.work_experiences.trim()) {
+            try {
+              const parsed = JSON.parse(data.work_experiences);
+              if (Array.isArray(parsed)) data.work_experiences = parsed;
+              else data.work_experiences = [parsed];
+            } catch (e) {
+              // fallback: comma/newline separated
+              data.work_experiences = data.work_experiences.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
+            }
+          }
+        } catch (e) { console.warn('[reg.js] normalize work_experiences failed', e); }
+        try {
+          // keep canonical code, human label, and compute an approximate start year
+          // prefer an explicit typed year (work_start_year) if the user provided one
+          const typedYear = data.work_start_year || document.getElementById('work_start_year')?.value || '';
+          const code = data.work_years || document.getElementById('work_years')?.value || '';
+          data.work_years_code = code || '';
+          const map = { 'lt1': 'Less than 1 year', '1-2': '1-2 years', 'gt3': 'More than 3 years', 'none': 'None' };
+          data.work_years_label = map[String(code)] || (code || '');
+          // Save typed year as an independent, section-level field. Do NOT inject or overwrite
+          // per-job start_year values here — those should remain per-item and only come from
+          // the user's input in each job entry or previously saved item.start_year.
+          if (typedYear && /^\d{4}$/.test(String(typedYear))) {
+            data.work_start_year = String(typedYear);
+          } else {
+            data.work_start_year = data.work_start_year || '';
+          }
+        } catch (e) { /* ignore */ }
+      }
       // validation for education step: ensure edu_level selected
       if (sectionKey === 'educationInfo') {
         const lvl = data.edu_level || document.getElementById('edu_level')?.value || '';
@@ -254,6 +318,11 @@ service cloud.firestore {
   const uid = cred.user.uid;
   // ensure auth state is established before Firestore writes (avoids permission-denied when rules require request.auth)
   try { await new Promise(res => auth.onAuthStateChanged(u => res(u))); } catch(e){}
+  // Attempt to sync client-side Firebase auth to server session so Laravel can resolve firebase_uid during server renders
+  try {
+    const idToken = await cred.user.getIdToken().catch(()=>null);
+    if (idToken) await syncFirebaseIdToServer(idToken);
+  } catch (e) { console.debug('[reg.js] sync to server after createUser failed', e); }
           // include phone and age in the stored personalInfo
           // build guardian info from form if present
           const guardian = {
@@ -335,6 +404,13 @@ service cloud.firestore {
   console.info('[reg.js] created auth user', uid);
   // ensure auth state is established before Firestore writes (avoids permission-denied when rules require request.auth)
   try { await new Promise(res => auth.onAuthStateChanged(u => res(u))); } catch(e){}
+
+            // Sync client Firebase sign-in to server so Laravel session gets firebase_uid and server-side
+            // endpoints (like /api/server-profile) can resolve the user's Firestore doc.
+            try {
+              const idToken = await cred.user.getIdToken().catch(()=>null);
+              if (idToken) await syncFirebaseIdToServer(idToken);
+            } catch (e) { console.debug('[reg.js] sync to server after mvsgFinalizeRegistration create failed', e); }
 
         // Build a personalInfo object from available sources (drafts, forms)
   let personal = {};
@@ -683,6 +759,54 @@ service cloud.firestore {
         return v;
       };
 
+      // Normalize various shapes (string, JSON, array, object) into an array of display strings
+      const normalizeToList = (v) => {
+        try {
+          if (v === null || v === undefined) return [];
+          if (Array.isArray(v)) return v.map(x => (x && x.label) ? String(x.label).trim() : String(x || '').trim()).filter(Boolean);
+          if (typeof v === 'object') {
+            if (v.label) return [String(v.label).trim()];
+            if (v.name) return [String(v.name).trim()];
+            return Object.values(v).map(x => String(x || '').trim()).filter(Boolean);
+          }
+          const parsed = parseMaybeJson(v);
+          if (Array.isArray(parsed)) return parsed.map(x => (x && x.label) ? String(x.label).trim() : String(x || '').trim()).filter(Boolean);
+          if (typeof parsed === 'object') return normalizeToList(parsed);
+          const s = String(v || '').trim();
+          if (!s) return [];
+          if (s.includes(',')) return s.split(',').map(x => x.trim()).filter(Boolean);
+          return [s];
+        } catch (e) { return []; }
+      };
+
+      const createPill = (text) => {
+        const sp = document.createElement('span');
+        sp.textContent = text;
+        sp.className = 'inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100';
+        sp.setAttribute('role', 'listitem');
+        return sp;
+      };
+
+      const renderPillList = (containerId, rawValue) => {
+        try {
+          const container = document.getElementById(containerId);
+          if (!container) return;
+          const items = normalizeToList(rawValue);
+          container.innerHTML = '';
+          if (!items || !items.length) {
+            const none = document.createElement('span');
+            none.className = 'text-gray-600';
+            none.textContent = '—';
+            container.appendChild(none);
+            return;
+          }
+          for (const it of items) {
+            const pill = createPill(it);
+            container.appendChild(pill);
+          }
+        } catch (e) { /* ignore */ }
+      };
+
       // personal
       const p = data?.personalInfo || data?.personal || data?.personal || data?.personalInfo || data;
       if (p) {
@@ -703,12 +827,58 @@ service cloud.firestore {
       safeSet('review_guardian_relationship', guardianRel || '');
       setChoiceImage('review_guardian_relationship_img', guardianRel, ['.guardian-card','.selectable-card']);
 
-      // education
-      const edu = data.educationInfo || data.education || findFirstMatching(data, ['education','edu','edu_level']) || '';
-      safeSet('review_education_level', edu || '');
-      setChoiceImage('review_education_level_img', edu, ['.education-card','.selectable-card']);
-      safeSet('review_school_name', data.schoolWorkInfo?.school_name || data.school_name || '');
-      safeSet('review_certs', data.schoolWorkInfo?.certs || data.certs || '');
+  // education
+  const edu = data.educationInfo || data.education || findFirstMatching(data, ['education','edu','edu_level']) || '';
+        // normalize edu value into a readable label
+        let eduLabel = '';
+        try {
+          if (!edu && typeof edu !== 'string') eduLabel = '';
+          else if (typeof edu === 'string') {
+            const parsed = parseMaybeJson(edu);
+            if (Array.isArray(parsed)) eduLabel = parsed.join(', ');
+            else if (parsed && typeof parsed === 'object') eduLabel = parsed.edu_level || parsed.eduLevel || parsed.level || parsed.label || JSON.stringify(parsed);
+            else eduLabel = String(parsed);
+          } else if (Array.isArray(edu)) eduLabel = edu.join(', ');
+          else if (typeof edu === 'object') eduLabel = edu.edu_level || edu.eduLevel || edu.level || edu.label || '';
+        } catch (e) { eduLabel = String(edu || ''); }
+        safeSet('review_education_level', eduLabel || '');
+        setChoiceImage('review_education_level_img', eduLabel, ['.education-card','.selectable-card']);
+        safeSet('review_school_name', data.schoolWorkInfo?.school_name || data.school_name || '');
+        safeSet('review_certs', data.schoolWorkInfo?.certs || data.certs || '');
+
+      // Also populate review-2 specific element IDs when present (backwards-compatible)
+      try {
+  // review_edu / review_edu_other
+  if (document.getElementById('review_edu')) safeSet('review_edu', eduLabel || '');
+        const eduOther = data.educationInfo && (data.educationInfo.edu_other_text || data.educationInfo.eduOtherText) || data.edu_other_text || '';
+        if (eduOther && document.getElementById('review_edu_other')) {
+          const el = document.getElementById('review_edu_other');
+          el.classList.remove('hidden');
+          el.textContent = 'Other: ' + String(eduOther);
+        }
+        // school
+        const schoolVal = data.schoolWorkInfo?.school_name || data.school_name || data.school || findFirstMatching(data, ['school','school_name']);
+        if (document.getElementById('review_school')) safeSet('review_school', schoolVal || '');
+          // Type of work: normalize JSON/stringified arrays into readable label
+          let workTypeRaw = (data.workExperience && (data.workExperience.work_type || data.workExperience.workType)) || data.work_type || data.work || findFirstMatching(data, ['work_type','work','workType']);
+          let workTypeLabel = '';
+          try {
+            const parsed = parseMaybeJson(workTypeRaw);
+            if (Array.isArray(parsed)) workTypeLabel = parsed.join(', ');
+            else if (parsed && typeof parsed === 'object') workTypeLabel = parsed.label || JSON.stringify(parsed);
+            else workTypeLabel = String(parsed || '');
+          } catch(e) { workTypeLabel = String(workTypeRaw || ''); }
+          // Render Type of Work as pill tags when possible
+          renderPillList('review_work_list', workTypeLabel || 'N/A');
+          safeSet('review_work', workTypeLabel || 'N/A');
+        // certs name and file
+        const certsName = data.schoolWorkInfo?.certs || data.certs || '';
+        if (document.getElementById('review_certs_name')) safeSet('review_certs_name', certsName || 'None');
+        const certFileRaw = data.schoolWorkInfo?.cert_file || data.cert_file || data.proofFilename || '';
+        const certFile = normalizeFilename(certFileRaw || '');
+        if (document.getElementById('review_certs_file')) safeSet('review_certs_file', certFile || 'None');
+        if (document.getElementById('review_certfile')) safeSet('review_certfile', certFile || 'No file uploaded');
+      } catch(e) { console.debug('[reg.js] review-2 education mapping failed', e); }
 
       // work years / work experience preview
       const workYears = data.workExperience?.[0]?.years || data.work_years || findFirstMatching(data, ['work_years','workexperience','years']) || '';
@@ -727,6 +897,26 @@ service cloud.firestore {
         if (window.renderWorkExperiencesFromArray && typeof window.renderWorkExperiencesFromArray === 'function') {
           try { window.renderWorkExperiencesFromArray(weArr); } catch(e){/*ignore*/ }
         }
+        // also render into review-2 container if present
+        try {
+          const container = document.getElementById('review_job_experiences');
+          if (container) {
+            container.innerHTML = '';
+            for (const item of weArr) {
+              try {
+                const title = item.title || item.job_title || item.jobTitle || '';
+                const company = item.company || item.company_name || item.companyName || '';
+                const desc = item.description || item.job_description || item.desc || '';
+                const el = document.createElement('div');
+                el.className = 'p-3 bg-white rounded-lg border';
+                el.innerHTML = `<p class="font-semibold">${title || company || 'Experience'}</p>` +
+                  (company ? `<p class="text-sm text-gray-600">Company: ${company}</p>` : '') +
+                  (desc ? `<p class="text-sm text-gray-700 mt-1">${desc}</p>` : '');
+                container.appendChild(el);
+              } catch(e) { /* ignore item */ }
+            }
+          }
+        } catch(e) { console.debug('[reg.js] render review_job_experiences failed', e); }
       }
 
       // skills: handle nested maps and stringified arrays
@@ -766,13 +956,17 @@ service cloud.firestore {
       }
 
       // support & workplace — handle nested maps supportNeed/workplace and their internal keys
-      const support = (data.supportNeed && (data.supportNeed.support_choice || data.supportNeed.supportChoice)) || data.support_choice || data.support || findFirstMatching(data, ['support','support_type','support_need']) || '';
-      safeSet('review_support_choice', support || '');
-      setChoiceImage('review_support_choice_img', support, ['.support-card','.selectable-card']);
+  const support = (data.supportNeed && (data.supportNeed.support_choice || data.supportNeed.supportChoice)) || data.support_choice || data.support || findFirstMatching(data, ['support','support_type','support_need']) || '';
+  // render as pills
+  renderPillList('review_support_list', support || '');
+  safeSet('review_support_choice', support || '');
+  setChoiceImage('review_support_choice_img', support, ['.support-card','.selectable-card']);
 
-      const workplace = (data.workplace && (data.workplace.workplace_choice || data.workplace.workplaceChoice)) || data.workplace_choice || data.workplace || data.workplaceInfo || findFirstMatching(data, ['workplace','work_place','work']) || '';
-      safeSet('review_workplace_choice', workplace || '');
-      setChoiceImage('review_workplace_choice_img', workplace, ['.workplace-card','.selectable-card']);
+  const workplace = (data.workplace && (data.workplace.workplace_choice || data.workplace.workplaceChoice)) || data.workplace_choice || data.workplace || data.workplaceInfo || findFirstMatching(data, ['workplace','work_place','work']) || '';
+  // render preferred workplace as pills
+  renderPillList('review_workplace_list', workplace || '');
+  safeSet('review_workplace_choice', workplace || '');
+  setChoiceImage('review_workplace_choice_img', workplace, ['.workplace-card','.selectable-card']);
 
       // job preferences (jobpref1/jobpref2) — accept nested map data.jobPreferences or top-level keys
       let jpList = [];
@@ -836,7 +1030,12 @@ service cloud.firestore {
   // Main Entry
   // -----------------------
   document.addEventListener('DOMContentLoaded', async () => {
-    attachAutofill();
+    // NOTE: Automatic autofill/population from localStorage/Firestore is disabled by default
+    // to ensure registration fields start empty for users. Developers can opt-in by setting
+    // `window.MVSG_ENABLE_AUTOFILL = true` before this script runs.
+    if (window.MVSG_ENABLE_AUTOFILL) {
+      try { await attachAutofill(); } catch(e) { console.warn('[reg.js] attachAutofill opt-in failed', e); }
+    }
     handlePersonalInfoCreate();
     const mapping = [
       ['guardianNext', 'guardianInfo', '/registereducation'],
@@ -852,11 +1051,34 @@ service cloud.firestore {
       ['finalizeNext', 'finalize', '/home']
     ];
     mapping.forEach(([btn, key, path]) => handleNextButton(btn, key, path));
-    // If this page contains review placeholders, auto-run populateReview to hydrate previews
+    // Attach a persistent auth token sync so any sign-in or token refresh will notify the server.
     try {
-      const hasReviewEls = !!document.querySelector('[id^="review_"]');
-      if (hasReviewEls && typeof populateReview === 'function') {
-        try { await populateReview(); console.debug('[reg.js] populateReview auto-run complete'); } catch(e){ console.warn('[reg.js] populateReview auto-run failed', e); }
+      if (window.firebase && firebase.auth) {
+        // onIdTokenChanged fires when sign-in state changes or token is refreshed
+        try {
+          firebase.auth().onIdTokenChanged(function(user) {
+            try {
+              if (user && user.getIdToken) {
+                user.getIdToken().then(function(idToken) {
+                  if (idToken) {
+                    // best-effort, do not block UI
+                    syncFirebaseIdToServer(idToken).catch(function(){});
+                  }
+                }).catch(function(){});
+              }
+            } catch (e) { /* swallow errors to avoid breaking page */ }
+          });
+        } catch (e) { /* ignore if listener fails */ }
+      }
+    } catch (e) { /* ignore */ }
+    // If a developer explicitly enables autofill, allow auto-run of populateReview as well
+    // (disabled by default to keep user-visible fields empty).
+    try {
+      if (window.MVSG_ENABLE_AUTOFILL) {
+        const hasReviewEls = !!document.querySelector('[id^="review_"]');
+        if (hasReviewEls && typeof populateReview === 'function') {
+          try { await populateReview(); console.debug('[reg.js] populateReview auto-run complete'); } catch(e){ console.warn('[reg.js] populateReview auto-run failed', e); }
+        }
       }
     } catch(e) { /* ignore */ }
     
@@ -965,6 +1187,57 @@ service cloud.firestore {
     // notify other inline scripts that register.js is available
     try { window.dispatchEvent(new CustomEvent('mvsg:registerLoaded')); } catch(e){}
   } catch(e){ warn('register.js init failed', e); }
+
+    // Expose pill-render helpers globally so blade pages can call them directly
+    try {
+      if (!window.normalizeToList) {
+        window.normalizeToList = function(v) {
+          try {
+            if (v === null || v === undefined) return [];
+            if (Array.isArray(v)) return v.map(x => (x && x.label) ? String(x.label).trim() : String(x || '').trim()).filter(Boolean);
+            if (typeof v === 'object') {
+              if (v.label) return [String(v.label).trim()];
+              if (v.name) return [String(v.name).trim()];
+              return Object.values(v).map(x => String(x || '').trim()).filter(Boolean);
+            }
+            // try parse JSON or comma-split
+            try {
+              const s = String(v || '').trim();
+              if (!s) return [];
+              if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+                try { const parsed = JSON.parse(s); return window.normalizeToList(parsed); } catch(e){}
+              }
+              if (s.includes(',')) return s.split(',').map(x => x.trim()).filter(Boolean);
+              return [s];
+            } catch (e) { return [] }
+          } catch (e) { return []; }
+        };
+      }
+      if (!window.renderPillList) {
+        window.renderPillList = function(containerId, rawValue) {
+          try {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            const items = window.normalizeToList ? window.normalizeToList(rawValue) : (Array.isArray(rawValue) ? rawValue : (typeof rawValue === 'string' ? rawValue.split(',').map(s=>s.trim()).filter(Boolean) : []));
+            container.innerHTML = '';
+            if (!items || !items.length) {
+              const none = document.createElement('span');
+              none.className = 'text-gray-600';
+              none.textContent = '—';
+              container.appendChild(none);
+              return;
+            }
+            for (const it of items) {
+              const sp = document.createElement('span');
+              sp.textContent = it;
+              sp.className = 'inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-100 text-blue-700 font-medium shadow-sm';
+              sp.setAttribute('role', 'listitem');
+              container.appendChild(sp);
+            }
+          } catch (e) { /* ignore */ }
+        };
+      }
+    } catch(e) { /* ignore global helper attach errors */ }
 
   // Auto-run a debug log when included in dev mode (kept quiet: uses debug).
   document.addEventListener('DOMContentLoaded', function(){

@@ -22,12 +22,91 @@
             transform: translateY(-4px);
             background-color: #eff6ff;
         }
+        /* Make workexp cards animate like workyr cards */
+        .workexp-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.25s ease, border 0.2s ease;
+            will-change: transform, box-shadow;
+        }
+        .workexp-card:hover {
+            transform: translateY(-4px);
+        }
+        .workexp-card.selected {
+            border: 3px solid #2563eb;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
+            transform: translateY(-4px);
+            background-color: #eff6ff;
+        }
     .tts-btn.speaking {
         background-color: #2563eb !important;
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
         transform: scale(1.03);
     }
     </style>
+
+    <script>
+        // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workinfo.blade.php
+        // Multi-select toggle: clicking a card toggles its selected state and updates #work_type
+        function selectWorkTypeChoice(el, value) {
+            try {
+                const hidden = document.getElementById('work_type');
+                // read existing array (allow JSON or CSV fallback)
+                let arr = [];
+                if (hidden && hidden.value) {
+                    try {
+                        arr = JSON.parse(hidden.value || '[]');
+                        if (!Array.isArray(arr)) arr = [];
+                    } catch (e) {
+                        // fallback to comma separated
+                        arr = (hidden.value || '').split(',').map(s => s.trim()).filter(Boolean);
+                    }
+                }
+
+                const val = value || (el && el.dataset && el.dataset.value) || '';
+                if (!val) return;
+
+                // toggle visual state on this card
+                if (el && el.classList) el.classList.toggle('selected');
+                const isSelected = el && el.classList && el.classList.contains('selected');
+
+                if (isSelected) {
+                    if (!arr.includes(val)) arr.push(val);
+                } else {
+                    arr = arr.filter(x => x !== val);
+                }
+
+                if (hidden) hidden.value = JSON.stringify(arr);
+
+                // clear any related error text (some pages use different ids)
+                const err = document.getElementById('schoolError') || document.getElementById('workExpError');
+                if (err) err.textContent = '';
+            } catch (e) {
+                console.error('selectWorkTypeChoice error', e);
+            }
+        }
+
+        // initialize card states from hidden #work_type value (JSON preferred, CSV fallback)
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const hidden = document.getElementById('work_type');
+                if (!hidden) return;
+                let arr = [];
+                if (hidden.value) {
+                    try { arr = JSON.parse(hidden.value || '[]'); } catch (e) { arr = (hidden.value || '').split(',').map(s => s.trim()).filter(Boolean); }
+                }
+                // ensure array unique
+                arr = Array.from(new Set(arr || []));
+                document.querySelectorAll('.workexp-card').forEach(c => {
+                    const v = c.dataset && c.dataset.value ? c.dataset.value : null;
+                    if (v && arr.includes(v)) c.classList.add('selected');
+                    else c.classList.remove('selected');
+                });
+                // write cleaned JSON back to hidden so downstream code sees canonical format
+                hidden.value = JSON.stringify(arr);
+            } catch (e) {
+                console.warn('init work_type failed', e);
+            }
+        });
+    </script>
 </head>
 
 <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
@@ -45,7 +124,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('registereducation') }}'">
+        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registereducation') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-3 h-3 sm:w-6 sm:h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -173,7 +252,7 @@
             <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
                 <!-- Card 1 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkTypeChoice(this,'paid')">
+                    data-value="paid" onclick="selectWorkTypeChoice(this,'paid')">
                      <button type="button"
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
                         data-tts-en="Yes, I have had a paid job" data-tts-tl="Oo, nagkaroon ako ng trabahong may bayad"
@@ -187,7 +266,7 @@
 
                 <!-- Card 2 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkTypeChoice(this,'volunteer')">
+                    data-value="volunteer" onclick="selectWorkTypeChoice(this,'volunteer')">
                     <button type="button"
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
                         data-tts-en="Yes, I have done volunteer work" data-tts-tl="Oo, nakapag volunteer work ako"
@@ -199,7 +278,7 @@
 
                 <!-- Card 3 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkTypeChoice(this,'internship')">
+                    data-value="internship" onclick="selectWorkTypeChoice(this,'internship')">
                     <button type="button"
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
                         data-tts-en="I have done internship or job training" data-tts-tl="Nag internship o job training ako"
@@ -213,7 +292,7 @@
 
                 <!-- Card 4 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkTypeChoice(this,'none')">
+                    data-value="none" onclick="selectWorkTypeChoice(this,'none')">
                    <button type="button"
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
                         data-tts-en="No, this would be my first time" data-tts-tl="Hindi, ito ang magiging unang beses ko"
@@ -322,6 +401,8 @@
                 </div>
             </div>
 
+            <!-- top-level typed start year removed per UX request — per-job start_year remains editable -->
+
             <!-- Experiences Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
                 <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Experiences</h2>
@@ -361,9 +442,10 @@
                             <div class="flex flex-col">
                                 <label for="job_work_year"
                                     class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Work Year</label>
-                                <input id="job_work_year" name="job_work_year" type="text"
-                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    readonly />
+                                <!-- Make this editable per-job so each experience can record its own start year. -->
+                                <input id="job_work_year" name="job_work_year" type="text" maxlength="4" inputmode="numeric"
+                                    placeholder="e.g. 2004"
+                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" />
                             </div>
 
                             <!-- Job Description -->
@@ -418,28 +500,99 @@
     <!-- Small inline helper to toggle selection and write the value -->
     <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workinfo.blade.php
+        // Make work experience multi-selectable. Store selections as a JSON array in #work_type
         function selectWorkTypeChoice(el, value) {
             try {
-                document.querySelectorAll('.workexp-card').forEach(c => c.classList.remove('selected'));
-                if (el && el.classList) el.classList.add('selected');
                 const hidden = document.getElementById('work_type');
-                if (hidden) hidden.value = value || '';
-                const err = document.getElementById('schoolError');
+                if (!hidden) return;
+
+                // read current selections (array). Accept JSON or comma-separated string for backwards compatibility.
+                let current = [];
+                try {
+                    const v = hidden.value || '';
+                    if (!v) current = [];
+                    else if (v.trim().startsWith('[')) current = JSON.parse(v);
+                    else current = String(v).split(',').map(s => s.trim()).filter(Boolean);
+                } catch (e) { current = []; }
+
+                // toggle the clicked card visually
+                if (el && el.classList) {
+                    if (el.classList.contains('selected')) {
+                        el.classList.remove('selected');
+                        // remove value
+                        current = current.filter(x => x !== value);
+                    } else {
+                        el.classList.add('selected');
+                        // add value if not present
+                        if (!current.includes(value)) current.push(value);
+                    }
+                } else {
+                    // fallback behavior: if no element passed, just toggle in array
+                    if (current.includes(value)) current = current.filter(x => x !== value);
+                    else current.push(value);
+                }
+
+                // write back as JSON array for consistency
+                try { hidden.value = JSON.stringify(current); } catch (e) { hidden.value = (current || []).join(','); }
+
+                const err = document.getElementById('workExpError') || document.getElementById('schoolError');
                 if (err) err.textContent = '';
             } catch (e) {
                 console.error('selectWorkTypeChoice error', e);
             }
         }
+
+        // initialize visual selection from hidden value (if any)
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const hidden = document.getElementById('work_type');
+                if (!hidden) return;
+                let current = [];
+                try {
+                    const v = hidden.value || '';
+                    if (!v) current = [];
+                    else if (v.trim().startsWith('[')) current = JSON.parse(v);
+                    else current = String(v).split(',').map(s => s.trim()).filter(Boolean);
+                } catch (e) { current = []; }
+
+                if (Array.isArray(current) && current.length) {
+                    document.querySelectorAll('.workexp-card').forEach(card => {
+                        const val = card.getAttribute('data-value');
+                        if (val && current.includes(val)) card.classList.add('selected');
+                    });
+                }
+            } catch (e) { console.warn('workexp init failed', e); }
+        });
     </script>
 
     <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workexpinfo.blade.php
+        // Helper to compute an approximate start year from a duration code OR accept a 4-digit year
+        function getWorkYearStart(code) {
+            const now = new Date().getFullYear();
+            const k = (code || '').toString();
+            if (!k) return '';
+            if (/^\d{4}$/.test(k)) return k; // already a year
+            switch (k) {
+                case 'lt1': return String(now); // started this year
+                case '1-2': return String(now - 1); // approx 1 year ago
+                case 'gt3': return String(now - 4); // approx 4 years ago
+                case 'none': return '';
+                default: return '';
+            }
+        }
+
         function selectWorkYearsChoice(el, value) {
             try {
                 document.querySelectorAll('.workyr-card').forEach(c => c.classList.remove('selected'));
                 if (el && el.classList) el.classList.add('selected');
                 const hidden = document.getElementById('work_years');
                 if (hidden) hidden.value = value || '';
+
+                // Note: selecting a duration card sets the coded duration only (stored in #work_years).
+                // It does NOT overwrite the typed start year field. If the user entered a year in
+                // #work_start_year, that input is authoritative for job entry start years.
+
                 const err = document.getElementById('workExpError');
                 if (err) err.textContent = '';
             } catch (e) {
@@ -477,6 +630,15 @@
                     node.querySelector('.job_description').value = item.description || '';
                     node.querySelector('.company_name').value = item.company || '';
                 }
+                // set the job_work_year (start year) from the item if present; do NOT auto-populate from the
+                // top-level typed year or duration cards. The typed `#work_start_year` is independent and
+                // will be saved as a section-level field, but it should not overwrite per-job fields here.
+                try {
+                    if (item && item.start_year && /^\d{4}$/.test(String(item.start_year))) {
+                        const wyInput = node.querySelector('.job_work_year');
+                        if (wyInput) wyInput.value = String(item.start_year);
+                    }
+                } catch (e) { /* ignore */ }
                 // remove handler
                 node.querySelector('.remove-job').addEventListener('click', function() {
                     node.remove();
@@ -496,11 +658,13 @@
                     const title = block.querySelector('.job_title')?.value?.trim() || '';
                     const description = block.querySelector('.job_description')?.value?.trim() || '';
                     const company = block.querySelector('.company_name')?.value?.trim() || '';
+                    const start_year = block.querySelector('.job_work_year')?.value?.trim() || '';
                     // only include if any field present
-                    if (title || description || company) arr.push({
+                    if (title || description || company || start_year) arr.push({
                         title,
                         description,
-                        company
+                        company,
+                        start_year: start_year || undefined
                     });
                 });
                 writeHidden(arr);
@@ -537,6 +701,10 @@
                 clearAndRenderFromArray(Array.isArray(arr) ? arr : []);
                 writeHidden(arr || []);
             };
+
+            // Expose a synchronous sync helper so external scripts can force the hidden input to be updated
+            // (useful to ensure latest textarea/input values are flushed before a save action)
+            window.syncWorkExperiencesFromUI = syncHiddenFromUI;
 
             // On load: if hidden has data (from autofill/local draft) render it; otherwise create one empty entry
             document.addEventListener('DOMContentLoaded', function() {

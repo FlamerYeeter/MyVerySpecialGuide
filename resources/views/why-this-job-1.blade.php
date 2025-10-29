@@ -26,7 +26,56 @@
         <button class="text-blue-600 hover:text-blue-800">🔊</button>
       </div>
 
-      @if(!empty($approvedJobs) && is_array($approvedJobs) && count($approvedJobs) > 0)
+    @php
+    // Prefer per-user cached recommendations when server session exists.
+    try {
+      if (\Illuminate\Support\Facades\Auth::check()) {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $maybeUid = $user->firebase_uid ?? $user->uid ?? null;
+        if ($maybeUid) {
+          $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', (string)$maybeUid);
+          $userCache = storage_path('app/reco_user_' . $safeUid . '.json');
+          if (file_exists($userCache)) {
+            $raw = @file_get_contents($userCache);
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+              // If JSON is keyed by uid, extract that entry
+              if (array_key_exists((string)$maybeUid, $decoded) && is_array($decoded[(string)$maybeUid])) {
+                $recs = $decoded[(string)$maybeUid];
+              } else {
+                $recs = $decoded;
+              }
+              // Map server recommendation shape into the 'approvedJobs' structure expected by this template
+              $mapped = [];
+              foreach ($recs as $r) {
+                if (!is_array($r)) continue;
+                $assoc = [];
+                $assoc['title'] = $r['Title'] ?? $r['title'] ?? $r['job_title'] ?? '';
+                $assoc['job_title'] = $assoc['title'];
+                $assoc['company'] = $r['Company'] ?? $r['company'] ?? '';
+                // normalize skills field(s)
+                $skills = $r['matching_skills'] ?? $r['skills'] ?? $r['skill_tags'] ?? $r['assoc']['skills'] ?? [];
+                if (is_string($skills)) $skills = array_filter(array_map('trim', preg_split('/[,;\n]+/', $skills)));
+                if (!is_array($skills)) $skills = [];
+                $assoc['skills'] = array_values(array_unique(array_filter(array_map(function($s){ return is_scalar($s) ? (string)$s : ''; }, $skills))));
+                $mapped[] = [
+                  'job_id' => $r['job_id'] ?? ($r['id'] ?? null),
+                  'assoc' => $assoc,
+                  'match_score' => $r['hybrid_score'] ?? $r['match_score'] ?? $r['score'] ?? null,
+                  'job_description' => $r['job_description'] ?? $r['JobDescription'] ?? ''
+                ];
+              }
+              if (!empty($mapped)) {
+                $approvedJobs = $mapped;
+              }
+            }
+          }
+        }
+      }
+    } catch (\Throwable $_e) { /* ignore and fall back to existing $approvedJobs */ }
+    @endphp
+
+    @if(!empty($approvedJobs) && is_array($approvedJobs) && count($approvedJobs) > 0)
         @foreach($approvedJobs as $job)
           @php
             // Prepare a skills array to expose to client-side rescoring. Try multiple common keys.
@@ -61,11 +110,16 @@
             }
           @endphp
 
-          <div class="bg-white shadow rounded-xl border mb-8 why-job-card" data-job-id="{{ $job['job_id'] ?? '' }}" data-job-skills="{{ htmlspecialchars(json_encode($jobSkills), ENT_QUOTES, 'UTF-8') }}" data-match-percent="{{ $matchPercent ?? '' }}">
+          <div class="bg-white shadow rounded-xl border mb-8 why-job-card" data-job-id-canonical="{{ $job['job_id'] ?? '' }}" data-job-id="{{ $job['job_id'] ?? '' }}" data-job-skills="{{ htmlspecialchars(json_encode($jobSkills), ENT_QUOTES, 'UTF-8') }}" data-match-percent="{{ $matchPercent ?? '' }}">
             <div class="p-6">
               <div class="flex justify-between items-center">
                 <h4 class="font-semibold text-lg">{{ $job['assoc']['title'] ?? ($job['assoc']['job_title'] ?? 'Untitled Job') }}</h4>
                 <span class="match-badge text-sm bg-green-100 text-green-600 px-3 py-1 rounded-full font-medium">{{ $matchPercent !== null ? $matchPercent . '% Match' : ($job['assoc']['fit_level'] ?? 'Matched') }}</span>
+              </div>
+
+              {{-- Visible debug id so QA can see the canonical job id used for mapping --}}
+              <div style="margin-top:6px;">
+                <span class="job-id-debug" style="font-size:12px;color:#6b7280;">debug-id: {{ $job['job_id'] ?? '' }}</span>
               </div>
 
               <p class="text-sm mt-2 text-gray-600 font-medium">Match Score</p>
@@ -94,7 +148,7 @@
 
               <!-- View Details -->
               <div class="mt-4 flex items-center justify-between">
-                <a href="{{ route('job.application.review1', ['job_id' => $job['job_id']]) }}" class="bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2 rounded-lg transition inline-block">View Details</a>
+                <a href="{{ route('why.this.job.2', ['job_id' => $job['job_id']]) }}" class="bg-green-500 hover:bg-green-600 text-white font-medium px-5 py-2 rounded-lg transition inline-block">View Details</a>
                 <img src="/images/sound-icon.png" alt="Audio" class="w-6 h-6">
               </div>
               <p class="text-xs text-gray-500 mt-1">(Click "View Details" to see full information)</p>
@@ -128,17 +182,36 @@
 
     // If server recommendations endpoint exists and user is signed in, fetch per-user recs
     let serverRecsMap = {};
+    let serverRecDebug = { status: 'not-called', httpStatus: null, body: null };
     if (signed) {
       try {
-        const resp = await fetch('{{ url('/api/recommendations/user') }}', { method: 'POST', credentials: 'same-origin', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+        // Acquire a Firebase ID token (if available) and include it in the
+        // Authorization header (and the request body) so the server can verify
+        // the token immediately and resolve the user's uid for per-UID recs.
+        let idToken = null;
+        try { if (mod.getIdToken) idToken = await mod.getIdToken(5000); } catch(e) { idToken = null; }
+
+        const headers = { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' };
+        const bodyPayload = {};
+        if (idToken) {
+          headers['Authorization'] = 'Bearer ' + idToken;
+          bodyPayload.idToken = idToken;
+        }
+        // When auto-triggering from the client, ask the server to force generation when possible
+        bodyPayload.force = true;
+
+        const resp = await fetch('{{ url('/api/recommendations/user') }}', { method: 'POST', credentials: 'same-origin', headers, body: JSON.stringify(bodyPayload) });
+        serverRecDebug.httpStatus = resp ? resp.status : null;
         if (resp && resp.ok) {
           const j = await resp.json().catch(()=>null);
+          serverRecDebug.body = j;
           if (j && Array.isArray(j.recommendations)) {
             // normalize: map job_id to score
             for (const r of j.recommendations) {
               const id = r.job_id || r.jobId || (r.job && (r.job.job_id || r.job.jobId)) || null;
               const score = r.score ?? r.match_score ?? r.content_score ?? null;
               if (id !== null) serverRecsMap[String(id)] = score;
+              serverRecDebug.status = 'ok-array';
             }
           } else if (Array.isArray(j)) {
             for (const r of j) {
@@ -146,10 +219,36 @@
               const score = r.score ?? r.match_score ?? r.content_score ?? null;
               if (id !== null) serverRecsMap[String(id)] = score;
             }
+              serverRecDebug.status = 'ok-root-array';
           }
         }
       } catch(e) { console.debug('fetch per-user recs failed', e); }
     }
+
+      // Small visual debug indicator to show whether server personalization was used
+      try {
+        const container = document.createElement('div');
+        container.id = 'why-this-job-debug';
+        container.style.cssText = 'position:fixed;right:12px;bottom:12px;background:#111827;color:#fff;padding:8px 12px;border-radius:8px;z-index:1500;font-size:12px;opacity:0.95';
+        container.setAttribute('aria-hidden','false');
+        container.textContent = 'Personalization: checking...';
+        document.body.appendChild(container);
+        // Probe server session for debug info
+        try {
+          const sresp = await fetch('{{ url('/debug/firebase-session') }}', { credentials: 'same-origin' });
+          if (sresp && sresp.ok) {
+            const sj = await sresp.json().catch(()=>null);
+            container.textContent = serverRecsMap && Object.keys(serverRecsMap).length ? 'Personalization: server (per-UID results)' : (signed ? 'Personalization: client (no server results)' : 'Personalization: anonymous');
+            container.title = 'debug: ' + JSON.stringify({ serverRecDebug, session: sj });
+          } else {
+            container.textContent = serverRecsMap && Object.keys(serverRecsMap).length ? 'Personalization: server (per-UID results)' : (signed ? 'Personalization: client (no server results)' : 'Personalization: anonymous');
+            container.title = 'debug: ' + JSON.stringify({ serverRecDebug, session: '<no-session-response>' });
+          }
+        } catch(e) {
+          container.textContent = serverRecsMap && Object.keys(serverRecsMap).length ? 'Personalization: server (per-UID results)' : (signed ? 'Personalization: client (no server results)' : 'Personalization: anonymous');
+          container.title = 'debug: ' + JSON.stringify({ serverRecDebug, session: '<probe-failed>' });
+        }
+      } catch (e) { console.debug('debug indicator install failed', e); }
 
     // Now get the user's Firestore profile so we can highlight matched skills
     const getUserProfile = mod.getUserProfile || (async ()=>null);
@@ -204,7 +303,7 @@
     const scored = [];
     cards.forEach(el => {
       try {
-        const jobId = String(el.dataset.jobId || el.getAttribute('data-job-id') || '');
+  const jobId = String(el.dataset.jobIdCanonical || el.getAttribute('data-job-id-canonical') || el.dataset.jobId || el.getAttribute('data-job-id') || '');
         const rawSkills = el.dataset.jobSkills || '[]';
         let jobSkills = [];
         try { jobSkills = JSON.parse(rawSkills).map(s=>String(s).toLowerCase().trim()); } catch(e){ jobSkills = []; }

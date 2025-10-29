@@ -40,7 +40,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('registereducation') }}'">
+        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registereducation') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -129,7 +129,7 @@
             <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
                 <!-- Card 1 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkTypeChoice(this,'paid')">
+                    data-value="paid" onclick="selectWorkTypeChoice(this,'paid')">
                     <button
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow text-sm">🔊</button>
                     <img src="image/jobexp1.png" alt="paid job" class="w-full h-36 object-contain rounded-md mb-4">
@@ -141,7 +141,7 @@
 
                 <!-- Card 2 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkTypeChoice(this,'volunteer')">
+                    data-value="volunteer" onclick="selectWorkTypeChoice(this,'volunteer')">
                     <button
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow text-sm">🔊</button>
                     <img src="image/jobexp2.png" alt="volunteer job"
@@ -152,7 +152,7 @@
 
                 <!-- Card 3 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkTypeChoice(this,'internship')">
+                    data-value="internship" onclick="selectWorkTypeChoice(this,'internship')">
                     <button
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow text-sm">🔊</button>
                     <img src="image/jobexp3.png" alt="internship" class="w-full h-36 object-contain rounded-md mb-4">
@@ -164,7 +164,7 @@
 
                 <!-- Card 4 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkTypeChoice(this,'none')">
+                    data-value="none" onclick="selectWorkTypeChoice(this,'none')">
                     <button
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow text-sm">🔊</button>
                     <img src="image/jobexp4.png" alt="no job experience"
@@ -197,18 +197,69 @@
     <!-- Small inline helper to toggle selection and write the value -->
     <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_school_workinfo.blade.php
+        // Make work experience multi-selectable. Store selections as a JSON array in #work_type
         function selectWorkTypeChoice(el, value) {
             try {
-                document.querySelectorAll('.workexp-card').forEach(c => c.classList.remove('selected'));
-                if (el && el.classList) el.classList.add('selected');
                 const hidden = document.getElementById('work_type');
-                if (hidden) hidden.value = value || '';
+                if (!hidden) return;
+
+                // read current selections (array). Accept JSON or comma-separated string for backwards compatibility.
+                let current = [];
+                try {
+                    const v = hidden.value || '';
+                    if (!v) current = [];
+                    else if (v.trim().startsWith('[')) current = JSON.parse(v);
+                    else current = String(v).split(',').map(s => s.trim()).filter(Boolean);
+                } catch (e) { current = []; }
+
+                // toggle the clicked card visually
+                if (el && el.classList) {
+                    if (el.classList.contains('selected')) {
+                        el.classList.remove('selected');
+                        // remove value
+                        current = current.filter(x => x !== value);
+                    } else {
+                        el.classList.add('selected');
+                        // add value if not present
+                        if (!current.includes(value)) current.push(value);
+                    }
+                } else {
+                    // fallback behavior: if no element passed, just toggle in array
+                    if (current.includes(value)) current = current.filter(x => x !== value);
+                    else current.push(value);
+                }
+
+                // write back as JSON array for consistency
+                try { hidden.value = JSON.stringify(current); } catch (e) { hidden.value = (current || []).join(','); }
+
                 const err = document.getElementById('schoolError');
                 if (err) err.textContent = '';
             } catch (e) {
                 console.error('selectWorkTypeChoice error', e);
             }
         }
+
+        // initialize visual selection from hidden value (if any)
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const hidden = document.getElementById('work_type');
+                if (!hidden) return;
+                let current = [];
+                try {
+                    const v = hidden.value || '';
+                    if (!v) current = [];
+                    else if (v.trim().startsWith('[')) current = JSON.parse(v);
+                    else current = String(v).split(',').map(s => s.trim()).filter(Boolean);
+                } catch (e) { current = []; }
+
+                if (Array.isArray(current) && current.length) {
+                    document.querySelectorAll('.workexp-card').forEach(card => {
+                        const val = card.getAttribute('data-value');
+                        if (val && current.includes(val)) card.classList.add('selected');
+                    });
+                }
+            } catch (e) { console.warn('workexp init failed', e); }
+        });
     </script>
 
     <script src="{{ asset('js/register.js') }}"></script>

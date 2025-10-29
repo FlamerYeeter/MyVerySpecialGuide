@@ -5,7 +5,7 @@
     <!-- Filter Form -->
     <section class="bg-yellow-400 py-7 mt-4">
         <div class="container mx-auto px-4">
-            <form method="GET" action="{{ route('job.matches') }}">
+            <form id="filter-form" method="GET" action="{{ route('job.matches') }}">
                 <div class="flex items-center justify-center space-x-4 mb-6">
                     <img src="{{ asset('image/logo.png') }}" class="w-20 h-20">
                     <div>
@@ -14,7 +14,6 @@
                         <p class="text-sm text-gray-600">(Mga Trabahong Para sa Iyo)</p>
                     </div>
                 </div>
-            </form>
         </div>
     </section>
     <section class="max-w-6xl mx-auto mt-8 px-6">
@@ -68,10 +67,39 @@
                         <option value="Busy" {{ request('work_environment') == 'Busy' ? 'selected' : '' }}>Busy</option>
                     </select>
                     <!-- location filter removed per request -->
-                    <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg ml-2">Filter</button> <!-- Dapat automatic toh, wala ng button -->
+                    <!-- Filter is automatic now: selects will submit the form on change -->
                 </div>
                 
             </form>
+            <script>
+                // Auto-submit filter selectors (robust): if selects are outside the form or rendered later,
+                // this will read their values and navigate to the same route with updated query params.
+                document.addEventListener('DOMContentLoaded', function(){
+                    try {
+                        const selectNames = ['industry','fit_level','growth_potential','work_environment'];
+                        const selects = [];
+                        selectNames.forEach(name => document.querySelectorAll('select[name="' + name + '"]').forEach(s => selects.push(s)));
+                        if (!selects.length) return;
+                        let submitTimeout = null;
+                        const applyFilters = () => {
+                            const params = new URLSearchParams(window.location.search || '');
+                            selectNames.forEach(name => {
+                                const el = document.querySelector('select[name="' + name + '"]');
+                                if (!el) return;
+                                const v = el.value;
+                                if (v === null || v === '') params.delete(name);
+                                else params.set(name, v);
+                            });
+                            // reset to first page when filters change
+                            params.set('page', '1');
+                            const newUrl = window.location.pathname + (params.toString() ? ('?' + params.toString()) : '');
+                            // navigate
+                            window.location.href = newUrl;
+                        };
+                        selects.forEach(s => s.addEventListener('change', function(){ if (submitTimeout) clearTimeout(submitTimeout); submitTimeout = setTimeout(applyFilters, 120); }));
+                    } catch (e) { console.debug('filter auto-submit setup failed', e); }
+                });
+            </script>
 
         </div>
         <br>
@@ -305,6 +333,57 @@
       <button class="bg-white text-[#00ae7a] font-medium px-6 py-2 rounded-md">All Matches (2)</button>
     </div>
   </section>
+  <br>
+
+    <!-- JOB CARDS -->
+  <section class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
+
+    <!-- Job Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-300 mt-6 p-5">
+      <div class="flex justify-between">
+        <div>
+          <div class="flex items-center gap-3">
+            <img src="https://via.placeholder.com/60" alt="Logo" class="rounded-md">
+            <div>
+              <h3 class="text-lg font-semibold text-gray-800">Pet Care Assistant</h3>
+              <p class="text-gray-600">iPet Club • Taguig City, Metro Manila</p>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="bg-gray-200 px-3 py-1 text-xs rounded-md">Healthcare</span>
+            <span class="bg-gray-200 px-3 py-1 text-xs rounded-md">Quiet</span>
+          </div>
+
+          <p class="mt-3 text-gray-700 text-sm">
+            Help feed animals, clean spaces, and provide companionship.
+          </p>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Organization</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Cleaning</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Following Instructions</span>
+          </div>
+
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Full Support</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Full Time</span>
+          </div>
+
+          <p class="text-gray-500 text-sm mt-3">4d ago</p>
+        </div>
+
+        <div class="text-right">
+          <a href="#" class="text-blue-600 underline text-sm font-medium">Why this Job matches you?</a>
+          <div class="flex justify-end gap-3 mt-4">
+            <button class="bg-[#00B981] text-white font-semibold px-5 py-2 rounded-md">Details</button>
+            <button class="bg-[#0f00b9] text-white font-semibold px-5 py-2 rounded-md">Apply</button>
+            <button class="bg-[#047b32] text-white font-semibold px-5 py-2 rounded-md">Save</button>
+        </div>
+        </div>
+      </div>
+    </div>
+
 
   <!-- JOB INFO -->
   <section class="max-w-6xl mx-auto mt-10 px-6">
@@ -314,322 +393,90 @@
     </div>
 
     <div class="bg-white p-4 border border-gray-300 rounded-md mb-8">
-      <a href="#" class="text-[#007BFF] font-medium underline">Saved Jobs</a>
+    <a href="{{ route('my.job.applications') }}" class="text-[#007BFF] font-medium underline">Saved Jobs</a>
       <p class="text-sm">Click the “Save” button on any job listing to keep it for later.</p>
       <p class="text-xs text-gray-500 italic">(I-click ang “Save” button sa anumang job listing upang mai-save ito...)</p>
     </div>
   </section>
 
-  <!-- JOB CARDS -->
-  <section class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
+  <!-- Recommended Job Section -->
+  <div class="max-w-5xl mx-auto mt-10 mb-20 px-4">
+    <h2 class="text-2xl font-semibold text-gray-800">Recommended Job</h2>
+    <p class="text-gray-600 mb-4">
+      Recommended companies based on your application history, preferences, and recent platform activity.
+    </p>
 
-    <!-- JOB CARD 1 -->
-    <div class="bg-white border border-gray-300 rounded-xl p-6 flex justify-between items-center">
-      <div>
-        <h3 class="text-lg font-semibold text-gray-800">Pet Care Assistant</h3>
-        <p class="text-gray-600">iPet Club</p>
-        <p class="text-sm text-gray-500 mb-2">Taguig City, Metro Manila</p>
-        <div class="flex gap-2 text-xs text-gray-700 mb-3">
-          <span class="bg-gray-100 px-3 py-1 rounded-md">Healthcare</span>
-          <span class="bg-gray-100 px-3 py-1 rounded-md">Quiet</span>
+    <!-- Recommended Job Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-300 p-4 flex justify-between items-center">
+      <div class="flex items-center gap-3">
+        <!-- ⭐ Clickable Star Icon -->
+        <button id="starBtn" class="focus:outline-none">
+          <!-- Unstarred (outline) -->
+          <svg id="starOutline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+               stroke-width="1.5" stroke="#FACC15" class="w-8 h-8 cursor-pointer hover:scale-110 transition-transform">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M11.48 3.499a.562.562 0 011.04 0l2.12 4.3a.563.563 0 00.424.308l4.75.69a.563.563 0 01.312.96l-3.43 3.34a.563.563 0 00-.162.497l.81 4.72a.563.563 0 01-.817.592l-4.24-2.23a.563.563 0 00-.524 0l-4.24 2.23a.563.563 0 01-.818-.592l.81-4.72a.563.563 0 00-.162-.497l-3.43-3.34a.563.563 0 01.312-.96l4.75-.69a.563.563 0 00.424-.308l2.12-4.3z" />
+          </svg>
+
+          <!-- Starred (filled, hidden by default) -->
+          <svg id="starFilled" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               fill="#FACC15" class="w-8 h-8 cursor-pointer hidden hover:scale-110 transition-transform">
+            <path fill-rule="evenodd"
+                  d="M12 2.25a.75.75 0 01.67.418l2.12 4.3 4.75.69a.75.75 0 01.416 1.28l-3.43 3.34.81 4.72a.75.75 0 01-1.09.79l-4.24-2.23-4.24 2.23a.75.75 0 01-1.09-.79l.81-4.72-3.43-3.34a.75.75 0 01.416-1.28l4.75-.69 2.12-4.3A.75.75 0 0112 2.25z"
+                  clip-rule="evenodd" />
+          </svg>
+        </button>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6e/Shakey%27s_Pizza_Logo.svg"
+             alt="Company Logo"
+             class="w-12 h-12 rounded-md object-contain border border-gray-200">
+
+        <!-- Job Info -->
+        <div>
+          <h3 class="font-semibold text-gray-800">Shakey’s Service Crew</h3>
+          <p class="text-gray-600 text-sm">Eastwood • Taguig City, PH</p>
+
+          <div class="flex flex-wrap gap-2 mt-2">
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Full-Time</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Full Support</span>
+            <span class="bg-[#D7F9E9] text-green-700 px-3 py-1 text-xs rounded-md">Restaurant</span>
+          </div>
+
+          <p class="text-gray-500 text-xs mt-2">5 applied of 10 capacity</p>
         </div>
-        <p class="text-sm text-gray-700">Help feed animals, clean spaces, and provide companionship.</p>
-
-        <div class="flex gap-2 mt-3 text-xs">
-          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Organization</span>
-          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Cleaning</span>
-          <span class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">Following Instructions</span>
-        </div>
-
-        <div class="flex gap-2 mt-3 text-xs">
-          <span class="bg-[#D1FFD6] text-green-800 px-3 py-1 rounded-md">⭐ Excellent Fit</span>
-          <span class="bg-[#E6E9FF] text-[#4F46E5] px-3 py-1 rounded-md">📈 High Potential</span>
-        </div>
-
-        <p class="text-xs text-gray-500 mt-3">4d ago</p>
       </div>
 
-      <div class="flex flex-col items-end space-y-3">
-        <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="w-16 h-16" alt="iPet logo">
-        <div class="flex gap-2">
-          <button class="bg-[#007BFF] text-white px-4 py-2 rounded-md text-sm">View Details</button>
-          <button class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Saved</button>
-        </div>
+      <div class="flex gap-2">
+        <button class="bg-green-600 text-white px-5 py-2 rounded-md hover:bg-green-700 transition">Details</button>
+        <button class="bg-blue-800 text-white px-5 py-2 rounded-md hover:bg-blue-900 transition">Apply</button>
       </div>
     </div>
-    </section>
+  </div>
+
+  <!-- Star Toggle Script -->
+  <script>
+    document.getElementById('starBtn').addEventListener('click', function () {
+      const outline = document.getElementById('starOutline');
+      const filled = document.getElementById('starFilled');
+      outline.classList.toggle('hidden');
+      filled.classList.toggle('hidden');
+    });
+  </script>
+
+
+
 
     <!-- Job Cards -->
     @php
-        // defensive fallbacks used by scoring logic to avoid undefined variable errors
-        if (!isset($description)) $description = '';
-        if (!isset($skills_desc)) $skills_desc = '';
-        if (!isset($hours)) $hours = '';
-        // Try to load precomputed recommendations (generated by tools/generate_recommendations.py)
-        $json_path = public_path('recommendations.json');
-        $recommendations = [];
-        $skills_desc = '';
-        $hours = '';
-
-        // Inference helpers and industry keyword mapping (shared by JSON and CSV loaders)
-        $infer_fit_level = function(string $text) {
-            $t = strtolower($text);
-            $excellent = ['excellent', 'perfect', 'highly suitable', 'highly qualified', 'strong match', 'ideal'];
-            foreach ($excellent as $k) { if (strpos($t, $k) !== false) return 'Excellent Fit'; }
-            $good = ['good fit', 'good', 'suitable', 'appropriate', 'fit'];
-            foreach ($good as $k) { if (strpos($t, $k) !== false) return 'Good Fit'; }
-            return '';
-        };
-
-        $infer_growth_potential = function(string $text) {
-            $t = strtolower($text);
-            $high = ['promotion', 'career growth', 'growth', 'advance', 'development', 'opportunity', 'career advancement', 'leadership'];
-            foreach ($high as $k) { if (strpos($t, $k) !== false) return 'High Potential'; }
-            $medium = ['entry level', 'entry-level', 'trainee', 'starter', 'mid-level'];
-            foreach ($medium as $k) { if (strpos($t, $k) !== false) return 'Medium Potential'; }
-            return '';
-        };
-
-        $infer_work_environment = function(string $text) {
-            $t = strtolower($text);
-            $quiet = ['quiet', 'calm', 'low noise', 'private', 'peaceful', 'indoor quiet', 'office', 'cubicle'];
-            foreach ($quiet as $k) { if (strpos($t, $k) !== false) return 'Quiet'; }
-            $busy = ['busy', 'fast-paced', 'high energy', 'crowd', 'bustling', 'active environment', 'outdoor', 'warehouse', 'floor'];
-            foreach ($busy as $k) { if (strpos($t, $k) !== false) return 'Busy'; }
-            return '';
-        };
-
-        // basic industry keyword lists used for filtering when an industry is selected
-        $industryKeywords = [
-            'Healthcare' => ['health', 'nurse', 'doctor', 'clinic', 'hospital', 'patient', 'medical', 'therapist', 'pharmacy', 'caregiver', 'care'],
-            'Retail' => ['retail','store','sales','cashier','shop','merchandis','customer service','stock','merchandise','associate'],
-            'Food Service' => ['cook','chef','restaurant','food','barista','kitchen','waiter','waitress','server','catering'],
-            'Education' => ['teacher','education','school','instructor','tutor','teacher aide','educator','classroom'],
-            'Hospitality' => ['hotel','hospitality','front desk','housekeeping','concierge','lodging','guest'],
-            'Manufacturing' => ['manufactur','assembly','production','factory','warehouse','operator','machinist','plant'],
-            'Transportation' => ['driver','delivery','truck','transport','logistic','courier','van driver','bus driver'],
-            'Cleaning' => ['clean','janitor','housekeeping','custodian','sanitation','cleaner'],
-            'Office' => ['office','admin','administrative','reception','clerical','data entry','secretary'],
-            'Construction' => ['construction','builder','carpenter','laborer','site','construction worker','foreman','excavator'],
-            'Creative' => ['designer','creative','graphic','artist','illustrator','photograph','copywriter','content'],
-            'Packing' => ['packag','packer','fulfillment','picker','warehouse','shipping'],
-            'Other' => []
-        ];
-
-        if (file_exists($json_path)) {
-            // Cache parsed JSON keyed by file mtime so repeated requests are fast
-            $cacheKey = 'recommendations_json_' . md5($json_path . '|' . @filemtime($json_path));
-            $decoded = cache()->remember($cacheKey, 600, function() use ($json_path) {
-                $json = @file_get_contents($json_path);
-                $rows = json_decode($json, true) ?: [];
-                return is_array($rows) ? $rows : [];
-            });
-
-            if (is_array($decoded)) {
-                foreach ($decoded as $index => $row) {
-                    $title = $row['title'] ?? $row['Title'] ?? $row['job_title'] ?? '';
-                    $company = $row['company'] ?? $row['Company'] ?? '';
-                    $job_description = $row['job_description'] ?? $row['JobDescription'] ?? $row['description'] ?? '';
-                    $job_requirement = $row['job_requirement'] ?? $row['resume'] ?? $row['JobRequirment'] ?? $row['RequiredQual'] ?? '';
-                    $location = $row['location'] ?? $row['Location'] ?? '';
-                    $salary = $row['salary'] ?? $row['Salary'] ?? '';
-                    $deadline = $row['deadline'] ?? $row['Deadline'] ?? '';
-                    $announcement_code = $row['announcement_code'] ?? $row['AnnouncementCode'] ?? '';
-
-                    // prefer computed_score and computed_max_score if present from the generator
-                    $computedScore = $row['computed_score'] ?? $row['computed_score_normalized'] ?? null;
-                    $computedMax = $row['computed_max_score'] ?? $row['computed_max'] ?? null;
-
-                    // if industry is not provided, infer from title/description using industry keywords
-                    $industryVal = $row['industry'] ?? '';
-                    if (empty($industryVal)) {
-                        $combinedText = strtolower($title . ' ' . $job_description);
-                        foreach ($industryKeywords as $ikey => $kwlist) {
-                            foreach ($kwlist as $kw) {
-                                if (strpos($combinedText, $kw) !== false) { $industryVal = $ikey; break 2; }
-                            }
-                        }
-                    }
-
-                    // extract hours: prefer formatted_work_type, fallback to Duration/Term/Hours, or parse from description
-                    $hours = trim($row['formatted_work_type'] ?? $row['Duration'] ?? $row['Term'] ?? $row['Hours'] ?? '');
-                    if ($hours === '') {
-                        if (preg_match('/Expected hours:\s*([^\r\n]+)/i', $job_description, $m)) {
-                            $hours = trim($m[1]);
-                        }
-                    }
-
-                    $recommendations[] = [
-                        'job_id' => isset($row['job_id']) ? intval($row['job_id']) : intval($index),
-                        'title' => $title,
-                        'company' => $company,
-                        'job_description' => $job_description,
-                        'job_requirement' => $job_requirement,
-                        'resume' => $job_requirement,
-                        'match_score' => $row['match_score'] ?? ($computedScore ?? 0),
-                        'computed_score' => $computedScore,
-                        'computed_max_score' => $computedMax,
-                        'industry' => $row['industry'] ?? '',
-                        'fit_level' => $row['fit_level'] ?? '',
-                        'growth_potential' => $row['growth_potential'] ?? '',
-                        'work_environment' => $row['work_environment'] ?? '',
-                        'location' => $location,
-                        'salary' => $salary,
-                        'deadline' => $deadline,
-                        'announcement_code' => $announcement_code,
-                        'hours' => $hours,
-                    ];
-                }
-            }
-        } else {
-            // Fallback: read CSV using header names from "postings.csv" (new dataset)
-                $csv_path = public_path('postings.csv');
-            if (file_exists($csv_path)) {
-                $cacheKey = 'recommendations_csv_' . md5($csv_path . '|' . @filemtime($csv_path));
-                $csvRows = cache()->remember($cacheKey, 600, function() use ($csv_path) {
-                    $out = [];
-                        if (($handle = fopen($csv_path, 'r')) !== false) {
-                        $header = fgetcsv($handle);
-                        if ($header === false) { fclose($handle); return $out; }
-                        $cols = $header ? array_map('trim', $header) : [];
-                        $numCols = count($cols);
-                        if ($numCols === 0) { fclose($handle); return $out; }
-                        $maxRows = 5000;
-
-                        while (($row = fgetcsv($handle)) !== false) {
-                            if ($numCols > 0) {
-                                if (count($row) < $numCols) $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
-                                elseif (count($row) > $numCols) $row = array_slice($row, 0, $numCols);
-                                if (count($row) !== $numCols) continue;
-                            }
-                            if ($maxRows-- <= 0) break;
-                            $assoc = $numCols ? (array_combine($cols, $row) ?: []) : [];
-                            $out[] = $assoc;
-                        }
-                        fclose($handle);
-                    }
-                    return $out;
-                });
-
-                // inference helpers (kept outside cache since cheap)
-                $infer_fit_level = function(string $text) {
-                    $t = strtolower($text);
-                    $excellent = ['excellent', 'perfect', 'highly suitable', 'highly qualified', 'strong match', 'ideal'];
-                    foreach ($excellent as $k) { if (strpos($t, $k) !== false) return 'Excellent Fit'; }
-                    $good = ['good fit', 'good', 'suitable', 'appropriate', 'fit'];
-                    foreach ($good as $k) { if (strpos($t, $k) !== false) return 'Good Fit'; }
-                    return '';
-                };
-
-                $infer_growth_potential = function(string $text) {
-                    $t = strtolower($text);
-                    $high = ['promotion', 'career growth', 'growth', 'advance', 'development', 'opportunity', 'career advancement', 'leadership'];
-                    foreach ($high as $k) { if (strpos($t, $k) !== false) return 'High Potential'; }
-                    $medium = ['entry level', 'entry-level', 'trainee', 'starter', 'mid-level'];
-                    foreach ($medium as $k) { if (strpos($t, $k) !== false) return 'Medium Potential'; }
-                    return '';
-                };
-
-                $infer_work_environment = function(string $text) {
-                    $t = strtolower($text);
-                    $quiet = ['quiet', 'calm', 'low noise', 'private', 'peaceful', 'indoor quiet'];
-                    foreach ($quiet as $k) { if (strpos($t, $k) !== false) return 'Quiet'; }
-                    $busy = ['busy', 'fast-paced', 'high energy', 'crowd', 'bustling', 'active environment'];
-                    foreach ($busy as $k) { if (strpos($t, $k) !== false) return 'Busy'; }
-                    return '';
-                };
-
-                $i = 0;
-                foreach ($csvRows as $assoc) {
-                    $assoc = is_array($assoc) ? $assoc : [];
-                    // Map all requested postings.csv columns into the recommendation object
-                    $title = $assoc['title'] ?? $assoc['jobtitle'] ?? '';
-                    $company = $assoc['company_name'] ?? $assoc['company'] ?? '';
-                    $description = $assoc['description'] ?? '';
-                    $skills_desc = $assoc['skills_desc'] ?? '';
-
-                    // Basic content-based scoring (server-side): keyword density from title/description/skills
-                    $textForScoring = trim($title . ' ' . $description . ' ' . $skills_desc);
-                    $tokens = preg_split('/\W+/', strtolower($textForScoring));
-                    $tokens = array_filter($tokens, function($t){ return strlen($t) > 2; });
-                    $totalTokens = max(1, count($tokens));
-                    $unique = array_unique($tokens);
-                    // weight skills more heavily
-                    $skillsTokens = preg_split('/\W+/', strtolower($skills_desc));
-                    $skillsTokens = array_filter($skillsTokens, function($t){ return strlen($t) > 2; });
-                    $skillCount = count($skillsTokens);
-                    // score = unique token ratio + skill weight
-                    $scoreBase = count($unique) / $totalTokens;
-                    $skillBoost = min(1.5, $skillCount / max(1, min(50, $totalTokens)) );
-                    $contentScore = round(($scoreBase * 0.7 + $skillBoost * 0.3) * 100, 2);
-
-                    // Inference helpers
-                    $inferred_fit = $infer_fit_level($description . ' ' . $skills_desc);
-                    $inferred_growth = $infer_growth_potential($description . ' ' . $skills_desc);
-                    $inferred_env = $infer_work_environment($description . ' ' . $skills_desc);
-
-                    // try to infer industry from title/description if posting_domain/industry missing
-                    $industryInf = $assoc['posting_domain'] ?? $assoc['industry'] ?? '';
-                    if (empty($industryInf)) {
-                        $combined = strtolower($title . ' ' . $description);
-                        foreach ($industryKeywords as $ikey => $kwlist) {
-                            foreach ($kwlist as $kw) {
-                                if (strpos($combined, $kw) !== false) { $industryInf = $ikey; break 2; }
-                            }
-                        }
-                    }
-
-                    $recommendations[] = [
-                        'job_id' => $assoc['job_id'] ?? $i,
-                        'company_name' => $company,
-                        // compatibility: existing template expects 'company'
-                        'company' => $company,
-                        'company_id' => $assoc['company_id'] ?? ($assoc['companyId'] ?? null),
-                        'title' => $title,
-                        // keep both 'description' and 'job_description' for compatibility
-                        'description' => $description,
-                        'job_description' => $description,
-                        'skills_desc' => $skills_desc,
-                        'max_salary' => $assoc['max_salary'] ?? null,
-                        'min_salary' => $assoc['min_salary'] ?? null,
-                        'med_salary' => $assoc['med_salary'] ?? null,
-                        'normalized_salary' => $assoc['normalized_salary'] ?? null,
-                        'salary' => $assoc['max_salary'] ?? $assoc['normalized_salary'] ?? null,
-                        'pay_period' => $assoc['pay_period'] ?? null,
-                        'location' => $assoc['location'] ?? null,
-                        'views' => $assoc['views'] ?? null,
-                        'applies' => $assoc['applies'] ?? null,
-                        'formatted_work_type' => $assoc['formatted_work_type'] ?? $assoc['work_type'] ?? null,
-                        'hours' => $hours,
-                        'original_listed_time' => $assoc['original_listed_time'] ?? null,
-                        'listed_time' => $assoc['listed_time'] ?? null,
-                        'remote_allowed' => $assoc['remote_allowed'] ?? null,
-                        'job_posting_url' => $assoc['job_posting_url'] ?? null,
-                        'application_url' => $assoc['application_url'] ?? null,
-                        'application_type' => $assoc['application_type'] ?? null,
-                        'expiry' => $assoc['expiry'] ?? null,
-                        'closed_time' => $assoc['closed_time'] ?? null,
-                        'formatted_experience_level' => $assoc['formatted_experience_level'] ?? null,
-                        'posting_domain' => $assoc['posting_domain'] ?? null,
-                        'sponsored' => $assoc['sponsored'] ?? null,
-                        'work_type' => $assoc['work_type'] ?? null,
-                        'currency' => $assoc['currency'] ?? null,
-                        'compensation_type' => $assoc['compensation_type'] ?? null,
-                        'announcement_code' => $assoc['announcement_code'] ?? '',
-                        'zip_code' => $assoc['zip_code'] ?? null,
-                        'fips' => $assoc['fips'] ?? null,
-                        'match_score' => $assoc['match_score'] ?? null,
-                        'computed_score' => null,
-                        'industry' => $industryInf,
-                        'fit_level' => $assoc['formatted_experience_level'] ?? $inferred_fit,
-                        'growth_potential' => $inferred_growth,
-                        'work_environment' => $inferred_env,
-                        'content_score' => $contentScore,
-                    ];
-                    $i++;
-                }
-            }
-        }
+    // defensive fallbacks used by scoring logic to avoid undefined variable errors
+    if (!isset($recommendations)) $recommendations = [];
+    if (!isset($description)) $description = '';
+    if (!isset($skills_desc)) $skills_desc = '';
+    if (!isset($hours)) $hours = '';
+        // We intentionally only display per-user recommendations (storage/app/reco_user_<safeUid>.json).
+        // The server-side preference (above) populated $recommendations when a per-user cache exists.
+        // Do NOT fall back to global `public/recommendations.json` or `public/postings.csv` here.
+        // If no per-user recommendations were found, $recommendations will remain an empty array and
+        // the page will show a friendly message instructing users how to produce per-user recommendations.
 
         // Load guardian approvals (local storage file) and apply keyword-based filtering (if any filters selected)
         $approvals_path = storage_path('app/guardian_job_approvals.json');
@@ -760,10 +607,22 @@
         $lastPage = max(1, (int)ceil($total / $perPage));
     @endphp
 
+    <script>
+        // Signal to client-side scripts that server rendered per-user recommendations are present
+        window.__SERVER_RECO_LOADED = @json(!empty($recommendations) && count($recommendations) > 0);
+    </script>
+
     <div class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
         @if(empty($recommendations))
             <div class="bg-yellow-100 p-6 rounded-xl text-center text-gray-600">
-                No job recommendations found. Please upload <b>postings.csv</b> to the <b>public/</b> folder (or generate recommendations.json).
+                <p class="mb-3">No personalized job recommendations found for your account.</p>
+                <p class="text-sm mb-4">This page displays per-user recommendations only (stored as <code>storage/app/reco_user_{uid}.json</code>).</p>
+                @auth
+                    <button id="btn-generate-recs" class="bg-blue-500 text-white px-4 py-2 rounded">Generate recommendations now</button>
+                    <p id="btn-generate-status" class="text-xs text-gray-600 mt-2"></p>
+                @else
+                    <p class="text-sm">Please sign in to generate and view your personalized recommendations.</p>
+                @endauth
             </div>
         @else
             @foreach($recommendations as $idx => $job)
@@ -778,21 +637,24 @@
                     $contentAttr = round(floatval($normContent), 2);
 
                     // Determine a display title: prefer explicit title, then try to extract a short title from job_description
-                    $rawTitle = trim(strval($job['title'] ?? ''));
+                    // Prefer common title keys (case variants and alternate names) before falling back to description
+                    $rawTitle = trim(strval($job['title'] ?? $job['job_title'] ?? $job['Title'] ?? $job['JobTitle'] ?? ''));
                     if ($rawTitle === '') {
                         $desc = trim(strval($job['job_description'] ?? $job['description'] ?? ''));
                         // try to capture a short headline before keywords like 'needed', 'required', ':' or sentence end
                         if (preg_match('/^(.{1,140}?)(?:\.|\n| needed with| needed| required with| required|:| - )/i', $desc, $m)) {
                             $rawTitle = trim($m[1]);
                         } else {
-                            // fallback to the first 120 chars of description
-                            $rawTitle = Str::limit($desc, 120);
+                            // fallback to the first non-empty line of the description (do not arbitrarily truncate job titles)
+                            $firstLine = strtok($desc, "\n");
+                            $rawTitle = trim($firstLine ?: $desc);
                         }
                     }
 
                     // company fallback: check multiple fields commonly used in the CSV/JSON
                     $companyName = trim(strval($job['company'] ?? $job['company_name'] ?? $job['Company'] ?? ''));
-                    $titleShort = Str::limit($rawTitle, 120);
+                    // Show full title (do not truncate) so users see complete job names
+                    $titleShort = $rawTitle;
                     // raw match value (preserve original for display). Normalize for percent display
                     $rawMatchVal = $job['match_score'] ?? $job['computed_score'] ?? 0;
                     $matchPercent = 0;
@@ -849,6 +711,7 @@
                         </div>
 
                         <p class="text-xs text-gray-500 mt-3">@if(isset($job['listed_time'])){{ $job['listed_time'] }}@else{{ ' ' }}@endif</p>
+                        <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: {{ $job['job_id'] ?? (($page - 1) * $perPage + $idx) }}</span>
                     </div>
 
                     <div class="flex flex-col items-end space-y-3">
@@ -858,7 +721,7 @@
                             <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
                                 @csrf
                                 <input type="hidden" name="job_id" value="{{ $job['job_id'] ?? (($page - 1) * $perPage + $idx) }}">
-                                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Saved</button>
+                                <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Save</button>
                             </form>
                         </div>
                     </div>
@@ -934,8 +797,8 @@
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                // empty body; server will use authenticated session to determine uid
-                body: JSON.stringify({})
+                // request a forced synchronous generation when possible (dev-friendly)
+                body: JSON.stringify({ force: true })
             });
             window.__HYBRID_RECO_DEBUG.events.push({ when: Date.now(), ev: 'auto_trigger_response', status: resp.status });
         } catch (e) {
@@ -951,6 +814,114 @@
         } catch (e) { console.debug('bulk reco all start failed', e); }
     })();
     @endif
+    </script>
+    <script>
+        // Hook up the "Generate recommendations now" button to call the per-user API
+        document.addEventListener('DOMContentLoaded', function(){
+            const btn = document.getElementById('btn-generate-recs');
+            const status = document.getElementById('btn-generate-status');
+            if (!btn) return;
+            btn.addEventListener('click', async function(){
+                if (window.__SERVER_RECO_LOADED) {
+                    status.textContent = 'Server-rendered recommendations already present; reload page to refresh.';
+                    btn.disabled = false;
+                    return;
+                }
+                try {
+                    btn.disabled = true;
+                    status.textContent = 'Requesting generation...';
+                    const r = await fetch('{{ url('/api/recommendations/user') }}', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        body: JSON.stringify({ force: true })
+                    });
+                    if (r.status === 202) {
+                        status.textContent = 'Generation scheduled; please refresh this page in a few seconds.';
+                    } else if (r.ok) {
+                        // Try to parse returned recommendations and render them in-place instead of reloading
+                        const data = await r.json().catch(()=>null);
+                        const normalize = (d) => {
+                            if (!d) return [];
+                            if (Array.isArray(d)) return d;
+                            if (typeof d === 'object') {
+                                const vals = Object.values(d);
+                                const arrVal = vals.find(v => Array.isArray(v));
+                                if (arrVal) return arrVal;
+                                const keys = Object.keys(d || {});
+                                if (keys.length > 0 && Array.isArray(d[keys[0]])) return d[keys[0]];
+                            }
+                            return [];
+                        };
+                        const recs = normalize(data);
+                        if (recs && recs.length > 0) {
+                            status.textContent = 'Recommendations generated — rendering results.';
+                            // lightweight escape to avoid XSS from returned payload
+                            const esc = s => { if (s === null || s === undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); };
+                            const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
+                            if (container) {
+                                let out = '';
+                                recs.slice(0,50).forEach((r2, idx) => {
+                                    const jid = String(r2.job_id ?? ('p' + idx));
+                                    const title = esc(r2.Title || r2.title || r2.job_title || (r2.job_description || '').substring(0,80) || 'Untitled Job');
+                                    const company = esc(r2.Company || r2.company || r2.company_name || '');
+                                    let rawMatchVal = Number(r2.hybrid_score ?? r2.content_score ?? r2.match_score ?? 0) || 0;
+                                    let matchPercent = 0;
+                                    if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math.round(rawMatchVal * 100);
+                                    else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent = Math.round(rawMatchVal * 20);
+                                    else matchPercent = Math.round(rawMatchVal);
+                                    const why = esc((r2.job_description || r2.description || '').substring(0,400));
+                                    const industry = esc(r2.industry || '');
+                                    const workEnv = esc(r2.work_environment || '');
+                                    const fit = esc(r2.fit_level || '');
+                                    const growth = esc(r2.growth_potential || '');
+                                    const salary = esc(r2.salary ?? '-');
+                                    const deadline = esc(r2.deadline ?? '');
+                                    out += `
+                                        <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${esc(r2.location || '')}" data-fit-level="${fit}" data-content-score="${esc(String(r2.content_score ?? r2.computed_score ?? 0))}" data-raw-match="${esc(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
+                                            <div class="flex-1 pr-6">
+                                                <h3 class="text-lg font-bold">${title}</h3>
+                                                <div class="mt-2"><span class="js-match-badge bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${matchPercent}% Match <small class="text-xs text-gray-500">(raw: ${esc(String(rawMatchVal))})</small></span></div>
+                                                ${ company ? `<p class="text-sm text-gray-700 font-medium">${company}</p>` : '' }
+                                                <p class="text-gray-600 mt-2 text-sm">${why}</p>
+                                                <div class="flex gap-2 text-xs mt-2">
+                                                    ${ industry ? `<span class="bg-gray-100 px-2 py-1 rounded">${industry}</span>` : '' }
+                                                    ${ workEnv ? `<span class="bg-gray-100 px-2 py-1 rounded">${workEnv}</span>` : '' }
+                                                </div>
+                                                <div class="flex gap-2 mt-2">
+                                                    ${ fit ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">${fit}</span>` : '' }
+                                                    ${ growth ? `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">${growth}</span>` : '' }
+                                                </div>
+                                                <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: ${jid}</span>
+                                                <p class="text-xs text-gray-400 mt-1">Salary: ${salary} ${ deadline ? '• Deadline: ' + deadline : '' }</p>
+                                            </div>
+                                            <div class="flex items-center gap-3 mt-4 md:mt-0">
+                                                <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
+                                                <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                    <input type="hidden" name="job_id" value="${jid}">
+                                                    <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    `;
+                                });
+                                container.innerHTML = out;
+                            }
+                        } else {
+                            // If no recs returned, fall back to reload so server-side may pick up any new cache
+                            status.textContent = 'Generated but no recommendations returned; reloading...';
+                            setTimeout(() => location.reload(), 800);
+                        }
+                    } else {
+                        const j = await r.json().catch(()=>({}));
+                        status.textContent = 'Generation failed: ' + (j.message || r.statusText || 'unknown');
+                    }
+                } catch (e) {
+                    status.textContent = 'Generation error: ' + String(e);
+                } finally { btn.disabled = false; }
+            });
+        });
     </script>
     <script>
         // expose guardian approvals to client-side renderer
@@ -1089,6 +1060,11 @@
 
         // Also request server-side hybrid recommendations (collaborative + content)
         try {
+            // If server already rendered per-user recommendations, skip client-side hybrid replacement
+            if (window.__SERVER_RECO_LOADED) {
+                console.debug('job-matches: server-rendered per-user recommendations present; skipping client hybrid replacement');
+                return;
+            }
             // Global debug for hybrid recommender
             window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || { events: [], lastRecs: null };
             function hdbg(ev, payload) { try { window.__HYBRID_RECO_DEBUG.events.push({ when: Date.now(), ev, payload }); } catch(e){}; try { console.debug('hybrid-reco:', ev, payload); } catch(e){} }
@@ -1100,7 +1076,8 @@
                     'Content-Type': 'application/json',
                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
-                body: JSON.stringify(Object.assign({ uid: profile.uid || profile.userId || profile.user_id || '' }, profile))
+                // ask server to force generation/sync when possible for immediate results
+                body: JSON.stringify(Object.assign({ uid: profile.uid || profile.userId || profile.user_id || '', force: true }, profile))
             });
             hdbg('request_done', { status: resp.status, statusText: resp.statusText });
             // helper: normalize server response into an array of recommendation objects
@@ -1167,7 +1144,7 @@
                             // Render up to 50 recommendations to avoid overly long pages
                             recsArr.slice(0,50).forEach((r, idx) => {
                                 const jid = String(r.job_id ?? ('p' + idx));
-                                const title = escapeHtml(String(r.Title || r.title || r.job_title || (r.job_description || '').substring(0,80) || 'Untitled Job'));
+                                const title = escapeHtml(String(r.Title || r.title || r.job_title || r.job_description || 'Untitled Job'));
                                 const company = escapeHtml(String(r.Company || r.company || r.company_name || ''));
                                 let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r.match_score ?? 0) || 0;
                                 let matchPercent = 0;
@@ -1182,7 +1159,7 @@
                                 const salary = escapeHtml(String(r.salary ?? '-'));
                                 const deadline = escapeHtml(String(r.deadline ?? ''));
                                 out += `
-                                    <div id="job_${jid}" data-job-id="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
+                                    <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
                                         <div class="flex-1 pr-6">
                                             <h3 class="text-lg font-bold">${title}</h3>
                                             <div class="mt-2"><span class="js-match-badge bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${matchPercent}% Match <small class="text-xs text-gray-500">(raw: ${escapeHtml(String(rawMatchVal))})</small></span></div>
@@ -1196,6 +1173,7 @@
                                                 ${ fit ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">${fit}</span>` : '' }
                                                 ${ growth ? `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">${growth}</span>` : '' }
                                             </div>
+                                            <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: ${jid}</span>
                                             <p class="text-xs text-gray-400 mt-1">Salary: ${salary} ${ deadline ? '• Deadline: ' + deadline : '' }</p>
                                         </div>
                                         <div class="flex items-center gap-3 mt-4 md:mt-0">
@@ -1203,7 +1181,7 @@
                                             <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
                                                 <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                                 <input type="hidden" name="job_id" value="${jid}">
-                                                <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Saved</button>
+                                                <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
                                             </form>
                                         </div>
                                     </div>
@@ -1225,7 +1203,7 @@
                         let out = '';
                         recsArr.slice(0,50).forEach((r, idx) => {
                             const jid = String(r.job_id ?? ('p' + idx));
-                            const title = escapeHtml(String(r.Title || r.title || r.job_title || (r.job_description || '').substring(0,80) || 'Untitled Job'));
+                            const title = escapeHtml(String(r.Title || r.title || r.job_title || r.job_description || 'Untitled Job'));
                             const company = escapeHtml(String(r.Company || r.company || r.company_name || ''));
                             let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r.match_score ?? 0) || 0;
                             let matchPercent = 0;
@@ -1240,7 +1218,7 @@
                             const salary = escapeHtml(String(r.salary ?? '-'));
                             const deadline = escapeHtml(String(r.deadline ?? ''));
                             out += `
-                                <div id="job_${jid}" data-job-id="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white border border-gray-300 rounded-xl p-6 flex justify-between items-center">
+                                <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white border border-gray-300 rounded-xl p-6 flex justify-between items-center">
                                                         <div>
                                                             <h3 class="text-lg font-semibold text-gray-800">${title}</h3>
                                                             ${ company ? `<p class="text-gray-600">${company}</p>` : '' }
@@ -1263,10 +1241,11 @@
                                                                 <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
                                                                     <input type="hidden" name="_token" value="{{ csrf_token() }}">
                                                                     <input type="hidden" name="job_id" value="${jid}">
-                                                                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Saved</button>
+                                                                    <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Save</button>
                                                                 </form>
                                                             </div>
                                                         </div>
+                                                        <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: ${jid}</span>
                                                     </div>
                             `;
                         });
@@ -1300,6 +1279,11 @@
         const pollIntervalMs = 20000; // 20s
         let lastHash = null;
         async function pollOnce() {
+            if (window.__SERVER_RECO_LOADED) {
+                // Avoid replacing server-rendered per-user results
+                console.debug('job-matches: server-rendered per-user recommendations present; skipping poll replace');
+                return;
+            }
             try {
                 // attempt to read client profile if available
                 let profile = null;
@@ -1339,7 +1323,7 @@
                         let out = '';
                         recs.slice(0,50).forEach((r, idx) => {
                             const jid = String(r.job_id ?? ('p' + idx));
-                            const title = escapeHtml(String(r.Title || r.title || r.job_title || (r.job_description || '').substring(0,80) || 'Untitled Job'));
+                            const title = escapeHtml(String(r.Title || r.title || r.job_title || r.job_description || 'Untitled Job'));
                             const company = escapeHtml(String(r.Company || r.company || r.company_name || ''));
                             let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r.match_score ?? 0) || 0;
                             let matchPercent = 0;
@@ -1354,7 +1338,7 @@
                             const salary = escapeHtml(String(r.salary ?? '-'));
                             const deadline = escapeHtml(String(r.deadline ?? ''));
                             out += `
-                                <div id="job_${jid}" data-job-id="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
+                                <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
                                     <div class="flex-1 pr-6">
                                         <h3 class="text-lg font-bold">${title}</h3>
                                         <div class="mt-2"><span class="js-match-badge bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${matchPercent}% Match <small class="text-xs text-gray-500">(raw: ${escapeHtml(String(rawMatchVal))})</small></span></div>
@@ -1368,15 +1352,16 @@
                                             ${ fit ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">${fit}</span>` : '' }
                                             ${ growth ? `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">${growth}</span>` : '' }
                                         </div>
+                                        <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: ${jid}</span>
                                         <p class="text-xs text-gray-400 mt-1">Salary: ${salary} ${ deadline ? '• Deadline: ' + deadline : '' }</p>
                                     </div>
                                     <div class="flex items-center gap-3 mt-4 md:mt-0">
-                                        <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
-                                        <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-                                            <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                            <input type="hidden" name="job_id" value="${jid}">
-                                            <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Saved</button>
-                                        </form>
+                                            <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
+                                            <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
+                                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                <input type="hidden" name="job_id" value="${jid}">
+                                                <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
+                                            </form>
                                     </div>
                                 </div>
                             `;

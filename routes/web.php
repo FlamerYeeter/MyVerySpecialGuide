@@ -75,12 +75,51 @@ Route::get('/why-this-job-1', function (\Illuminate\Http\Request $request) {
         }
     }
 
-    // Load per-user recommendation cache if present (used as fallback only)
+    // Load per-user recommendation cache if present (prefer this and return early)
     $recoPath = storage_path('app/reco_user_' . $safeUid . '.json');
     $reco = null;
     if (file_exists($recoPath)) {
         $raw = @file_get_contents($recoPath);
-        $reco = $raw ? (json_decode($raw, true) ?: null) : null;
+        $decoded = $raw ? (json_decode($raw, true) ?: null) : null;
+        if (is_array($decoded)) {
+            // Accept either a uid-keyed map or a direct array of recommendations
+            $recs = null;
+            if (array_key_exists($uid, $decoded) && is_array($decoded[$uid])) {
+                $recs = $decoded[$uid];
+            } else {
+                $recs = $decoded;
+            }
+
+            if (is_array($recs) && count($recs) > 0) {
+                // Map server recommendation shape into the 'approvedJobs' structure expected by this template
+                $mapped = [];
+                foreach ($recs as $r) {
+                    if (!is_array($r)) continue;
+                    $assoc = [];
+                    $assoc['title'] = $r['Title'] ?? $r['title'] ?? $r['job_title'] ?? '';
+                    $assoc['job_title'] = $assoc['title'];
+                    $assoc['company'] = $r['Company'] ?? $r['company'] ?? '';
+                    // normalize skills field(s)
+                    $skills = $r['matching_skills'] ?? $r['skills'] ?? $r['skill_tags'] ?? [];
+                    if (is_string($skills)) $skills = array_filter(array_map('trim', preg_split('/[,;\n]+/', $skills)));
+                    if (!is_array($skills)) $skills = [];
+                    $assoc['skills'] = array_values(array_unique(array_filter(array_map(function($s){ return is_scalar($s) ? (string)$s : ''; }, $skills))));
+
+                    $mapped[] = [
+                        'job_id' => $r['job_id'] ?? ($r['id'] ?? null),
+                        'assoc' => $assoc,
+                        'match_score' => $r['hybrid_score'] ?? $r['match_score'] ?? $r['score'] ?? null,
+                        'job_description' => $r['job_description'] ?? $r['JobDescription'] ?? ''
+                    ];
+                }
+
+                if (!empty($mapped)) {
+                    // Return the view immediately using per-user recommendations so the template
+                    // can focus only on rendering skills and not on loading files itself.
+                    return view('why-this-job-1', ['approvedJobs' => $mapped, 'uid' => $uid]);
+                }
+            }
+        }
     }
 
     // Try to load Firestore profile for authoritative matching skills
@@ -261,6 +300,195 @@ Route::get('/why-this-job-1', function (\Illuminate\Http\Request $request) {
 
     return view('why-this-job-1', ['approvedJobs' => $jobs, 'uid' => $uid]);
 })->name('why.this.job.1');
+
+// Route to show a single job's "Why this job" details (auth-protected)
+Route::get('/why-this-job-2', function (Request $request) {
+    if (!\Illuminate\Support\Facades\Auth::check()) {
+        return redirect()->route('login');
+    }
+    $laravelId = (string)\Illuminate\Support\Facades\Auth::id();
+    $uid = $laravelId;
+
+    $jobId = $request->query('job_id') ?? $request->query('id') ?? null;
+    $jobForView = null;
+
+    try {
+        // Try per-user reco first (map shapes similar to why-this-job-1)
+        $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $laravelId ?: 'anonymous');
+        $recoPath = storage_path('app/reco_user_' . $safeUid . '.json');
+        if ($jobId && file_exists($recoPath)) {
+            $raw = @file_get_contents($recoPath);
+            $decoded = $raw ? (json_decode($raw, true) ?: null) : null;
+            $recs = null;
+            if (is_array($decoded)) {
+                if (array_key_exists($laravelId, $decoded) && is_array($decoded[$laravelId])) {
+                    $recs = $decoded[$laravelId];
+                } else {
+                    $recs = $decoded;
+                }
+            }
+            if (is_array($recs)) {
+                // search for job by job_id key or id field
+                foreach ($recs as $r) {
+                    if (!is_array($r)) continue;
+                    // canonical id from explicit fields
+                    $candId = isset($r['job_id']) ? (string)$r['job_id'] : (isset($r['id']) ? (string)$r['id'] : null);
+                    // deterministic fallback hash (match job-matches / guardian behavior)
+                    $titleF = trim((string)($r['title'] ?? $r['Title'] ?? $r['job_title'] ?? $r['job_description'] ?? ''));
+                    $companyF = trim((string)($r['company'] ?? $r['Company'] ?? $r['company_name'] ?? ''));
+                    $locF = trim((string)($r['location'] ?? ''));
+                    $hashFallback = md5(($titleF ?: substr((string)($r['job_description'] ?? ''),0,200)) . '|' . $companyF . '|' . $locF);
+                    if (($candId !== null && strval($candId) === strval($jobId)) || strval($hashFallback) === strval($jobId)) {
+                        $assoc = [];
+                        $assoc['title'] = $r['Title'] ?? $r['title'] ?? $r['job_title'] ?? '';
+                        $assoc['company'] = $r['Company'] ?? $r['company'] ?? '';
+                        $skills = $r['matching_skills'] ?? $r['skills'] ?? $r['skill_tags'] ?? [];
+                        if (is_string($skills)) $skills = array_filter(array_map('trim', preg_split('/[,;\n]+/', $skills)));
+                        if (!is_array($skills)) $skills = [];
+                        $assoc['skills'] = array_values(array_unique(array_filter($skills)));
+
+                        $jobForView = [
+                            'job_id' => $candId,
+                            'assoc' => $assoc,
+                            'match_score' => $r['hybrid_score'] ?? $r['match_score'] ?? $r['score'] ?? null,
+                            'job_description' => $r['job_description'] ?? $r['JobDescription'] ?? ''
+                        ];
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Fallback: if not found in per-user reco, use JobCsvParser to locate by id
+        if (!$jobForView && $jobId) {
+            $parser = new \App\Services\JobCsvParser();
+            $assoc = $parser->findJobById($jobId);
+            if (is_array($assoc) && !empty($assoc)) {
+                // try to extract skills tokens if present
+                $skills = [];
+                if (!empty($assoc['skills_desc']) && is_string($assoc['skills_desc'])) {
+                    $skills = array_filter(array_map('trim', preg_split('/[,;\n]+/', $assoc['skills_desc'])));
+                }
+                $jobForView = [
+                    'job_id' => $jobId,
+                    'assoc' => [
+                        'title' => $assoc['title'] ?? $assoc['job_title'] ?? $assoc['Title'] ?? '',
+                        'company' => $assoc['company'] ?? $assoc['company_name'] ?? $assoc['Company'] ?? '',
+                        'skills' => array_values(array_unique($skills)),
+                    ],
+                    'match_score' => null,
+                    'job_description' => $assoc['job_description'] ?? $assoc['description'] ?? ''
+                ];
+            }
+        }
+    } catch (\Throwable $e) {
+        logger()->warning('why-this-job-2: failed to assemble job view: ' . $e->getMessage());
+    }
+
+    // Compute a server-side human-readable explanation for why this job matches the user
+    try {
+        $whySentence = null;
+        // attempt to resolve firebase uid for profile lookup
+        $fsUid = null;
+        try {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            if ($user && !empty($user->firebase_uid)) {
+                $fsUid = (string)$user->firebase_uid;
+            }
+        } catch (\Throwable $__e) {}
+        if (!$fsUid) {
+            $sess = session('firebase_uid', null);
+            if ($sess) $fsUid = (string)$sess;
+        }
+
+        $profileSkills = [];
+        if ($fsUid) {
+            try {
+                $fs = app(\App\Http\Controllers\GuardianJobController::class)->fetchUserProfileFromFirestore($fsUid);
+                if (is_array($fs)) {
+                    // extract skills similarly to why-this-job-1 logic
+                    if (!empty($fs['matching_skills']) && is_array($fs['matching_skills'])) {
+                        $profileSkills = $fs['matching_skills'];
+                    }
+                    if (empty($profileSkills) && !empty($fs['skills']) && is_array($fs['skills'])) {
+                        $snode = $fs['skills'];
+                        $s = [];
+                        try { if (!empty($snode['skills_page1']) && is_string($snode['skills_page1'])) $s = array_merge($s, json_decode($snode['skills_page1'], true) ?: []); } catch(\Throwable $__e) {}
+                        try { if (!empty($snode['skills_page2']) && is_string($snode['skills_page2'])) $s = array_merge($s, json_decode($snode['skills_page2'], true) ?: []); } catch(\Throwable $__e) {}
+                        $isIndexed = array_values($snode) === $snode;
+                        if ($isIndexed) {
+                            foreach ($snode as $v) if (is_scalar($v)) $s[] = (string)$v;
+                        }
+                        if (!empty($s)) $profileSkills = $s;
+                    }
+                    if (empty($profileSkills) && (!empty($fs['skills_page1']) || !empty($fs['skills_page2']))) {
+                        $s = [];
+                        try { if (!empty($fs['skills_page1']) && is_string($fs['skills_page1'])) $s = array_merge($s, json_decode($fs['skills_page1'], true) ?: []); } catch(\Throwable $__e) {}
+                        try { if (!empty($fs['skills_page2']) && is_string($fs['skills_page2'])) $s = array_merge($s, json_decode($fs['skills_page2'], true) ?: []); } catch(\Throwable $__e) {}
+                        if (!empty($s)) $profileSkills = $s;
+                    }
+                }
+            } catch (\Throwable $__e) {
+                logger()->debug('why-this-job-2: profile fetch failed: ' . $__e->getMessage());
+            }
+        }
+
+        // Normalize skills to lowercase strings
+        $normalizedProfileSkills = [];
+        if (is_array($profileSkills)) {
+            foreach ($profileSkills as $ps) {
+                if (is_scalar($ps)) {
+                    $v = trim((string)$ps);
+                    if ($v !== '') $normalizedProfileSkills[] = strtolower($v);
+                }
+            }
+        }
+        $normalizedProfileSkills = array_values(array_unique($normalizedProfileSkills));
+
+        // Job skills from jobForView
+        $jobSkills = [];
+        if (is_array($jobForView) && isset($jobForView['assoc']) && is_array($jobForView['assoc'])) {
+            $js = $jobForView['assoc']['skills'] ?? [];
+            if (is_string($js)) $js = array_filter(array_map('trim', preg_split('/[,;\n]+/', $js)));
+            if (is_array($js)) {
+                foreach ($js as $s) if (is_scalar($s)) $jobSkills[] = strtolower(trim((string)$s));
+            }
+        }
+
+        // compute intersection and order: prefer jobSkills order as closer
+        $matched = [];
+        foreach ($jobSkills as $ks) {
+            if (in_array($ks, $normalizedProfileSkills)) $matched[] = $ks;
+        }
+
+        if (!empty($matched)) {
+            // human-friendly formatting
+            $displayList = array_map(function($s){ return ucfirst($s); }, array_slice($matched, 0, 5));
+            if (count($displayList) === 1) {
+                $whySentence = 'This job matches because your profile includes the skill "' . $displayList[0] . '", which is required by this role.';
+            } else {
+                $last = array_pop($displayList);
+                $whySentence = 'This job matches because your profile includes ' . implode(', ', $displayList) . ' and ' . $last . ', which closely match this job\'s required skills.';
+            }
+            // annotate which is closest (first matched in jobSkills)
+            $closest = ucfirst($matched[0]);
+            $whySentence .= ' The strongest match is "' . $closest . '".';
+        } elseif (!empty($normalizedProfileSkills) && !empty($jobSkills)) {
+            // no exact matches but both sides exist: show a looser sentence
+            $whySentence = 'This job was recommended because it requires skills related to your profile (e.g., ' . ucfirst($jobSkills[0]) . '), even if we did not find an exact skill overlap.';
+        } elseif (!empty($jobSkills)) {
+            $whySentence = 'This job requires skills such as ' . ucfirst($jobSkills[0]) . (!empty($jobSkills[1]) ? ', ' . ucfirst($jobSkills[1]) : '') . '. It was recommended by our algorithm based on similar profiles.';
+        } else {
+            $whySentence = 'This job was recommended based on your profile and our matching algorithm.';
+        }
+
+        if (is_array($jobForView)) $jobForView['why_sentence'] = $whySentence;
+    } catch (\Throwable $__e) {
+        logger()->debug('why-this-job-2: why sentence assembly failed: ' . $__e->getMessage());
+    }
+
+    return view('why-this-job-2', ['uid' => $uid, 'job' => $jobForView]);
+})->name('why.this.job.2');
 
 // Guardian review routes: pending list and detailed mode
 Route::get('/guardian-review/pending', function () {
@@ -517,6 +745,138 @@ Route::get('/debug/firebase-session', function (Request $request) {
     }
 })->name('debug.firebase_session');
 
+// Development helper: return the server-resolved recommendation cache path and a small summary
+// Usage: while signed-in (or in local env) visit /debug/reco-cache to see which per-user cache
+// file the server would read for recommendations and a few details (mtime, size, first job_ids)
+Route::get('/debug/reco-cache', function (Request $request) {
+    try {
+        // only allow access when signed-in or in local environment for safety
+        if (!app()->environment('local') && !Auth::check()) {
+            return response()->json(['ok' => false, 'error' => 'unauthorized - sign in required or run in local env'], 403);
+        }
+
+        $resolvedUid = null;
+        try {
+            if (Auth::check()) {
+                $u = Auth::user();
+                if (!empty($u->firebase_uid)) $resolvedUid = (string)$u->firebase_uid;
+            }
+        } catch (\Throwable $__e) {}
+
+        // fallback to session-stored firebase uid
+        if (!$resolvedUid) {
+            $sess = session('firebase_uid', null);
+            if ($sess) $resolvedUid = (string)$sess;
+        }
+
+        if (!$resolvedUid) {
+            return response()->json(['ok' => false, 'error' => 'no firebase uid resolved (sign in required)'], 400);
+        }
+
+        $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $resolvedUid ?: 'anonymous');
+        $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
+        $exists = file_exists($cachePath);
+        $mtime = $exists ? @filemtime($cachePath) : null;
+        $size = $exists ? @filesize($cachePath) : null;
+        $firstIds = [];
+        if ($exists) {
+            $raw = @file_get_contents($cachePath);
+            $json = $raw ? json_decode($raw, true) : null;
+            if (is_array($json)) {
+                // If JSON is a per-uid map, grab the user's array
+                if (array_key_exists($resolvedUid, $json) && is_array($json[$resolvedUid])) {
+                    $arr = $json[$resolvedUid];
+                } else {
+                    $arr = $json;
+                }
+                // arr may be list of objects or map: extract job_id values
+                if (is_array($arr)) {
+                    $count = 0;
+                    foreach ($arr as $item) {
+                        if ($count >= 10) break;
+                        if (is_array($item) && isset($item['job_id'])) {
+                            $firstIds[] = $item['job_id'];
+                            $count++;
+                        } elseif (is_scalar($item)) {
+                            // if it's a list of job ids already
+                            $firstIds[] = $item;
+                            $count++;
+                        }
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'ok' => true,
+            'resolved_uid' => $resolvedUid,
+            'safe_uid' => $safeUid,
+            'cache_path' => $cachePath,
+            'exists' => $exists,
+            'mtime' => $mtime,
+            'size' => $size,
+            'first_job_ids' => $firstIds,
+        ]);
+    } catch (\Throwable $e) {
+        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+    }
+})->name('debug.reco_cache');
+
+// Debug preview of per-user recommendation JSON (local OR signed-in only)
+Route::get('/debug/reco-preview', function (Request $request) {
+    try {
+        // Restrict access: allow local environment, otherwise require admin
+        if (!app()->environment('local')) {
+            if (!\Illuminate\Support\Facades\Auth::check()) {
+                return response()->json(['ok' => false, 'error' => 'unauthorized - sign in required'], 403);
+            }
+            $u = \Illuminate\Support\Facades\Auth::user();
+            $isAdmin = false;
+            try {
+                if (!empty($u->role) && $u->role === 'admin') $isAdmin = true;
+                else {
+                    // try Firestore admin assignment as fallback
+                    $fsAdmin = app(\App\Services\FirestoreAdminService::class);
+                    if (!empty($u->firebase_uid) && $fsAdmin->isAdmin($u->firebase_uid)) $isAdmin = true;
+                }
+            } catch (\Throwable $__e) {
+                // ignore and treat as non-admin
+            }
+            if (!$isAdmin) return response()->json(['ok' => false, 'error' => 'forbidden - admin only'], 403);
+        }
+
+        $provided = $request->query('uid') ?: $request->query('safe_uid') ?: null;
+        $resolvedUid = null;
+        if ($provided) {
+            // accept raw firebase uid (untrusted) or already-safe uid
+            $resolvedUid = (string)$provided;
+        } else {
+            try {
+                if (\Illuminate\Support\Facades\Auth::check()) {
+                    $u = \Illuminate\Support\Facades\Auth::user();
+                    if (!empty($u->firebase_uid)) $resolvedUid = (string)$u->firebase_uid;
+                }
+            } catch (\Throwable $__e) {}
+            if (!$resolvedUid) {
+                $sess = session('firebase_uid', null);
+                if ($sess) $resolvedUid = (string)$sess;
+            }
+        }
+
+        if (!$resolvedUid) return response()->json(['ok' => false, 'error' => 'no uid provided or resolved (sign in required)'], 400);
+
+        $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $resolvedUid ?: 'anonymous');
+        $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
+        if (!file_exists($cachePath)) return response()->json(['ok' => false, 'error' => 'cache not found', 'cache_path' => $cachePath], 404);
+
+        $raw = @file_get_contents($cachePath);
+        $decoded = $raw ? json_decode($raw, true) : null;
+        return response()->json(['ok' => true, 'resolved_uid' => $resolvedUid, 'safe_uid' => $safeUid, 'cache_path' => $cachePath, 'data' => $decoded]);
+    } catch (\Throwable $e) {
+        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+    }
+})->name('debug.reco_preview');
+
 Route::get('/registeradminapprove', function () {
     return view('ds_register_adminapprove');
 })->name('registeradminapprove');
@@ -711,7 +1071,45 @@ Route::get('/job-details', function () {
 })->name('job.details');
 
 Route::get('/job-matches', function () {
-    return view('job-matches');
+    // Attempt to resolve a firebase UID (from authenticated user or session) and
+    // load the per-user recommendation cache `storage/app/reco_user_<safeUid>.json`.
+    $resolvedUid = null;
+    try {
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $u = \Illuminate\Support\Facades\Auth::user();
+            if (!empty($u->firebase_uid)) $resolvedUid = (string)$u->firebase_uid;
+        }
+    } catch (\Throwable $__e) {
+        // ignore
+    }
+
+    // fallback to session-stored firebase uid
+    if (!$resolvedUid) {
+        $sess = session('firebase_uid', null);
+        if ($sess) $resolvedUid = (string)$sess;
+    }
+
+    $recommendations = [];
+    if ($resolvedUid) {
+        $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $resolvedUid ?: 'anonymous');
+        $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
+        if (file_exists($cachePath)) {
+            $raw = @file_get_contents($cachePath);
+            $decoded = $raw ? json_decode($raw, true) : null;
+            if (is_array($decoded)) {
+                // If file contains a mapping keyed by uid, prefer that, else treat as direct array
+                if (isset($decoded[$resolvedUid]) && is_array($decoded[$resolvedUid])) {
+                    $recommendations = $decoded[$resolvedUid];
+                } elseif (isset($decoded[$safeUid]) && is_array($decoded[$safeUid])) {
+                    $recommendations = $decoded[$safeUid];
+                } else {
+                    $recommendations = $decoded;
+                }
+            }
+        }
+    }
+
+    return view('job-matches', ['recommendations' => $recommendations]);
 })->name('job.matches');
 
 // API for guardian to approve/flag jobs (stored locally in storage/app/guardian_job_approvals.json)
@@ -732,6 +1130,9 @@ Route::get('/firebase-token', [FirebaseTokenController::class, 'token'])->middle
 
 Route::get('/my-job-applications', [SavedJobController::class, 'index'])->name('my.job.applications');
 Route::post('/my-job-applications', [SavedJobController::class, 'store'])->name('my.job.applications');
+// Convenience GET route that saves a job and redirects to the saved-jobs page.
+// This is useful for simple anchor-based saves from the job-listing UI.
+Route::get('/my-job-applications/add/{jobId}', [SavedJobController::class, 'add'])->name('my.job.applications.add');
 Route::post('/my-job-applications/remove', [SavedJobController::class, 'destroy'])->name('my.job.applications.remove');
 
 // Additional registration routes
@@ -753,8 +1154,95 @@ Route::get('/registerreview1', function () {
 })->name('registerreview1');
 
 Route::get('/registerreview2', function () {
+    // Try to resolve a firebase UID and inject the Firestore profile into the
+    // view so front-end review fields (education, work, support, workplace)
+    // can be populated reliably without requiring a client-side Firestore read.
+    $uid = request()->query('uid');
+
+    // If not provided via query, attempt to resolve from authenticated user or session
+    if (empty($uid)) {
+        try {
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $u = \Illuminate\Support\Facades\Auth::user();
+                if (!empty($u->firebase_uid)) $uid = (string)$u->firebase_uid;
+            }
+        } catch (\Throwable $__e) {
+            // ignore
+        }
+    }
+
+    if (empty($uid)) {
+        $sess = session('firebase_uid', null);
+        if ($sess) $uid = (string)$sess;
+    }
+
+    if (!empty($uid)) {
+        try {
+            $controller = app(\App\Http\Controllers\GuardianJobController::class);
+            $profile = $controller->fetchUserProfileFromFirestore($uid);
+            return view('ds_register_review-2', ['serverProfile' => $profile, 'serverProfileUid' => $uid]);
+        } catch (\Throwable $e) {
+            logger()->warning('registerreview2: failed to fetch serverProfile for uid ' . $uid . ': ' . $e->getMessage());
+            // Fall through to render the normal view if fetch fails.
+        }
+    }
+
     return view('ds_register_review-2');
 })->name('registerreview2');
+
+// Server-side helper API used by review pages when client cannot read Firestore directly.
+// Returns the server-side Firestore profile for the currently resolved firebase_uid
+// (from authenticated user or session). Useful for pages that should work without
+// including a ?uid= override for admin debugging.
+Route::get('/api/server-profile', function (Request $request) {
+    try {
+        $resolved = null;
+        try {
+            if (\Illuminate\Support\Facades\Auth::check()) {
+                $u = \Illuminate\Support\Facades\Auth::user();
+                if (!empty($u->firebase_uid)) $resolved = (string)$u->firebase_uid;
+            }
+        } catch (\Throwable $__e) {}
+        if (!$resolved) {
+            $sess = session('firebase_uid', null);
+            if ($sess) $resolved = (string)$sess;
+        }
+        // Allow a debug override via ?uid=. For safety:
+        // - always allow in non-production environments (local, staging, etc.)
+        // - in production, allow only for authenticated admin users
+        $providedUid = $request->query('uid');
+        if (!$resolved && $providedUid) {
+            $allowOverride = false;
+            try {
+                // non-production environments are allowed
+                if (!app()->environment('production')) $allowOverride = true;
+            } catch (\Throwable $__e) {}
+            if (!$allowOverride) {
+                try {
+                    if (\Illuminate\Support\Facades\Auth::check()) {
+                        $u = \Illuminate\Support\Facades\Auth::user();
+                        if (!empty($u->role) && $u->role === 'admin') $allowOverride = true;
+                    }
+                } catch (\Throwable $__e) {}
+            }
+            if ($allowOverride) {
+                $resolved = (string)$providedUid;
+                logger()->info('api.server-profile: using uid from query via override', ['env' => app()->environment(), 'uid_hint' => substr($resolved,0,6) . '...']);
+            } else {
+                logger()->warning('api.server-profile: rejected uid override attempt', ['env' => app()->environment()]);
+            }
+        }
+        if (!$resolved) return response()->json(['ok' => false, 'error' => 'no firebase_uid resolved - sign in or provide ?uid in non-production or be admin'], 400);
+
+        $controller = app(\App\Http\Controllers\GuardianJobController::class);
+        $profile = $controller->fetchUserProfileFromFirestore($resolved);
+        if (!is_array($profile)) return response()->json(['ok' => false, 'error' => 'profile_not_found'], 404);
+        return response()->json(['ok' => true, 'profile' => $profile]);
+    } catch (\Throwable $e) {
+        logger()->warning('api.server-profile failed: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+    }
+})->name('api.server_profile');
 
 Route::get('/registerreview3', function () {
     return view('ds_register_review-3');

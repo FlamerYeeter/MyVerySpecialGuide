@@ -45,7 +45,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('registerworkexpinfo') }}'">
+        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerworkexpinfo') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-3 h-3 sm:w-6 sm:h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -219,20 +219,59 @@
                 // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_supportneed.blade.php
                 function selectSupportChoice(el, value) {
                     try {
-                        document.querySelectorAll('.support-card').forEach(c => c.classList.remove('selected'));
-                        if (el && el.classList) el.classList.add('selected');
                         const hidden = document.getElementById('support_choice');
-                        if (hidden) hidden.value = value || '';
-                        if (value === 'other') {
+                        // read existing array (JSON preferred, CSV fallback)
+                        let arr = [];
+                        if (hidden && hidden.value) {
+                            try { arr = JSON.parse(hidden.value || '[]'); if (!Array.isArray(arr)) arr = []; } catch (e) { arr = (hidden.value||'').split(',').map(s=>s.trim()).filter(Boolean); }
+                        }
+
+                        const val = value || (el && el.dataset && el.dataset.value) || '';
+                        if (!val) return;
+
+                        // toggle visual state
+                        if (el && el.classList) el.classList.toggle('selected');
+                        const isSelected = el && el.classList && el.classList.contains('selected');
+
+                        if (isSelected) {
+                            if (!arr.includes(val)) arr.push(val);
+                        } else {
+                            arr = arr.filter(x => x !== val);
+                        }
+
+                        if (hidden) hidden.value = JSON.stringify(arr);
+
+                        // if the user selected 'other', focus the text box; if they deselected it, don't clear their text
+                        if (val === 'other' && isSelected) {
                             const other = document.getElementById('support_other_text');
                             if (other) other.focus();
                         }
+
                         const err = document.getElementById('supportError');
                         if (err) err.textContent = '';
                     } catch (e) {
                         console.error('selectSupportChoice error', e);
                     }
                 }
+
+                // initialize support-card visual states from hidden #support_choice (JSON preferred)
+                document.addEventListener('DOMContentLoaded', function() {
+                    try {
+                        const hidden = document.getElementById('support_choice');
+                        if (!hidden) return;
+                        let arr = [];
+                        if (hidden.value) {
+                            try { arr = JSON.parse(hidden.value || '[]'); if (!Array.isArray(arr)) arr = []; } catch(e) { arr = (hidden.value||'').split(',').map(s=>s.trim()).filter(Boolean); }
+                        }
+                        arr = Array.from(new Set(arr || []));
+                        document.querySelectorAll('.support-card').forEach(c => {
+                            const v = c.dataset && c.dataset.value ? c.dataset.value : null;
+                            // some support cards use onclick with explicit value instead of data-value; fall back to text match
+                            if (v && arr.includes(v)) c.classList.add('selected');
+                            else c.classList.remove('selected');
+                        });
+                    } catch (e) { console.warn('init support_choice failed', e); }
+                });
             </script>
 
             <!-- Next Button -->

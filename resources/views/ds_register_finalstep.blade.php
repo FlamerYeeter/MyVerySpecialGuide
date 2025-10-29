@@ -137,8 +137,7 @@
     <div class="bg-green-50 border border-green-400 rounded-lg px-4 sm:px-6 py-4 mt-6 shadow-sm">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <p class="text-sm sm:text-[15px] text-black leading-relaxed flex-1">
-          After creating your account, we will match you with jobs that fit your skills and preferences.
-          You will receive notifications when new opportunities are available.
+          Upon account creation, a therapist will review your provided information to assess your skills and preferences. You will be notified once your evaluation has been completed and the assessment phase can begin.
         </p>
         <button type="button"
           class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
@@ -147,19 +146,21 @@
           aria-label="Read info aloud in English then Filipino" title="Play Audio"></button>
       </div>
       <p class="mt-2 italic text-gray-700 text-xs sm:text-[13px] leading-relaxed">
-        (Pagkatapos gumawa ng iyong account, itutugma ka namin sa mga trabaho na ayon sa iyong kakayahan at kagustuhan. Makakatanggap ka ng notification kapag may bagong trabaho na available.)
+        (Pagkatapos mong gumawa ng account, susuriin ng therapist ang iyong impormasyon para malaman ang iyong mga kakayahan at gusto. Makakatanggap ka ng abiso kapag tapos na ang iyong ebalwasyon at handa ka nang magpatuloy sa assessment.)
       </p>
     </div>
 
     <!-- Buttons -->
-    <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
-      <button id="createAccountBtn" type="button"
-        class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-base sm:text-lg font-semibold 
-        px-8 sm:px-10 py-3 sm:py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
-        shadow-md w-full sm:w-64 text-center">
-        Create My Account
-      </button>
-    </div>
+<div class="flex justify-center mt-12">
+  <button
+    type="button"
+    id="createAccountBtn"
+    class="w-full sm:w-[530px] bg-[#42A5F5] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-[#1E88E5] transition-all duration-200"
+  >
+    Submit for Evaluation
+  </button>
+</div>
+
 
     <!-- Error / Hidden fields used by scripts -->
     <div class="text-center mt-3">
@@ -193,10 +194,10 @@
 
     <!-- Helper Text -->
     <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
-      Click <span class="text-[#1E40AF] font-medium">“Create My Account”</span> to complete your registration
+      Click <span class="text-[#1E40AF] font-medium">“Submit for Evaluation”</span> to complete your registration
     </p>
     <p class="text-gray-600 italic text-[12px] sm:text-[13px] text-center">
-      (Pindutin ang “Create My Account” upang tapusin ang iyong pagpaparehistro)
+      (Pindutin ang “Submit for Evaluation” upang tapusin ang iyong pagpaparehistro)
     </p>
   </div>
 

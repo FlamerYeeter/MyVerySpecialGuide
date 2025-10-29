@@ -46,7 +46,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('registeradminapprove') }}'">
+        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registeradminapprove') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -274,11 +274,29 @@
                     (May mga certificate o special training ka ba?)
                 </p>
 
-                <!-- Text Input -->
-                <input id="certs" name="certs" type="text"
-                    placeholder="List your certificates or trainings (e.g. NC II, TESDA, etc.)"
-                    class="w-full border border-gray-300 rounded-lg p-3 sm:p-4 text-sm sm:text-base 
-                     focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none transition-all duration-200 mb-4" />
+   <!-- Radio Buttons -->
+  <div class="flex items-center gap-6 mt-2">
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input
+        type="radio"
+        name="certs"
+        value="yes"
+        class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+      />
+      <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+    </label>
+
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input
+        type="radio"
+        name="certs"
+        value="no"
+        class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+      />
+      <span class="text-gray-800 text-sm sm:text-base">No</span>
+    </label>
+  </div>
+  <br>
                
                      <!-- File Upload -->
                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col gap-3">
@@ -297,7 +315,7 @@
                         </div>
                     </div>
 
-                    <label for="cert_file"
+                    <label id="cert_file_button" for="cert_file"
                         class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
                         px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition w-fit">
                         📁 Choose File / Pumili ng File
@@ -433,6 +451,38 @@
                             if (hintEl) hintEl.style.display = '';
                             if (fileDisplay) fileDisplay.innerHTML = '';
                         }
+                        // Toggle file upload enable/disable based on certs radio
+                        try {
+                            const certButtonEl = document.getElementById('cert_file_button');
+                            const radios = document.querySelectorAll('input[name="certs"]');
+                            const toggleFile = (val) => {
+                                try {
+                                    if (!fileInput) return;
+                                    if (String(val).toLowerCase() === 'no') {
+                                        // clear any chosen file and hide preview
+                                        fileInput.value = '';
+                                        resetDisplay();
+                                        fileInput.disabled = true;
+                                        if (certButtonEl) {
+                                            certButtonEl.classList.add('opacity-50');
+                                            certButtonEl.classList.add('pointer-events-none');
+                                            certButtonEl.setAttribute('aria-disabled', 'true');
+                                        }
+                                    } else {
+                                        fileInput.disabled = false;
+                                        if (certButtonEl) {
+                                            certButtonEl.classList.remove('opacity-50');
+                                            certButtonEl.classList.remove('pointer-events-none');
+                                            certButtonEl.removeAttribute('aria-disabled');
+                                        }
+                                    }
+                                } catch (e) { console.debug('cert toggle error', e); }
+                            };
+                            radios.forEach(r => r.addEventListener('change', (ev) => toggleFile(ev.target.value)));
+                            // initialise based on current selection
+                            const sel = document.querySelector('input[name="certs"]:checked');
+                            if (sel) toggleFile(sel.value);
+                        } catch (e) { console.debug('certs radio bind failed', e); }
                     })();
                 </script>
             </div>
@@ -441,8 +491,7 @@
             <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
                 <div id="educError" class="text-red-600 text-sm text-center"></div>
                 <button id="educNext" type="button"
-                    class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md"
-                    onclick="window.location.href='{{ route('registerschoolworkinfo') }}'">
+                    class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
                     Next →
                 </button>
                 <p class="text-gray-600 text-[11px] sm:text-sm mt-2 text-center leading-snug">
