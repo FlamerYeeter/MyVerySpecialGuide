@@ -1,30 +1,89 @@
 @extends('layouts.includes')
 
 @section('content')
-<div class="font-sans bg-white text-gray-800">
+<!-- Back Button -->
+<div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
+  <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
+    <a href="/jobmatches"
+      class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
+        stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>Back to Jobs</span>
+    </a>
+  </div>
+</div>
 
-<!-- Filter Form -->
-    <section class="bg-pink-500 py-7 mt-4">
-        <div class="container mx-auto px-4">
-                <div class="flex items-center justify-center space-x-4 mb-6">
-                    <img src="{{ asset('image/brain.png') }}" class="w-20 h-20">
-                    <div>
-                        <h2 class="text-3xl font-bold text-black">Why this Job and How to Get There?</h2>
-                        <p class="text-sm text-black">Discover how your unique skills and interests align with this job role</p>
-                        <p class="text-sm text-black">and learn the step-by-step path to achieve your aspirations </p>
-                    </div>
-                </div>
-        </div>
-    </section>
-  
-  <!-- Job Roles Section -->
-  <section class="max-w-4xl mx-auto mt-10 mb-16 px-4">
-    <div class="bg-white shadow-md rounded-xl p-6 border">
-      <div class="flex items-center mb-6 space-x-3">
-        <img src="{{ asset('image/matchedjob.png') }}" alt="Job Icon" class="w-8 h-8">
-        <h3 class="text-xl font-semibold text-gray-800">Your Matched Job Roles</h3>
-        <button class="text-blue-600 hover:text-blue-800">🔊</button>
+<!-- Hero Section -->
+<section class="bg-pink-400 flex flex-col items-center justify-center py-20 px-6 sm:px-12 lg:px-20">
+  <div class="container mx-auto px-6">
+    <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-10 max-w-5xl w-full">
+      
+      <!-- Icon -->
+      <div class="flex-shrink-0 flex justify-center">
+        <img src="{{ asset('image/brain.png') }}" alt="Brain Icon" class="w-24 h-24 md:w-28 md:h-28">
       </div>
+
+      <!-- Text -->
+      <div class="flex flex-col items-center lg:items-start">
+        <h2 class="text-4xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E40AF] drop-shadow-md">
+          Why This Job Match You?
+        </h2>
+        <p class="text-lg sm:text-xl text-black mt-4 leading-relaxed max-w-3xl">
+          Discover how your unique skills and interests align with this job role.<br>
+          Learn the step-by-step path to achieve your aspirations.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+         <!-- BACK TO TOP BUTTON -->
+         <button id="backToTopBtn"
+            class="hidden fixed bottom-8 right-8 bg-[#1E40AF] text-white px-6 py-4 rounded-full shadow-xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110 flex items-center gap-3 text-2xl font-semibold"
+              onclick="scrollToTop()" aria-label="Back to top">
+  
+         <!-- Up Arrow Icon -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
+         stroke="currentColor" stroke-width="3">
+         <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+         </svg>
+
+        <span>Back to Top</span>
+        </button>
+
+<script>
+       // Show/hide the Back to Top button
+      const backToTopBtn = document.getElementById("backToTopBtn");
+         window.addEventListener("scroll", () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove("hidden");
+                } else {
+                backToTopBtn.classList.add("hidden");
+                }
+              });
+
+        // Smooth scroll to top
+            function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+  </script>
+  
+<!-- Job Match Section -->
+<section class="max-w-5xl mx-auto mt-12 mb-16 px-6">
+  <div class="bg-white shadow-lg rounded-2xl p-8 border-2 border-blue-200 hover:shadow-xl transition-all duration-300">
+
+    <!-- Header -->
+    <div class="flex items-center justify-center md:justify-start gap-4 mb-6">
+      <div class="bg-blue-100 p-3 rounded-full flex items-center justify-center">
+        <img src="{{ asset('image/matchedjob.png') }}" alt="Job Icon" class="w-10 h-10">
+      </div>
+      <div>
+        <h3 class="text-2xl font-bold text-[#1E3A8A]">Your Matched Jobs</h3>
+        <p class="text-gray-600 text-base italic">View jobs specially matched to your abilities and preferences.</p>
+      </div>
+    </div>
 
     @php
     // Prefer per-user cached recommendations when server session exists.

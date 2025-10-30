@@ -2,143 +2,249 @@
 
 @section('content')
 
-<div class="font-sans bg-white text-gray-800">
 
-  <!-- Filter Form -->
-    <section class="bg-pink-500 py-7 mt-4">
-        <div class="container mx-auto px-4">
-                <div class="flex items-center justify-center space-x-4 mb-6">
-                    <img src="{{ asset('image/brain.png') }}" class="w-20 h-20">
-                    <div>
-                        <h2 class="text-3xl font-bold text-black">Why this Job and How to Get There?</h2>
-                        <p class="text-sm text-black">Discover how your unique skills and interests align with this job role</p>
-                        <p class="text-sm text-black">and learn the step-by-step path to achieve your aspirations </p>
-                    </div>
-                </div>
-        </div>
-    </section>
-
-  <!-- Main Content Container -->
-  <section class="max-w-5xl mx-auto mt-10 mb-20 px-4 space-y-8">
-
-    @php
-      // Prepare variables for the view. The route passes a `job` array or null.
-      $job = $job ?? null;
-      $jobTitle = $job['assoc']['title'] ?? ($job['assoc']['job_title'] ?? 'Untitled Job');
-      $company = $job['assoc']['company'] ?? '';
-      $jobDescription = $job['job_description'] ?? '';
-      $jobSkills = is_array($job['assoc']['skills'] ?? null) ? $job['assoc']['skills'] : (is_array($job['skills'] ?? null) ? $job['skills'] : []);
-      $matchPercent = null;
-      if (isset($job['match_score']) && is_numeric($job['match_score'])) {
-          $m = floatval($job['match_score']);
-          if ($m > 0 && $m <= 1.01) $matchPercent = round($m * 100);
-          elseif ($m > 0 && $m <= 5.0) $matchPercent = round($m * 20);
-          else $matchPercent = round($m);
-      }
-    @endphp
-
-    <!-- Job card for selected job -->
-    <div class="bg-white shadow-md rounded-xl p-6 border">
-      <div class="flex justify-between items-start mb-4">
-        <div class="flex items-center space-x-3">
-          <img src="{{ asset('image/nameofjob.png') }}" alt="Job Icon" class="w-8 h-8">
-          <h3 class="text-xl font-semibold text-gray-800">{{ $jobTitle }}</h3>
-          <button class="text-blue-600 hover:text-blue-800">🔊</button>
-        </div>
-        <div class="flex items-center gap-4">
-          <span class="text-sm bg-green-100 text-green-700 px-3 py-1 rounded-full font-medium">{{ $matchPercent !== null ? ($matchPercent . '% Match for You') : 'Matched' }}</span>
-          <span class="text-sm bg-green-200 text-green-700 px-3 py-1 rounded-full font-medium mt-1">{{ $matchPercent !== null && $matchPercent >= 75 ? 'Excellent Match' : ($matchPercent !== null && $matchPercent >= 50 ? 'Good Match' : 'Potential Match') }}</span>
-        </div>
-      </div>
-
-      <!-- Why this Job Match -->
-      <h4 class="text-lg font-semibold text-gray-800 mb-2">Why this Job Matches You</h4>
-      @php $whySentence = $job['why_sentence'] ?? null; @endphp
-      @if($whySentence)
-        <div class="text-sm text-gray-700 italic mb-3">{{ $whySentence }}</div>
-      @endif
-      <div class="text-sm text-gray-700 mb-3">
-        @if($jobDescription)
-          <p>{{ $jobDescription }}</p>
-        @else
-          <p>This job was recommended because it aligns with your skills and preferences.</p>
-        @endif
-      </div>
-      <ul class="list-disc ml-6 text-sm space-y-3">
-        @if(!empty($jobSkills))
-          @foreach(array_slice($jobSkills,0,6) as $s)
-            <li>{{ $s }} <span class="block text-gray-500 italic text-xs">(This skill matches your profile)</span></li>
-          @endforeach
-        @else
-          <li>We didn't find explicit required skills in the job listing — the recommendation algorithm matched this job based on related skills and interests.</li>
-        @endif
-      </ul>
-    </div>
-
-    <!-- What is this Job Card -->
-    <div class="bg-white shadow-md rounded-xl p-6 border">
-      <div class="flex items-center mb-3 space-x-2">
-        <img src="{{ asset('image/whatisthisjob.png') }}" alt="Info" class="w-6 h-6">
-        <h4 class="text-lg font-semibold text-gray-800">What is this Job?</h4>
-        <span class="text-sm text-gray-500 italic">(Ano ang Trabahong Ito?)</span>
-        <button class="text-blue-600 hover:text-blue-800">🔊</button>
-      </div>
-
-      <p class="text-sm text-gray-700 mb-2">
-        A Kitchen Helper works in a restaurant kitchen to keep everything clean, organized, and running smoothly!
-      </p>
-      <p class="text-xs italic text-gray-500 mb-4">(Ang Katulong sa Kusina ay nagtatrabaho sa kusina ng restawran upang mapanatiling malinis, maayos, at maayos ang takbo ng lahat.)</p>
-
-      <p class="text-sm text-gray-700">
-        This is a perfect job if you like working with your hands, following clear steps, and being part of a busy team. You’ll work in a supportive environment where everyone helps each other, and you’ll learn new skills every day.
-      </p>
-      <p class="text-xs italic text-gray-500">
-        (Ito ay perpektong trabaho kung mahilig kang gumamit ng iyong mga kamay, sumusunod sa malinaw na mga hakbang, at gustong maging bahagi ng isang abalang grupo. Magtatrabaho ka sa isang lugar kung saan lahat ay nagtutulungan, at matututo ka ng mga bagong kasanayan araw-araw.)
-      </p>
-    </div>
-
-    <!-- Possible You will do this Job Card -->
-    <div class="bg-white shadow-md rounded-xl p-6 border">
-      <div class="flex items-center mb-3 space-x-2">
-        <img src="{{ asset('image/checkmark.png') }}" alt="Check" class="w-6 h-6">
-        <h4 class="text-lg font-semibold text-gray-800">Possible You will do this Job</h4>
-        <span class="text-sm text-gray-500 italic">(Mga Posibleng Gawin sa Trabahong Ito)</span>
-        <button class="text-blue-600 hover:text-blue-800">🔊</button>
-      </div>
-
-      <ul class="list-disc ml-6 text-sm space-y-3">
-        <li>
-          <span class="font-semibold">Wash Dishes and Utensils:</span> Clean pots, pans, plates, and cooking tools using a dishwasher and by hand.
-          <span class="block text-gray-500 italic text-xs">(Hugasan ang Pinggan at Kagamitan: Linisin ang mga kaldero, kawali, plato, at mga gamit sa pagluluto gamit ang dishwasher at sa pamamagitan ng kamay.)</span>
-        </li>
-        <li>
-          <span class="font-semibold">Prepare Simple Ingredients:</span> Wash, peel, and help get ingredients ready for cooking.
-          <span class="block text-gray-500 italic text-xs">(Maghanda ng Simpleng Sangkap: Hugasan, balatan, at tumulong sa paghahanda ng mga sangkap para sa pagluluto.)</span>
-        </li>
-        <li>
-          <span class="font-semibold">Keep Kitchen Clean:</span> Sweep and mop floors, wipe counters, and take out garbage to keep the kitchen sparkling clean.
-          <span class="block text-gray-500 italic text-xs">(Panatilihing Malinis ang Kusina: Walisin at mopahin ang sahig, punasan ang counter, at itapon ang basura upang manatiling maaliwalas at malinis ang kusina.)</span>
-        </li>
-        <li>
-          <span class="font-semibold">Organize Supplies:</span> Put away clean dishes, stock shelves, and help keep storage areas neat and organized.
-          <span class="block text-gray-500 italic text-xs">(Ayusin ang mga Supply: Ibalik ang malilinis na pinggan, lagyan ng laman ang mga estante, at tumulong na panatilihing maayos at organisado ang mga lugar ng imbakan.)</span>
-        </li>
-        <li>
-          <span class="font-semibold">Help the Cooks:</span> Bring ingredients to the cooks when they need them and help with simple food prepare tasks.
-          <span class="block text-gray-500 italic text-xs">(Tumulong sa mga Cook: Dalhin ang mga sangkap sa mga cook kapag kailangan nila at tumulong sa mga simpleng gawain sa paghahanda ng pagkain.)</span>
-        </li>
-      </ul>
-
-      <!-- Illustrations -->
-      <div class="flex justify-center gap-4 mt-6 flex-wrap">
-        <img src="{{ asset('image/kitchenwork1.png') }}" alt="Kitchen Work 1" class="w-40 rounded-lg border">
-        <img src="{{ asset('image/kitchenwork2.png') }}" alt="Kitchen Work 2" class="w-40 rounded-lg border">
-        <img src="{{ asset('image/kitchenwork3.png') }}" alt="Kitchen Work 3" class="w-40 rounded-lg border">
-        <img src="{{ asset('image/kitchenwork4.png') }}" alt="Kitchen Work 4" class="w-40 rounded-lg border">
-      </div>
-    </div>
-  </section>
+<!-- Back Button -->
+<div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
+  <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
+    <a href="/jobmatches"
+      class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
+        stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>Back to Jobs</span>
+    </a>
+  </div>
 </div>
+
+<!-- Hero Section -->
+<section class="bg-pink-400 flex flex-col items-center justify-center py-20 px-6 sm:px-12 lg:px-20">
+  <div class="container mx-auto px-6">
+    <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-10 max-w-5xl w-full">
+      
+      <!-- Icon -->
+      <div class="flex-shrink-0 flex justify-center">
+        <img src="{{ asset('image/brain.png') }}" alt="Brain Icon" class="w-24 h-24 md:w-28 md:h-28">
+      </div>
+
+      <!-- Text -->
+      <div class="flex flex-col items-center lg:items-start">
+        <h2 class="text-4xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E40AF] drop-shadow-md">
+          Why This Job Match You?
+        </h2>
+        <p class="text-lg sm:text-xl text-black mt-4 leading-relaxed max-w-3xl">
+          Discover how your unique skills and interests align with this job role.<br>
+          Learn the step-by-step path to achieve your aspirations.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- Main Content Container -->
+<section class="max-w-8xl mx-auto mt-10 mb-20 px-8 space-y-10">
+
+  @php
+    $job = $job ?? null;
+    $jobTitle = $job['assoc']['title'] ?? ($job['assoc']['job_title'] ?? 'Untitled Job');
+    $company = $job['assoc']['company'] ?? '';
+    $jobDescription = $job['job_description'] ?? '';
+    $jobSkills = is_array($job['assoc']['skills'] ?? null) ? $job['assoc']['skills'] : (is_array($job['skills'] ?? null) ? $job['skills'] : []);
+    $matchPercent = null;
+    if (isset($job['match_score']) && is_numeric($job['match_score'])) {
+        $m = floatval($job['match_score']);
+        if ($m > 0 && $m <= 1.01) $matchPercent = round($m * 100);
+        elseif ($m > 0 && $m <= 5.0) $matchPercent = round($m * 20);
+        else $matchPercent = round($m);
+    }
+  @endphp
+
+  <!-- Job card for selected job -->
+  <div class="bg-yellow-100 border-4 border-yellow-300 rounded-3xl shadow-lg p-8 space-y-4 transition hover:shadow-2xl">
+    <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
+      <div class="flex items-center space-x-4">
+        <img src="{{ asset('image/nameofjob.png') }}" alt="Job Icon" class="w-12 h-12">
+        <h3 class="text-3xl font-extrabold text-blue-900">{{ $jobTitle }}</h3>
+      </div>
+      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+        <span class="text-lg bg-green-200 text-green-900 px-4 py-1 rounded-full font-semibold shadow">
+          {{ $matchPercent !== null ? ($matchPercent . '% Match for You') : 'Matched' }}
+        </span>
+        <span class="text-lg bg-green-300 text-green-900 px-4 py-1 rounded-full font-semibold shadow">
+          {{ $matchPercent !== null && $matchPercent >= 75 ? 'Excellent Match' : ($matchPercent !== null && $matchPercent >= 50 ? 'Good Match' : 'Potential Match') }}
+        </span>
+      </div>
+    </div>
+
+    <h4 class="text-2xl font-bold text-blue-900 mt-4">Why this Job Matches You 💡</h4>
+    @php $whySentence = $job['why_sentence'] ?? null; @endphp
+    @if($whySentence)
+      <div class="text-lg text-gray-800 italic mb-3">{{ $whySentence }}</div>
+    @endif
+
+    <div class="bg-white rounded-2xl p-4 border-2 border-blue-100 text-lg text-gray-800">
+      @if($jobDescription)
+        <p>{{ $jobDescription }}</p>
+      @else
+        <p>This job was recommended because it aligns with your skills and preferences.</p>
+      @endif
+    </div>
+
+    <ul class="list-disc ml-6 text-lg space-y-3 text-gray-800 mt-4">
+      @if(!empty($jobSkills))
+        @foreach(array_slice($jobSkills,0,6) as $s)
+          <li><strong>{{ $s }}</strong>
+            <span class="block text-gray-600 italic text-base">(This skill matches your profile)</span>
+          </li>
+        @endforeach
+      @else
+        <li>We didn't find explicit required skills in the job listing — the recommendation algorithm matched this job based on related skills and interests.</li>
+      @endif
+    </ul>
+  </div>
+
+  <!-- What is this Job Card (Matched to Possible Section Size) -->
+<div class="bg-blue-100 border-4 border-blue-300 rounded-3xl shadow-lg p-12 transition hover:shadow-2xl hover:scale-[1.015] duration-300">
+  <div class="flex flex-col sm:flex-row sm:items-center mb-8 space-y-3 sm:space-y-0 sm:space-x-5">
+    <img src="{{ asset('image/whatisthisjob.png') }}" alt="Info" class="w-14 h-14">
+    <div>
+      <h4 class="text-4xl font-extrabold text-blue-900">What is this Job?</h4>
+      <span class="text-xl text-gray-700 italic block mt-2">(Ano ang Trabahong Ito?)</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-3xl border-2 border-blue-200 p-10 text-xl text-gray-800 leading-relaxed shadow-inner">
+    <p class="text-blue-900 font-medium text-2xl mb-4">Job Overview</p>
+    <p>
+      A <strong>Kitchen Helper</strong> works in a restaurant kitchen to keep everything clean, organized, and running smoothly! 
+      They support cooks, maintain cleanliness, and ensure food preparation areas are ready for use.
+    </p>
+    <p class="text-gray-600 italic mt-3">
+      (Ang <strong>Katulong sa Kusina</strong> ay nagtatrabaho sa kusina ng restawran upang mapanatiling malinis, maayos, at maayos ang takbo ng lahat. 
+      Sila ay sumusuporta sa mga cook, naglilinis, at naghahanda ng mga lugar para sa pagluluto.)
+    </p>
+
+    <hr class="my-8 border-blue-200">
+
+    <p class="text-blue-900 font-medium text-2xl mb-4">Ideal for You If...</p>
+    <p>
+      This is a perfect job if you enjoy working with your hands, following clear steps, and being part of a busy, cooperative team. 
+      You’ll gain experience, develop practical skills, and grow in a supportive kitchen environment.
+    </p>
+    <p class="text-gray-600 italic mt-3">
+      (Ito ay perpektong trabaho kung mahilig kang gumamit ng iyong mga kamay, sumusunod sa malinaw na mga hakbang, 
+      at gustong maging bahagi ng isang abalang grupo. Matututo ka ng mga bagong kasanayan araw-araw sa isang kapaligirang nagtutulungan.)
+    </p>
+  </div>
+</div>
+
+  <!-- Possible You Will Do in this Job -->
+<div class="bg-green-100 border-4 border-green-300 rounded-3xl shadow-xl p-12 transition hover:shadow-2xl hover:scale-[1.015] duration-300">
+  <div class="flex flex-col sm:flex-row sm:items-center mb-8 space-y-3 sm:space-y-0 sm:space-x-5">
+    <img src="{{ asset('image/checkmark.png') }}" alt="Check" class="w-14 h-14">
+    <div>
+      <h4 class="text-4xl font-extrabold text-green-900">Possible You Will Do in this Job</h4>
+      <span class="text-xl text-gray-700 italic block">(Mga Posibleng Gawin sa Trabahong Ito)</span>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-3xl border-2 border-green-200 p-10 text-xl text-gray-800 leading-relaxed shadow-inner">
+    <p class="text-green-900 font-semibold text-2xl mb-6">🧾 Sample Preview Tasks</p>
+
+    <ul class="list-disc ml-6 space-y-6">
+      <li>
+        <strong>Assist with Daily Tasks:</strong> Help in preparing, cleaning, and organizing the workspace.
+        <span class="block text-gray-600 italic text-base">(Halimbawa: Tumulong sa paghahanda, paglilinis, at pag-aayos ng lugar ng trabaho.)</span>
+      </li>
+      <li>
+        <strong>Support the Team:</strong> Work with other staff to ensure smooth and efficient operations.
+        <span class="block text-gray-600 italic text-base">(Halimbawa: Makipagtulungan sa mga kasamahan para sa maayos na daloy ng trabaho.)</span>
+      </li>
+      <li>
+        <strong>Maintain Equipment:</strong> Ensure tools, utensils, and materials are in good condition.
+        <span class="block text-gray-600 italic text-base">(Halimbawa: Siguraduhing maayos ang mga gamit at kagamitan bago at matapos gamitin.)</span>
+      </li>
+      <li>
+        <strong>Follow Safety Procedures:</strong> Apply safety and hygiene practices while working.
+        <span class="block text-gray-600 italic text-base">(Halimbawa: Sundin ang mga patakaran sa kaligtasan at kalinisan.)</span>
+      </li>
+    </ul>
+
+    <div class="mt-10 text-center">
+      <p class="text-gray-700 italic text-base">*This is a sample preview only — actual tasks will be provided by experts.*</p>
+    </div>
+  </div>
+
+  <!-- Images -->
+  <div class="flex justify-center gap-8 mt-12 flex-wrap">
+    <!-- Placeholder with icon -->
+    <div class="w-64 h-64 rounded-3xl border-2 border-green-300 shadow-lg bg-gradient-to-br from-green-200 to-green-100 flex flex-col items-center justify-center text-green-800 font-semibold text-center space-y-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-green-700 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 15l-5-5L5 21" />
+      </svg>
+      <span class="text-lg">Image 1</span>
+    </div>
+
+    <div class="w-64 h-64 rounded-3xl border-2 border-green-300 shadow-lg bg-gradient-to-br from-green-200 to-green-100 flex flex-col items-center justify-center text-green-800 font-semibold text-center space-y-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-green-700 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 15l-5-5L5 21" />
+      </svg>
+      <span class="text-lg">Image 2</span>
+    </div>
+
+    <div class="w-64 h-64 rounded-3xl border-2 border-green-300 shadow-lg bg-gradient-to-br from-green-200 to-green-100 flex flex-col items-center justify-center text-green-800 font-semibold text-center space-y-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-green-700 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 15l-5-5L5 21" />
+      </svg>
+      <span class="text-lg">Image 3</span>
+    </div>
+
+      <div class="w-64 h-64 rounded-3xl border-2 border-green-300 shadow-lg bg-gradient-to-br from-green-200 to-green-100 flex flex-col items-center justify-center text-green-800 font-semibold text-center space-y-3">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-green-700 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 15l-5-5L5 21" />
+      </svg>
+      <span class="text-lg">Image 4</span>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- BACK TO TOP BUTTON -->
+<button id="backToTopBtn"
+  class="hidden fixed bottom-8 right-8 bg-[#1E40AF] text-white px-6 py-4 rounded-full shadow-xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110 flex items-center gap-3 text-2xl font-semibold"
+  onclick="scrollToTop()" aria-label="Back to top">
+  <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
+    stroke="currentColor" stroke-width="3">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+  </svg>
+  <span>Back to Top</span>
+</button>
+
+
+<script>
+       // Show/hide the Back to Top button
+      const backToTopBtn = document.getElementById("backToTopBtn");
+         window.addEventListener("scroll", () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.classList.remove("hidden");
+                } else {
+                backToTopBtn.classList.add("hidden");
+                }
+              });
+
+        // Smooth scroll to top
+            function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+  </script>
+
+
 
 <script type="module">
   (async function(){

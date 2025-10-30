@@ -2,98 +2,132 @@
 
 @section('content')
 
-    {{-- Main Content --}}
-    <main class="px-8 py-8 max-w-4xl mx-auto">
-        <h2 class="text-2xl font-semibold mb-6">The Navigation Buttons</h2>
-
-        {{-- Green Info Box --}}
-        <div class="bg-green-100 border border-green-500 rounded-md p-5 mb-6">
-            <h3 class="font-semibold text-lg mb-2">What is the Navigation Buttons?</h3>
-            <p class="text-gray-700 text-sm leading-relaxed">
-                The navigation buttons is the color blue bar at the top of the page. It helps you move around the website and find different pages quickly!
-            </p>
-        </div>
-
-        {{--Kindly add image nlang mga beh--}}
-        {{-- Navigation Card 1 --}}
-        <a href="{{ route('job.matches') }}" class="block">
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
-            <div class="bg-orange-200 p-3 rounded-md">
-                <img src="{{ asset('image/bagicon.png') }}" class="w-10 h-10" alt="">
-            </div>
-            <div class="ml-4">
-                <h4 class="text-blue-600 font-semibold">Job Matches</h4>
-                <p class="text-sm text-gray-700">Click here to see jobs that are perfect for you! This page shows jobs that match your skills and interests.</p>
-                <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
-            </div>
-        </div>
-        </a>
-
-        {{-- Navigation Card 2 --}}
-        <a href="{{ route('career.goals.progress') }}" class="block">
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
-            <div class="bg-red-200 p-3 rounded-md">
-                <img src="{{ asset('image/targeticon.png') }}" class="w-10 h-10" alt="">
-            </div>
-            <div class="ml-4">
-                <h4 class="text-blue-600 font-semibold">Goals and Progress</h4>
-                <p class="text-sm text-gray-700">See your goals and track how you're doing! This page shows what you want to achieve and how close you are to reaching your goals.</p>
-                <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
-            </div>
-        </div>
-        </a>
-
-        {{-- Navigation Card 3 --}}
-        <a href="{{ route('why.this.job.1') }}" class="block">
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
-            <div class="bg-pink-200 p-3 rounded-md">
-                <img src="{{ asset('image/brain.png') }}" class="w-10 h-10" alt="">
-            </div>
-            <div class="ml-4">
-                <h4 class="text-blue-600 font-semibold">Why This Job & How to Get There</h4>
-                <p class="text-sm text-gray-700">This button explains why a job is a good match for you. It shows you what skills you already have, what you can learn, and gives you a plan to prepare for the job.</p>
-                <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
-            </div>
-        </div>
-        </a>
-
-        {{-- Navigation Card 4 --}}
-    <a href="{{ route('guardianreview.pending') }}" class="block">
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-4 items-center hover:shadow-md transition">
-            <div class="bg-blue-200 p-3 rounded-md">
-                <img src="{{ asset('image/shieldicon.png') }}" class="w-10 h-10" alt="">
-            </div>
-            <div class="ml-4">
-                <h4 class="text-blue-600 font-semibold">Guardian Review</h4>
-                <p class="text-sm text-gray-700">A page for your parent, guardian, or helper to see your progress and help you with your job search.</p>
-                <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
-            </div>
-        </div>
-        </a>
-
-        {{-- Navigation Card 5 --}}
-        <a href="{{ route('user.role') }}" class="block">
-        <div class="bg-blue-50 rounded-lg flex p-5 mb-8 items-center hover:shadow-md transition">
-            <div class="bg-purple-200 p-3 rounded-md">
-                <img src="{{ asset('image/profileicon.png') }}" class="w-10 h-10" alt="">
-            </div>
-            <div class="ml-4">
-                <h4 class="text-blue-600 font-semibold">Profile</h4>
-                <p class="text-sm text-gray-700">This button shows your name and picture. Click it to see more options!</p>
-                <p class="text-xs text-gray-400 mt-1">(tagalog)</p>
-            </div>
-        </div>
-        </a>
-
-        {{-- Back Button --}}
-        <div class="flex justify-start">
-            <a href="{{ route('home') }}" class="flex items-center space-x-2 bg-sky-500 hover:bg-sky-600 text-white px-6 py-2 rounded-lg shadow-md">
-                <span class="text-lg">←</span>
-                <span>Back</span>
-            </a>
-        </div>
-    </main>
+<!-- Back Button -->
+<div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
+  <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
+    <a href="/jobmatches"
+      class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
+        stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>Back to Jobs</span>
+    </a>
+  </div>
 </div>
+
+<main class="px-8 sm:px-12 py-10 max-w-7xl mx-auto">
+
+  <!-- Title -->
+  <h2 class="text-4xl font-bold text-center text-[#1E40AF] mb-8">
+    🧭 The Navigation Buttons
+  </h2>
+  <p class="text-center text-lg text-gray-700 mb-10">
+    These buttons help you move around the website easily.  
+    <span class="block text-gray-600 italic text-base mt-1">
+      (Ang mga pindutan na ito ay tutulong sa’yo na makalibot sa website nang madali.)
+    </span>
+  </p>
+
+  <!-- Info Box -->
+  <div class="bg-green-100 border-4 border-green-400 rounded-3xl p-6 mb-10 text-center shadow-md">
+    <h3 class="font-bold text-2xl text-green-800 mb-3">
+      💡 What is the Navigation Bar?
+    </h3>
+    <p class="text-gray-800 text-lg leading-relaxed">
+      It’s the blue bar at the top of the page that helps you go to different parts of the website.
+    </p>
+    <p class="text-gray-700 text-base italic mt-2">
+      (Ito ang asul na bar sa itaas ng pahina na tumutulong sa’yo pumunta sa iba’t ibang bahagi ng website.)
+    </p>
+  </div>
+
+
+<!-- NAVIGATION CARDS -->
+<div class="grid md:grid-cols-2 gap-10 justify-center items-stretch">
+
+  <!-- Card 1: Job Matches -->
+  <a href="{{ route('job.matches') }}" class="block h-full">
+    <div class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
+      <div class="flex items-center gap-5">
+        <div class="bg-orange-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <img src="{{ asset('image/bagicon.png') }}" class="w-14 h-14" alt="">
+        </div>
+        <div>
+          <h4 class="text-[#1E3A8A] font-bold text-2xl">Jobs</h4>
+          <p class="text-gray-700 text-lg mt-2">Click here to see jobs perfect for you — matched to your skills and interests.</p>
+          <p class="text-gray-600 italic text-base mt-1">(Pindutin ito upang makita ang mga trabahong akma sa iyong kakayahan at interes.)</p>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- Card 2: Saved Jobs -->
+  <a href="/" class="block h-full">
+    <div class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
+      <div class="flex items-center gap-5">
+        <div class="bg-yellow-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <img src="{{ asset('image/savedicon.png') }}" class="w-14 h-14" alt="Saved Jobs Icon">
+        </div>
+        <div>
+          <h4 class="text-[#1E3A8A] font-bold text-2xl">Saved Jobs</h4>
+          <p class="text-gray-700 text-lg mt-2">Click here to view all the jobs you liked or saved for later.</p>
+          <p class="text-gray-600 italic text-base mt-1">(Pindutin ito upang tingnan ang lahat ng trabahong iyong nagustuhan o in-save para balikan sa susunod.)</p>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- Card 3: Goals and Progress -->
+  <a href="#" class="block h-full">
+    <div class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
+      <div class="flex items-center gap-5">
+        <div class="bg-red-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <img src="{{ asset('image/targeticon.png') }}" class="w-14 h-14" alt="">
+        </div>
+        <div>
+          <h4 class="text-[#1E3A8A] font-bold text-2xl">Goals and Progress</h4>
+          <p class="text-gray-700 text-lg mt-2">Click here to see your goals and how close you are to reaching them!</p>
+          <p class="text-gray-600 italic text-base mt-1">(Pinduting ito upang tingnan ang iyong mga layunin at kung gaano kalapit ka sa pag-abot ng mga ito!)</p>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- Card 4: Why This Job -->
+  <a href="#" class="block h-full">
+    <div class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
+      <div class="flex items-center gap-5">
+        <div class="bg-pink-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <img src="{{ asset('image/brain.png') }}" class="w-14 h-14" alt="">
+        </div>
+        <div>
+          <h4 class="text-[#1E3A8A] font-bold text-2xl">Why This Job & How to Get There</h4>
+          <p class="text-gray-700 text-lg mt-2">Click here to learn why this job fits you and what steps can help you prepare for it.</p>
+          <p class="text-gray-600 italic text-base mt-1">(Pindutin ito upang alamin kung bakit ang trabahong ito ay akma sa iyo at kung ano ang mga hakbang na makakatulong upang mapaghandaan ito.)</p>
+        </div>
+      </div>
+    </div>
+  </a>
+
+  <!-- Card 5: Profile -->
+  <a href="#" class="block h-full">
+    <div class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
+      <div class="flex items-center gap-5">
+        <div class="bg-purple-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
+          <img src="{{ asset('image/profileicon.png') }}" class="w-14 h-14" alt="">
+        </div>
+        <div>
+          <h4 class="text-[#1E3A8A] font-bold text-2xl">Profile</h4>
+          <p class="text-gray-700 text-lg mt-2">Click here to view your name, picture, and personal information easily here.</p>
+          <p class="text-gray-600 italic text-base mt-1">(Pindutin upang makita dito ang iyong pangalan, larawan, at iba pang impormasyon tungkol sa iyo.)</p>
+        </div>
+      </div>
+    </div>
+  </a>
+</div>
+</main>
+
 
 
 @endsection

@@ -7,97 +7,124 @@
   <title>MyVerySpecialGuide</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-white text-gray-900 font-sans">
 
-  <!-- Header -->
-  <header class="p-6 border-b border-gray-100">
-    <div class="flex flex-col md:flex-row md:items-center md:justify-between">
-      
-      <!-- Left: Logo and Title + Hamburger -->
-      <div class="flex items-center justify-between w-full md:w-auto">
-        <div class="flex items-center space-x-3">
-          <img src="{{ asset('image/logo.png') }}" alt="Logo" class="w-16 h-16 object-contain">
-          <h1 class="text-2xl sm:text-3xl font-extrabold text-blue-800 truncate">
-            MyVerySpecialGuide
-          </h1>
-        </div>
+<body class="bg-white font-sans text-gray-900">
 
-        <!-- Hamburger Button (Mobile) -->
-        <button id="menuButton"
-                class="ml-3 md:hidden flex-shrink-0 text-blue-800 hover:text-blue-600 focus:outline-none">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M4 6h16M4 12h16M4 18h16"/>
-          </svg>
-        </button>
+  <!-- HEADER -->
+  <header class="w-full bg-white border-b border-gray-200 shadow-sm px-6 sm:px-10 py-5">
+    <div class="flex flex-wrap items-center justify-between gap-4 w-full">
+
+      <!-- Logo and Title -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        <img src="{{ asset('image/logo.png') }}" alt="Logo" class="w-12 sm:w-14 h-12 sm:h-14 object-contain">
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-blue-800 whitespace-nowrap">
+          MyVerySpecialGuide
+        </h1>
       </div>
 
-      <!-- Right: Profile button -->
-      <div class="relative mt-4 md:mt-0 text-center md:text-right">
-        <button id="profileButton"
-                class="px-8 py-4 border-2 border-blue-600 rounded-2xl text-lg font-semibold flex items-center justify-center gap-2 mx-auto md:mx-0 hover:bg-blue-50 transition">
-          Profile
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
-               viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
+      <!-- Mobile Menu Toggle -->
+      <button id="menuToggle"
+        class="sm:hidden text-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-400 rounded-lg p-2 ml-auto"
+        aria-label="Toggle navigation menu">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24"
+          stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
 
-        <!-- Dropdown Menu -->
-        <div id="dropdownMenu"
-             class="hidden absolute right-0 mt-2 w-40 bg-white border border-blue-600 rounded-xl shadow-lg z-10 text-left">
-          <a href="{{ route('user.role') }}" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-right">View Profile</a>
-          <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-right">Settings</a>
-          {{-- Logout via POST to avoid CSRF issues; falls back to JS submit when link clicked --}}
-          <form method="POST" action="{{ route('logout') }}" class="m-0">
-            @csrf
-            {{-- Use same look as other dropdown links so color/position match --}}
-            <button type="submit" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 w-full text-right">Logout</button>
-          </form>
+      <!-- DESKTOP NAVIGATION -->
+      <div id="navContainer"
+        class="hidden sm:flex flex-wrap items-center justify-end gap-4 flex-1 text-center">
+
+        <nav id="navMenu" class="flex flex-wrap justify-center gap-3 sm:gap-4">
+          <a href="{{ route('job.matches') }}"
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
+            Jobs
+          </a>
+          <a href="#"
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
+            Saved Jobs
+          </a>
+          <a href="{{ route('career.goals.progress') }}"
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
+            Goals & Progress
+          </a>
+          <a href="{{ route('why.this.job.1') }}"
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
+            Why this Job 
+          </a>
+        </nav>
+
+        <!-- Profile Dropdown -->
+        <div class="relative">
+          <button id="profileButton"
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 flex items-center gap-2 transition">
+            Profile
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          <!-- Dropdown -->
+          <div id="dropdownMenu"
+            class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-md text-gray-700 z-20">
+            <a href="{{ route('user.role') }}"
+              class="block px-4 py-3 text-base hover:bg-blue-50 rounded-t-xl">View Profile</a>
+            {{-- Logout via POST to avoid CSRF issues; falls back to JS submit when link clicked --}}
+            <form method="POST" action="{{ route('logout') }}">
+              @csrf
+             {{-- Use same look as other dropdown links so color/position match --}}
+              <button type="submit"
+                class="w-full block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">Logout</button>
+            </form>
+          </div>
         </div>
+      </div>
+
+      <!-- MOBILE NAVIGATION -->
+      <div id="mobileNav" class="hidden w-full flex-col items-center mt-4 space-y-3 sm:hidden">
+        <a href="{{ route('job.matches') }}"
+          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Jobs</a>
+        <a href="#"
+          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Saved Jobs</a>
+        <a href="{{ route('career.goals.progress') }}"
+          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Goals & Progress</a>
+        <a href="{{ route('why.this.job.1') }}"
+          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Why this Job & How to Get there</a>
+
+        <button id="profileButtonMobile"
+          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 flex justify-center items-center gap-2 transition">
+          Profile
+        </button>
       </div>
     </div>
 
-    <!-- Navigation Bar -->
-    <nav id="menu" class="flex flex-col md:flex-row items-center justify-center gap-4 mt-6 hidden md:flex">
-      <a href="{{ route('job.matches') }}" class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
-        Jobs
-      </a>
-      <a href="{{ route('career.goals.progress') }}" class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
-        Goals & Progress
-      </a>
-      <a href="{{ route('why.this.job.1') }}" class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
-        Why this Job & How to Get there
-      </a>
-      <a href="{{ route('guardianreview.instructions') }}" class="px-10 py-5 border-2 border-blue-600 rounded-2xl text-xl font-semibold hover:bg-blue-50 transition">
-        Guardian Review
-      </a>
-    </nav>
+    <!-- Help Text -->
+    <div class="mt-8 text-center sm:text-left">
+      <p class="text-base sm:text-lg font-semibold">
+        <a href="#" class="underline text-blue-800 hover:text-blue-600">Click to know about the navigation bar</a>
+        <span class="text-gray-600 italic ml-1">(pindutin upang malaman ang tungkol sa navigation bar)</span>
+      </p>
+    </div>
   </header>
 
-  <!-- Info Text -->
-  <main class="text-center mt-10 px-4">
-    <p class="text-lg font-semibold">
-      <a href="#" class="underline text-black hover:text-blue-700">Click to know about the navigation bar</a>
-      <span class="text-gray-500">(pindutin upang malaman ang tungkol sa navigation bar)</span>
-    </p>
-  </main>
-
-  <!-- Page Content -->
+  <!-- CONTENT -->
   <main class="flex-grow w-full">
     @yield('content')
   </main>
 
-  <!-- JS for dropdown & mobile menu -->
+  <!-- JS -->
   <script>
     const profileButton = document.getElementById('profileButton');
     const dropdownMenu = document.getElementById('dropdownMenu');
-    const menuButton = document.getElementById('menuButton');
-    const menu = document.getElementById('menu');
+    const menuToggle = document.getElementById('menuToggle');
+    const mobileNav = document.getElementById('mobileNav');
+    const navLinks = document.querySelectorAll('.nav-link');
 
-    // Toggle Profile Dropdown
+    // Toggle dropdown
     profileButton.addEventListener('click', (e) => {
       e.stopPropagation();
       dropdownMenu.classList.toggle('hidden');
@@ -110,9 +137,21 @@
       }
     });
 
-    // Toggle Mobile Menu
-    menuButton.addEventListener('click', () => {
-      menu.classList.toggle('hidden');
+    // Toggle mobile menu
+    menuToggle.addEventListener('click', () => {
+      mobileNav.classList.toggle('hidden');
+    });
+
+    // Highlight active link
+    navLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        navLinks.forEach(l => {
+          l.classList.remove('bg-blue-700', 'text-white', 'font-bold');
+          l.classList.add('bg-white', 'text-gray-900');
+        });
+        link.classList.remove('bg-white', 'text-gray-900');
+        link.classList.add('bg-blue-700', 'text-white', 'font-bold');
+      });
     });
   </script>
 
