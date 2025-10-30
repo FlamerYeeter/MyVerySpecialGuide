@@ -37,44 +37,33 @@
       </p>
     </div>
 
-    <!-- Personal Information Section -->
+    <!-- Account Details -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-      <h3 class="text-[#2563EB] font-semibold border-b border-gray-200 pb-2 mb-4">Personal Information</h3>
+      <h3 class="text-[#2563EB] font-semibold border-b border-gray-200 pb-2 mb-4">Account Details</h3>
       <div class="grid grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-semibold mb-1">First Name <span class="text-red-500">*</span></label>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="First Name">
+          <label class="block text-sm font-semibold mb-1">Username <span class="text-red-500">*</span></label>
+          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Username">
         </div>
         <div>
-          <label class="block text-sm font-semibold mb-1">Last Name <span class="text-red-500">*</span></label>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Last Name">
+          <label class="block text-sm font-semibold mb-1">Password <span class="text-red-500">*</span></label>
+          <input type="password" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Password">
         </div>
         <div>
-          <label class="block text-sm font-semibold mb-1">Email <span class="text-red-500">*</span></label>
-          <input type="email" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Email">
+          <label class="block text-sm font-semibold mb-1">Confirm Password <span class="text-red-500">*</span></label>
+          <input type="password" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Confirm Password">
         </div>
         <div>
-          <label class="block text-sm font-semibold mb-1">Contact Number <span class="text-red-500">*</span></label>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="+63 9XX XXX XXXX">
+            <label class="block text-sm font-semibold mb-1">Valid ID Upload <span class="text-gray-600 text-xs">(for identity verification)</span></label>
+            <div class="flex items-center justify-between border border-blue-100 bg-red-50  rounded-md p-3">
+                <p class="text-sm text-gray-700">Upload Proof (JPG, PNG, or PDF)</p>
+                <label for="valid-id-upload" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-md font-medium flex items-center gap-2 cursor-pointer">
+                    <i class="fa-solid fa-folder-open"></i> Choose File
+                </label>
+                <input type="file" id="valid-id-upload" class="hidden">
+            </div>
         </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Date of Birth <span class="text-red-500">*</span></label>
-          <input type="date" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Gender <span class="text-red-500">*</span></label>
-          <select class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none">
-            <option value="">Gender</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Prefer not to say</option>
-          </select>
-        </div>
-        <div class="col-span-2">
-          <label class="block text-sm font-semibold mb-1">Complete Address <span class="text-red-500">*</span></label>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Address">
-        </div>
-      </div>
+    </div>
     </div>
 
     <!-- Company Information -->
@@ -116,34 +105,6 @@
     </div>
     </div>
 
-    <!-- Account Details -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-      <h3 class="text-[#2563EB] font-semibold border-b border-gray-200 pb-2 mb-4">Account Details</h3>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-semibold mb-1">Username <span class="text-red-500">*</span></label>
-          <input type="text" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Username">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Password <span class="text-red-500">*</span></label>
-          <input type="password" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Password">
-        </div>
-        <div>
-          <label class="block text-sm font-semibold mb-1">Confirm Password <span class="text-red-500">*</span></label>
-          <input type="password" class="w-full border border-gray-300 rounded-md p-2 text-sm bg-red-50 focus:ring-2 focus:ring-blue-300 focus:outline-none" placeholder="Confirm Password">
-        </div>
-        <div>
-            <label class="block text-sm font-semibold mb-1">Valid ID Upload <span class="text-gray-600 text-xs">(for identity verification)</span></label>
-            <div class="flex items-center justify-between border border-blue-100 bg-blue-50 rounded-md p-3">
-                <p class="text-sm text-gray-700">Upload Proof (JPG, PNG, or PDF)</p>
-                <label for="valid-id-upload" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-md font-medium flex items-center gap-2 cursor-pointer">
-                    <i class="fa-solid fa-folder-open"></i> Choose File
-                </label>
-                <input type="file" id="valid-id-upload" class="hidden">
-            </div>
-        </div>
-    </div>
-    </div>
 
     <!-- Privacy Agreement -->
     <div class="flex items-center gap-2 mb-6">
@@ -160,17 +121,5 @@
       </button>
     </div>
 
-    <!-- Next Step Section -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 text-center">
-      <h4 class="font-semibold text-gray-800 mb-2">NEXT STEP</h4>
-      <p class="text-sm text-gray-600 mb-4">
-        Check your email inbox for the approval confirmation message to proceed to the next step.
-      </p>
-      <hr class="my-4 border-gray-300">
-      <p class="text-sm text-gray-600">Didn’t receive confirmation? 
-        <a href="#" class="text-blue-600 font-medium">Resend</a>
-      </p>
-    </div>
-  </div>
 </body>
 </html>
