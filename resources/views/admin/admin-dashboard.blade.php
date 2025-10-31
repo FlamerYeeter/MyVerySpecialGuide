@@ -414,10 +414,7 @@
   <button
     type="button"
     onclick="toggleMenu(this)"
-    class="text-gray-500 hover:text-gray-700 focus:outline-none transition"
-  >
-    ⋮
-  </button>
+    class="text-gray-500 hover:text-gray-700 focus:outline-none transition">⋮</button>
 
   <div
     class="absolute hidden bg-white border rounded-lg shadow-md right-0 mt-2 w-28 z-10"
