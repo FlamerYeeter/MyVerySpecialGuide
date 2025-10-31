@@ -564,6 +564,21 @@
                             if (hintEl) hintEl.style.display = '';
                         });
                     })();
+
+                   window.addEventListener('load', () => {
+                    document.getElementById('first_name').value = '';
+                    document.getElementById('last_name').value = '';
+                    document.getElementById('age').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('phone').value = '';
+                    document.getElementById('address').value = '';
+                    document.getElementById('dsType').selectedIndex = 0;
+                    document.getElementById('guardian_first').value = '';
+                    document.getElementById('guardian_last').value = '';
+                    document.getElementById('guardian_email').value = '';
+                    document.getElementById('guardian_phone').value = '';
+                    document.getElementById('guardian_relationship').selectedIndex = 0;
+                });
                 </script>
 
             </div>
