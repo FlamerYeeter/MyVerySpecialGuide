@@ -39,26 +39,31 @@
                 <!-- Filter Dropdown (Industry) -->
                 <div class="relative w-full">
                     <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Industry</label>
-                    <select name="industry" 
+                    <select name="industry"
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
                         <option value="">Select Industry</option>
                         <option value="Healthcare" {{ request('industry') == 'Healthcare' ? 'selected' : '' }}>Healthcare
                         </option>
                         <option value="Retail" {{ request('industry') == 'Retail' ? 'selected' : '' }}>Retail
                         </option>
-                        <option value="Food Service" {{ request('industry') == 'Food Service' ? 'selected' : '' }}>Food Service
+                        <option value="Food Service" {{ request('industry') == 'Food Service' ? 'selected' : '' }}>Food
+                            Service
                         </option>
                         <option value="Education" {{ request('education') == 'Education' ? 'selected' : '' }}>Education
                         </option>
-                        <option value="Hospitality" {{ request('hospitality') == 'Hospitality' ? 'selected' : '' }}>Hospitality
+                        <option value="Hospitality" {{ request('hospitality') == 'Hospitality' ? 'selected' : '' }}>
+                            Hospitality
                         </option>
-                        <option value="Manufacturing" {{ request('industry') == 'Manufacturing' ? 'selected' : '' }}>Manufacturing
+                        <option value="Manufacturing" {{ request('industry') == 'Manufacturing' ? 'selected' : '' }}>
+                            Manufacturing
                         </option>
-                        <option value="Transportation" {{ request('industry') == 'Transportation' ? 'selected' : '' }}>Transportation
+                        <option value="Transportation" {{ request('industry') == 'Transportation' ? 'selected' : '' }}>
+                            Transportation
                         </option>
                         <option value="Cleaning" {{ request('industry') == 'Cleaning' ? 'selected' : '' }}>Cleaning</option>
                         <option value="Office" {{ request('office') == 'Office' ? 'selected' : '' }}>Office</option>
-                        <option value="Construction" {{ request('industry') == 'Construction' ? 'selected' : '' }}>Construction
+                        <option value="Construction" {{ request('industry') == 'Construction' ? 'selected' : '' }}>
+                            Construction
                         </option>
                         <option value="Creative"{{ request('creative') == 'Creative' ? 'selected' : '' }}>Creative</option>
                         <option value="Packing" {{ request('industry') == 'Packing' ? 'selected' : '' }}>Packing</option>
@@ -187,14 +192,14 @@
 
     <!-- Match Notice -->
     <!--
-        <div class="container mx-auto mt-6 px-4">
-            <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-lg">
-                <p class="text-gray-800 font-medium flex items-center">
-                    💡 These jobs match your skills and preferences!
-                </p>
-                <p class="italic text-sm text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)</p>
-            </div>
-    -->
+                        <div class="container mx-auto mt-6 px-4">
+                            <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-lg">
+                                <p class="text-gray-800 font-medium flex items-center">
+                                    💡 These jobs match your skills and preferences!
+                                </p>
+                                <p class="italic text-sm text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)</p>
+                            </div>
+                    -->
 
     @php
         // Try to load evaluation metrics from public/eval_metrics.json
@@ -462,6 +467,31 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         @endif --}}
 
 
+    <!-- Therapist Assessment Notice -->
+    <section
+        class="bg-gradient-to-r from-[#FFEDD5] to-[#FEF3C7] mx-6 sm:mx-12 lg:mx-20 rounded-2xl p-8 mt-8 shadow-lg border-l-8 border-[#F59E0B]">
+        <div class="flex items-start gap-6">
+            <div
+                class="flex items-center justify-center bg-[#FBBF24] text-white w-16 h-16 rounded-full text-3xl shadow-md">
+                🧑‍⚕️
+            </div>
+            <div class="text-gray-800">
+                <h2 class="text-2xl font-bold text-[#92400E]">Therapist Assessment Required</h2>
+                <p class="text-lg mt-2 leading-relaxed">
+                    Before you can apply for a job, you first need to complete a
+                    <span class="font-semibold text-[#B45309]">Therapist Assessment</span>.
+                    This helps our therapists understand your readiness, comfort level,
+                    and strengths for your chosen job. It ensures that every opportunity
+                    is the right fit — so you can work with confidence and joy.
+                </p>
+                <p class="text-base italic text-gray-700 mt-2">
+                    (Bago mag-apply sa trabaho, kailangan munang dumaan sa pagsusuri ng therapist
+                    upang malaman kung ikaw ay handa na at akma sa trabahong gusto mo.)
+                </p>
+            </div>
+        </div>
+    </section>
+
     <!-- Job Match Notice -->
     <section class="bg-[#10B981] text-white mx-6 sm:mx-12 lg:mx-20 rounded-2xl p-8 mt-8 shadow-lg">
         <div class="flex flex-col sm:flex-row justify-between items-center">
@@ -476,27 +506,35 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         </div>
     </section>
 
-    <!-- Job Card  -->
+    <!-- Job Card -->
     <section class="bg-[#F0F9FF] py-12 px-6 sm:px-12 lg:px-20">
         <div
-            class="bg-white border-2 border-blue-200 rounded-3xl shadow-lg p-10 mb-10 transition-transform hover:scale-[1.02]">
+            class="relative bg-white border-2 border-blue-200 rounded-3xl shadow-lg p-10 mb-10 transition-transform hover:scale-[1.02]">
 
             <!-- Top Section -->
             <div class="flex flex-col lg:flex-row justify-between items-start gap-8">
-
                 <!-- Company Info -->
                 <div class="flex items-start gap-6">
-                    <!-- Company Logo -->
-                    <div class="flex-shrink-0">
-                        @if (!empty($company->logo))
-                            <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
-                                class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover">
-                        @else
-                            <div
-                                class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
-                                <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
-                            </div>
-                        @endif
+                    <!-- Company Logo + Flag -->
+                    <div class="flex items-center gap-4">
+                        <!-- Flag beside Logo -->
+                        <button
+                            class="flag-btn text-gray-400 text-5xl focus:outline-none hover:text-red-500 transition-all duration-300">
+                            <i class="ri-flag-line"></i>
+                        </button>
+
+                        <!-- Company Logo -->
+                        <div class="flex-shrink-0">
+                            @if (!empty($company->logo))
+                                <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
+                                    class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover">
+                            @else
+                                <div
+                                    class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
+                                    <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
+                                </div>
+                            @endif
+                        </div>
                     </div>
 
                     <!-- Job Info -->
@@ -519,8 +557,8 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
                 <!-- Right: Match Info -->
                 <a href="#"
-                    class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap">
-                    Why this job matches you?
+                    class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">
+                    Why this job match you?
                 </a>
             </div>
 
@@ -543,45 +581,78 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     class="border border-[#2563EB] text-[#2563EB] text-lg px-5 py-2 rounded-md font-semibold">Full-Time</span>
                 <span class="border border-[#88BF02] text-[#88BF02] text-lg px-5 py-2 rounded-md font-semibold">Full
                     Support</span>
-                <span class="border border-[#F89596] text-[#F89596] text-lg px-5 py-2 rounded-md font-semibold">Excellent 
+                <span class="border border-[#F89596] text-[#F89596] text-lg px-5 py-2 rounded-md font-semibold">Excellent
                     Fit</span>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-end flex-wrap gap-4 mt-10">
+            <!-- Assessment Button -->
+            <div class="flex justify-end mt-10">
                 <button
-                    class="bg-[#55BEBB] text-white text-lg font-bold rounded-md px-10 py-3 hover:bg-[#47a4a1] transition">
+                    class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[480px] hover:bg-[#D78203] transition text-center">
+                    Apply for Therapist Assessment
+                </button>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end flex-wrap gap-4 mt-4">
+                <button
+                    class="bg-[#55BEBB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#47a4a1] transition">
                     Details
                 </button>
                 <button
-                    class="bg-[#2563EB] text-white text-lg font-bold rounded-md px-10 py-3 hover:bg-[#1e4fc5] transition">
+                    class="bg-[#2563EB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#1e4fc5] transition">
                     Apply
                 </button>
                 <button
-                    class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 hover:bg-[#006400] transition">
+                    class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">
                     Save
                 </button>
             </div>
         </div>
 
+        <!-- Instruction Section Wrapper -->
+        <div class="space-y-8">
 
-        <!-- Instruction & Saved Jobs Section -->
-        <section class="bg-[#F0F9FF] py-10 px-6 sm:px-12 lg:px-20 space-y-8">
-
-            <!-- Instruction Box -->
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-3xl border-l-8 border-blue-500 p-8 shadow-lg">
+            <!-- Apply Button Instruction  -->
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-3xl border-l-8 border-[#2563EB] p-8 shadow-lg">
                 <div class="flex items-start gap-4">
                     <div
-                        class="flex items-center justify-center bg-blue-500 text-white w-14 h-14 rounded-full text-2xl shadow-md">
+                        class="flex items-center justify-center bg-[#2563EB] text-white w-14 h-14 rounded-full text-2xl shadow-md">
+                        🧑‍⚕️
+                    </div>
+                    <div>
+                        <p class="text-xl text-gray-900 font-semibold leading-snug">
+                            The <span class="text-[#2563EB] font-bold">“Apply”</span> button will be available
+                            <span class="text-[#2563EB] font-bold">after your therapist confirms</span> that you are ready
+                            and fit for work.
+                        </p>
+                        <p class="text-base text-gray-700 italic mt-2">
+                            (Magiging available lamang ang <span class="font-semibold text-[#2563EB]">“Apply”</span> button
+                            kapag nakumpirma ng iyong therapist na ikaw ay handa na at akma sa trabaho.)
+                        </p>
+                        <p class="text-lg text-gray-800 mt-3 leading-relaxed">
+                            This helps make sure that you apply only for jobs that match your readiness, comfort, and
+                            abilities.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Details Instruction -->
+            <div
+                class="bg-gradient-to-r from-[#E0F7F6] to-[#C6F0EF] rounded-3xl border-l-8 border-[#55BEBB] p-8 shadow-lg">
+                <div class="flex items-start gap-4">
+                    <div
+                        class="flex items-center justify-center bg-[#55BEBB] text-white w-14 h-14 rounded-full text-2xl shadow-md">
                         💡
                     </div>
                     <div>
                         <p class="text-xl text-gray-900 font-semibold leading-snug">
-                            Click the <span class="text-blue-700 font-bold">“Details”</span> button to learn more about
+                            Click the <span class="text-[#55BEBB] font-bold">“Details”</span> button to learn more about
                             this job.
                         </p>
                         <p class="text-base text-gray-700 italic mt-2">
-                            (Pindutin ang <span class="font-semibold text-blue-700">“Details”</span> upang makita ang
+                            (Pindutin ang <span class="font-semibold text-[#55BEBB]">“Details”</span> upang makita ang
                             karagdagang impormasyon tungkol sa trabaho.)
                         </p>
                     </div>
@@ -610,118 +681,139 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             </div>
 
             <!-- Recommended Job Section -->
-            <section class="bg-[#E8F3FF] px-6 sm:px-12 lg:px-20 py-12 rounded-none">
+            <section class="bg-[#E8F3FF] px-14 sm:px-12 lg:px-20 py-12 rounded-none">
                 <h2 class="text-3xl font-bold text-[#1E3A8A] mb-2">Recommended Job</h2>
                 <p class="text-gray-600 mb-6 text-lg">
                     Recommended companies based on application history, preferences, and recent platform activity.
                 </p>
 
-   <!-- Job Card -->
-<div
-  class="bg-white border-2 border-blue-100 rounded-none shadow-lg p-8 flex flex-col lg:flex-row justify-between items-start gap-8 hover:scale-[1.01] transition-all">
+                <!-- Job Card -->
+                <div
+                    class="bg-white border-2 border-blue-100 rounded-none shadow-lg p-8 flex flex-col lg:flex-row justify-between items-start gap-8 hover:scale-[1.01] transition-all">
 
-  <!-- Left Side: Logo + Info -->
-  <div class="flex items-center gap-5 w-full lg:w-2/3">
-    <!-- Flag Button -->
-    <button id="flagJob" aria-label="Flag Job"
-      class="text-red-500 text-4xl font-bold focus:outline-none hover:text-red-700 transition-all duration-300">
-      <i class="ri-flag-fill"></i>
-    </button>
+                    <!-- Left Side: Logo + Info -->
+                    <div class="flex items-center gap-5 w-full lg:w-2/3">
 
-    <!-- Company Logo -->
-    <div class="flex-shrink-0">
-      @if (!empty($company->logo))
-        <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
-          class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover">
-      @else
-        <div
-          class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
-          <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
-        </div>
-      @endif
-    </div>
+                        <!-- Flag Button -->
+                        <button
+                            class="flag-btn text-gray-400 text-5xl font-bold focus:outline-none hover:text-red-500 transition-all duration-300">
+                            <i class="ri-flag-line"></i>
+                        </button>
 
-    <!-- Job Info -->
-    <div>
-      <h3 class="font-bold text-2xl text-gray-800">Shakey’s Service Crew</h3>
-      <p class="text-lg text-gray-600 mt-2">📍 Eastwood • Taguig City, PH</p>
+                        <!-- Company Logo -->
+                        <div class="flex-shrink-0">
+                            @if (!empty($company->logo))
+                                <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
+                                    class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover">
+                            @else
+                                <div
+                                    class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
+                                    <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
+                                </div>
+                            @endif
+                        </div>
 
-      <!-- Tags -->
-      <div class="flex flex-wrap gap-2 mt-2">
-        <span
-          class="border border-[#2563EB] text-[#2563EB] text-md px-4 py-2 rounded-md font-semibold">Full-Time</span>
-        <span
-          class="border border-[#88BF02] text-[#88BF02] text-md px-4 py-2 rounded-md font-semibold">Full
-          Support</span>
-        <span
-          class="border border-[#F89596] text-[#F89596] text-md px-4 py-2 rounded-md font-semibold">Excellent Fit</span>
-      </div>
-    </div>
-  </div>
+                        <!-- Job Info -->
+                        <div>
+                            <h3 class="font-bold text-2xl text-gray-800">Shakey’s Service Crew</h3>
+                            <p class="text-lg text-gray-600 mt-2">📍 Eastwood • Taguig City, PH</p>
 
-  <!-- Right Side: Buttons + Progress -->
-  <div class="flex flex-col items-center lg:items-end w-full lg:w-1/3 mt-4 lg:mt-0">
-    <!-- Buttons Row -->
-    <div class="flex gap-4 mb-4">
-      <button
-        class="bg-[#55BEBB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#399f96] transition-all">
-        Details
-      </button>
-      <button
-        class="bg-[#2563EB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#1b3999] transition-all">
-        Apply
-      </button>
-      <button
-        class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 hover:bg-[#006400] transition">
-        Save
-      </button>
-    </div>
+                            <!-- Tags -->
+                            <div class="flex flex-wrap gap-2 mt-2">
+                                <span
+                                    class="border border-[#2563EB] text-[#2563EB] text-md px-4 py-2 rounded-md font-semibold">Full-Time</span>
+                                <span
+                                    class="border border-[#88BF02] text-[#88BF02] text-md px-4 py-2 rounded-md font-semibold">Full
+                                    Support</span>
+                                <span
+                                    class="border border-[#F89596] text-[#F89596] text-md px-4 py-2 rounded-md font-semibold">Excellent
+                                    Fit</span>
+                            </div>
+                        </div>
+                    </div>
 
-    <!-- Progress Info -->
-    <div class="w-full sm:w-[350px]">
-      <div class="h-3 bg-gray-200 rounded-none overflow-hidden">
-        <div class="h-full bg-[#88BF02] w-1/2 rounded-none"></div>
-      </div>
-      <p class="text-sm text-gray-500 font-semibold mt-2 text-center lg:text-right">
-        <span class="font-semibold text-black">5 applied</span> of 10 capacity
-      </p>
-    </div>
-  </div>
-</div>
-</section>
+                    <!-- Right Side: Buttons + Progress -->
+                    <div class="flex flex-col items-center lg:items-end w-full lg:w-1/3 mt-4 lg:mt-0">
+
+                        <!-- Assessment Button -->
+                        <button
+                            class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[365px] mb-4 hover:bg-[#D78203] transition text-center">
+                            Apply for Therapist Assessment
+                        </button>
+
+                        <!-- Action Buttons -->
+                        <div class="flex gap-4 mb-4">
+                            <button
+                                class="bg-[#55BEBB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#399f96] transition-all w-[110px]">
+                                Details
+                            </button>
+                            <button
+                                class="bg-[#2563EB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#1b3999] transition-all w-[110px]">
+                                Apply
+                            </button>
+                            <button
+                                class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 hover:bg-[#006400] transition w-[110px]">
+                                Save
+                            </button>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="w-full sm:w-[350px]">
+                            <div class="h-3 bg-gray-200 rounded-none overflow-hidden">
+                                <div class="h-full bg-[#88BF02] w-1/2 rounded-none"></div>
+                            </div>
+                            <p class="text-sm text-gray-500 font-semibold mt-2 text-center lg:text-right">
+                                <span class="font-semibold text-black">5 applied</span> of 10 capacity
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
 
             <!-- BACK TO TOP BUTTON -->
             <button id="backToTopBtn"
                 class="hidden fixed bottom-8 right-8 bg-[#1E40AF] text-white px-6 py-4 rounded-full shadow-xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110 flex items-center gap-3 text-2xl font-semibold"
                 onclick="scrollToTop()" aria-label="Back to top">
 
-                <!-- Up Arrow Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor" stroke-width="3">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
                 </svg>
-
                 <span>Back to Top</span>
             </button>
 
-            <!-- Star Toggle Script -->
+
+            <!-- Flag Toggle Script -->
             <script>
-                const starButton = document.getElementById('likeStar');
-                let liked = false;
+                document.addEventListener("DOMContentLoaded", () => {
+                    const flagButtons = document.querySelectorAll(".flag-btn");
 
-                starButton.addEventListener('click', () => {
-                    liked = !liked;
-                    if (liked) {
-                        starButton.style.color = '#FFD700'; // filled yellow
-                        starButton.style.webkitTextStroke = '0px';
-                        starButton.style.textShadow = '0 0 8px rgba(255, 215, 0, 0.7)';
-                    } else {
-                        starButton.style.color = 'transparent'; // unfilled
-                        starButton.style.webkitTextStroke = '2px #FFD700'; // yellow outline
-                        starButton.style.textShadow = 'none';
+                    if (!flagButtons.length) {
+                        console.warn("⚠️ No .flag-btn elements found.");
+                        return;
                     }
-                });
 
+                    flagButtons.forEach((button) => {
+                        const icon = button.querySelector("i");
+
+                        button.addEventListener("click", () => {
+                            const isFlagged = icon.classList.contains("ri-flag-fill");
+
+                            // Toggle between outlined and filled flag icons
+                            icon.classList.toggle("ri-flag-fill", !isFlagged);
+                            icon.classList.toggle("ri-flag-line", isFlagged);
+
+                            // Toggle color
+                            button.classList.toggle("text-red-500", !isFlagged);
+                            button.classList.toggle("text-gray-400", isFlagged);
+                        });
+                    });
+                });
+            </script>
+
+            <!-- Back to Top Button Script -->
+            <script>
                 // Show/hide the Back to Top button
                 const backToTopBtn = document.getElementById("backToTopBtn");
                 window.addEventListener("scroll", () => {
@@ -740,7 +832,6 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     });
                 }
             </script>
-
 
 
 
@@ -964,7 +1055,8 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     <div class="bg-yellow-100 p-6 rounded-xl text-center text-gray-600">
                         <p class="mb-3">No personalized job recommendations found for your account.</p>
                         <p class="text-sm mb-4">This page displays per-user recommendations only (stored as
-                            <code>storage/app/reco_user_{uid}.json</code>).</p>
+                            <code>storage/app/reco_user_{uid}.json</code>).
+                        </p>
                         @auth
                             <button id="btn-generate-recs" class="bg-blue-500 text-white px-4 py-2 rounded">Generate
                                 recommendations now</button>
@@ -1145,202 +1237,202 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     </div>
                 @endif
             </div>
-            </div>
-            <!-- Ensure user is signed-in before taking actions like Apply or Save -->
-            <script src="{{ asset('js/firebase-config-global.js') }}"></script>
-            <script>
-                @auth
-                window.__SERVER_AUTH = true;
-                @else
-                    window.__SERVER_AUTH = false;
-                @endauth
-            </script>
-            <script type="module">
-                (async function() {
+        </div>
+        <!-- Ensure user is signed-in before taking actions like Apply or Save -->
+        <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+        <script>
+            @auth
+            window.__SERVER_AUTH = true;
+            @else
+                window.__SERVER_AUTH = false;
+            @endauth
+        </script>
+        <script type="module">
+            (async function() {
+                try {
+                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                    const logger = await import("{{ asset('js/client-logger.js') }}");
+                    // Attempt server-backed sign-in (makes Firebase ID token available to the page)
                     try {
-                        const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                        const logger = await import("{{ asset('js/client-logger.js') }}");
-                        // Attempt server-backed sign-in (makes Firebase ID token available to the page)
+                        await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                    } catch (e) {
+                        console.debug('job-matches signInWithServerToken failed', e);
                         try {
-                            await mod.signInWithServerToken("{{ route('firebase.token') }}");
-                        } catch (e) {
-                            console.debug('job-matches signInWithServerToken failed', e);
-                            try {
-                                logger.sendClientLog('debug', 'job-matches signInWithServerToken failed', {
-                                    error: String(e)
-                                });
-                            } catch (_) {}
-                        }
-                        const signed = await mod.isSignedIn(7000);
-                        console.debug('job-matches auth guard: isSignedIn ->', signed);
-                        if (!signed) {
-                            if (window.__SERVER_AUTH) {
-                                console.info('job-matches: server session present, not redirecting');
-                                try {
-                                    logger.sendClientLog('info', 'job-matches auth guard: server session present', {});
-                                } catch (_) {}
-                                return;
-                            }
-                            const current = window.location.pathname + window.location.search;
-                            try {
-                                logger.sendClientLog('info', 'job-matches auth guard: redirecting to login', {
-                                    redirect: current
-                                });
-                            } catch (_) {}
-                            window.location.href = 'login?redirect=' + encodeURIComponent(current);
-                            return;
-                        }
-                    } catch (err) {
-                        console.error('job-matches auth guard failed', err);
-                        try {
-                            (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error',
-                                'job-matches auth guard failed', {
-                                    error: String(err)
-                                });
+                            logger.sendClientLog('debug', 'job-matches signInWithServerToken failed', {
+                                error: String(e)
+                            });
                         } catch (_) {}
                     }
-                })();
+                    const signed = await mod.isSignedIn(7000);
+                    console.debug('job-matches auth guard: isSignedIn ->', signed);
+                    if (!signed) {
+                        if (window.__SERVER_AUTH) {
+                            console.info('job-matches: server session present, not redirecting');
+                            try {
+                                logger.sendClientLog('info', 'job-matches auth guard: server session present', {});
+                            } catch (_) {}
+                            return;
+                        }
+                        const current = window.location.pathname + window.location.search;
+                        try {
+                            logger.sendClientLog('info', 'job-matches auth guard: redirecting to login', {
+                                redirect: current
+                            });
+                        } catch (_) {}
+                        window.location.href = 'login?redirect=' + encodeURIComponent(current);
+                        return;
+                    }
+                } catch (err) {
+                    console.error('job-matches auth guard failed', err);
+                    try {
+                        (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error',
+                            'job-matches auth guard failed', {
+                                error: String(err)
+                            });
+                    } catch (_) {}
+                }
+            })();
 
-                // If server-side session exists but client Firebase profile is not present,
-                // trigger the recommendations generator on the server so users who are
-                // authenticated via backend still get per-user recs on page load.
+            // If server-side session exists but client Firebase profile is not present,
+            // trigger the recommendations generator on the server so users who are
+            // authenticated via backend still get per-user recs on page load.
+            (async function() {
+                try {
+                    if (!window.__SERVER_AUTH) return; // only when server session present
+                    // don't spam: set a short guard in sessionStorage per-page-load
+                    const key = 'reco_auto_trigger_' + window.location.pathname;
+                    if (sessionStorage.getItem(key)) return;
+                    sessionStorage.setItem(key, '1');
+                    window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {
+                        events: []
+                    };
+                    window.__HYBRID_RECO_DEBUG.events.push({
+                        when: Date.now(),
+                        ev: 'auto_trigger_via_server_session'
+                    });
+                    const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        },
+                        // request a forced synchronous generation when possible (dev-friendly)
+                        body: JSON.stringify({
+                            force: true
+                        })
+                    });
+                    window.__HYBRID_RECO_DEBUG.events.push({
+                        when: Date.now(),
+                        ev: 'auto_trigger_response',
+                        status: resp.status
+                    });
+                } catch (e) {
+                    console.debug('auto server-side reco trigger failed', e);
+                }
+            })();
+            @if (app()->environment('local') || request()->getHost() === 'localhost')
+                // In local environment, also trigger a bulk generation for all users so per-UID caches are created.
                 (async function() {
                     try {
-                        if (!window.__SERVER_AUTH) return; // only when server session present
-                        // don't spam: set a short guard in sessionStorage per-page-load
-                        const key = 'reco_auto_trigger_' + window.location.pathname;
-                        if (sessionStorage.getItem(key)) return;
-                        sessionStorage.setItem(key, '1');
-                        window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {
-                            events: []
-                        };
-                        window.__HYBRID_RECO_DEBUG.events.push({
-                            when: Date.now(),
-                            ev: 'auto_trigger_via_server_session'
-                        });
-                        const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+                        // Run bulk generation (restricted to local by server route). Do not block UI.
+                        fetch('{{ url('/api/recommendations/all') }}', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({})
+                        }).then(r => r.json()).then(j => console.debug('bulk reco all triggered', j)).catch(e =>
+                            console.debug('bulk reco all failed', e));
+                    } catch (e) {
+                        console.debug('bulk reco all start failed', e);
+                    }
+                })();
+            @endif
+        </script>
+        <script>
+            // Hook up the "Generate recommendations now" button to call the per-user API
+            document.addEventListener('DOMContentLoaded', function() {
+                const btn = document.getElementById('btn-generate-recs');
+                const status = document.getElementById('btn-generate-status');
+                if (!btn) return;
+                btn.addEventListener('click', async function() {
+                    if (window.__SERVER_RECO_LOADED) {
+                        status.textContent =
+                            'Server-rendered recommendations already present; reload page to refresh.';
+                        btn.disabled = false;
+                        return;
+                    }
+                    try {
+                        btn.disabled = true;
+                        status.textContent = 'Requesting generation...';
+                        const r = await fetch('{{ url('/api/recommendations/user') }}', {
                             method: 'POST',
                             credentials: 'same-origin',
                             headers: {
                                 'Content-Type': 'application/json',
                                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
                             },
-                            // request a forced synchronous generation when possible (dev-friendly)
                             body: JSON.stringify({
                                 force: true
                             })
                         });
-                        window.__HYBRID_RECO_DEBUG.events.push({
-                            when: Date.now(),
-                            ev: 'auto_trigger_response',
-                            status: resp.status
-                        });
-                    } catch (e) {
-                        console.debug('auto server-side reco trigger failed', e);
-                    }
-                })();
-                @if (app()->environment('local') || request()->getHost() === 'localhost')
-                    // In local environment, also trigger a bulk generation for all users so per-UID caches are created.
-                    (async function() {
-                        try {
-                            // Run bulk generation (restricted to local by server route). Do not block UI.
-                            fetch('{{ url('/api/recommendations/all') }}', {
-                                method: 'POST',
-                                credentials: 'same-origin',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({})
-                            }).then(r => r.json()).then(j => console.debug('bulk reco all triggered', j)).catch(e =>
-                                console.debug('bulk reco all failed', e));
-                        } catch (e) {
-                            console.debug('bulk reco all start failed', e);
-                        }
-                    })();
-                @endif
-            </script>
-            <script>
-                // Hook up the "Generate recommendations now" button to call the per-user API
-                document.addEventListener('DOMContentLoaded', function() {
-                    const btn = document.getElementById('btn-generate-recs');
-                    const status = document.getElementById('btn-generate-status');
-                    if (!btn) return;
-                    btn.addEventListener('click', async function() {
-                        if (window.__SERVER_RECO_LOADED) {
+                        if (r.status === 202) {
                             status.textContent =
-                                'Server-rendered recommendations already present; reload page to refresh.';
-                            btn.disabled = false;
-                            return;
-                        }
-                        try {
-                            btn.disabled = true;
-                            status.textContent = 'Requesting generation...';
-                            const r = await fetch('{{ url('/api/recommendations/user') }}', {
-                                method: 'POST',
-                                credentials: 'same-origin',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                body: JSON.stringify({
-                                    force: true
-                                })
-                            });
-                            if (r.status === 202) {
-                                status.textContent =
-                                    'Generation scheduled; please refresh this page in a few seconds.';
-                            } else if (r.ok) {
-                                // Try to parse returned recommendations and render them in-place instead of reloading
-                                const data = await r.json().catch(() => null);
-                                const normalize = (d) => {
-                                    if (!d) return [];
-                                    if (Array.isArray(d)) return d;
-                                    if (typeof d === 'object') {
-                                        const vals = Object.values(d);
-                                        const arrVal = vals.find(v => Array.isArray(v));
-                                        if (arrVal) return arrVal;
-                                        const keys = Object.keys(d || {});
-                                        if (keys.length > 0 && Array.isArray(d[keys[0]])) return d[keys[0]];
-                                    }
-                                    return [];
+                                'Generation scheduled; please refresh this page in a few seconds.';
+                        } else if (r.ok) {
+                            // Try to parse returned recommendations and render them in-place instead of reloading
+                            const data = await r.json().catch(() => null);
+                            const normalize = (d) => {
+                                if (!d) return [];
+                                if (Array.isArray(d)) return d;
+                                if (typeof d === 'object') {
+                                    const vals = Object.values(d);
+                                    const arrVal = vals.find(v => Array.isArray(v));
+                                    if (arrVal) return arrVal;
+                                    const keys = Object.keys(d || {});
+                                    if (keys.length > 0 && Array.isArray(d[keys[0]])) return d[keys[0]];
+                                }
+                                return [];
+                            };
+                            const recs = normalize(data);
+                            if (recs && recs.length > 0) {
+                                status.textContent = 'Recommendations generated — rendering results.';
+                                // lightweight escape to avoid XSS from returned payload
+                                const esc = s => {
+                                    if (s === null || s === undefined) return '';
+                                    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                                        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
                                 };
-                                const recs = normalize(data);
-                                if (recs && recs.length > 0) {
-                                    status.textContent = 'Recommendations generated — rendering results.';
-                                    // lightweight escape to avoid XSS from returned payload
-                                    const esc = s => {
-                                        if (s === null || s === undefined) return '';
-                                        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-                                            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                                    };
-                                    const container = document.querySelector(
-                                        '.container.mx-auto.mt-8.px-4.space-y-6');
-                                    if (container) {
-                                        let out = '';
-                                        recs.slice(0, 50).forEach((r2, idx) => {
-                                            const jid = String(r2.job_id ?? ('p' + idx));
-                                            const title = esc(r2.Title || r2.title || r2.job_title || (
-                                                    r2.job_description || '').substring(0, 80) ||
-                                                'Untitled Job');
-                                            const company = esc(r2.Company || r2.company || r2
-                                                .company_name || '');
-                                            let rawMatchVal = Number(r2.hybrid_score ?? r2
-                                                .content_score ?? r2.match_score ?? 0) || 0;
-                                            let matchPercent = 0;
-                                            if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent =
-                                                Math.round(rawMatchVal * 100);
-                                            else if (rawMatchVal > 0 && rawMatchVal <= 5.0)
-                                                matchPercent = Math.round(rawMatchVal * 20);
-                                            else matchPercent = Math.round(rawMatchVal);
-                                            const why = esc((r2.job_description || r2.description || '')
-                                                .substring(0, 400));
-                                            const industry = esc(r2.industry || '');
-                                            const workEnv = esc(r2.work_environment || '');
-                                            const fit = esc(r2.fit_level || '');
-                                            const growth = esc(r2.growth_potential || '');
-                                            const salary = esc(r2.salary ?? '-');
-                                            const deadline = esc(r2.deadline ?? '');
-                                            out += `
+                                const container = document.querySelector(
+                                    '.container.mx-auto.mt-8.px-4.space-y-6');
+                                if (container) {
+                                    let out = '';
+                                    recs.slice(0, 50).forEach((r2, idx) => {
+                                        const jid = String(r2.job_id ?? ('p' + idx));
+                                        const title = esc(r2.Title || r2.title || r2.job_title || (
+                                                r2.job_description || '').substring(0, 80) ||
+                                            'Untitled Job');
+                                        const company = esc(r2.Company || r2.company || r2
+                                            .company_name || '');
+                                        let rawMatchVal = Number(r2.hybrid_score ?? r2
+                                            .content_score ?? r2.match_score ?? 0) || 0;
+                                        let matchPercent = 0;
+                                        if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent =
+                                            Math.round(rawMatchVal * 100);
+                                        else if (rawMatchVal > 0 && rawMatchVal <= 5.0)
+                                            matchPercent = Math.round(rawMatchVal * 20);
+                                        else matchPercent = Math.round(rawMatchVal);
+                                        const why = esc((r2.job_description || r2.description || '')
+                                            .substring(0, 400));
+                                        const industry = esc(r2.industry || '');
+                                        const workEnv = esc(r2.work_environment || '');
+                                        const fit = esc(r2.fit_level || '');
+                                        const growth = esc(r2.growth_potential || '');
+                                        const salary = esc(r2.salary ?? '-');
+                                        const deadline = esc(r2.deadline ?? '');
+                                        out += `
                                         <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${esc(r2.location || '')}" data-fit-level="${fit}" data-content-score="${esc(String(r2.content_score ?? r2.computed_score ?? 0))}" data-raw-match="${esc(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
                                             <div class="flex-1 pr-6">
                                                 <h3 class="text-lg font-bold">${title}</h3>
@@ -1368,367 +1460,368 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                             </div>
                                         </div>
                                     `;
-                                        });
-                                        container.innerHTML = out;
-                                    }
-                                } else {
-                                    // If no recs returned, fall back to reload so server-side may pick up any new cache
-                                    status.textContent =
-                                        'Generated but no recommendations returned; reloading...';
-                                    setTimeout(() => location.reload(), 800);
+                                    });
+                                    container.innerHTML = out;
                                 }
                             } else {
-                                const j = await r.json().catch(() => ({}));
-                                status.textContent = 'Generation failed: ' + (j.message || r.statusText ||
-                                    'unknown');
+                                // If no recs returned, fall back to reload so server-side may pick up any new cache
+                                status.textContent =
+                                    'Generated but no recommendations returned; reloading...';
+                                setTimeout(() => location.reload(), 800);
                             }
-                        } catch (e) {
-                            status.textContent = 'Generation error: ' + String(e);
-                        } finally {
-                            btn.disabled = false;
+                        } else {
+                            const j = await r.json().catch(() => ({}));
+                            status.textContent = 'Generation failed: ' + (j.message || r.statusText ||
+                                'unknown');
                         }
-                    });
+                    } catch (e) {
+                        status.textContent = 'Generation error: ' + String(e);
+                    } finally {
+                        btn.disabled = false;
+                    }
                 });
-            </script>
-            <script>
-                // expose guardian approvals to client-side renderer
-                window.__GUARDIAN_APPROVALS = {!! json_encode($guardianApprovals ?? []) !!};
+            });
+        </script>
+        <script>
+            // expose guardian approvals to client-side renderer
+            window.__GUARDIAN_APPROVALS = {!! json_encode($guardianApprovals ?? []) !!};
 
-                function escapeHtml(s) {
-                    if (!s) return '';
-                    return String(s).replace(/[&<>"]+/g, function(ch) {
-                        return {
-                            '&': '&amp;',
-                            '<': '&lt;',
-                            '>': '&gt;',
-                            '"': '&quot;'
-                        } [ch];
-                    });
-                }
-            </script>
-            <script type="module">
-                // Load the lightweight per-user rescoring helper that uses the signed-in Firebase profile
+            function escapeHtml(s) {
+                if (!s) return '';
+                return String(s).replace(/[&<>"]+/g, function(ch) {
+                    return {
+                        '&': '&amp;',
+                        '<': '&lt;',
+                        '>': '&gt;',
+                        '"': '&quot;'
+                    } [ch];
+                });
+            }
+        </script>
+        <script type="module">
+            // Load the lightweight per-user rescoring helper that uses the signed-in Firebase profile
+            try {
+                await import("{{ asset('js/job-rescore-client.js') }}");
+            } catch (e) {
+                console.debug('failed to load job-rescore-client', e);
+            }
+        </script>
+        <script type="module">
+            (async function() {
                 try {
-                    await import("{{ asset('js/job-rescore-client.js') }}");
-                } catch (e) {
-                    console.debug('failed to load job-rescore-client', e);
-                }
-            </script>
-            <script type="module">
-                (async function() {
+                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                    console.debug('Auth guard: waiting for sign-in resolution (7s)');
                     try {
-                        const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                        console.debug('Auth guard: waiting for sign-in resolution (7s)');
+                        await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                    } catch (e) {
+                        console.debug('signInWithServerToken failed', e);
+                    }
+                    const signed = await mod.isSignedIn(7000);
+                    console.debug('Auth guard: isSignedIn ->', signed);
+                    try {
+                        if (mod && typeof mod.debugAuthLogging === 'function') {
+                            // start auth state logging (returns unsubscribe function)
+                            window.__unsubAuthLog = mod.debugAuthLogging();
+                        }
+                    } catch (e) {
+                        console.warn('debugAuthLogging invocation failed', e);
+                    }
+                    if (!signed) {
+                        // if server has a session, assume the user is already authenticated via backend and skip client redirect
+                        if (window.__SERVER_AUTH) {
+                            console.info('Auth guard: server session present, not redirecting');
+                            return;
+                        }
+                        // if still not signed after waiting, redirect to login
+                        const current = window.location.pathname + window.location.search;
+                        console.info('Auth guard: not signed, redirecting to login');
+                        window.location.href = 'login?redirect=' + encodeURIComponent(current);
+                        return;
+                    }
+                } catch (err) {
+                    console.error('Auth guard failed on job matches', err);
+                }
+            })();
+
+            // Guardian approve/flag handlers (AJAX) - require authentication
+            function postAction(url, body) {
+                return fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: JSON.stringify(body || {})
+                }).then(r => r.json());
+            }
+
+            // Approve/flag actions are only available in the Guardian Review pages; no handlers here.
+        </script>
+        <script type="module">
+            // Re-score job cards using the user's Firestore profile (if available)
+            (async function() {
+                try {
+                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                    await mod.ensureInit?.();
+                    // Ensure server-backed sign-in so getUserProfile can access Firestore document
+                    let profile = null;
+                    try {
                         try {
                             await mod.signInWithServerToken("{{ route('firebase.token') }}");
                         } catch (e) {
-                            console.debug('signInWithServerToken failed', e);
+                            console.debug('signInWithServerToken (rescore) failed', e);
                         }
-                        const signed = await mod.isSignedIn(7000);
-                        console.debug('Auth guard: isSignedIn ->', signed);
+                        profile = await mod.getUserProfile();
+                    } catch (e) {
+                        console.debug('no profile from firebase module', e);
+                    }
+
+                    if (!profile) return;
+                    // Normalize profile fields
+                    const jobPrefs = [];
+                    try {
+                        const jp1 = profile.jobPreferences?.jobpref1 || profile.jobPreferences?.jobpref_1 || profile
+                            .jobpref1;
+                        const jp2 = profile.jobPreferences?.jobpref2 || profile.jobpref2;
+                        if (jp1) JSON.parse(jp1).forEach(x => jobPrefs.push(String(x).toLowerCase()));
+                        if (jp2) JSON.parse(jp2).forEach(x => jobPrefs.push(String(x).toLowerCase()));
+                    } catch (e) {
+                        /* ignore parse */
+                    }
+                    const skills = [];
+                    try {
+                        if (profile.skills?.skills_page1) JSON.parse(profile.skills.skills_page1).forEach(x => skills
+                            .push(String(x).toLowerCase()));
+                    } catch (e) {}
+                    try {
+                        if (profile.skills?.skills_page2) JSON.parse(profile.skills.skills_page2).forEach(x => skills
+                            .push(String(x).toLowerCase()));
+                    } catch (e) {}
+                    const workplace = (profile.workplace?.workplace_choice || '').toLowerCase();
+                    const support = (profile.supportNeed?.support_choice || '').toLowerCase();
+
+                    // iterate job cards and compute new score, store numeric value on element for sorting
+                    const scored = [];
+                    document.querySelectorAll('.job-card').forEach(card => {
                         try {
-                            if (mod && typeof mod.debugAuthLogging === 'function') {
-                                // start auth state logging (returns unsubscribe function)
-                                window.__unsubAuthLog = mod.debugAuthLogging();
-                            }
+                            const title = (card.dataset.title || '').toLowerCase();
+                            const desc = (card.dataset.description || '').toLowerCase();
+                            // server-provided content score (0-100) if available
+                            const serverContent = parseFloat(card.dataset.contentScore || card.dataset
+                                .contentscore || '0') || 0;
+                            // fallback: use data-match-percent or visible badge base
+                            const datasetMatchPct = parseInt(card.dataset.matchPercent || card.dataset
+                                .matchpercent || '0') || 0;
+                            let base = serverContent || datasetMatchPct || (parseInt(card.querySelector(
+                                '.js-match-badge')?.textContent || '0') || 0);
+                            // compute boosts from user profile
+                            let boost = 0;
+                            jobPrefs.forEach(p => {
+                                if (!p) return;
+                                const pp = String(p).toLowerCase();
+                                if (title.includes(pp) || desc.includes(pp)) boost += 20;
+                            });
+                            skills.forEach(s => {
+                                if (!s) return;
+                                const ss = String(s).toLowerCase();
+                                if (title.includes(ss) || desc.includes(ss)) boost += 10;
+                            });
+                            if (workplace && desc.includes(workplace)) boost += 12;
+                            if (support && desc.includes(support)) boost += 6;
+                            const final = Math.min(100, Math.max(0, Math.round(base + boost)));
+                            const badge = card.querySelector('.js-match-badge');
+                            // Preserve raw display if present, and include computed max if provided
+                            const rawMatch = card.dataset.rawMatch || card.getAttribute('data-raw-match') ||
+                                card.dataset.rawmatch || '';
+                            const computedScore = card.dataset.computedScore || card.getAttribute(
+                                'data-computed-score') || '';
+                            const computedMax = card.dataset.computedMax || card.getAttribute(
+                                'data-computed-max') || '';
+                            let rawDisplayText = '';
+                            if (rawMatch) rawDisplayText = ` (raw: ${rawMatch})`;
+                            if (!rawDisplayText && computedScore) rawDisplayText =
+                                ` (computed: ${computedScore}${computedMax ? ' / ' + computedMax : ''})`;
+                            if (badge) badge.innerHTML = final + '% Match' +
+                                '<small class="text-xs text-gray-500">' + rawDisplayText + '</small>';
+                            card.dataset.personalScore = String(final);
+                            scored.push({
+                                card,
+                                score: final
+                            });
                         } catch (e) {
-                            console.warn('debugAuthLogging invocation failed', e);
+                            console.error('rescore error', e);
                         }
-                        if (!signed) {
-                            // if server has a session, assume the user is already authenticated via backend and skip client redirect
-                            if (window.__SERVER_AUTH) {
-                                console.info('Auth guard: server session present, not redirecting');
-                                return;
-                            }
-                            // if still not signed after waiting, redirect to login
-                            const current = window.location.pathname + window.location.search;
-                            console.info('Auth guard: not signed, redirecting to login');
-                            window.location.href = 'login?redirect=' + encodeURIComponent(current);
+                    });
+
+                    // Reorder DOM: place job cards in descending order of personal score
+                    if (scored.length > 1) {
+                        const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
+                        if (container) {
+                            // sort scored array
+                            scored.sort((a, b) => b.score - a.score);
+                            // remove existing nodes and re-append in order
+                            scored.forEach(s => {
+                                container.appendChild(s.card);
+                            });
+                        }
+                    }
+
+                    // Also request server-side hybrid recommendations (collaborative + content)
+                    try {
+                        // If server already rendered per-user recommendations, skip client-side hybrid replacement
+                        if (window.__SERVER_RECO_LOADED) {
+                            console.debug(
+                                'job-matches: server-rendered per-user recommendations present; skipping client hybrid replacement'
+                            );
                             return;
                         }
-                    } catch (err) {
-                        console.error('Auth guard failed on job matches', err);
-                    }
-                })();
+                        // Global debug for hybrid recommender
+                        window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {
+                            events: [],
+                            lastRecs: null
+                        };
 
-                // Guardian approve/flag handlers (AJAX) - require authentication
-                function postAction(url, body) {
-                    return fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        body: JSON.stringify(body || {})
-                    }).then(r => r.json());
-                }
-
-                // Approve/flag actions are only available in the Guardian Review pages; no handlers here.
-            </script>
-            <script type="module">
-                // Re-score job cards using the user's Firestore profile (if available)
-                (async function() {
-                    try {
-                        const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                        await mod.ensureInit?.();
-                        // Ensure server-backed sign-in so getUserProfile can access Firestore document
-                        let profile = null;
-                        try {
+                        function hdbg(ev, payload) {
                             try {
-                                await mod.signInWithServerToken("{{ route('firebase.token') }}");
-                            } catch (e) {
-                                console.debug('signInWithServerToken (rescore) failed', e);
-                            }
-                            profile = await mod.getUserProfile();
-                        } catch (e) {
-                            console.debug('no profile from firebase module', e);
+                                window.__HYBRID_RECO_DEBUG.events.push({
+                                    when: Date.now(),
+                                    ev,
+                                    payload
+                                });
+                            } catch (e) {};
+                            try {
+                                console.debug('hybrid-reco:', ev, payload);
+                            } catch (e) {}
                         }
-
-                        if (!profile) return;
-                        // Normalize profile fields
-                        const jobPrefs = [];
-                        try {
-                            const jp1 = profile.jobPreferences?.jobpref1 || profile.jobPreferences?.jobpref_1 || profile
-                                .jobpref1;
-                            const jp2 = profile.jobPreferences?.jobpref2 || profile.jobpref2;
-                            if (jp1) JSON.parse(jp1).forEach(x => jobPrefs.push(String(x).toLowerCase()));
-                            if (jp2) JSON.parse(jp2).forEach(x => jobPrefs.push(String(x).toLowerCase()));
-                        } catch (e) {
-                            /* ignore parse */ }
-                        const skills = [];
-                        try {
-                            if (profile.skills?.skills_page1) JSON.parse(profile.skills.skills_page1).forEach(x => skills
-                                .push(String(x).toLowerCase()));
-                        } catch (e) {}
-                        try {
-                            if (profile.skills?.skills_page2) JSON.parse(profile.skills.skills_page2).forEach(x => skills
-                                .push(String(x).toLowerCase()));
-                        } catch (e) {}
-                        const workplace = (profile.workplace?.workplace_choice || '').toLowerCase();
-                        const support = (profile.supportNeed?.support_choice || '').toLowerCase();
-
-                        // iterate job cards and compute new score, store numeric value on element for sorting
-                        const scored = [];
-                        document.querySelectorAll('.job-card').forEach(card => {
-                            try {
-                                const title = (card.dataset.title || '').toLowerCase();
-                                const desc = (card.dataset.description || '').toLowerCase();
-                                // server-provided content score (0-100) if available
-                                const serverContent = parseFloat(card.dataset.contentScore || card.dataset
-                                    .contentscore || '0') || 0;
-                                // fallback: use data-match-percent or visible badge base
-                                const datasetMatchPct = parseInt(card.dataset.matchPercent || card.dataset
-                                    .matchpercent || '0') || 0;
-                                let base = serverContent || datasetMatchPct || (parseInt(card.querySelector(
-                                    '.js-match-badge')?.textContent || '0') || 0);
-                                // compute boosts from user profile
-                                let boost = 0;
-                                jobPrefs.forEach(p => {
-                                    if (!p) return;
-                                    const pp = String(p).toLowerCase();
-                                    if (title.includes(pp) || desc.includes(pp)) boost += 20;
-                                });
-                                skills.forEach(s => {
-                                    if (!s) return;
-                                    const ss = String(s).toLowerCase();
-                                    if (title.includes(ss) || desc.includes(ss)) boost += 10;
-                                });
-                                if (workplace && desc.includes(workplace)) boost += 12;
-                                if (support && desc.includes(support)) boost += 6;
-                                const final = Math.min(100, Math.max(0, Math.round(base + boost)));
-                                const badge = card.querySelector('.js-match-badge');
-                                // Preserve raw display if present, and include computed max if provided
-                                const rawMatch = card.dataset.rawMatch || card.getAttribute('data-raw-match') ||
-                                    card.dataset.rawmatch || '';
-                                const computedScore = card.dataset.computedScore || card.getAttribute(
-                                    'data-computed-score') || '';
-                                const computedMax = card.dataset.computedMax || card.getAttribute(
-                                    'data-computed-max') || '';
-                                let rawDisplayText = '';
-                                if (rawMatch) rawDisplayText = ` (raw: ${rawMatch})`;
-                                if (!rawDisplayText && computedScore) rawDisplayText =
-                                    ` (computed: ${computedScore}${computedMax ? ' / ' + computedMax : ''})`;
-                                if (badge) badge.innerHTML = final + '% Match' +
-                                    '<small class="text-xs text-gray-500">' + rawDisplayText + '</small>';
-                                card.dataset.personalScore = String(final);
-                                scored.push({
-                                    card,
-                                    score: final
-                                });
-                            } catch (e) {
-                                console.error('rescore error', e);
-                            }
+                        hdbg('request_start', {
+                            url: '{{ url('/api/recommendations/user') }}',
+                            uid: profile.uid || profile.userId || profile.user_id || ''
                         });
-
-                        // Reorder DOM: place job cards in descending order of personal score
-                        if (scored.length > 1) {
-                            const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
-                            if (container) {
-                                // sort scored array
-                                scored.sort((a, b) => b.score - a.score);
-                                // remove existing nodes and re-append in order
-                                scored.forEach(s => {
-                                    container.appendChild(s.card);
-                                });
+                        const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+                            method: 'POST',
+                            credentials: 'same-origin',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            // ask server to force generation/sync when possible for immediate results
+                            body: JSON.stringify(Object.assign({
+                                uid: profile.uid || profile.userId || profile.user_id || '',
+                                force: true
+                            }, profile))
+                        });
+                        hdbg('request_done', {
+                            status: resp.status,
+                            statusText: resp.statusText
+                        });
+                        // helper: normalize server response into an array of recommendation objects
+                        async function normalizeRecsFromResponse(response) {
+                            const data = await response.json();
+                            hdbg('normalize_response_raw', {
+                                sample: (Array.isArray(data) ? data.slice(0, 5) : Object.keys(data || {})
+                                    .slice(0, 10))
+                            });
+                            if (Array.isArray(data)) return data;
+                            if (data && typeof data === 'object') {
+                                const vals = Object.values(data);
+                                const arrVal = vals.find(v => Array.isArray(v));
+                                if (arrVal) return arrVal;
+                                const keys = Object.keys(data || {});
+                                if (keys.length > 0 && Array.isArray(data[keys[0]])) return data[keys[0]];
                             }
+                            return [];
                         }
 
-                        // Also request server-side hybrid recommendations (collaborative + content)
-                        try {
-                            // If server already rendered per-user recommendations, skip client-side hybrid replacement
-                            if (window.__SERVER_RECO_LOADED) {
-                                console.debug(
-                                    'job-matches: server-rendered per-user recommendations present; skipping client hybrid replacement'
-                                    );
-                                return;
-                            }
-                            // Global debug for hybrid recommender
-                            window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {
-                                events: [],
-                                lastRecs: null
-                            };
-
-                            function hdbg(ev, payload) {
+                        if (resp.status === 202) {
+                            console.info('Hybrid recommender scheduled; polling for results...');
+                            hdbg('scheduled_polling_start', {
+                                maxAttempts: 10,
+                                delayMs: 3000
+                            });
+                            // Poll a few times for generated recommendations
+                            const maxAttempts = 10;
+                            const delayMs = 3000;
+                            let attempts = 0;
+                            let recs = [];
+                            while (attempts < maxAttempts) {
+                                attempts++;
+                                await new Promise(r => setTimeout(r, delayMs));
                                 try {
-                                    window.__HYBRID_RECO_DEBUG.events.push({
-                                        when: Date.now(),
-                                        ev,
-                                        payload
+                                    hdbg('poll_attempt', {
+                                        attempt: attempts
                                     });
-                                } catch (e) {};
-                                try {
-                                    console.debug('hybrid-reco:', ev, payload);
-                                } catch (e) {}
-                            }
-                            hdbg('request_start', {
-                                url: '{{ url('/api/recommendations/user') }}',
-                                uid: profile.uid || profile.userId || profile.user_id || ''
-                            });
-                            const resp = await fetch('{{ url('/api/recommendations/user') }}', {
-                                method: 'POST',
-                                credentials: 'same-origin',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                // ask server to force generation/sync when possible for immediate results
-                                body: JSON.stringify(Object.assign({
-                                    uid: profile.uid || profile.userId || profile.user_id || '',
-                                    force: true
-                                }, profile))
-                            });
-                            hdbg('request_done', {
-                                status: resp.status,
-                                statusText: resp.statusText
-                            });
-                            // helper: normalize server response into an array of recommendation objects
-                            async function normalizeRecsFromResponse(response) {
-                                const data = await response.json();
-                                hdbg('normalize_response_raw', {
-                                    sample: (Array.isArray(data) ? data.slice(0, 5) : Object.keys(data || {})
-                                        .slice(0, 10))
-                                });
-                                if (Array.isArray(data)) return data;
-                                if (data && typeof data === 'object') {
-                                    const vals = Object.values(data);
-                                    const arrVal = vals.find(v => Array.isArray(v));
-                                    if (arrVal) return arrVal;
-                                    const keys = Object.keys(data || {});
-                                    if (keys.length > 0 && Array.isArray(data[keys[0]])) return data[keys[0]];
-                                }
-                                return [];
-                            }
-
-                            if (resp.status === 202) {
-                                console.info('Hybrid recommender scheduled; polling for results...');
-                                hdbg('scheduled_polling_start', {
-                                    maxAttempts: 10,
-                                    delayMs: 3000
-                                });
-                                // Poll a few times for generated recommendations
-                                const maxAttempts = 10;
-                                const delayMs = 3000;
-                                let attempts = 0;
-                                let recs = [];
-                                while (attempts < maxAttempts) {
-                                    attempts++;
-                                    await new Promise(r => setTimeout(r, delayMs));
-                                    try {
-                                        hdbg('poll_attempt', {
-                                            attempt: attempts
-                                        });
-                                        const pollResp = await fetch('{{ url('/api/recommendations/user') }}', {
-                                            method: 'POST',
-                                            credentials: 'same-origin',
-                                            headers: {
-                                                'Content-Type': 'application/json',
-                                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                            },
-                                            body: JSON.stringify(Object.assign({
-                                                uid: profile.uid || profile.userId || profile.user_id ||
-                                                    ''
-                                            }, profile))
-                                        });
-                                        hdbg('poll_response', {
+                                    const pollResp = await fetch('{{ url('/api/recommendations/user') }}', {
+                                        method: 'POST',
+                                        credentials: 'same-origin',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                        },
+                                        body: JSON.stringify(Object.assign({
+                                            uid: profile.uid || profile.userId || profile.user_id ||
+                                                ''
+                                        }, profile))
+                                    });
+                                    hdbg('poll_response', {
+                                        attempt: attempts,
+                                        status: pollResp.status
+                                    });
+                                    if (pollResp.ok) {
+                                        recs = await normalizeRecsFromResponse(pollResp);
+                                        hdbg('poll_got_recs', {
                                             attempt: attempts,
-                                            status: pollResp.status
+                                            recCount: recs.length
                                         });
-                                        if (pollResp.ok) {
-                                            recs = await normalizeRecsFromResponse(pollResp);
-                                            hdbg('poll_got_recs', {
-                                                attempt: attempts,
-                                                recCount: recs.length
-                                            });
-                                            break;
-                                        }
-                                    } catch (e) {
-                                        hdbg('poll_error', {
-                                            attempt: attempts,
-                                            error: String(e)
-                                        });
-                                        console.debug('Poll attempt failed', e);
+                                        break;
                                     }
-                                }
-                                if (recs.length === 0) {
-                                    hdbg('no_recs_after_polling');
-                                    console.warn('No recommendations received after polling.');
-                                } else {
-                                    hdbg('got_recs', {
-                                        recCount: recs.length
+                                } catch (e) {
+                                    hdbg('poll_error', {
+                                        attempt: attempts,
+                                        error: String(e)
                                     });
-                                    window.__HYBRID_RECO_DEBUG.lastRecs = recs;
-                                    // If the server returned a fresh recommendation set, rebuild the job list
-                                    (function renderRecs(recsArr) {
-                                        try {
-                                            const container = document.querySelector(
-                                                '.container.mx-auto.mt-8.px-4.space-y-6');
-                                            if (!container) return;
-                                            // Build new HTML: header + cards
-                                            let out = '';
-                                            // Render up to 50 recommendations to avoid overly long pages
-                                            recsArr.slice(0, 50).forEach((r, idx) => {
-                                                const jid = String(r.job_id ?? ('p' + idx));
-                                                const title = escapeHtml(String(r.Title || r.title || r
-                                                    .job_title || r.job_description || 'Untitled Job'));
-                                                const company = escapeHtml(String(r.Company || r.company || r
-                                                    .company_name || ''));
-                                                let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r
-                                                    .match_score ?? 0) || 0;
-                                                let matchPercent = 0;
-                                                if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math
-                                                    .round(rawMatchVal * 100);
-                                                else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent =
-                                                    Math.round(rawMatchVal * 20);
-                                                else matchPercent = Math.round(rawMatchVal);
-                                                const why = escapeHtml(String((r.job_description || r
-                                                    .description || '').substring(0, 400)));
-                                                const industry = escapeHtml(String(r.industry || ''));
-                                                const workEnv = escapeHtml(String(r.work_environment || ''));
-                                                const fit = escapeHtml(String(r.fit_level || ''));
-                                                const growth = escapeHtml(String(r.growth_potential || ''));
-                                                const salary = escapeHtml(String(r.salary ?? '-'));
-                                                const deadline = escapeHtml(String(r.deadline ?? ''));
-                                                out += `
+                                    console.debug('Poll attempt failed', e);
+                                }
+                            }
+                            if (recs.length === 0) {
+                                hdbg('no_recs_after_polling');
+                                console.warn('No recommendations received after polling.');
+                            } else {
+                                hdbg('got_recs', {
+                                    recCount: recs.length
+                                });
+                                window.__HYBRID_RECO_DEBUG.lastRecs = recs;
+                                // If the server returned a fresh recommendation set, rebuild the job list
+                                (function renderRecs(recsArr) {
+                                    try {
+                                        const container = document.querySelector(
+                                            '.container.mx-auto.mt-8.px-4.space-y-6');
+                                        if (!container) return;
+                                        // Build new HTML: header + cards
+                                        let out = '';
+                                        // Render up to 50 recommendations to avoid overly long pages
+                                        recsArr.slice(0, 50).forEach((r, idx) => {
+                                            const jid = String(r.job_id ?? ('p' + idx));
+                                            const title = escapeHtml(String(r.Title || r.title || r
+                                                .job_title || r.job_description || 'Untitled Job'));
+                                            const company = escapeHtml(String(r.Company || r.company || r
+                                                .company_name || ''));
+                                            let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r
+                                                .match_score ?? 0) || 0;
+                                            let matchPercent = 0;
+                                            if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math
+                                                .round(rawMatchVal * 100);
+                                            else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent =
+                                                Math.round(rawMatchVal * 20);
+                                            else matchPercent = Math.round(rawMatchVal);
+                                            const why = escapeHtml(String((r.job_description || r
+                                                .description || '').substring(0, 400)));
+                                            const industry = escapeHtml(String(r.industry || ''));
+                                            const workEnv = escapeHtml(String(r.work_environment || ''));
+                                            const fit = escapeHtml(String(r.fit_level || ''));
+                                            const growth = escapeHtml(String(r.growth_potential || ''));
+                                            const salary = escapeHtml(String(r.salary ?? '-'));
+                                            const deadline = escapeHtml(String(r.deadline ?? ''));
+                                            out += `
                                     <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
                                         <div class="flex-1 pr-6">
                                             <h3 class="text-lg font-bold">${title}</h3>
@@ -1756,49 +1849,49 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                         </div>
                                     </div>
                                 `;
-                                            });
-                                            container.innerHTML = out;
-                                        } catch (e) {
-                                            console.error('renderRecs error', e);
-                                        }
-                                    })(recs);
-                                }
-                            } else if (resp.ok) {
-                                const recs = await normalizeRecsFromResponse(resp);
-                                hdbg('immediate_recs', {
-                                    count: recs.length
-                                });
-                                window.__HYBRID_RECO_DEBUG.lastRecs = recs;
-                                // Rebuild the job list from fresh recommendations so stale server-rendered list is replaced
-                                (function renderRecsImmediate(recsArr) {
-                                    try {
-                                        const container = document.querySelector(
-                                            '.container.mx-auto.mt-8.px-4.space-y-6');
-                                        if (!container) return;
-                                        let out = '';
-                                        recsArr.slice(0, 50).forEach((r, idx) => {
-                                            const jid = String(r.job_id ?? ('p' + idx));
-                                            const title = escapeHtml(String(r.Title || r.title || r.job_title ||
-                                                r.job_description || 'Untitled Job'));
-                                            const company = escapeHtml(String(r.Company || r.company || r
-                                                .company_name || ''));
-                                            let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r
-                                                .match_score ?? 0) || 0;
-                                            let matchPercent = 0;
-                                            if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math
-                                                .round(rawMatchVal * 100);
-                                            else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent = Math
-                                                .round(rawMatchVal * 20);
-                                            else matchPercent = Math.round(rawMatchVal);
-                                            const why = escapeHtml(String((r.job_description || r.description ||
-                                                '').substring(0, 400)));
-                                            const industry = escapeHtml(String(r.industry || ''));
-                                            const workEnv = escapeHtml(String(r.work_environment || ''));
-                                            const fit = escapeHtml(String(r.fit_level || ''));
-                                            const growth = escapeHtml(String(r.growth_potential || ''));
-                                            const salary = escapeHtml(String(r.salary ?? '-'));
-                                            const deadline = escapeHtml(String(r.deadline ?? ''));
-                                            out += `
+                                        });
+                                        container.innerHTML = out;
+                                    } catch (e) {
+                                        console.error('renderRecs error', e);
+                                    }
+                                })(recs);
+                            }
+                        } else if (resp.ok) {
+                            const recs = await normalizeRecsFromResponse(resp);
+                            hdbg('immediate_recs', {
+                                count: recs.length
+                            });
+                            window.__HYBRID_RECO_DEBUG.lastRecs = recs;
+                            // Rebuild the job list from fresh recommendations so stale server-rendered list is replaced
+                            (function renderRecsImmediate(recsArr) {
+                                try {
+                                    const container = document.querySelector(
+                                        '.container.mx-auto.mt-8.px-4.space-y-6');
+                                    if (!container) return;
+                                    let out = '';
+                                    recsArr.slice(0, 50).forEach((r, idx) => {
+                                        const jid = String(r.job_id ?? ('p' + idx));
+                                        const title = escapeHtml(String(r.Title || r.title || r.job_title ||
+                                            r.job_description || 'Untitled Job'));
+                                        const company = escapeHtml(String(r.Company || r.company || r
+                                            .company_name || ''));
+                                        let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r
+                                            .match_score ?? 0) || 0;
+                                        let matchPercent = 0;
+                                        if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math
+                                            .round(rawMatchVal * 100);
+                                        else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent = Math
+                                            .round(rawMatchVal * 20);
+                                        else matchPercent = Math.round(rawMatchVal);
+                                        const why = escapeHtml(String((r.job_description || r.description ||
+                                            '').substring(0, 400)));
+                                        const industry = escapeHtml(String(r.industry || ''));
+                                        const workEnv = escapeHtml(String(r.work_environment || ''));
+                                        const fit = escapeHtml(String(r.fit_level || ''));
+                                        const growth = escapeHtml(String(r.growth_potential || ''));
+                                        const salary = escapeHtml(String(r.salary ?? '-'));
+                                        const deadline = escapeHtml(String(r.deadline ?? ''));
+                                        out += `
                                 <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white border border-gray-300 rounded-xl p-6 flex justify-between items-center">
                                                         <div>
                                                             <h3 class="text-lg font-semibold text-gray-800">${title}</h3>
@@ -1829,121 +1922,122 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                                         <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: ${jid}</span>
                                                     </div>
                             `;
-                                        });
-                                        container.innerHTML = out;
-                                    } catch (e) {
-                                        console.error('renderRecsImmediate error', e);
-                                    }
-                                })(recs);
-                            } else {
-                                hdbg('request_error', {
-                                    status: resp.status
-                                });
-                                console.warn('Hybrid recommender error', resp.status);
-                            }
-                        } catch (e) {
-                            hdbg('request_exception', {
-                                error: String(e)
-                            });
-                            console.debug('Hybrid recommender failed', e);
-                        }
-                    } catch (err) {
-                        console.debug('rescore aborted', err);
-                    }
-                })();
-
-                // Poll the hybrid recommender periodically so the job list stays up-to-date.
-                (function() {
-                    try {
-                        // small helper to avoid XSS when injecting server-provided fields
-                        const escapeHtml = (str) => {
-                            if (str === null || str === undefined) return '';
-                            return String(str)
-                                .replace(/&/g, '&amp;')
-                                .replace(/</g, '&lt;')
-                                .replace(/>/g, '&gt;')
-                                .replace(/"/g, '&quot;')
-                                .replace(/'/g, '&#39;');
-                        };
-                        const pollIntervalMs = 20000; // 20s
-                        let lastHash = null;
-                        async function pollOnce() {
-                            if (window.__SERVER_RECO_LOADED) {
-                                // Avoid replacing server-rendered per-user results
-                                console.debug(
-                                    'job-matches: server-rendered per-user recommendations present; skipping poll replace'
-                                    );
-                                return;
-                            }
-                            try {
-                                // attempt to read client profile if available
-                                let profile = null;
-                                try {
-                                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                                    if (mod && typeof mod.getUserProfile === 'function') profile = await mod
-                                    .getUserProfile();
+                                    });
+                                    container.innerHTML = out;
                                 } catch (e) {
-                                    /* ignore */ }
-                                const body = profile ? Object.assign({
-                                    uid: profile.uid || profile.userId || profile.user_id || ''
-                                }, profile) : {};
-                                const resp = await fetch('{{ url('/api/recommendations/user') }}', {
-                                    method: 'POST',
-                                    credentials: 'same-origin',
-                                    headers: {
-                                        'Content-Type': 'application/json',
-                                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                    },
-                                    body: JSON.stringify(Object.assign(body, {
-                                        force: false
-                                    }))
-                                });
-                                if (!resp.ok && resp.status !== 202) return;
-                                const json = await resp.json().catch(() => null);
-                                if (!json) return;
-                                // normalize to array
-                                let recs = [];
-                                if (Array.isArray(json)) recs = json;
-                                else if (json && typeof json === 'object') {
-                                    const vals = Object.values(json).filter(v => Array.isArray(v));
-                                    if (vals.length > 0) recs = vals[0];
-                                    else recs = Object.keys(json).map(k => json[k]);
+                                    console.error('renderRecsImmediate error', e);
                                 }
-                                const hash = JSON.stringify(recs.slice(0, 50));
-                                if (hash !== lastHash) {
-                                    lastHash = hash;
-                                    try {
-                                        window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {};
-                                        window.__HYBRID_RECO_DEBUG.lastRecs = recs;
-                                    } catch (e) {}
-                                    // rebuild DOM similar to server-render replacement
-                                    try {
-                                        const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
-                                        if (!container) return;
-                                        let out = '';
-                                        recs.slice(0, 50).forEach((r, idx) => {
-                                            const jid = String(r.job_id ?? ('p' + idx));
-                                            const title = escapeHtml(String(r.Title || r.title || r.job_title || r
-                                                .job_description || 'Untitled Job'));
-                                            const company = escapeHtml(String(r.Company || r.company || r
-                                                .company_name || ''));
-                                            let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r
-                                                .match_score ?? 0) || 0;
-                                            let matchPercent = 0;
-                                            if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math.round(
-                                                rawMatchVal * 100);
-                                            else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent = Math
-                                                .round(rawMatchVal * 20);
-                                            else matchPercent = Math.round(rawMatchVal);
-                                            const why = escapeHtml(String((r.job_description || r.description || '')
-                                                .substring(0, 400)));
-                                            const industry = escapeHtml(String(r.industry || ''));
-                                            const workEnv = escapeHtml(String(r.work_environment || ''));
-                                            const fit = escapeHtml(String(r.fit_level || ''));
-                                            const growth = escapeHtml(String(r.growth_potential || ''));
-                                            const salary = escapeHtml(String(r.salary ?? '-'));
-                                            const deadline = escapeHtml(String(r.deadline ?? ''));
-                                            out += `
+                            })(recs);
+                        } else {
+                            hdbg('request_error', {
+                                status: resp.status
+                            });
+                            console.warn('Hybrid recommender error', resp.status);
+                        }
+                    } catch (e) {
+                        hdbg('request_exception', {
+                            error: String(e)
+                        });
+                        console.debug('Hybrid recommender failed', e);
+                    }
+                } catch (err) {
+                    console.debug('rescore aborted', err);
+                }
+            })();
+
+            // Poll the hybrid recommender periodically so the job list stays up-to-date.
+            (function() {
+                try {
+                    // small helper to avoid XSS when injecting server-provided fields
+                    const escapeHtml = (str) => {
+                        if (str === null || str === undefined) return '';
+                        return String(str)
+                            .replace(/&/g, '&amp;')
+                            .replace(/</g, '&lt;')
+                            .replace(/>/g, '&gt;')
+                            .replace(/"/g, '&quot;')
+                            .replace(/'/g, '&#39;');
+                    };
+                    const pollIntervalMs = 20000; // 20s
+                    let lastHash = null;
+                    async function pollOnce() {
+                        if (window.__SERVER_RECO_LOADED) {
+                            // Avoid replacing server-rendered per-user results
+                            console.debug(
+                                'job-matches: server-rendered per-user recommendations present; skipping poll replace'
+                            );
+                            return;
+                        }
+                        try {
+                            // attempt to read client profile if available
+                            let profile = null;
+                            try {
+                                const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                                if (mod && typeof mod.getUserProfile === 'function') profile = await mod
+                                    .getUserProfile();
+                            } catch (e) {
+                                /* ignore */
+                            }
+                            const body = profile ? Object.assign({
+                                uid: profile.uid || profile.userId || profile.user_id || ''
+                            }, profile) : {};
+                            const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+                                method: 'POST',
+                                credentials: 'same-origin',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify(Object.assign(body, {
+                                    force: false
+                                }))
+                            });
+                            if (!resp.ok && resp.status !== 202) return;
+                            const json = await resp.json().catch(() => null);
+                            if (!json) return;
+                            // normalize to array
+                            let recs = [];
+                            if (Array.isArray(json)) recs = json;
+                            else if (json && typeof json === 'object') {
+                                const vals = Object.values(json).filter(v => Array.isArray(v));
+                                if (vals.length > 0) recs = vals[0];
+                                else recs = Object.keys(json).map(k => json[k]);
+                            }
+                            const hash = JSON.stringify(recs.slice(0, 50));
+                            if (hash !== lastHash) {
+                                lastHash = hash;
+                                try {
+                                    window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {};
+                                    window.__HYBRID_RECO_DEBUG.lastRecs = recs;
+                                } catch (e) {}
+                                // rebuild DOM similar to server-render replacement
+                                try {
+                                    const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
+                                    if (!container) return;
+                                    let out = '';
+                                    recs.slice(0, 50).forEach((r, idx) => {
+                                        const jid = String(r.job_id ?? ('p' + idx));
+                                        const title = escapeHtml(String(r.Title || r.title || r.job_title || r
+                                            .job_description || 'Untitled Job'));
+                                        const company = escapeHtml(String(r.Company || r.company || r
+                                            .company_name || ''));
+                                        let rawMatchVal = Number(r.hybrid_score ?? r.content_score ?? r
+                                            .match_score ?? 0) || 0;
+                                        let matchPercent = 0;
+                                        if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math.round(
+                                            rawMatchVal * 100);
+                                        else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent = Math
+                                            .round(rawMatchVal * 20);
+                                        else matchPercent = Math.round(rawMatchVal);
+                                        const why = escapeHtml(String((r.job_description || r.description || '')
+                                            .substring(0, 400)));
+                                        const industry = escapeHtml(String(r.industry || ''));
+                                        const workEnv = escapeHtml(String(r.work_environment || ''));
+                                        const fit = escapeHtml(String(r.fit_level || ''));
+                                        const growth = escapeHtml(String(r.growth_potential || ''));
+                                        const salary = escapeHtml(String(r.salary ?? '-'));
+                                        const deadline = escapeHtml(String(r.deadline ?? ''));
+                                        out += `
                                 <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${escapeHtml(String(r.location || ''))}" data-fit-level="${fit}" data-content-score="${escapeHtml(String(r.content_score ?? r.computed_score ?? 0))}" data-raw-match="${escapeHtml(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
                                     <div class="flex-1 pr-6">
                                         <h3 class="text-lg font-bold">${title}</h3>
@@ -1971,21 +2065,21 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                     </div>
                                 </div>
                             `;
-                                        });
-                                        container.innerHTML = out;
-                                    } catch (e) {
-                                        console.error('rebuild DOM error', e);
-                                    }
+                                    });
+                                    container.innerHTML = out;
+                                } catch (e) {
+                                    console.error('rebuild DOM error', e);
                                 }
-                            } catch (e) {
-                                console.debug('pollOnce error', e);
                             }
+                        } catch (e) {
+                            console.debug('pollOnce error', e);
                         }
-                        pollOnce();
-                        setInterval(pollOnce, pollIntervalMs);
-                    } catch (e) {
-                        console.debug('polling setup failed', e);
                     }
-                })();
-            </script>
-        @endsection
+                    pollOnce();
+                    setInterval(pollOnce, pollIntervalMs);
+                } catch (e) {
+                    console.debug('polling setup failed', e);
+                }
+            })();
+        </script>
+    @endsection

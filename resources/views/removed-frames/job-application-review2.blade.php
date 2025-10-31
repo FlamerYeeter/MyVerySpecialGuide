@@ -23,7 +23,7 @@
       $jobAddress = '';
       $jobType = '';
       $jobId = request('job_id');
-  $csvPath = public_path('postings.csv');
+      $csvPath = public_path('postings.csv');
       if ($jobId && file_exists($csvPath)) {
         if (($handle = fopen($csvPath, 'r')) !== false) {
           $headers = fgetcsv($handle);
