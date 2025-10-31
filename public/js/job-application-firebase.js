@@ -3,7 +3,7 @@
 
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js';
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
-import { getFirestore, collection, addDoc, serverTimestamp, query, where, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js';
 import { signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js';
 
 let app, auth, db;
@@ -530,46 +530,5 @@ export function debugAuthLogging() {
     }).catch(e => console.warn('debugAuthLogging: ensureInit failed', e));
 
     return safeUnsub;
-}
-
-// Subscribe to the current user's applications collection in Firestore.
-// callback(docsArray, snapshot) will be invoked on initial attach and every change.
-// Returns an unsubscribe function.
-export async function subscribeToApplications(callback) {
-    await ensureInit();
-    // Wait for a signed-in user
-    if (!auth.currentUser) {
-        await new Promise((resolve) => {
-            const unsub = onAuthStateChanged(auth, (u) => {
-                if (u) { try { unsub(); } catch(e){}; resolve(); }
-            });
-            // fallback timeout: resolve after 5s even if no user
-            setTimeout(() => { try { unsub(); } catch(e){}; resolve(); }, 5000);
-        });
-    }
-    if (!auth.currentUser) {
-        // no signed-in user — return a noop unsubscribe
-        return function noopUnsub() {};
-    }
-    try {
-        const uid = auth.currentUser.uid;
-        const appsCol = collection(db, 'applications');
-        const q = query(appsCol, where('uid', '==', uid));
-        const unsub = onSnapshot(q, (snap) => {
-            const docs = [];
-            snap.forEach(d => {
-                const o = d.data();
-                try { o.__id = d.id; } catch(e) {}
-                docs.push(o);
-            });
-            try { callback(docs, snap); } catch (e) { console.debug('subscribeToApplications: callback error', e); }
-        }, (err) => {
-            console.debug('subscribeToApplications: snapshot error', err);
-        });
-        return function unsubscribe() { try { unsub(); } catch (e) { /* ignore */ } };
-    } catch (e) {
-        console.debug('subscribeToApplications failed', e);
-        return function noopUnsub() {};
-    }
 }
 
