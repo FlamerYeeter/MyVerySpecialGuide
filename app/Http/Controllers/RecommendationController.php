@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\Process\Process;
 use App\Jobs\GenerateRecommendations;
+use App\Services\RecommendationService;
 
 class RecommendationController extends Controller
 {
@@ -106,6 +107,8 @@ class RecommendationController extends Controller
 
         // honor a 'force' flag in the request to force regeneration for this uid (dev-friendly)
         $force = $request->input('force') ? true : false;
+    // If client requests a dynamic generation (no cache usage), respect it and return live recommendations
+    $dynamic = $request->input('dynamic') ? true : false;
     // placeholder for synchronous run result
     $result = null;
         $debug = $request->input('debug') ? true : false;
@@ -153,6 +156,17 @@ class RecommendationController extends Controller
                 usleep(150000);
             } catch (\Throwable $e) {
                 Log::warning('GenerateRecommendations force run failed: ' . $e->getMessage());
+            }
+        }
+        // If dynamic flag provided, generate recommendations live via PHP service and return immediately.
+        if ($dynamic) {
+            try {
+                $svc = app()->make(RecommendationService::class);
+                $list = $svc->generate($uid, 50);
+                return response()->json($list);
+            } catch (\Throwable $e) {
+                Log::warning('recommendations: dynamic generation failed: ' . $e->getMessage());
+                // fall through to cache/dispatch flow
             }
         }
         try {

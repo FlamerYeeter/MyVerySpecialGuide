@@ -275,6 +275,108 @@ class FirestoreAdminService
     }
 
     /**
+     * Get a single user document (converted) or null
+     */
+    public function getUser(string $firebaseUid): ?array
+    {
+        try {
+            if (!$this->projectId) return null;
+            $access = $this->getAccessToken();
+            if (!$access) return null;
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/users/" . urlencode($firebaseUid);
+            $resp = Http::withToken($access)->get($url);
+            if (!$resp->successful()) return null;
+            $doc = $resp->json();
+            $fields = $doc['fields'] ?? [];
+            $profile = [];
+            foreach ($fields as $k => $v) {
+                $profile[$k] = $this->convertFirestoreValue($v);
+            }
+            return $profile;
+        } catch (\Throwable $e) {
+            logger()->warning('FirestoreAdminService:getUser failed: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * List job documents under the 'jobs' collection and convert them to arrays.
+     * Returns associative array jobId => jobData
+     */
+    public function listJobs(): array
+    {
+        try {
+            if (!$this->projectId) return [];
+            $access = $this->getAccessToken();
+            if (!$access) return [];
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/jobs";
+            $resp = Http::withToken($access)->get($url, ['pageSize' => 1000]);
+            if (!$resp->successful()) return [];
+            $data = $resp->json();
+            $out = [];
+            if (!empty($data['documents']) && is_array($data['documents'])) {
+                foreach ($data['documents'] as $doc) {
+                    $name = $doc['name'] ?? '';
+                    $parts = explode('/', $name);
+                    $docId = end($parts);
+                    $fields = $doc['fields'] ?? [];
+                    $job = [];
+                    foreach ($fields as $k => $v) $job[$k] = $this->convertFirestoreValue($v);
+                    $out[$docId] = $job;
+                }
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            logger()->warning('FirestoreAdminService:listJobs failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
+     * List interaction documents (basic) and return a flat array of interaction arrays.
+     * Note: This pulls up to pageSize items via the REST list endpoint; for larger datasets consider a paginated approach.
+     */
+    public function listInteractions(): array
+    {
+        try {
+            if (!$this->projectId) return [];
+            $access = $this->getAccessToken();
+            if (!$access) return [];
+            $url = "httpss://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/interactions";
+        } catch (\Throwable $e) {
+            logger()->warning('FirestoreAdminService:listInteractions failed (build): ' . $e->getMessage());
+            // fallback to a safe implementation below
+        }
+
+        try {
+            if (!$this->projectId) return [];
+            $access = $this->getAccessToken();
+            if (!$access) return [];
+            // Use the standard documents:list endpoint which exists for a collection path
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/interactions";
+            $resp = Http::withToken($access)->get($url, ['pageSize' => 2000]);
+            if (!$resp->successful()) return [];
+            $data = $resp->json();
+            $out = [];
+            if (!empty($data['documents']) && is_array($data['documents'])) {
+                foreach ($data['documents'] as $doc) {
+                    $name = $doc['name'] ?? '';
+                    $parts = explode('/', $name);
+                    $docId = end($parts);
+                    $fields = $doc['fields'] ?? [];
+                    $it = ['id' => $docId];
+                    foreach ($fields as $k => $v) $it[$k] = $this->convertFirestoreValue($v);
+                    $out[] = $it;
+                }
+            }
+            return $out;
+        } catch (\Throwable $e) {
+            logger()->warning('FirestoreAdminService:listInteractions failed: ' . $e->getMessage());
+            return [];
+        }
+    }
+
+    /**
      * Set saved jobs array for a user. Overwrites previous list.
      */
     public function setSavedJobs(string $firebaseUid, array $jobIds): bool
@@ -301,6 +403,99 @@ class FirestoreAdminService
             logger()->warning('FirestoreAdminService:setSavedJobs failed: ' . $e->getMessage());
             return false;
         }
+    }
+
+    /**
+     * Upsert a job document under the 'jobs' collection.
+     * $docId: desired document id (string). If null, Firestore will assign one when creating.
+     * $jobData: associative array of key => value to store.
+     */
+    public function upsertJob(string $docId, array $jobData): bool
+    {
+        try {
+            if (!$this->projectId) return false;
+            $access = $this->getAccessToken();
+            if (!$access) return false;
+
+            // convert PHP array into Firestore fields structure
+            $fields = $this->convertToFirestoreFields($jobData);
+            $body = ['fields' => $fields];
+
+            // Try patch (update) first
+            $url = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/jobs/" . urlencode($docId);
+            $resp = Http::withToken($access)->patch($url, $body);
+            if ($resp->successful()) return true;
+
+            // Fallback: create with documentId
+            $createUrl = "https://firestore.googleapis.com/v1/projects/{$this->projectId}/databases/(default)/documents/jobs?documentId=" . urlencode($docId);
+            $createResp = Http::withToken($access)->post($createUrl, $body);
+            return $createResp->successful();
+        } catch (\Throwable $e) {
+            logger()->warning('FirestoreAdminService:upsertJob failed: ' . $e->getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Helper: convert a PHP associative array into Firestore "fields" representation.
+     */
+    private function convertToFirestoreFields(array $data): array
+    {
+        $out = [];
+        foreach ($data as $k => $v) {
+            if (is_null($v)) continue;
+            if (is_bool($v)) {
+                $out[$k] = ['booleanValue' => $v];
+            } elseif (is_int($v)) {
+                $out[$k] = ['integerValue' => (string)$v];
+            } elseif (is_float($v)) {
+                $out[$k] = ['doubleValue' => $v];
+            } elseif (is_array($v)) {
+                // if numeric-indexed array, store as arrayValue of stringValues where possible
+                $values = [];
+                $isMap = array_values($v) !== $v;
+                if ($isMap) {
+                    // mapValue
+                    $fields = [];
+                    foreach ($v as $kk => $vv) {
+                        // recurse for nested map
+                        $fields[$kk] = $this->convertScalarToFirestoreValue($vv);
+                    }
+                    $out[$k] = ['mapValue' => ['fields' => $fields]];
+                } else {
+                    foreach ($v as $it) {
+                        $values[] = $this->convertScalarToFirestoreValue($it);
+                    }
+                    $out[$k] = ['arrayValue' => ['values' => $values]];
+                }
+            } else {
+                // default to stringValue
+                $out[$k] = ['stringValue' => (string)$v];
+            }
+        }
+        return $out;
+    }
+
+    private function convertScalarToFirestoreValue($v)
+    {
+        if (is_null($v)) return ['nullValue' => null];
+        if (is_bool($v)) return ['booleanValue' => $v];
+        if (is_int($v)) return ['integerValue' => (string)$v];
+        if (is_float($v)) return ['doubleValue' => $v];
+        if (is_array($v)) {
+            // nested array -> map or list
+            $isMap = array_values($v) !== $v;
+            if ($isMap) {
+                $fields = [];
+                foreach ($v as $kk => $vv) $fields[$kk] = $this->convertScalarToFirestoreValue($vv);
+                return ['mapValue' => ['fields' => $fields]];
+            } else {
+                $vals = [];
+                foreach ($v as $it) $vals[] = $this->convertScalarToFirestoreValue($it);
+                return ['arrayValue' => ['values' => $vals]];
+            }
+        }
+        return ['stringValue' => (string)$v];
     }
 
     private function base64UrlEncode(string $input): string

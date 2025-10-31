@@ -961,7 +961,7 @@ Route::post('/admin/register/submit', [AdminRegistrationController::class, 'subm
 
 // Admin area routes (protected). Use the middleware class directly to avoid Kernel edits.
 Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])->prefix('admin')->group(function () {
-    Route::get('/approval', function () { return view('admin.admin-approval'); })->name('admin.approval');
+    Route::get('/approval', [\App\Http\Controllers\AdminApprovalController::class, 'index'])->name('admin.approval');
     Route::get('/newadmin', function () { return view('admin.admin-approval-newadmin'); })->name('admin.newadmin');
     Route::get('/company', function () { return view('admin.admin-approval-company'); })->name('admin.company');
     Route::get('/expert', function () { return view('admin.admin-approval-expert'); })->name('admin.expert');
@@ -1155,25 +1155,83 @@ Route::get('/job-matches', function () {
 
     $recommendations = [];
     if ($resolvedUid) {
-        $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $resolvedUid ?: 'anonymous');
-        $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
-        if (file_exists($cachePath)) {
-            $raw = @file_get_contents($cachePath);
-            $decoded = $raw ? json_decode($raw, true) : null;
-            if (is_array($decoded)) {
-                // If file contains a mapping keyed by uid, prefer that, else treat as direct array
-                if (isset($decoded[$resolvedUid]) && is_array($decoded[$resolvedUid])) {
-                    $recommendations = $decoded[$resolvedUid];
-                } elseif (isset($decoded[$safeUid]) && is_array($decoded[$safeUid])) {
-                    $recommendations = $decoded[$safeUid];
-                } else {
-                    $recommendations = $decoded;
-                }
-            }
+        try {
+            // Use the PHP RecommendationService to generate live per-user recommendations
+            $svc = app(\App\Services\RecommendationService::class);
+            // default to 50 results server-side and let the view paginate
+            $recommendations = $svc->generate($resolvedUid, 50);
+        } catch (\Throwable $e) {
+            logger()->warning('job-matches: RecommendationService failed: ' . $e->getMessage());
+            $recommendations = [];
         }
     }
 
-    return view('job-matches', ['recommendations' => $recommendations]);
+    // Build a content-based (CBF) list and cache it per-user for a short TTL to reduce page latency
+    $cbfList = [];
+    $topCompanies = [];
+    if ($resolvedUid) {
+        try {
+            $cacheKey = 'reco_cbf_' . sha1($resolvedUid);
+            $cbfList = \Illuminate\Support\Facades\Cache::remember($cacheKey, 300, function() use ($resolvedUid) {
+                $svc = app(\App\Services\RecommendationService::class);
+                $raw = $svc->generate($resolvedUid, 100);
+                if (!is_array($raw)) return [];
+                usort($raw, function($a, $b) { $av = $a['cbf'] ?? 0; $bv = $b['cbf'] ?? 0; if ($av == $bv) return 0; return ($av > $bv) ? -1 : 1; });
+                return array_slice($raw, 0, 10);
+            });
+        } catch (\Throwable $e) {
+            logger()->warning('job-matches: CBF generation failed: ' . $e->getMessage());
+            $cbfList = [];
+        }
+    }
+
+    // If CBF list is empty (e.g., generator returned no results), provide a safe fallback
+    // so the UI shows reasonable recent jobs instead of the old 'no personalized matches' notice.
+    if (empty($cbfList) && $resolvedUid) {
+        try {
+            $fs = app(\App\Services\FirestoreAdminService::class);
+            $allJobs = $fs->listJobs();
+            if (is_array($allJobs) && !empty($allJobs)) {
+                // sort by posted_at or created_at (newest first)
+                uasort($allJobs, function($a, $b) {
+                    $ta = strtotime($a['posted_at'] ?? $a['created_at'] ?? '1970-01-01');
+                    $tb = strtotime($b['posted_at'] ?? $b['created_at'] ?? '1970-01-01');
+                    return $tb <=> $ta;
+                });
+                $fallback = [];
+                foreach ($allJobs as $jid => $jdata) {
+                    if (count($fallback) >= 10) break;
+                    $fallback[] = [
+                        'id' => $jid,
+                        'title' => $jdata['title'] ?? '',
+                        'company' => $jdata['company'] ?? '',
+                        'score' => 0.0,
+                        'cbf' => 0.0,
+                        'cf' => 0.0,
+                        'data' => $jdata,
+                    ];
+                }
+                $cbfList = $fallback;
+            }
+        } catch (\Throwable $__e) {
+            // leave cbfList empty if fallback also fails
+        }
+    }
+
+    // Prepare recommended companies summary from hybrid recommendations passed into the view
+    try {
+        foreach (($recommendations ?? []) as $r) {
+            $c = trim((string)($r['company'] ?? $r['Company'] ?? ''));
+            if ($c === '') continue;
+            $recommendedCompanies[$c] = ($recommendedCompanies[$c] ?? 0) + 1;
+        }
+        if (!empty($recommendedCompanies)) {
+            arsort($recommendedCompanies);
+            $topCompanies = array_slice(array_keys($recommendedCompanies), 0, 6);
+        }
+    } catch (\Throwable $__e) { $topCompanies = []; }
+
+    return view('job-matches', ['recommendations' => $recommendations, 'cbfList' => $cbfList, 'topCompanies' => $topCompanies]);
 })->name('job.matches');
 
 // API for guardian to approve/flag jobs (stored locally in storage/app/guardian_job_approvals.json)

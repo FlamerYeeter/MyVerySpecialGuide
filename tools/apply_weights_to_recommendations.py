@@ -1,3 +1,9 @@
+"""
+DEPRECATED: apply_weights_to_recommendations.py removed. Use PHP RecommendationService for scoring.
+"""
+import sys
+print('DEPRECATED: apply_weights_to_recommendations.py removed')
+sys.exit(0)
 #!/usr/bin/env python3
 """
 Apply ensemble weights from public/best_weights.json to public/recommendations.json and write public/recommendations_rescored.json
