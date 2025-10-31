@@ -1354,37 +1354,8 @@
                     },
                     body: JSON.stringify(Object.assign(body, { force: false }))
                 });
-
-                // If server scheduled generation (202), poll until ready (best-effort)
-                if (resp && resp.status === 202) {
-                    try {
-                        const statusNode = document.getElementById('reco-listener-status');
-                        if (statusNode) statusNode.textContent = 'reco: generation queued (polling)';
-                    } catch(e) {}
-                    const maxAttempts = 12; // up to ~36s
-                    const delayMs = 3000;
-                    let got = null;
-                    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-                        await new Promise(r => setTimeout(r, delayMs));
-                        try {
-                            const pollResp = await fetch('{{ url('/api/recommendations/user') }}', {
-                                method: 'POST',
-                                credentials: 'same-origin',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                body: JSON.stringify(Object.assign(body, { force: false }))
-                            });
-                            if (pollResp && pollResp.ok) { got = await pollResp.json().catch(()=>null); break; }
-                        } catch (e) { console.debug('poll attempt error', e); }
-                    }
-                    if (!got) return; // nothing to render yet
-                    var json = got;
-                } else {
-                    if (!resp || (!resp.ok && resp.status !== 202)) return;
-                    var json = await resp.json().catch(()=>null);
-                }
+                if (!resp.ok && resp.status !== 202) return;
+                const json = await resp.json().catch(()=>null);
                 if (!json) return;
                 // normalize to array
                 let recs = [];
