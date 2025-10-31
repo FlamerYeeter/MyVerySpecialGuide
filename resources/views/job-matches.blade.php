@@ -9,7 +9,6 @@
     <section class="bg-[#FCD34D] flex items-center justify-center py-16 px-6 sm:px-12 lg:px-20">
         <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-10 max-w-5xl w-full">
 
-            <!-- Icon -->
             <div class="flex-shrink-0 flex justify-center">
                 <img src="{{ asset('image/jobsicon.png') }}" alt="Job Search Icon" class="w-32 sm:w-40 lg:w-52">
             </div>
@@ -29,8 +28,10 @@
 
     <section class="max-w-6xl mx-auto mt-12 px-6">
         <!-- Title -->
-        <h3 class="text-5xl sm:text-4xl font-extrabold text-[#1E3A8A] mb-8 text-center tracking-wide">
-            🔍 Filter Jobs
+        <h3
+            class="text-5xl sm:text-4xl font-extrabold text-[#1E3A8A] mb-8 text-center tracking-wide flex items-center justify-center gap-3">
+            <img src="https://img.icons8.com/ios-filled/50/1E3A8A/search--v1.png" alt="Search Icon" class="w-10 h-10">
+            Filter Jobs
         </h3>
 
         <!-- Filter Form -->
@@ -137,8 +138,9 @@
 
         <!-- Instruction -->
         <div class="mt-12 bg-blue-50 border-l-8 border-blue-500 rounded-2xl p-6 text-center shadow-md">
-            <p class="text-xl font-bold text-[#1E3A8A] mb-2">
-                🧭 How to use the filter:
+            <p class="text-xl font-bold text-[#1E3A8A] mb-2 flex items-center justify-center gap-2">
+                <img src="https://img.icons8.com/color/48/compass--v1.png" alt="Compass Icon" class="w-7 h-7">
+                How to use the filter:
             </p>
             <p class="text-lg text-gray-800 font-medium leading-relaxed">
                 Click the dropdowns above and choose what you like — the system will show jobs that match your choice.
@@ -147,7 +149,6 @@
                 (Piliin ang mga opsyon sa itaas. Ipapakita ng system ang mga trabahong akma sa iyong pinili.)
             </p>
         </div>
-
 
         <!-- location filter removed per request -->
         <!-- Filter is automatic now: selects will submit the form on change -->
@@ -192,14 +193,14 @@
 
     <!-- Match Notice -->
     <!--
-                        <div class="container mx-auto mt-6 px-4">
-                            <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-lg">
-                                <p class="text-gray-800 font-medium flex items-center">
-                                    💡 These jobs match your skills and preferences!
-                                </p>
-                                <p class="italic text-sm text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)</p>
-                            </div>
-                    -->
+                                    <div class="container mx-auto mt-6 px-4">
+                                        <div class="bg-green-100 border-l-4 border-green-500 p-4 rounded-lg">
+                                            <p class="text-gray-800 font-medium flex items-center">
+                                                💡 These jobs match your skills and preferences!
+                                            </p>
+                                            <p class="italic text-sm text-gray-600">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)</p>
+                                        </div>
+                                -->
 
     @php
         // Try to load evaluation metrics from public/eval_metrics.json
@@ -471,10 +472,13 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
     <section
         class="bg-gradient-to-r from-[#FFEDD5] to-[#FEF3C7] mx-6 sm:mx-12 lg:mx-20 rounded-2xl p-8 mt-8 shadow-lg border-l-8 border-[#F59E0B]">
         <div class="flex items-start gap-6">
+
             <div
-                class="flex items-center justify-center bg-[#FBBF24] text-white w-16 h-16 rounded-full text-3xl shadow-md">
-                🧑‍⚕️
+                class="flex items-center justify-center bg-white w-20 h-20 rounded-full shadow-md border-4 border-[#FBBF24] overflow-hidden">
+                <img src="https://img.icons8.com/color/96/medical-doctor.png" alt="Therapist Icon"
+                    class="w-12 h-12 object-contain">
             </div>
+
             <div class="text-gray-800">
                 <h2 class="text-2xl font-bold text-[#92400E]">Therapist Assessment Required</h2>
                 <p class="text-lg mt-2 leading-relaxed">
@@ -494,16 +498,28 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
     <!-- Job Match Notice -->
     <section class="bg-[#10B981] text-white mx-6 sm:mx-12 lg:mx-20 rounded-2xl p-8 mt-8 shadow-lg">
-        <div class="flex flex-col sm:flex-row justify-between items-center">
-            <div class="text-center sm:text-left">
-                <p class="text-2xl font-bold">💡 Jobs Matched to Your Skills & Preferences</p>
-                <p class="text-base italic mt-1">(Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)</p>
+        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
+
+            <div class="flex items-center gap-3 text-center sm:text-left">
+                <div
+                    class="flex items-center justify-center bg-white w-12 h-12 rounded-full shadow-md border-4 border-[#0EA5E9] overflow-hidden">
+                    <img src="image/bulb.png" alt="Bulb Icon" class="w-8 h-8 object-contain">
+                </div>
+
+                <div>
+                    <p class="text-2xl font-bold">Jobs Matched to Your Skills & Preferences</p>
+                    <p class="text-base italic mt-1">
+                        (Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)
+                    </p>
+                </div>
             </div>
-            <button
-                class="bg-white text-[#00C853] font-semibold rounded-full px-6 py-3 mt-4 sm:mt-0 text-lg shadow-md hover:shadow-lg transition">
-                🌟 All Matches (2)
-            </button>
-        </div>
+            <div
+                class="inline-flex items-center gap-2 rounded-full px-6 py-2 text-lg font-semibold text-white border-2 border-white bg-[#10B981]">
+                <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="Star icon" class="w-7 h-7" />
+
+                <!-- Text -->
+                <span>All Matches (2)</span>
+            </div>
     </section>
 
     <!-- Job Card -->
@@ -541,8 +557,10 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     <div>
                         <h3 class="font-bold text-3xl text-gray-900">Pet Care Assistant</h3>
                         <p class="text-gray-700 text-2xl font-medium mt-2">iPet Club</p>
-                        <p class="text-gray-600 text-lg mt-1 flex items-center gap-1">
-                            📍 <span>Taguig City, Metro Manila</span>
+                        <p class="text-gray-600 text-lg mt-1 flex items-center gap-2">
+                            <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location Icon"
+                                class="w-6 h-6">
+                            <span>Taguig City, Metro Manila</span>
                         </p>
 
                         <!-- Job Tags -->
@@ -613,13 +631,16 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         <!-- Instruction Section Wrapper -->
         <div class="space-y-8">
 
-            <!-- Apply Button Instruction  -->
+            <!-- Apply Button Instruction -->
             <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-3xl border-l-8 border-[#2563EB] p-8 shadow-lg">
                 <div class="flex items-start gap-4">
+
                     <div
-                        class="flex items-center justify-center bg-[#2563EB] text-white w-14 h-14 rounded-full text-2xl shadow-md">
-                        🧑‍⚕️
+                        class="flex items-center justify-center bg-white w-16 h-16 rounded-full shadow-md border-4 border-[#2563EB] overflow-hidden">
+                        <img src="https://img.icons8.com/color/96/medical-doctor.png" alt="Therapist Icon"
+                            class="w-10 h-10 object-contain">
                     </div>
+
                     <div>
                         <p class="text-xl text-gray-900 font-semibold leading-snug">
                             The <span class="text-[#2563EB] font-bold">“Apply”</span> button will be available
@@ -643,9 +664,11 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 class="bg-gradient-to-r from-[#E0F7F6] to-[#C6F0EF] rounded-3xl border-l-8 border-[#55BEBB] p-8 shadow-lg">
                 <div class="flex items-start gap-4">
                     <div
-                        class="flex items-center justify-center bg-[#55BEBB] text-white w-14 h-14 rounded-full text-2xl shadow-md">
-                        💡
+                        class="flex items-center justify-center bg-white w-16 h-16 rounded-full shadow-md border-4 border-[#55BEBB] overflow-hidden">
+                        <img src="https://img.icons8.com/color/96/info--v1.png" alt="Info Icon"
+                            class="w-10 h-10 object-contain">
                     </div>
+
                     <div>
                         <p class="text-xl text-gray-900 font-semibold leading-snug">
                             Click the <span class="text-[#55BEBB] font-bold">“Details”</span> button to learn more about
@@ -663,9 +686,11 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-3xl border-l-8 border-green-500 p-8 shadow-lg">
                 <div class="flex items-start gap-4">
                     <div
-                        class="flex items-center justify-center bg-green-500 text-white w-14 h-14 rounded-full text-2xl shadow-md">
-                        💾
+                        class="flex items-center justify-center bg-white w-16 h-16 rounded-full shadow-md border-4 border-green-500 overflow-hidden">
+                        <img src="https://img.icons8.com/color/96/save-as.png" alt="Saved Jobs Icon"
+                            class="w-10 h-10 object-contain">
                     </div>
+
                     <div>
                         <a href="#" class="text-green-700 font-bold text-2xl hover:underline">Saved Jobs</a>
                         <p class="text-lg text-gray-900 mt-3 leading-snug">
@@ -716,7 +741,11 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                         <!-- Job Info -->
                         <div>
                             <h3 class="font-bold text-2xl text-gray-800">Shakey’s Service Crew</h3>
-                            <p class="text-lg text-gray-600 mt-2">📍 Eastwood • Taguig City, PH</p>
+                            <p class="text-lg text-gray-600 mt-2 flex items-center gap-2">
+                                <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location Icon"
+                                    class="w-6 h-6">
+                                Eastwood • Taguig City, PH
+                            </p>
 
                             <!-- Tags -->
                             <div class="flex flex-wrap gap-2 mt-2">
@@ -770,6 +799,70 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 </div>
             </section>
 
+            <!-- ================= THERAPIST ASSESSMENT MODAL ================= -->
+            <div id="assessmentModal"
+                class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
+                <div class="bg-white rounded-2xl shadow-2xl p-10 max-w-2xl w-full mx-4 relative animate-fadeIn">
+
+                    <!-- Close Button -->
+                    <button id="closeModalBtn"
+                        class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-3xl font-bold">&times;</button>
+
+                    <!-- Modal Header -->
+                    <div class="flex items-center gap-3 mb-6">
+                        <i class="ri-file-text-line text-[#2563EB] text-4xl"></i>
+                        <h2 class="text-2xl font-bold text-[#1E3A8A]">Notice: Assessment Scheduling</h2>
+                    </div>
+
+                    <!-- Modal Content -->
+                    <p class="text-lg text-gray-800 font-semibold mb-4">
+                        Thank you for applying for an assessment!
+                    </p>
+
+                    <p class="text-gray-700 text-base mb-4 leading-relaxed">
+                        A <span class="font-semibold text-[#1E3A8A]">licensed therapist</span> will review your request and
+                        <span class="font-semibold text-[#1E3A8A]">contact you shortly to schedule your assessment.</span>
+                    </p>
+
+                    <p class="text-gray-800 font-semibold mt-6 mb-2">Please note:</p>
+                    <ul class="list-disc pl-6 text-gray-700 space-y-2 text-base">
+                        <li>
+                            The <span class="font-semibold">assessment must be completed</span> before you can proceed with
+                            your
+                            <span class="font-semibold">job application</span>.
+                        </li>
+                        <li>
+                            You will receive a <span class="font-semibold">notification or email</span> with the date and
+                            time of your
+                            assessment once it is confirmed.
+                        </li>
+                    </ul>
+
+                    <!-- Assessment progress page -->
+                    <div class="mt-5 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                        <i class="ri-progress-line text-[#2563EB] text-2xl mt-1"></i>
+                        <p class="text-gray-700 text-base leading-relaxed">
+                            You can view the status of your applied assessment anytime on the
+                            <span class="font-semibold text-[#1E3A8A]">Assessment Progress</span> page.
+                        </p>
+                    </div>
+
+                    <div class="mt-6 flex items-center gap-2 text-[#2563EB] italic">
+                        <i class="ri-calendar-event-line text-xl"></i>
+                        <span class="text-base">Please keep an eye on your messages or email for further updates.</span>
+                    </div>
+
+                    <!-- Close Button at Bottom -->
+                    <div class="mt-8 text-right">
+                        <button id="okModalBtn"
+                            class="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-6 py-3 rounded-lg text-lg transition-all">
+                            Okay, Got It
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
 
             <!-- BACK TO TOP BUTTON -->
             <button id="backToTopBtn"
@@ -782,6 +875,42 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 </svg>
                 <span>Back to Top</span>
             </button>
+
+            <script>
+                document.addEventListener("DOMContentLoaded", () => {
+                    // Select all buttons with exact text "Apply for Therapist Assessment"
+                    const openModalBtns = Array.from(document.querySelectorAll("button"))
+                        .filter(btn => btn.textContent.trim() === "Apply for Therapist Assessment");
+
+                    const modal = document.getElementById("assessmentModal");
+                    const closeModalBtn = document.getElementById("closeModalBtn");
+                    const okModalBtn = document.getElementById("okModalBtn");
+
+                    // Open modal when button is clicked
+                    openModalBtns.forEach(btn => {
+                        btn.addEventListener("click", () => {
+                            modal.classList.remove("hidden");
+                            modal.classList.add("flex"); // Ensure it's visible and centered
+                        });
+                    });
+
+                    // Close modal when clicking "X" or "OK"
+                    [closeModalBtn, okModalBtn].forEach(btn => {
+                        btn.addEventListener("click", () => {
+                            modal.classList.add("hidden");
+                            modal.classList.remove("flex");
+                        });
+                    });
+
+                    // Close modal when clicking outside of it
+                    modal.addEventListener("click", (e) => {
+                        if (e.target === modal) {
+                            modal.classList.add("hidden");
+                            modal.classList.remove("flex");
+                        }
+                    });
+                });
+            </script>
 
 
             <!-- Flag Toggle Script -->

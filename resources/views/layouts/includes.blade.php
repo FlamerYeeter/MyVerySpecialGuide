@@ -48,7 +48,7 @@
           </a>
           <a href="{{ route('career.goals.progress') }}"
             class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
-            Goals & Progress
+            Assessment Progress
           </a>
           <a href="{{ route('why.this.job.1') }}"
             class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
@@ -77,6 +77,9 @@
             <form method="POST" action="{{ route('logout') }}">
               @csrf
              {{-- Use same look as other dropdown links so color/position match --}}
+             <button type="submit"
+                class="w-full block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">My Job Applications</button>
+            </form>
               <button type="submit"
                 class="w-full block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">Logout</button>
             </form>
