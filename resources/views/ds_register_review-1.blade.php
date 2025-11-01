@@ -107,55 +107,251 @@
         <!-- Review Sections -->
         <div id="reviewContainer" class="mt-10 space-y-8">
 
-            <!-- Personal Info -->
+            <!-- Form -->
+        <form id="registrationForm" class="mt-10 space-y-10 text-left">
+            
+        <!-- Personal Information -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                <h3
+                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
                     Personal Information
                 </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-gray-800">
-                    <p><span class="font-semibold">First Name:</span> <span id="r_first_name"></span></p>
-                    <p><span class="font-semibold">Last Name:</span> <span id="r_last_name"></span></p>
-                    <p><span class="font-semibold">Age:</span> <span id="r_age"></span></p>
-                    <p><span class="font-semibold">Email:</span> <span id="r_email"></span></p>
-                    <p><span class="font-semibold">Phone:</span> <span id="r_phone"></span></p>
-                    <p class="col-span-3"><span class="font-semibold">Address:</span> <span id="r_address"></span></p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                   
+                <!-- First Name -->
+                        <div>
+                        <label for="first_name"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            First Name
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
+
+                        <!-- Static text display -->
+                        <p id="first_name" 
+                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                        </p>
+                        </div>
+
+                    <!-- Last Name -->
+                    <div>
+                        <label for="last_name"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Last Name 
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
+
+                       <!-- Static text display -->
+                        <p id="Last_name" 
+                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                    </div>
+
+                    <!-- Age -->
+                    <div>
+                        <label for="age"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Age 
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Edad</p>
+                        
+                         <!-- Static text display -->
+                        <p id="Age" 
+                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                   
+                <!-- Email -->
+                    <div>
+                        <label for="email"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Email 
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
+
+                         <!-- Static text display -->
+                        <p id="Email" 
+                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                    </div>
+
+                    <!-- Contact Number -->
+                    <div>
+                        <label for="phone"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Contact Number 
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
+                        <input   id="phone" 
+                                type="tel" 
+                               
+                                readonly
+                                class="mt-1 w-full border border-gray-300 rounded-md bg-gray-50 text-gray-800 px-3 py-2 focus:ring focus:ring-0 focus:outline-none cursor-default" />
+                    </div>
+                </div>
+
+                <!-- Address -->
+                    <div class="mt-6">
+                    <label for="address" class="font-semibold text-gray-800 text-sm sm:text-base">
+                        Address
+                    </label>
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
+
+                    <input id="address" 
+                            type="text" 
+                           
+                            readonly
+                              class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
                 </div>
             </div>
 
             <!-- DS Type -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
                 <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Additional Information
+                    Type of Down Syndrome
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
-                    <p><span class="font-semibold">Type of Down Syndrome:</span> <span id="r_dsType"></span></p>
+                    <!--Static text display -->
+                    <div class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                    <p><span class="font-semibold"></span> <span id="r_dsType"></span></p>
+
+                  
+                    </div>
                 </div>
             </div> 
 
-            <!-- Guardian Info -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+          <!-- Guardian Information -->
+                <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 mb-10">
+                <h3
+                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
                     Guardian Information
                 </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 text-gray-800">
-                    <p><span class="font-semibold">First Name:</span> <span id="r_guardian_first"></span></p>
-                    <p><span class="font-semibold">Last Name:</span> <span id="r_guardian_last"></span></p>
-                    <p><span class="font-semibold">Email:</span> <span id="r_guardian_email"></span></p>
-                    <p><span class="font-semibold">Phone:</span> <span id="r_guardian_phone"></span></p>
-                    <p><span class="font-semibold">Relationship:</span> <span id="r_guardian_relationship"></span></p>
-                </div>
-            </div>
 
-            <!-- Account Info -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                <!-- Guardian First Name -->
+                    <div>
+                    <label for="guardian_first"
+                        class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                        First Name
+                    </label>
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
+
+                        <!-- Static text display -->
+                        <p id="first_name" 
+                           class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                        </p>
+                    </div>
+
+                    <!-- Guardian Last Name -->
+                    <div>
+                    <label for="guardian_last"
+                        class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                        Last Name
+                    </label>
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
+
+                   
+                        <!-- Static text display -->
+                        <p id="Last_name" 
+                            class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  
+                <!-- Guardian Email -->
+                    <div>
+                    <label for="guardian_email"
+                        class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                        Email
+                    </label>
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
+                    
+                        <!-- Static text display -->
+                        <p id="Email" 
+                            class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                        </p>
+                    </div>
+
+                    <!-- Guardian Contact -->
+                    <div>
+                    <label for="guardian_phone"
+                        class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                        Contact Number
+                    </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
+                        <input   id="phone" 
+                                type="tel" 
+                              
+                                readonly
+                                class="mt-1 w-full border border-gray-300 rounded-md bg-gray-50 text-gray-800 px-3 py-2 focus:ring focus:ring-0 focus:outline-none cursor-default" />
+                    </div>
+                </div>
+
+                <!-- Relationship -->
+                <div class="mt-6">
+                    <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">
+                    Relationship to User
+                    </label>
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa Gagamit</p>
+                   
+                     <!-- Static text display -->
+                        <p id="guardian_relationship"
+                        class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                        
+                        </p>
+
+                           
+                        </p>
+                </div>
+                </div>
+
+
+                <!-- Account Details -->
+                <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+                <h3
+                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
                     Account Details
                 </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
-                    <p><span class="font-semibold">Username:</span> <span id="r_username"></span></p>
-                    <p><span class="font-semibold">Password:</span> <span id="r_password"></span></p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Username -->
+                    <div>
+                    <label for="username" class="font-semibold flex items-center gap-1">Username</label>
+                    <p id="username"
+                          class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                    
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                    <label for="password" class="font-semibold flex items-center gap-1">Password</label>
+                    <p id="password"
+                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
+                        title="Password must have at least 1 uppercase letter, 1 lowercase letter, 1 number, and be 8+ characters long."
+                        class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
+                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
+                    <p id="passwordMessage" 
+                        class="mt-1 text-sm text-red-500 italic hidden">
+                        Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
+                    </p>
+                    </div>
                 </div>
-            </div>
+                </div>
+
 
             <!-- Proof of Membership -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">

@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Approval</title>
+    <title>Registration: Review Information</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
     /* Floating animations */
@@ -15,17 +14,48 @@
     .animate-float-slow { animation: float 5s ease-in-out infinite; }
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
-    .tts-btn.speaking {
-        background-color: #2563eb !important;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
-        transform: scale(1.03);
-    }
+
+    /* selectable card visual (shared style used across review pages) */
+        .selectable-card {
+            border: 2px solid transparent;
+            transition:
+                transform .18s ease,
+                box-shadow .18s ease,
+                border-color .18s ease;
+        }
+
+        .selectable-card.selected {
+            border-color: #2563eb;
+            box-shadow: 0 10px 30px rgba(37, 99, 235, 0.14);
+            transform: translateY(-6px);
+        }
+
+        /* show small check badge when a card is selected */
+        .selectable-card.selected::after,
+        .guardian-card.selected::after,
+        .education-card.selected::after,
+        .skills-card.selected::after,
+        .workexp-card.selected::after {
+            content: "";
+            position: absolute;
+            right: 10px;
+            bottom: 10px;
+            width: 44px;
+            height: 44px;
+            background-image: url('/image/checkmark.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            pointer-events: none;
+        }
+        /* TTS button visual state */
+        .tts-btn { cursor: pointer; }
+        .tts-btn.speaking { transform: scale(1.04); box-shadow: 0 8px 24px rgba(30,64,175,0.12); }
     </style>
 </head>
 
 <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
 
-    <!-- Floating Mascots (hidden on very small screens to avoid clutter) -->
+    <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
         class="hidden sm:block fixed left-6 top-1/3 w-28 lg:w-36 opacity-90 animate-float-slow z-0">
     <img src="image/obj7.png" alt="Triangle Mascot"
@@ -38,7 +68,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('dataprivacy') }}')">
+    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerjobpreference1') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -48,73 +78,34 @@
 
     <!-- Main Container -->
     <div
-        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 relative z-10 border-4 border-blue-200">
 
         <!-- Header -->
         <div class="text-center mt-6">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">Create an
-                Account</h1>
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">
+                Edit Your Information
+            </h1>
             <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-24 sm:w-32 md:w-36 mb-6">
 
-            <!-- Instruction Box -->
-            <div class="bg-white rounded-3xl p-5 sm:p-7 md:p-8 border-4 border-blue-300 shadow-lg text-left">
-                <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex flex-wrap items-center gap-x-3">
-                    For Admin Approval
-                    <span class="text-gray-600 italic text-sm sm:text-base">(Pahintulot sa Admin)</span>
-                    <button type="button" class="text-xl hover:scale-110 transition-transform tts-btn"
-                        data-tts-en="For Admin Approval. Please type your information inside the box. The fields marked with a star must be filled in and attach a valid proof of membership."
-                        data-tts-tl="Pahintulot sa Admin. Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may bituin ay dapat sagutan at mag-upload ng patunay na miyembro."
-                        aria-label="Play audio for admin instruction">🔊</button>
+            <div class="bg-white rounded-3xl p-5 sm:p-7 border-4 border-blue-300 shadow-lg text-left">
+                <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex items-center gap-x-3">
+                    Edit Your Details
+                    <button type="button" class="tts-btn text-xl hover:scale-110 transition-transform"
+                        data-tts-en="Please review your details. Make sure all your information below is correct before going to the next page."
+                        data-tts-tl="Siguraduhing tama ang lahat ng impormasyong nakasaad bago lumipat ng pahina."
+                        aria-label="Read this section aloud in English then Filipino"></button>
                 </h2>
                 <p class="text-gray-800 text-sm sm:text-base mt-2">
-                    Please type your information inside the box. The text with a ⭐ star must be filled in and attach a
-                    valid proof of membership.
+                    You can edit or update your personal information below to reflect any recent changes.
                 </p>
-                <p class="text-gray-600 italic text-sm sm:text-base mt-4 border-b-2 border-blue-400 pb-2">
-                    (Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may ⭐ bituin ay dapat sagutan at
-                    mag-upload ng patunay na miyembro ka ng organisasyon.)
+                <p class="text-gray-600 italic text-sm sm:text-base mt-3">
+                    (Maaari mong i-edit o i-update ang iyong personal na impormasyon sa ibaba upang maipakita ang mga bagong pagbabago.)
                 </p>
             </div>
         </div>
 
-        <!-- Overall Information Note -->
-        <div
-            class="relative bg-[#EEF4FF] border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
-
-            <!-- Audio Button -->
-            <button type="button" aria-label="Play audio for information note"
-                class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
-                text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-                data-tts-en="Please fill out all the required information below accurately. The details you provide help our administrators verify your account, confirm your eligibility, and ensure proper communication during the approval process."
-                data-tts-tl="Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account, kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso ng pag-apruba.">
-                🔊
-            </button>
-
-            <div class="flex items-start gap-3 pr-20"> <!-- Added right padding here -->
-                <!-- Info Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
-                </svg>
-
-                <!-- Text Content -->
-                <div class="flex-1">
-                    <p class="font-semibold text-sm sm:text-base leading-relaxed text-blue-800">
-                        Please fill out all the required information below accurately. The details you provide help our
-                        administrators verify your account, confirm your eligibility, and ensure proper communication
-                        during the approval process.
-                    </p>
-                    <p class="italic text-gray-600 text-xs sm:text-sm mt-2 leading-relaxed">
-                        (Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng
-                        iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account,
-                        kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso
-                        ng pag-apruba.)
-                    </p>
-                </div>
-            </div>
-        </div>
-
+        <!-- Review Sections -->
+        <div id="reviewContainer" class="mt-10 space-y-8">
 
 
         <!-- Form -->
@@ -231,7 +222,7 @@
                         <option value="">-- Select Type --</option>
                         <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
                         <option value="Mosaic Down Syndrome">Mosaic Down Syndrome</option>
-                        <option value="Translocation Down">Translocation Down Syndrome</option>
+                        <option value="Translocation Down Syndrome">Translocation Down Syndrome</option>
                     </select>
                 </div>
             </div>
@@ -326,9 +317,9 @@
                         <p class="text-gray-500 text-xs mt-1">(example: @juancruz)</p>
                     </div>
 
-                    <!-- Create Password -->
+                    <!-- Password -->
                     <div>
-                        <label for="password" class="font-semibold flex items-center gap-1">Create Password
+                        <label for="password" class="font-semibold flex items-center gap-1">Password
                             <span>⭐</span></label>
                         <input   id="password" 
                                     name="password" 
@@ -343,9 +334,9 @@
                                 Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
                                 </p>
                     </div>
-                </div>
-                 
-
+                </div>    
+                
+                
                 <!-- Password Rules -->
                 <div
                     class="grid grid-cols-1 md:grid-cols-2 bg-blue-50 border border-blue-300 rounded-xl p-6 mt-6 text-sm gap-6 shadow-inner">
@@ -401,7 +392,7 @@
             </div>
 
             <!-- Proof of Membership -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-300 mt-6">
                 <h3
                     class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
                     Proof of Membership <span class="text-gray-500 text-m">(optional)</span>
@@ -463,10 +454,13 @@
                         </div>
                         <div id="modalContent"
                             class="flex-1 bg-gray-100 overflow-auto flex items-center justify-center p-4">
+                            
+                            
                             <!-- File content will appear here -->
                         </div>
                     </div>
                 </div>
+
 
                 <!-- Script -->
                 <script>
@@ -570,7 +564,7 @@
                         });
                     })();
 
-                    const phoneInput = document.getElementById('phone');
+                     const phoneInput = document.getElementById('phone');
 
                     phoneInput.addEventListener('input', () => {
                         let value = phoneInput.value;
@@ -599,8 +593,8 @@
                         // 6️⃣ Update input value
                         phoneInput.value = value;
                     });
-                  
-                   window.addEventListener('load', () => {
+
+                    window.addEventListener('load', () => {
                     document.getElementById('first_name').value = '';
                     document.getElementById('last_name').value = '';
                     document.getElementById('age').value = '';
@@ -613,9 +607,8 @@
                     document.getElementById('guardian_email').value = '';
                     document.getElementById('guardian_phone').value = '';
                     document.getElementById('guardian_relationship').selectedIndex = 0;
-                });
-
-                const passwordInput = document.getElementById('password');
+              
+              const passwordInput = document.getElementById('password');
                 const passwordMessage = document.getElementById('passwordMessage');
                 const confirmPasswordInput = document.getElementById('confirmPassword');
                 const confirmMessage = document.getElementById('confirmMessage');
@@ -704,132 +697,65 @@
                 passwordInput.type = type;
                 confirmPasswordInput.type = type;
                 });
-
-
+              
+              
+              
+                });
                 </script>
+                </div>
 
-            </div>
-
-            <!-- Submit Button -->
+         
+            <!-- Save Button -->
             <div class="flex flex-col items-center mt-6">
-                <button 
+            <button 
                 id="createAccountBtn" 
                 type="button" 
+                onclick="window.location.href='nextpage.html'" 
                 class="text-white text-base sm:text-lg font-semibold px-6 sm:px-12 py-3 
-                        rounded-xl transition-colors duration-300 shadow-md w-full sm:w-auto 
-                        bg-blue-600 opacity-90">
-                Submit for Approval
-                </button>
-                <p class="text-gray-600 text-sm mt-3 text-center">
-                    Click <span class="text-[#1E40AF] font-medium">“Submit for Approval”</span> to continue<br>
-                    <span class="italic text-gray-600">(Pindutin upang magpatuloy sa susunod na hakbang)</span>
+                    rounded-xl transition-colors duration-300 shadow-md w-full sm:w-auto 
+                    bg-blue-600 opacity-90 hover:bg-blue-700">
+                Save
+            </button>
+            <p class="text-gray-600 text-sm mt-3 text-center">
+                Click <span class="text-[#1E40AF] font-medium">“Save”</span> to Update Information<br>
+                <span class="italic text-gray-600">(Pindutin upang magpatuloy sa susunod na hakbang)</span>
+            </p>
+            </div>
+            <!-- ✅ Modal -->
+            <div id="saveModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center z-50">
+            <div class="bg-white rounded-2xl shadow-lg p-6 sm:p-8 w-11/12 max-w-md text-center">
+                <h2 class="text-xl font-semibold text-blue-700 mb-4">Information Saved!</h2>
+                <p class="text-gray-700 mb-6">
+                Your details have been successfully updated.<br>
+                <span class="italic text-gray-600">Matagumpay na na-update ang iyong impormasyon.</span>
                 </p>
+                <button 
+                id="closeModalBtn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg shadow-md transition">
+                Review Information
+                </button>
             </div>
-            <!-- Notes Section -->
-            <div class="mt-8 flex justify-center">
-                <div
-                    class="bg-white shadow-md rounded-2xl px-5 sm:px-6 py-6 max-w-lg w-full text-center border border-gray-100">
-                    <div class="mb-5">
-                        <h3 class="text-gray-800 font-semibold text-sm uppercase tracking-wide">Next Step</h3>
-                        <p class="text-gray-700 text-[13px] mt-2 leading-relaxed">
-                            Check your email inbox for the approval confirmation message to proceed to the next step.
-                        </p>
-                        <p class="text-gray-600 italic text-[12px] mt-1">
-                            (Suriin ang iyong email inbox para sa mensahe ng kumpirmasyon ng pag-apruba upang magpatuloy
-                            sa susunod na hakbang)
-                        </p>
-                    </div>
-
-                    <div class="border-t border-gray-200 my-4"></div>
-
-                    <div>
-                        <p class="text-gray-600 text-sm">
-                            Didn’t receive confirmation?
-                            <a href="#" class="text-[#1E40AF] font-medium hover:underline">Resend</a>
-                        </p>
-                        <p class="text-gray-500 italic text-[12px] mt-1">(Hindi nakatanggap ng kumpirmasyon? I-click
-                            ang “Resend”)</p>
-                    </div>
-                </div>
             </div>
 
-        </form>
-    </div>
+            <!-- ✅ Script -->
+            <script>
+            const saveBtn = document.getElementById('createAccountBtn');
+            const modal = document.getElementById('saveModal');
+            const closeBtn = document.getElementById('closeModalBtn');
 
-    <!-- Save draft script: persist to rpi_personal so register.js autofills personal page -->
-    <script>
-        (function() {
-            // Save-only helper: persist draft so the central register.js can pick it up and create the account.
-            const btn = document.getElementById('createAccountBtn');
-            if (!btn) return;
-
-            btn.addEventListener('click', function() {
-                try {
-                    btn.disabled = true;
-                    btn.classList.add('opacity-60');
-                    const data = {};
-                    // collect all inputs/selects/textareas that have an id
-                    document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
-                        const id = el.id;
-                        if (!id) return;
-                        if (el.type === 'checkbox') data[id] = !!el.checked;
-                        else data[id] = el.value || '';
-                    });
-
-                    // normalize common fields to expected keys
-                    const draft = {
-                        firstName: data.first_name || data.firstName || data.first || '',
-                        lastName: data.last_name || data.lastName || data.last || '',
-                        email: data.email || '',
-                        phone: data.phone || '',
-                        age: data.age || '',
-                        address: data.address || '',
-                        username: data.username || '',
-                        guardian_first: data.guardian_first || data.guardianFirst || '',
-                        guardian_last: data.guardian_last || data.guardianLast || '',
-                        guardian_email: data.guardian_email || '',
-                        guardian_phone: data.guardian_phone || '',
-                        guardian_relationship: data.guardian_relationship || data.guardianRelationship || ''
-                    };
-
-                    try {
-                        localStorage.setItem('rpi_personal', JSON.stringify(draft));
-                    } catch (err) {
-                        console.warn('Could not save rpi_personal', err);
-                    }
-                    console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
-                    // dispatch event for other scripts to pick up
-                    try {
-                        window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
-                            detail: {
-                                key: 'rpi_personal',
-                                data: draft
-                            }
-                        }));
-                    } catch (e) {}
-
-                    // Debug: report firebase config presence and firebase.auth availability
-                    try {
-                        console.info('[adminapprove] FIREBASE_CONFIG present?', !!window.FIREBASE_CONFIG, window
-                            .FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId);
-                        console.info('[adminapprove] window.firebase available?', !!window.firebase);
-                        if (window.firebase && firebase.auth) console.info(
-                            '[adminapprove] firebase.currentUser', firebase.auth().currentUser);
-                    } catch (e) {
-                        console.warn('[adminapprove] debug probe failed', e);
-                    }
-
-                    // Do not navigate here — allow register.js to run account creation and handle navigation.
-                } catch (err) {
-                    console.error('[adminapprove] submit failed', err);
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-60');
-                }
+            saveBtn.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
             });
-        })();
-    </script>
 
-    <!-- Show/hide password toggles -->
+            closeBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            });
+            </script> 
+
+
+              <!-- Show/hide password toggles -->
     <script>
         (function() {
             function toggleField(checkboxId, fieldId) {
@@ -855,291 +781,3 @@
             }
         })();
     </script>
-
-    <!-- Include Firebase config -->
-    <script src="js/firebase-config-global.js"></script>
-
-    <!-- LocalStorage-first autofill: read rpi_personal early and apply to form -->
-    <script>
-    (function(){
-        function normalizeFilename(s){
-            if(!s) return '';
-            try{ const parts = String(s).split(/[/\\]+/); return parts[parts.length-1]||'';}catch(e){ return String(s||''); }
-        }
-
-        function setIf(id, val){
-            try{
-                const el = document.getElementById(id);
-                if(!el) return false;
-                if(el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') el.value = val || '';
-                else el.textContent = val || '';
-                return true;
-            }catch(e){ return false; }
-        }
-
-        function setProofPreview(name){
-            try{
-                const info = document.getElementById('proofFileInfo');
-                const fileName = document.getElementById('proofFileName');
-                const icon = document.getElementById('proofFileIcon');
-                const hint = document.getElementById('proofHint');
-                if(!name){ if(info) info.classList.add('hidden'); if(hint) hint.style.display = ''; return; }
-                const ext = (name.split('.').pop()||'').toLowerCase();
-                if(icon) icon.textContent = (['jpg','jpeg','png'].includes(ext)?'🖼️': (ext==='pdf'?'📄':'📁'));
-                if(fileName) fileName.textContent = name;
-                if(info) info.classList.remove('hidden');
-                if(hint) hint.style.display = 'none';
-            }catch(e){}
-        }
-
-        function applyDraftToDom(d){
-            try{
-                if(!d || typeof d !== 'object') return false;
-                const p = d.personal || d.personalInfo || d;
-                const first = p.firstName || p.first_name || p.first || p.fname || '';
-                const last = p.lastName || p.last_name || p.last || p.lname || '';
-                const email = p.email || '';
-                const phone = p.phone || p.mobile || '';
-                const age = p.age || '';
-                const address = p.address || '';
-                const username = p.username || p.userName || '';
-                let applied = false;
-                applied = setIf('first_name', first) || applied;
-                applied = setIf('last_name', last) || applied;
-                applied = setIf('email', email) || applied;
-                applied = setIf('phone', phone) || applied;
-                applied = setIf('age', age) || applied;
-                applied = setIf('address', address) || applied;
-                applied = setIf('username', username) || applied;
-
-                // dsType
-                const ds = d.dsType || d.ds_type || p.dsType || p.ds_type || '';
-                if(ds){
-                    try{
-                        const select = document.getElementById('dsType');
-                        if(select){
-                            let found = false;
-                            for(const opt of select.options){ if(String(opt.value||'').toLowerCase()===String(ds).toLowerCase()){ select.value = opt.value; found = true; break; } }
-                            if(!found){ for(const opt of select.options){ if(String(opt.textContent||'').toLowerCase()===String(ds).toLowerCase()){ select.value = opt.value; break; } } }
-                            applied = true;
-                        }
-                    }catch(e){}
-                }
-
-                // guardian
-                const g = d.guardian || d.guardianInfo || d;
-                const gfirst = g.guardian_first_name || g.guardian_first || g.first || g.first_name || '';
-                const glast = g.guardian_last_name || g.guardian_last || g.last || g.last_name || '';
-                const gemail = g.guardian_email || g.email || '';
-                const gphone = g.guardian_phone || g.phone || '';
-                const grel = g.guardian_relationship || g.guardian_choice || g.relationship || '';
-                applied = setIf('guardian_first', gfirst) || applied;
-                applied = setIf('guardian_last', glast) || applied;
-                applied = setIf('guardian_email', gemail) || applied;
-                applied = setIf('guardian_phone', gphone) || applied;
-                if(grel) applied = setIf('guardian_relationship', grel) || applied;
-
-                // proof filename preview
-                const proof = d.proofFilename || p.proofFilename || d.proof || d.cert_file || p.proof || '';
-                const proofName = normalizeFilename(proof||''); if(proofName){ setProofPreview(proofName); applied = true; }
-                return applied;
-            }catch(e){ console.warn('applyDraftToDom failed', e); return false; }
-        }
-
-        function parseStored(raw){
-            if(!raw) return null;
-            try{ let parsed = JSON.parse(raw); if(parsed && parsed.data) parsed = parsed.data; return parsed; }catch(e){ return raw; }
-        }
-
-        function tryLoadAndApplyOnce(){
-            try{
-                const raw = localStorage.getItem('rpi_personal') || sessionStorage.getItem('rpi_personal');
-                if(!raw) return null;
-                return parseStored(raw);
-            }catch(e){ console.warn('tryLoadAndApplyOnce failed', e); return null; }
-        }
-
-        // Boot: attempt application with retry
-        const parsed = tryLoadAndApplyOnce();
-        if(parsed){
-            try{ console.info('[adminapprove-autofill] rpi_personal found, attempting to apply', Object.keys(parsed || {})); }catch(_){}
-            let attempts = 0;
-            const maxAttempts = 12;
-            const interval = 120;
-            function attempt(){
-                attempts++;
-                try{
-                    const ok = applyDraftToDom(parsed);
-                    if(ok){
-                        try{ console.info('[adminapprove-autofill] applied local draft to form'); }catch(_){}
-                        window.__mvsg_local_applied = true;
-                        window.dispatchEvent(new CustomEvent('mvsg:localApplied',{detail:{key:'rpi_personal'}}));
-                        return;
-                    }
-                }catch(e){}
-                if(attempts < maxAttempts) setTimeout(attempt, interval);
-            }
-            attempt();
-        }
-
-        // Listen for storage changes and custom events
-        window.addEventListener('storage', function(e){
-            try{ if((e.key === 'rpi_personal' || e.key === null) && e.newValue){ const parsed = parseStored(e.newValue); if(parsed) applyDraftToDom(parsed); } }catch(_){}
-        });
-
-        window.addEventListener('mvsg:adminSaved', function(ev){
-            try{ const d = (ev && ev.detail && ev.detail.data) ? ev.detail.data : null; if(d) applyDraftToDom(d); }catch(_){}
-        });
-
-    })();
-    </script>
-
-    <script src="js/register.js"></script>
-
-    <!-- TTS: Web Speech API handler -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('.tts-btn');
-            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
-            let preferredVoice = null;
-            let currentBtn = null;
-            let availableVoices = [];
-
-            function populateVoices() {
-                availableVoices = window.speechSynthesis.getVoices() || [];
-                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName) ||
-                    availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name)) ||
-                    null;
-            }
-
-            function chooseVoiceForLang(langCode) {
-                if (!availableVoices.length) return null;
-                langCode = (langCode || '').toLowerCase();
-                let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
-                if (candidates.length) return pickBest(candidates);
-                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i
-                    .test(v.name));
-                if (candidates.length) return pickBest(candidates);
-                return availableVoices[0];
-            }
-
-            function pickBest(list) {
-                let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
-                if (preferred.length) return preferred[0];
-                return list[0];
-            }
-
-            function stopSpeaking() {
-                if (window.speechSynthesis) window.speechSynthesis.cancel();
-                if (currentBtn) {
-                    currentBtn.classList.remove('speaking');
-                    currentBtn.removeAttribute('aria-pressed');
-                    currentBtn = null;
-                }
-            }
-
-            buttons.forEach(function(btn) {
-                btn.setAttribute('role', 'button');
-                btn.setAttribute('tabindex', '0');
-
-                btn.addEventListener('click', function() {
-                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
-                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
-                    if (!textEn && !textTl) return;
-
-                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn ===
-                        btn) {
-                        stopSpeaking();
-                        return;
-                    }
-
-                    stopSpeaking();
-                    setTimeout(function() {
-                        if (!window.speechSynthesis) return;
-
-                        function voiceFor(langHint) {
-                            if (preferredVoice) return preferredVoice;
-                            if (langHint) {
-                                const hint = (langHint || '').toLowerCase();
-                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint
-                                    .includes('tagalog')) {
-                                    return chooseVoiceForLang('tl');
-                                }
-                                return chooseVoiceForLang(langHint);
-                            }
-                            return chooseVoiceForLang('en') || (availableVoices.length ?
-                                availableVoices[0] : null);
-                        }
-
-                        const seq = [];
-                        if (textEn) {
-                            const uEn = new SpeechSynthesisUtterance(textEn);
-                            uEn.lang = 'en-US';
-                            const v = voiceFor('en');
-                            if (v) uEn.voice = v;
-                            seq.push(uEn);
-                        }
-                        if (textTl) {
-                            const uTl = new SpeechSynthesisUtterance(textTl);
-                            uTl.lang = 'tl-PH';
-                            const v2 = voiceFor('tl');
-                            if (v2) uTl.voice = v2;
-                            seq.push(uTl);
-                        }
-
-                        if (!seq.length) return;
-
-                        seq[0].onstart = function() {
-                            btn.classList.add('speaking');
-                            btn.setAttribute('aria-pressed', 'true');
-                            currentBtn = btn;
-                        };
-
-                        for (let i = 0; i < seq.length; i++) {
-                            const ut = seq[i];
-                            ut.onerror = function() {
-                                if (btn) btn.classList.remove('speaking');
-                                if (btn) btn.removeAttribute('aria-pressed');
-                                currentBtn = null;
-                            };
-                            if (i < seq.length - 1) {
-                                ut.onend = function() {
-                                    window.speechSynthesis.speak(seq[i + 1]);
-                                };
-                            } else {
-                                ut.onend = function() {
-                                    if (btn) btn.classList.remove('speaking');
-                                    if (btn) btn.removeAttribute('aria-pressed');
-                                    currentBtn = null;
-                                };
-                            }
-                        }
-
-                        window.speechSynthesis.speak(seq[0]);
-                    }, 50);
-                });
-
-                btn.addEventListener('keydown', function(ev) {
-                    if (ev.key === 'Enter' || ev.key === ' ') {
-                        ev.preventDefault();
-                        btn.click();
-                    }
-                });
-            });
-
-            window.addEventListener('beforeunload', function() {
-                if (window.speechSynthesis) window.speechSynthesis.cancel();
-            });
-
-            if (window.speechSynthesis) {
-                populateVoices();
-                window.speechSynthesis.onvoiceschanged = function() {
-                    populateVoices();
-                };
-            }
-        });
-    </script>
-
-</body>
-
-</html>

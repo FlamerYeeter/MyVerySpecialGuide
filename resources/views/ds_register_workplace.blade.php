@@ -112,7 +112,7 @@
                 <h2 class= "text-xl sm:text-3xl font-bold text-blue-700 mb-2">Working Environment</h2>
                 <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
                     <p class="mt-2 text-base sm:text-lg font-medium text-gray-800">
-                        What kind of working environment feels comfortable for you? (Select all that apply)
+                        What kind of working environment feels comfortable for you?
                         <button type="button"
                             class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="What kind of working environment feels comfortable for you? Select all that apply." data-tts-tl="Ano klaseng lugar ng trabaho ang komportable para sa iyo? Piliin lahat ng naaangkop." aria-label="Play audio for question">🔊</button>
                     </p>
@@ -195,10 +195,10 @@
                         if (el && el.classList) el.classList.add('selected');
                         const hidden = document.getElementById('workplace_choice');
                         if (hidden) hidden.value = value || '';
-                        if (value === 'other') {
+                        /*if (value === 'other') {
                             const other = document.getElementById('workplace_other_text');
                             if (other) other.focus();
-                        }
+                        }*/
                         const err = document.getElementById('workplaceError');
                         if (err) err.textContent = '';
                     } catch (e) {

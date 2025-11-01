@@ -42,7 +42,6 @@
         transform: scale(1.03);
     }
     </style>
-
     <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workinfo.blade.php
         // Multi-select toggle: clicking a card toggles its selected state and updates #work_type

@@ -473,10 +473,10 @@
                         }
                         hidden.value = JSON.stringify(arr);
                         // focus "other" input when selected
-                        if (value === 'other') {
+                        /*if (value === 'other') {
                             const other = document.getElementById('skills1_other_text');
                             if (other && arr.indexOf('other') !== -1) other.focus();
-                        }
+                        }*/
                         const err = document.getElementById('skills1Error');
                         if (err) err.textContent = '';
                     } catch (e) {

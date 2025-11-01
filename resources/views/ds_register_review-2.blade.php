@@ -108,16 +108,34 @@
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
                 <div class="flex justify-between items-center mb-4 border-b border-blue-300 pb-2">
                     <h3 class="text-lg font-semibold text-blue-600">Education Information</h3>
-                    <button type="button"
-                        class="text-blue-600 hover:text-blue-800 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition edit-btn"
-                        data-section="education">✏️ Edit</button>
+                   <button type="button"
+                    class="text-blue-600 hover:text-blue-800 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition edit-btn"
+                    id="editSchoolBtn">✏️ Edit</button>
                 </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
-            <p><span class="font-semibold">Education Level:</span> <span id="review_edu"></span></p>
-            <p id="review_edu_other" class="text-gray-600 italic hidden">Other: </p>
-            <p class="col-span-2"><span class="font-semibold">School Name:</span> <span
-                id="review_school"></span></p>
+                <p class="flex items-center space-x-2">
+                    <span class="font-semibold">Education Level:</span>
+                    <span id="review_edu"></span>
+                    <select id="edit_edu_select" class="hidden border rounded px-2 py-1">
+                    <option value="College">College</option>
+                    <option value="Vocational/Training">Vocational/Training</option>
+                    <option value="High School">High School</option>
+                    <option value="Elementary">Elementary</option>
+                    </select>
+                </p>
+
+                 <p class="flex items-center space-x-2">
+                    <span class="font-semibold">Other:</span>
+                    <span id="review_other_label"></span>
+                    <input type="text" id="review_other" class="hidden border rounded px-2 py-1" />
+                </p>
+
+            <p class="col-span-2">
+            <span class="font-semibold">School Name:</span>
+            <span id="review_school"></span>
+            <input type="text" id="edit_school_input" class="hidden border rounded px-2 py-1" />
+            </p>
         </div>
 
                 <h3
@@ -125,23 +143,156 @@
                     Certificates & Trainings
                 </h3>
 
-                <div class="mt-4 text-gray-800 mb-3">
+                <div class="mt-4 text-gray-800 mb-3" id="certificateReview">
                     <p>
                         <span class="font-semibold">Certificates / Trainings:</span>
-                        <span id="review_certs_name" class="ml-1">None</span>
+                        <span id="review_certs_123" class="ml-1"></span>
                     </p>
                 </div>
-                <div class="text-gray-800">
+                       <!-- Certificates -->
+            <div id = "certificateCard" class="mt-8 text-left px-2 sm:px-4">
+                <!-- Main Label -->
+                <label for="certs" class="font-semibold text-base sm:text-lg flex items-center gap-2">
+                    Do you have any certificates or special trainings?
+                    <button type="button" aria-label="Play audio for Other option"
+                        class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                         data-tts-en="Do you have any certificates or special trainings?"
+                         data-tts-tl="May mga certificate o special training ka ba?"
+                        aria-label="Play audio for other option">🔊
+                    </button>
+                </label>
+
+                <!-- Translation -->
+                <p class="text-gray-600 italic text-sm sm:text-base mb-2">
+                    (May mga certificate o special training ka ba?)
+                </p>
+
+                <!-- Radio Buttons -->
+                <div class="flex items-center gap-6 mt-2">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                    type="radio"
+                    id="certYes"
+                    name="certs"
+                    value="yes"
+                    class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+                    />
+                    <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+                </label>
+
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input
+                    type="radio"
+                    id="certNo"
+                    name="certs"
+                    value="no"
+                    class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+                    />
+                    <span class="text-gray-800 text-sm sm:text-base">No</span>
+                </label>
+                </div>
                     <p>
                         <span class="font-semibold">Uploaded Certificates / Trainings:</span>
-                        <span id="review_certs_file" class="ml-1">None</span>
+                        
                     </p>
                     <p class="text-sm text-gray-600 mt-1 italic">
-                        <span id="review_certfile">No file uploaded</span>
+                      <!--   <span id="review_certfile">No file uploaded</span>-->
                     </p>
                 </div>
-            </div>
+                
+           <div id="fileuploadSection"
+  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+><!-- 🔹 FILE UPLOAD SECTION -->
+<div
+  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+>
+  <div class="flex-1">
+    <p class="font-medium text-gray-800 text-sm sm:text-base">
+      <span id="proofLabel" class="flex items-center gap-2">
+        <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+      </span>
+    </p>
+    <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+      (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
+      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
+      <b>5MB</b><br />
+    </p>
 
+    <!-- File preview details -->
+    <div
+      id="proofFileInfo"
+      class="mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm hidden"
+    >
+      <div class="flex items-center justify-between gap-4 p-2 border rounded-lg shadow-sm bg-white">
+  <!-- File icon + name -->
+  <div class="flex items-center gap-2">
+    <span id="proofFileIcon" class="text-2xl">📄</span>
+    <span
+      id="proofFileName"
+      class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"
+    ></span>
+  </div>
+
+  <!-- Buttons -->
+  <div class="flex gap-3">
+    <button
+      id="proofViewBtn"
+      type="button"
+      class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
+    >
+      View / Tingnan
+    </button>
+    <button
+      id="proofRemoveBtn"
+      type="button"
+      class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
+    >
+      Remove / Alisin
+    </button>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+  <!-- Upload button -->
+  <label
+   id="ChooseFilelabel"
+    for="proof"
+    class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
+                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
+  >
+    📁 Choose File / Pumili ng File
+  </label>
+
+  <input
+    id="proof"
+    name="proof"
+    type="file"
+    accept=".jpg,.jpeg,.png,.pdf"
+    class="hidden"
+    required
+  />
+</div>
+
+<!-- 🔹 MODAL PREVIEW -->
+<div
+  id="fileModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+    <button
+      id="closeModalBtn"
+      class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl"
+    >
+      ×
+    </button>
+    <div id="modalContent" class="p-2 text-center"></div>
+            </div>
+  </div>
+  </div>
+</div>
+    
             <!-- Work Experience -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
                 <div class="flex justify-between items-center mb-4 border-b border-blue-300 pb-2">
@@ -240,8 +391,103 @@
             <div class="mt-6 text-center">
 
             </div>
+            <script>
+                window.addEventListener("DOMContentLoaded", () => {
+                    console.log("Page loaded, attempting to retrieve saved cert...");
+
+                    const savedCert = localStorage.getItem("review_certs_123"); // same key as saved
+                    console.log("Retrieved from localStorage:", savedCert);
+
+                    // Set span text
+                    const certSpan = document.getElementById("review_certs_123");
+                    if (certSpan) {
+                        if (savedCert) {
+                            certSpan.textContent = savedCert; // display "yes" or "no"
+                            console.log(`Span updated with value: ${savedCert}`);
+                        } else {
+                            certSpan.textContent = '';
+                            console.log("No saved cert found, span cleared.");
+                        }
+                    }
+                });
+            </script>
 
             <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
+           <script>
+                document.getElementById("ChooseFilelabel").style.display = "none";
+                document.getElementById("proof").style.display = "none";
+                document.getElementById("proofRemoveBtn").style.display = "none";
+                const editBtn = document.getElementById('editSchoolBtn') || document.getElementById('review_certfile');
+                const schoolLabel = document.getElementById('review_school');
+                const schoolInput = document.getElementById('edit_school_input');
+                const eduLabel = document.getElementById('review_edu');
+                const eduSelect = document.getElementById('edit_edu_select');
+                const otherLabel = document.getElementById('review_other_label');
+                const otherInput = document.getElementById('review_other');
+                const fileuploadSection = document.getElementById('fileuploadSection'); 
+                const certificateCard  = document.getElementById("certificateCard");
+                const reviewCertEl3 = document.getElementById("certificateReview");
+
+                editBtn.addEventListener('click', () => {
+                    const isEditing =
+                    schoolInput.classList.contains('hidden') ||
+                    eduSelect.classList.contains('hidden') ||
+                    otherInput.classList.contains('hidden');
+
+                    if (isEditing) {
+                    // 🔸 Switch to edit mode
+                    schoolInput.value = schoolLabel.textContent.trim() || '';
+                    schoolLabel.classList.add('hidden');
+                    schoolInput.classList.remove('hidden');
+                 //   fileuploadSection.classList.remove('hidden');
+                    eduSelect.value = eduLabel.textContent.trim();
+                    eduLabel.classList.add('hidden');
+                    eduSelect.classList.remove('hidden');
+                    otherInput.value = otherLabel.textContent.trim() || '';
+                    otherLabel.classList.add('hidden');
+                    otherInput.classList.remove('hidden');
+                    
+                    editBtn.textContent = '💾 Save';
+                    certificateCard.style.display = "none";
+                    reviewCertEl3.style.display = "block";
+                    } else {
+                    // 🔸 Switch back to label mode (save)
+                    const newSchoolVal = schoolInput.value.trim();
+                    schoolLabel.textContent = newSchoolVal;
+                    localStorage.setItem('review_school', newSchoolVal);
+                    schoolInput.classList.add('hidden');
+                    schoolLabel.classList.remove('hidden');
+
+                    const newEduVal = eduSelect.value;
+                    eduLabel.textContent = newEduVal;
+                    localStorage.setItem('review_edu', newEduVal);
+                    eduSelect.classList.add('hidden');
+                    eduLabel.classList.remove('hidden');
+
+                    const newOtherVal = otherInput.value.trim() || '';
+                    otherLabel.textContent = newOtherVal;
+                    localStorage.setItem('review_other', newOtherVal);
+                    otherInput.classList.add('hidden');
+                    otherLabel.classList.remove('hidden');
+
+                    editBtn.textContent = '✏️ Edit';
+
+                    certificateCard.style.display = "block";
+                    reviewCertEl3.style.display = "none";
+                    }
+                });
+
+                // 🔹 Load saved values from localStorage (optional)
+                const savedSchool = localStorage.getItem('review_school');
+                if (savedSchool) schoolLabel.textContent = savedSchool;
+
+                const savedEdu = localStorage.getItem('review_edu');
+                if (savedEdu) eduLabel.textContent = savedEdu;
+
+                const savedOther = localStorage.getItem('review_other');
+                if (savedOther) otherLabel.textContent = savedOther;
+                </script>
+
             <script>
                 (function() {
                     const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
@@ -821,7 +1067,7 @@
                         const sw = data.schoolWorkInfo || data.school || {};
                         // fallback to several key variants and a fuzzy search for 'school' if present
                         const schoolVal = sw.school_name || sw.schoolName || data.school_name || data.school || findFirstMatching(data, ['school', 'school_name', 'schoolName']);
-                        safeSet('review_school', schoolVal || '');
+                       safeSet('review_school', schoolVal || '');
 
                         safeSet('review_certs_name', sw.certs || sw.certificates || data.certs || '');
                         const certFileRaw = sw.cert_file || sw.certFile || data.cert_file || data.proofFilename || '';
@@ -935,6 +1181,166 @@
                     } catch(e){}
                 })();
             </script>
+          <script>
+            (function () {
+            const fileInput = document.getElementById("proof");
+            const fileInfo = document.getElementById("proofFileInfo");
+            const fileName = document.getElementById("proofFileName");
+            const fileIcon = document.getElementById("proofFileIcon");
+            const viewBtn = document.getElementById("proofViewBtn");
+            const removeBtn = document.getElementById("proofRemoveBtn");
+            const modal = document.getElementById("fileModal");
+            const modalContent = document.getElementById("modalContent");
+            const closeModal = document.getElementById("closeModalBtn");
+            const hintEl = document.getElementById("proofHint");
+            const prevFileEl = document.getElementById("review_certfile");
+
+            console.log("✅ File upload script initialized");
+
+            // 🔹 Load file from localStorage (base64)
+            const savedFileData = localStorage.getItem("uploadedProofData");
+            const savedFileType = localStorage.getItem("uploadedProofType");
+            const savedFileName = localStorage.getItem("uploadedProofName");
+
+            if (savedFileData && savedFileType && savedFileName) {
+                showFileInfo(savedFileName, savedFileType);
+                makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
+            } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
+                // If coming from previous form
+                const prevFileName = prevFileEl.textContent.trim();
+                showFileInfo(prevFileName, getFileType(prevFileName));
+                makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
+            }
+
+            // 🔹 When a new file is selected
+            fileInput.addEventListener("change", function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                const ext = getFileType(file.name);
+                if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
+                alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
+                fileInput.value = "";
+                return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                const fileData = e.target.result; // base64 content
+                localStorage.setItem("uploadedProofData", fileData);
+                localStorage.setItem("uploadedProofType", ext);
+                localStorage.setItem("uploadedProofName", file.name);
+
+                showFileInfo(file.name, ext);
+                makeFileClickable(prevFileEl, file.name, fileData, ext);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // 🔹 View button
+            viewBtn.addEventListener("click", () => {
+                const name = localStorage.getItem("uploadedProofName");
+                const data = localStorage.getItem("uploadedProofData");
+                const type = localStorage.getItem("uploadedProofType");
+                if (data && type && name) openModalPreview(name, data, type);
+            });
+
+            // 🔹 Remove file
+            removeBtn.addEventListener("click", () => {
+                localStorage.removeItem("uploadedProofData");
+                localStorage.removeItem("uploadedProofType");
+                localStorage.removeItem("uploadedProofName");
+                fileInput.value = "";
+                hideFileInfo();
+            });
+
+            // 🔹 Close modal
+            closeModal.addEventListener("click", closeModalFn);
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) closeModalFn();
+            });
+
+            // ===============================
+            // 🔹 Helper Functions
+            // ===============================
+
+            function showFileInfo(name, type) {
+                fileInfo.classList.remove("hidden");
+                if (hintEl) hintEl.style.display = "none";
+                fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
+                fileName.textContent = name;
+            }
+
+            function hideFileInfo() {
+                fileInfo.classList.add("hidden");
+                fileName.textContent = "";
+                fileIcon.textContent = "";
+                if (hintEl) hintEl.style.display = "";
+            }
+
+            function closeModalFn() {
+                modal.classList.add("hidden");
+                modalContent.innerHTML = "";
+            }
+
+            function getFileType(filename) {
+                return filename.split(".").pop().toLowerCase();
+            }
+
+            // 🔹 Make filename clickable
+            function makeFileClickable(el, name, data, type) {
+                if (!el) return;
+                el.classList.add("text-blue-600", "underline", "cursor-pointer");
+                el.title = "Click to view uploaded file";
+                el.onclick = () => openModalPreview(name, data, type);
+            }
+
+            // 🔹 Open modal preview
+            function openModalPreview(name, data, type) {
+                modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
+                if (["jpg", "jpeg", "png"].includes(type)) {
+                modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
+                } else if (type === "pdf") {
+                modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
+                } else {
+                modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                }
+                modal.classList.remove("hidden");
+            }
+            })();
+            </script>
+           <script>
+            window.addEventListener("DOMContentLoaded", () => {
+                const fileUploadSection = document.getElementById("fileuploadSection");
+                if (!fileUploadSection) return;
+
+                // Function to update visibility based on review_certs_123 value
+                const updateSectionVisibility = () => {
+                    const certValueEl = document.getElementById("review_certs_123"); // the element storing yes/no
+                    const certValue = certValueEl ? certValueEl.textContent || certValueEl.value : null;
+
+                    if (certValue === "yes") {
+                        fileUploadSection.style.display = "block";
+                        console.log("review_certs_123 is 'yes' → fileuploadSection shown");
+                    } else {
+                        fileUploadSection.style.display = "none";
+                        console.log("review_certs_123 is 'no' or missing → fileuploadSection hidden");
+                    }
+                };
+
+                // Initial check
+                updateSectionVisibility();
+
+                // Optional: if the value of review_certs_123 can change dynamically, you can watch for changes:
+                const observer = new MutationObserver(updateSectionVisibility);
+                const certValueEl = document.getElementById("review_certs_123");
+                if (certValueEl) {
+                    observer.observe(certValueEl, { characterData: true, childList: true, subtree: true });
+                }
+            });
+            </script>
+
+
 </body>
 
 </html>

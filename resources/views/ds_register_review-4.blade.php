@@ -93,11 +93,11 @@
         <!-- Example skill tags -->
         <span
           class="bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
-          Chosen Skill
+  
         </span>
         <span
           class="bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
-          Chosen Skill
+    
         </span>
       </div>
 

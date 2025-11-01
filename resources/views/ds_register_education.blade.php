@@ -152,9 +152,9 @@
                 <!-- Card Template -->
 
                 <!-- Card 1 -->
-                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                <div id="ElementaryAudioBtn" class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectEducationChoice(this, 'Elementary')">
-                    <button type="button"
+                    <button type="button" 
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
                         data-tts-en="Elementary" data-tts-tl="Elementary"
                         aria-label="Play audio for Elementary option">🔊</button>
@@ -164,9 +164,9 @@
                 </div>
 
                 <!-- Card 2 -->
-                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                <div id="HighSchoolAudioBtn" class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectEducationChoice(this, 'Highschool')">
-                    <button type="button"
+                    <button type="button"  
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
                         data-tts-en="Highschool" data-tts-tl="Highschool"
                         aria-label="Play audio for Highschool option">🔊</button>
@@ -176,9 +176,9 @@
                 </div>
 
                 <!-- Card 3 -->
-                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                <div  id="CollegeAudioBtn" class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectEducationChoice(this, 'College')">
-                    <button type="button"
+                    <button type="button" 
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
                         data-tts-en="College" data-tts-tl="College"
                         aria-label="Play audio for College option">🔊</button>
@@ -188,9 +188,9 @@
                 </div>
 
                 <!-- Card 4 -->
-                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                <div id="VocationalAudioBtn" class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectEducationChoice(this, 'Vocational/Training')">
-                    <button type="button"
+                    <button type="button" 
                         class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
                         data-tts-en="Vocational or Training" data-tts-tl="Vocational o Pagsasanay"
                         aria-label="Play audio for Vocational option">🔊</button>
@@ -226,7 +226,7 @@
                     </p>
 
                     <!-- Input -->
-                    <input id="edu_other_text" name="edu_other_text" type="text"
+                    <input  id="review_other" name="edu_other_text" type="text"
                         aria-labelledby="edu_other_label" placeholder="Type your answer here"
                         class="w-full border border-gray-300 rounded-lg p-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
                 </div>
@@ -276,71 +276,122 @@
 
    <!-- Radio Buttons -->
   <div class="flex items-center gap-6 mt-2">
-    <label class="flex items-center gap-2 cursor-pointer">
-      <input
-        type="radio"
-        name="certs"
-        value="yes"
-        class="text-blue-600 focus:ring-blue-400 w-5 h-5"
-      />
-      <span class="text-gray-800 text-sm sm:text-base">Yes</span>
-    </label>
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input
+      type="radio"
+      id="certYes"
+      name="certs"
+      value="yes"
+      class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+    />
+    <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+  </label>
 
-    <label class="flex items-center gap-2 cursor-pointer">
-      <input
-        type="radio"
-        name="certs"
-        value="no"
-        class="text-blue-600 focus:ring-blue-400 w-5 h-5"
-      />
-      <span class="text-gray-800 text-sm sm:text-base">No</span>
-    </label>
-  </div>
+  <label class="flex items-center gap-2 cursor-pointer">
+    <input
+      type="radio"
+      id="certNo"
+      name="certs"
+      value="no"
+      class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+    />
+    <span class="text-gray-800 text-sm sm:text-base">No</span>
+  </label>
+</div>
+
   <br>
                
                      <!-- File Upload -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col gap-3">
+                  <div id="fileuploadSection"
+  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+><!-- 🔹 FILE UPLOAD SECTION -->
+<div
+  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+>
+  <div class="flex-1">
+    <p class="font-medium text-gray-800 text-sm sm:text-base">
+      <span id="proofLabel" class="flex items-center gap-2">
+        <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+      </span>
+    </p>
+    <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+      (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
+      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
+      <b>5MB</b><br />
+    </p>
 
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-800 text-sm sm:text-base">
-                            <span id="certLabel">Upload your certificates (optional)</span>
-                        </p>
-                        <p id="certHint" class="text-gray-600 italic text-xs sm:text-sm">
-                            (I-upload ang iyong certificate o larawan nito) <br><br>
-                         Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br>
-                        </p>
+    <!-- File preview details -->
+    <div
+      id="proofFileInfo"
+      class="mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm hidden"
+    >
+      <div class="flex items-center justify-between gap-4 p-2 border rounded-lg shadow-sm bg-white">
+  <!-- File icon + name -->
+  <div class="flex items-center gap-2">
+    <span id="proofFileIcon" class="text-2xl">📄</span>
+    <span
+      id="proofFileName"
+      class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"
+    ></span>
+  </div>
 
-                        <!-- File preview display -->
-                        <div id="fileDisplay" class="mt-3 flex flex-col gap-3 text-gray-700 text-sm sm:text-base">
-                        </div>
-                    </div>
+  <!-- Buttons -->
+  <div class="flex gap-3">
+    <button
+      id="proofViewBtn"
+      type="button"
+      class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
+    >
+      View / Tingnan
+    </button>
+    <button
+      id="proofRemoveBtn"
+      type="button"
+      class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
+    >
+      Remove / Alisin
+    </button>
+  </div>
+</div>
 
-                    <label id="cert_file_button" for="cert_file"
-                        class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
-                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition w-fit">
-                        📁 Choose File / Pumili ng File
-                    </label>
+    </div>
+  </div>
 
-                    <input id="cert_file" name="cert_file" type="file" accept=".jpg, .jpeg, .png, .pdf"
-                        class="hidden">
-                </div>
+  <!-- Upload button -->
+  <label
+    for="proof"
+    class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
+                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
+  >
+    📁 Choose File / Pumili ng File
+  </label>
 
-                <!-- Modal for File Preview -->
-                <div id="fileModal"
-                    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-                    <div
-                        class="bg-white rounded-lg shadow-lg max-w-3xl w-[90%] max-h-[85vh] flex flex-col overflow-hidden">
-                        <div class="flex justify-between items-center bg-[#2E2EFF] text-white px-4 py-2">
-                            <h2 class="font-semibold text-base">File Preview / Pagtingin ng File</h2>
-                            <button id="closeModalBtn"
-                                class="text-white font-bold text-lg hover:text-gray-300">✕</button>
-                        </div>
-                        <div id="modalContent"
-                            class="flex-1 bg-gray-100 overflow-auto flex items-center justify-center p-4">
-                            <!-- File content will appear here -->
-                        </div>
-                    </div>
-                </div>
+  <input
+    id="proof"
+    name="proof"
+    type="file"
+    accept=".jpg,.jpeg,.png,.pdf"
+    class="hidden"
+    required
+  />
+</div>
+
+<!-- 🔹 MODAL PREVIEW -->
+<div
+  id="fileModal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+>
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+    <button
+      id="closeModalBtn"
+      class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl"
+    >
+      ×
+    </button>
+    <div id="modalContent" class="p-2 text-center"></div>
+            </div>
+  </div>
+  </div>
 
                 <script>
                     (function() {
@@ -350,7 +401,7 @@
                         const fileDisplay = document.getElementById('fileDisplay');
                         const modal = document.getElementById('fileModal');
                         const modalContent = document.getElementById('modalContent');
-                        const closeModalBtn = document.getElementById('closeModalBtn');
+                        const closeModal = document.getElementById('closeModalBtn');
 
                         const original = labelEl ? labelEl.textContent : '';
                         let fileURL = null;
@@ -443,7 +494,7 @@
                          modalContent.innerHTML = '';
                          }
                      });
-
+              
                         // Reset uploaded file display (only triggered by Remove button)
                         function resetDisplay() {
                             labelEl.textContent = original;
@@ -484,6 +535,7 @@
                             if (sel) toggleFile(sel.value);
                         } catch (e) { console.debug('certs radio bind failed', e); }
                     })();
+
                 </script>
             </div>
 
@@ -517,11 +569,6 @@
                 const hidden = document.getElementById('edu_level');
                 if (hidden) hidden.value = value || '';
 
-                // if "other", focus the other text input
-                if (String(value).toLowerCase() === 'other') {
-                    const other = document.getElementById('edu_other_text');
-                    if (other) other.focus();
-                }
 
                 // clear any error text
                 const err = document.getElementById('educError');
@@ -703,6 +750,288 @@
             // No preview UI: when voices are populated we attempt to use the preferred Microsoft AvaMultilingual voice
         });
     </script>
+ <script>
+            (function () {
+            const fileInput = document.getElementById("proof");
+            const fileInfo = document.getElementById("proofFileInfo");
+            const fileName = document.getElementById("proofFileName");
+            const fileIcon = document.getElementById("proofFileIcon");
+            const viewBtn = document.getElementById("proofViewBtn");
+            const removeBtn = document.getElementById("proofRemoveBtn");
+            const modal = document.getElementById("fileModal");
+            const modalContent = document.getElementById("modalContent");
+            const closeModal = document.getElementById("closeModalBtn");
+            const hintEl = document.getElementById("proofHint");
+            const prevFileEl = document.getElementById("review_certfile");
+
+            console.log("✅ File upload script initialized");
+
+            // 🔹 Load file from localStorage (base64)
+            const savedFileData = localStorage.getItem("uploadedProofData");
+            const savedFileType = localStorage.getItem("uploadedProofType");
+            const savedFileName = localStorage.getItem("uploadedProofName");
+
+            if (savedFileData && savedFileType && savedFileName) {
+                showFileInfo(savedFileName, savedFileType);
+                makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
+            } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
+                // If coming from previous form
+                const prevFileName = prevFileEl.textContent.trim();
+                showFileInfo(prevFileName, getFileType(prevFileName));
+                makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
+            }
+
+            // 🔹 When a new file is selected
+            fileInput.addEventListener("change", function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                const ext = getFileType(file.name);
+                if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
+                alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
+                fileInput.value = "";
+                return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                const fileData = e.target.result; // base64 content
+                localStorage.setItem("uploadedProofData", fileData);
+                localStorage.setItem("uploadedProofType", ext);
+                localStorage.setItem("uploadedProofName", file.name);
+
+                showFileInfo(file.name, ext);
+                makeFileClickable(prevFileEl, file.name, fileData, ext);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // 🔹 View button
+            viewBtn.addEventListener("click", () => {
+                const name = localStorage.getItem("uploadedProofName");
+                const data = localStorage.getItem("uploadedProofData");
+                const type = localStorage.getItem("uploadedProofType");
+                if (data && type && name) openModalPreview(name, data, type);
+            });
+
+            // 🔹 Remove file
+            removeBtn.addEventListener("click", () => {
+                localStorage.removeItem("uploadedProofData");
+                localStorage.removeItem("uploadedProofType");
+                localStorage.removeItem("uploadedProofName");
+                fileInput.value = "";
+                hideFileInfo();
+            });
+                                        // Close modal without removing file
+                    closeModal.addEventListener('click', (e) => {
+                    e.preventDefault(); // 🚫 stops form submission/refresh
+                    modal.classList.add('hidden');
+                    modalContent.innerHTML = ''; // clear preview only
+                });
+
+            // 🔹 Close modal
+            closeModal.addEventListener("click", closeModalFn);
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) closeModalFn();
+            });
+
+            // ===============================
+            // 🔹 Helper Functions
+            // ===============================
+
+            function showFileInfo(name, type) {
+                fileInfo.classList.remove("hidden");
+                if (hintEl) hintEl.style.display = "none";
+                fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
+                fileName.textContent = name;
+            }
+
+            function hideFileInfo() {
+                fileInfo.classList.add("hidden");
+                fileName.textContent = "";
+                fileIcon.textContent = "";
+                if (hintEl) hintEl.style.display = "";
+            }
+
+            function closeModalFn() {
+                modal.classList.add("hidden");
+                modalContent.innerHTML = "";
+            }
+
+            function getFileType(filename) {
+                return filename.split(".").pop().toLowerCase();
+            }
+
+            // 🔹 Make filename clickable
+            function makeFileClickable(el, name, data, type) {
+                if (!el) return;
+                el.classList.add("text-blue-600", "underline", "cursor-pointer");
+                el.title = "Click to view uploaded file";
+                el.onclick = () => openModalPreview(name, data, type);
+            }
+
+            // 🔹 Open modal preview
+            function openModalPreview(name, data, type) {
+                modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
+                if (["jpg", "jpeg", "png"].includes(type)) {
+                modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
+                } else if (type === "pdf") {
+                modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
+                } else {
+                modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                }
+                modal.classList.remove("hidden");
+            }
+            })();
+            </script>
+            <script>
+            // List of button IDs
+            const audioButtons = [
+                "VocationalAudioBtn",
+                "ElementaryAudioBtn",
+                "HighSchoolAudioBtn",
+                "CollegeAudioBtn"
+            ];
+
+            audioButtons.forEach(btnId => {
+                const btn = document.getElementById(btnId);
+                if (btn) {
+                btn.addEventListener("click", () => {
+                    // Clear review_other input
+                    const otherField = document.getElementById("review_other");
+                    if (otherField) {
+                    otherField.value = "";
+                    }
+
+                    // Clear localStorage for review_other
+                    localStorage.removeItem("review_other");
+
+                    console.log(`${btnId} clicked: review_other cleared`);
+                });
+                }
+            });
+            </script>
+            <script>
+            document.addEventListener("DOMContentLoaded", () => {
+            const nextBtn = document.getElementById("educNext");
+
+            // Load saved values on page load
+            const savedCert = localStorage.getItem("review_certs_123");
+            if (savedCert) {
+            const radio = document.getElementById(savedCert === "yes" ? "certYes" : "certNo");
+            if (radio) radio.checked = true;
+            console.log("Loaded cert:", savedCert);
+            }
+
+            const savedOther = localStorage.getItem("review_other");
+            if (savedOther) {
+            const otherField = document.getElementById("review_other");
+            if (otherField) otherField.value = savedOther;
+            console.log("Loaded other:", savedOther);
+            }
+
+            // Save on button click
+            if (nextBtn) {
+            nextBtn.addEventListener("click", () => {
+                const selected = document.querySelector('input[name="certs"]:checked');
+                if (selected) {
+                localStorage.setItem("review_certs_123", selected.value);
+                console.log("Saved cert:", selected.value);
+                }
+
+                const otherField = document.getElementById("review_other");
+                if (otherField) {
+                localStorage.setItem("review_other", otherField.value.trim());
+                console.log("Saved other:", otherField.value.trim());
+                }
+            });
+            }
+        });
+        </script>
+     
+       <script>
+            window.addEventListener("DOMContentLoaded", () => {
+                const fileInput = document.getElementById("proof");
+                const certRadios = document.querySelectorAll('input[name="certs"]');
+
+                if (!fileInput || certRadios.length === 0) return;
+
+                const updateFileInput = () => {
+                    const selected = document.querySelector('input[name="certs"]:checked');
+                    if (selected) {
+                        if (selected.value === "no") {
+                            fileInput.disabled = true;
+                            fileInput.classList.remove("bg-blue-600", "hover:bg-blue-700");
+                            fileInput.classList.add("bg-gray-400", "cursor-not-allowed");
+                            console.log("Selected cert is 'no' → file input disabled and gray");
+                        } else {
+                            fileInput.disabled = false;
+                            fileInput.classList.remove("bg-gray-400", "cursor-not-allowed");
+                            fileInput.classList.add("bg-blue-600", "hover:bg-blue-700", "cursor-pointer");
+                            console.log("Selected cert is 'yes' → file input enabled and blue");
+                        }
+                    }
+                };
+
+                // Initial check on page load
+                updateFileInput();
+
+                // Add change listeners to all cert radios
+                certRadios.forEach(radio => {
+                    radio.addEventListener('change', () => {
+                        localStorage.setItem("review_certs_123", radio.value);
+                        console.log("Saved cert:", radio.value);
+                        updateFileInput();
+                    });
+                });
+            });
+            </script>
+            <script>
+                window.addEventListener("DOMContentLoaded", () => {
+                    const fileUploadSection = document.getElementById("fileuploadSection");
+                    const certRadios = document.querySelectorAll('input[name="certs"]');
+                    const fileInput = document.getElementById("proof");
+
+                    if (!fileUploadSection || certRadios.length === 0) return;
+
+                    const updateSectionVisibility = () => {
+                        const selected = document.querySelector('input[name="certs"]:checked');
+                        if (selected) {
+                            if (selected.id === "certNo") {
+                                fileUploadSection.style.display = "none"; // hide section
+                                console.log("certNo selected → fileuploadSection hidden");
+
+                                // Clear file input & localStorage
+                                if (fileInput) fileInput.value = "";
+                                localStorage.removeItem("uploadedProofData");
+                                localStorage.removeItem("uploadedProofType");
+                                localStorage.removeItem("uploadedProofName");
+                                if (typeof hideFileInfo === "function") hideFileInfo();
+                                console.log("File input cleared & localStorage removed");
+                            } else {
+                                fileUploadSection.style.display = "block"; // show section
+                                console.log("certYes selected → fileuploadSection shown");
+                            }
+                        }
+                    };
+
+                    // Initial check on page load
+                    updateSectionVisibility();
+
+                    // Add change listeners to all cert radios
+                    certRadios.forEach(radio => {
+                        radio.addEventListener('change', () => {
+                            // Save selection to localStorage
+                            localStorage.setItem("review_certs_123", radio.value);
+                            console.log("Saved cert:", radio.value);
+
+                            // Update visibility & clear file if needed
+                            updateSectionVisibility();
+                        });
+                    });
+
+                });
+                </script>
 
 </body>
 

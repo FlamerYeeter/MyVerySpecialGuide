@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Registration: Education</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+           <style>
+    /* Floating animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-float-slow { animation: float 5s ease-in-out infinite; }
+    .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
+    .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+
+    .education-card.selected {
+            border: 3px solid #2563eb;
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
+            transform: translateY(-4px);
+            background-color: #eff6ff;
+            /* light blue */
+    }
+    .tts-btn.speaking {
+        background-color: #2563eb !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        transform: scale(1.03);
+    }
+    </style>
+    </style>
+</head>
+
+<body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
+
+    <!-- Floating Mascots -->
+    <img src="image/obj4.png" alt="Yellow Mascot"
+        class="hidden sm:block fixed left-1 sm:left-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-slow z-0">
+    <img src="image/obj7.png" alt="Triangle Mascot"
+        class="hidden sm:block fixed left-1 sm:left-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+    <img src="image/obj3.png" alt="Blue Mascot"
+        class="hidden sm:block fixed right-1 sm:right-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-fast z-0">
+    <img src="image/obj8.png" alt="Twin Mascot"
+        class="hidden sm:block fixed right-1 sm:right-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+
+    <!-- Back Button -->
+    <button
+        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registeradminapprove') }}')">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
+            class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back
+    </button>
+
+    <!-- Main Content Container -->
+    <div
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
+
+        <!-- Header -->
+        <div class="text-center mt-2 sm:mt-4 px-2">
+            <h1
+                class="text-xl sm:text-3xl md:text-5xl font-extrabold text-blue-700 mb-2 sm:mb-3 drop-shadow-md leading-snug">
+                Set Up Your Profile</h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-16 sm:w-24 md:w-36 mb-3 sm:mb-6">
+            <h2
+                class="text-base sm:text-xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
+                Continue setting up your profile
+                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                    data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile"
+                    aria-label="Play audio for header">🔊</button>
+            </h2>
+            <p
+                class="mt-2 sm:mt-3 text-gray-700 italic text-xs sm:text-sm md:text-lg border-b-4 border-blue-500 inline-block pb-1 sm:pb-2 px-2">
+                (Ituloy ang pag-set up ng iyong profile)
+            </p>
+        </div>
+
+        <!-- Information Note -->
+        <div
+            class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
+            <!-- Audio Button -->
+            <button type="button" aria-label="Play audio for information note"
+                class="absolute top-3 right-3 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white 
+           text-base sm:text-m p-2 sm:p-3 rounded-full shadow-md transition-transform 
+           hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                data-tts-en="Please select your highest education level. This helps us recommend suitable programs, job opportunities, and training that match your background."
+                data-tts-tl="Pumili ng iyong pinakamataas na natapos na antas ng edukasyon. Makakatulong ito upang mairerekomenda namin ang mga angkop na programa, trabaho, at pagsasanay na tumutugma sa iyong kaalaman.">
+                🔊
+            </button>
+
+            <!-- Content -->
+            <div class="flex flex-col sm:flex-row items-start gap-2 sm:gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+                </svg>
+
+                <div class="flex-1 pr-10"> <!-- padding-right to avoid overlap with button -->
+                    <p class="font-medium text-xs sm:text-base leading-relaxed">
+                        Please select your highest education level and fill in your school information. This helps us recommend suitable 
+                        programs, job opportunities, and training that match your background.
+                    </p>
+                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
+                        (Pumili ng iyong pinakamataas na natapos na antas ng edukasyon at ilagay ang impormasyon ng iyong paaralan. 
+                        Makakatulong ito upang mairerekomenda namin ang mga angkop na programa, trabaho, at pagsasanay na tumutugma
+                        sa iyong kaalaman.)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <form class="mt-10 max-w-3xl mx-auto">
+            <!-- Education Question -->
+            <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
+                <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Education</h2>
+                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2">
+                    <p class="text-lg sm:text-xl font-semibold text-gray-800 mt-2">What is your highest education?</p>
+                    <button type="button"
+                        class="mt-2 text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                        data-tts-en="What is your highest education?"
+                        data-tts-tl="Ano ang pinakamataas mong natapos na grade o taon sa school?"
+                        aria-label="Play audio for question">🔊</button>
+                </div>
+                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Ano ang pinakamataas mong natapos na grade o
+                    taon
+                    sa school?)</p>
+            </div>
+
+            <!-- Instruction -->
+            <div class="mt-8 text-center sm:text-left px-1 sm:px-4">
+                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2">
+                    <p class="text-gray-800 font-medium text-base sm:text-lg leading-snug">Choose from the pictures provided and
+                        click
+                        your answer.</p>
+                    <button type="button"
+                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                        data-tts-en="Choose from the pictures provided and click your answer."
+                        data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot"
+                        aria-label="Play audio for instruction">🔊</button>
+                </div>
+                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Pumili mula sa mga larawan at pindutin ang
+                    iyong sagot)</p>
+            </div>
+
+            <!-- Cards Grid -->
+            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
+
+                <!-- Card Template -->
+
+                <!-- Card 1 -->
+                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectEducationChoice(this, 'Elementary')">
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
+                        data-tts-en="Elementary" data-tts-tl="Elementary"
+                        aria-label="Play audio for Elementary option">🔊</button>
+                    <img src="image/educ1.png" alt="elementary"
+                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Elementary</h3>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectEducationChoice(this, 'Highschool')">
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
+                        data-tts-en="Highschool" data-tts-tl="Highschool"
+                        aria-label="Play audio for Highschool option">🔊</button>
+                    <img src="image/educ3.png" alt="highschool"
+                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Highschool</h3>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectEducationChoice(this, 'College')">
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
+                        data-tts-en="College" data-tts-tl="College"
+                        aria-label="Play audio for College option">🔊</button>
+                    <img src="image/educ2.png" alt="college"
+                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">College</h3>
+                </div>
+
+                <!-- Card 4 -->
+                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectEducationChoice(this, 'Vocational/Training')">
+                    <button type="button"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
+                        data-tts-en="Vocational or Training" data-tts-tl="Vocational o Pagsasanay"
+                        aria-label="Play audio for Vocational option">🔊</button>
+                    <img src="image/educ4.png" alt="vocational"
+                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Vocational/Training</h3>
+                </div>
+
+                <!-- Other Option -->
+                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                    onclick="selectEducationChoice(this, 'other')">
+
+                    <!-- Audio Button -->
+                    <button type="button" aria-label="Play audio for Other option"
+                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm transition-transform hover:scale-110 tts-btn"
+                         data-tts-en="Other, Type your answer inside the box if not in the choices"
+                         data-tts-tl="Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian"
+                        aria-label="Play audio for other option">🔊
+                    </button>
+
+                    <!-- Label -->
+                    <label for="edu_other_text" id="edu_other_label"
+                        class="block text-blue-600 font-semibold mb-2 text-sm sm:text-lg cursor-pointer">
+                        Other
+                    </label>
+
+                    <!-- Description -->
+                    <p class="mt-6 text-sm text-justify">
+                        Type your answer inside the box if not in the choices
+                    </p>
+                    <p class="text-[13px] text-gray-600 italic mt-1 mb-3 text-justify">
+                        (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
+                    </p>
+
+                    <!-- Input -->
+                    <input id="edu_other_text" name="edu_other_text" type="text"
+                        aria-labelledby="edu_other_label" placeholder="Type your answer here"
+                        class="w-full border border-gray-300 rounded-lg p-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+                </div>
+            </div>
+
+            <!-- Hidden input for education level (collected by register.js) -->
+            <input id="edu_level" type="hidden" value="" />
+
+            <!-- School Name -->
+            <div class="text-left px-2 sm:px-4 mt-16">
+                <label for="school_name" class="font-semibold text-base sm:text-lg flex items-center gap-2">
+                    Name of your school
+                    <button type="button" aria-label="Play audio for Other option"
+                        class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                        data-tts-en="Name of your school"
+                         data-tts-tl="Pangalan ng iyong paaralan"
+                        aria-label="Play audio for other option">🔊
+                    </button>
+                </label>
+
+                <p class="text-gray-600 italic text-sm sm:text-base mb-1">
+                    (Pangalan ng iyong paaralan)
+                </p>
+
+                <input id="school_name" name="school_name" type="text" placeholder="School Name"
+                    class="w-full border border-gray-300 rounded-lg p-3 sm:p-4 text-sm sm:text-base 
+           focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none transition-all duration-200" />
+            </div>
+
+            <!-- Certificates -->
+            <div class="mt-8 text-left px-2 sm:px-4">
+                <!-- Main Label -->
+                <label for="certs" class="font-semibold text-base sm:text-lg flex items-center gap-2">
+                    Do you have any certificates or special trainings?
+                    <button type="button" aria-label="Play audio for Other option"
+                        class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                         data-tts-en="Do you have any certificates or special trainings?"
+                         data-tts-tl="May mga certificate o special training ka ba?"
+                        aria-label="Play audio for other option">🔊
+                    </button>
+                </label>
+
+                <!-- Translation -->
+                <p class="text-gray-600 italic text-sm sm:text-base mb-2">
+                    (May mga certificate o special training ka ba?)
+                </p>
+
+   <!-- Radio Buttons -->
+  <div class="flex items-center gap-6 mt-2">
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input
+        type="radio"
+        name="certs"
+        value="yes"
+        class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+      />
+      <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+    </label>
+
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input
+        type="radio"
+        name="certs"
+        value="no"
+        class="text-blue-600 focus:ring-blue-400 w-5 h-5"
+      />
+      <span class="text-gray-800 text-sm sm:text-base">No</span>
+    </label>
+  </div>
+  <br>
+               
+                     <!-- File Upload -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col gap-3">
+
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-800 text-sm sm:text-base">
+                            <span id="certLabel">Upload your certificates (optional)</span>
+                        </p>
+                        <p id="certHint" class="text-gray-600 italic text-xs sm:text-sm">
+                            (I-upload ang iyong certificate o larawan nito) <br><br>
+                         Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br>
+                        </p>
+
+                        <!-- File preview display -->
+                        <div id="fileDisplay" class="mt-3 flex flex-col gap-3 text-gray-700 text-sm sm:text-base">
+                        </div>
+                    </div>
+
+                    <label id="cert_file_button" for="cert_file"
+                        class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
+                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition w-fit">
+                        📁 Choose File / Pumili ng File
+                    </label>
+
+                    <input id="cert_file" name="cert_file" type="file" accept=".jpg, .jpeg, .png, .pdf"
+                        class="hidden">
+                </div>
+
+                <!-- Modal for File Preview -->
+                <div id="fileModal"
+                    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+                    <div
+                        class="bg-white rounded-lg shadow-lg max-w-3xl w-[90%] max-h-[85vh] flex flex-col overflow-hidden">
+                        <div class="flex justify-between items-center bg-[#2E2EFF] text-white px-4 py-2">
+                            <h2 class="font-semibold text-base">File Preview / Pagtingin ng File</h2>
+                            <button id="closeModalBtn"
+                                class="text-white font-bold text-lg hover:text-gray-300">✕</button>
+                        </div>
+                        <div id="modalContent"
+                            class="flex-1 bg-gray-100 overflow-auto flex items-center justify-center p-4">
+                            <!-- File content will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <script>
+                    (function() {
+                        const fileInput = document.getElementById('cert_file');
+                        const labelEl = document.getElementById('certLabel');
+                        const hintEl = document.getElementById('certHint');
+                        const fileDisplay = document.getElementById('fileDisplay');
+                        const modal = document.getElementById('fileModal');
+                        const modalContent = document.getElementById('modalContent');
+                        const closeModal = document.getElementById('closeModalBtn');
+
+                        const original = labelEl ? labelEl.textContent : '';
+                        let fileURL = null;
+                        let fileExt = null;
+
+                        if (!fileInput || !labelEl) return;
+
+                        fileInput.addEventListener('change', function() {
+                            const f = this.files && this.files[0];
+                            if (!f) {
+                                resetDisplay();
+                                return;
+                            }
+
+                            // Keep previously uploaded file URL for memory cleanup
+                            if (fileURL) URL.revokeObjectURL(fileURL);
+                            fileURL = URL.createObjectURL(f);
+
+                            const name = f.name || '';
+                            fileExt = name.split('.').pop().toLowerCase();
+                            let icon = '';
+
+                            if (['jpg', 'jpeg', 'png'].includes(fileExt)) icon = '🖼️';
+                            else if (fileExt === 'pdf') icon = '📄';
+                            else icon = '📁';
+
+                            const max = 60;
+                            const displayName = name.length > max ? name.slice(0, max - 3) + '...' : name;
+
+                            labelEl.textContent = "File Uploaded:";
+                            labelEl.setAttribute('title', name);
+                            if (hintEl) hintEl.style.display = 'none';
+
+                            // Display file info and buttons
+                            fileDisplay.innerHTML = `
+      <div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+        <span class="text-2xl">${icon}</span>
+        <span class="truncate max-w-[160px] sm:max-w-[240px]">${displayName}</span>
+        <div class="flex gap-2">
+          <button id="viewFileBtn" type="button" class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">View / Tingnan</button>
+          <button id="removeFileBtn" type="button" class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">Remove / Alisin</button>
+        </div>
+      </div>
+    `;
+
+                            // View button — opens preview modal
+                            document.getElementById('viewFileBtn').addEventListener('click', () => {
+                                openModal(fileURL, fileExt);
+                            });
+
+                            // Remove button — clears uploaded file manually
+                            document.getElementById('removeFileBtn').addEventListener('click', () => {
+                                resetDisplay();
+                                fileInput.value = '';
+                                if (fileURL) {
+                                    URL.revokeObjectURL(fileURL);
+                                    fileURL = null;
+                                }
+                            });
+                        });
+
+                        // Open modal preview 
+                        function openModal(url, ext) {
+                            modal.classList.remove('hidden');
+                            modalContent.innerHTML = '';
+
+                            if (['jpg', 'jpeg', 'png'].includes(ext)) {
+                                const img = document.createElement('img');
+                                img.src = url;
+                                img.alt = "Uploaded Image";
+                                img.className = "max-h-[80vh] max-w-full object-contain rounded-lg";
+                                modalContent.appendChild(img);
+                            } else if (ext === 'pdf') {
+                                const iframe = document.createElement('iframe');
+                                iframe.src = url;
+                                iframe.className = "w-full h-[80vh] rounded-lg border-0";
+                                modalContent.appendChild(iframe);
+                            } else {
+                                modalContent.innerHTML = `
+                                <p class="text-gray-700 text-center"> This file type cannot be previewed.<br>
+                                (Hindi maaaring i-preview ang uri ng file na ito.)
+                            </p>`;
+                            }
+                        }
+
+                         // Close modal by clicking outside
+                         modal.addEventListener('click', (e) => {
+                         if (e.target === modal) {
+                         modal.classList.add('hidden');
+                         modalContent.innerHTML = '';
+                         }
+                     });
+                                          // Close modal without removing file
+                    closeModal.addEventListener('click', (e) => {
+                    e.preventDefault(); // 🚫 stops form submission/refresh
+                    modal.classList.add('hidden');
+                    modalContent.innerHTML = ''; // clear preview only
+                });
+
+                        // Reset uploaded file display (only triggered by Remove button)
+                        function resetDisplay() {
+                            labelEl.textContent = original;
+                            labelEl.removeAttribute('title');
+                            if (hintEl) hintEl.style.display = '';
+                            if (fileDisplay) fileDisplay.innerHTML = '';
+                        }
+                        // Toggle file upload enable/disable based on certs radio
+                        try {
+                            const certButtonEl = document.getElementById('cert_file_button');
+                            const radios = document.querySelectorAll('input[name="certs"]');
+                            const toggleFile = (val) => {
+                                try {
+                                    if (!fileInput) return;
+                                    if (String(val).toLowerCase() === 'no') {
+                                        // clear any chosen file and hide preview
+                                        fileInput.value = '';
+                                        resetDisplay();
+                                        fileInput.disabled = true;
+                                        if (certButtonEl) {
+                                            certButtonEl.classList.add('opacity-50');
+                                            certButtonEl.classList.add('pointer-events-none');
+                                            certButtonEl.setAttribute('aria-disabled', 'true');
+                                        }
+                                    } else {
+                                        fileInput.disabled = false;
+                                        if (certButtonEl) {
+                                            certButtonEl.classList.remove('opacity-50');
+                                            certButtonEl.classList.remove('pointer-events-none');
+                                            certButtonEl.removeAttribute('aria-disabled');
+                                        }
+                                    }
+                                } catch (e) { console.debug('cert toggle error', e); }
+                            };
+                            radios.forEach(r => r.addEventListener('change', (ev) => toggleFile(ev.target.value)));
+                            // initialise based on current selection
+                            const sel = document.querySelector('input[name="certs"]:checked');
+                            if (sel) toggleFile(sel.value);
+                        } catch (e) { console.debug('certs radio bind failed', e); }
+                    })();
+
+                </script>
+            </div>

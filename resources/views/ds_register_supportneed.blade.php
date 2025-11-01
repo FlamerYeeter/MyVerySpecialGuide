@@ -242,10 +242,10 @@
                         if (hidden) hidden.value = JSON.stringify(arr);
 
                         // if the user selected 'other', focus the text box; if they deselected it, don't clear their text
-                        if (val === 'other' && isSelected) {
+                       /* if (val === 'other' && isSelected) {
                             const other = document.getElementById('support_other_text');
                             if (other) other.focus();
-                        }
+                        }*/
 
                         const err = document.getElementById('supportError');
                         if (err) err.textContent = '';
