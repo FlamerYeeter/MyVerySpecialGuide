@@ -624,7 +624,11 @@
             }
         });
     </script>
-
+    <script>
+        document.getElementById('workExpNext').addEventListener('click', function() {
+            window.location.href = '{{ route("registersupportneed") }}';
+        });
+    </script>
     <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workexpinfo.blade.php
         // Helper to compute an approximate start year from a duration code OR accept a 4-digit year

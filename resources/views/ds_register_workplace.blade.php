@@ -388,6 +388,11 @@
             }
         });
     </script>
+     <script>
+        document.getElementById('workplaceNext').addEventListener('click', function() {
+            window.location.href = '{{ route("registerskills1") }}';
+        });
+    </script>
 
 </body>
 

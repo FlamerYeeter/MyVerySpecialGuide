@@ -457,6 +457,12 @@
         });
     </script>
 
+    <script>
+        document.getElementById('supportNext').addEventListener('click', function() {
+            window.location.href = '{{ route("registerworkplace") }}';
+        });
+    </script>
+
 </body>
 
 </html>

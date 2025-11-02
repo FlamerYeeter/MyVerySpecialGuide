@@ -515,6 +515,11 @@
                     }
                 });
             </script>
+            <script>
+            document.getElementById('skills1Next').addEventListener('click', function() {
+            window.location.href = '{{ route("registerjobpreference1") }}';
+              });
+            </script>
     </div>
     </div>
     </form>
