@@ -566,15 +566,36 @@
             if (workExpNextBtn) {
                 workExpNextBtn.addEventListener('click', function() {
 
-                const selectedWorkExp = document.querySelector(".workexp-card.selected");
-                if (selectedWorkExp) {
-                    const workExpValue = selectedWorkExp.getAttribute("data-value") || "";
-                    localStorage.setItem("work_experience", workExpValue);
-                    console.log("Saved work experience:", workExpValue);
+                // Get only selected work experience cards
+                const selectedWorkExpCards = document.querySelectorAll(".workexp-card.selected");
+                const selectedWorkExpValues = [];
+
+                for (let i = 0; i < selectedWorkExpCards.length; i++) {
+                
+                    const card = selectedWorkExpCards[i];
+                    const value = card.getAttribute("data-value") || "";
+                    if (value) {
+                        selectedWorkExpValues.push(value);
+                    }
                 }
-                   
-                 
-                }); 
+
+                // Save only selected values to localStorage
+                localStorage.setItem("selected_work_experience", JSON.stringify(selectedWorkExpValues));
+                const selectedCard = document.querySelector(".workyr-card.selected");
+                debugger;
+                if (selectedCard) {
+                    const onclickAttr = selectedCard.getAttribute("onclick");
+                    const match = onclickAttr.match(/selectWorkYearsChoice\(this,\s*'([^']+)'\)/);
+                    if (match && match[1]) {
+                        const workYearValue = match[1];
+                        localStorage.setItem("selected_work_year", workYearValue);
+                        console.log("Selected work year saved:", workYearValue);
+                    }
+                } else {
+                    console.log("No work year selected.");
+                }
+
+                });
             }
         });
     </script>
