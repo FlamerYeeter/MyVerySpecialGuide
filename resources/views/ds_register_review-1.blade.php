@@ -244,7 +244,7 @@
                     <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
 
                         <!-- Static text display -->
-                        <p id="first_name" 
+                        <p id="g_first_name" 
                            class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
                                 bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
                         </p>
@@ -260,7 +260,7 @@
 
                    
                         <!-- Static text display -->
-                        <p id="Last_name" 
+                        <p id="g_last_name" 
                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
                                 bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
                         </p>
@@ -278,7 +278,7 @@
                     <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
                     
                         <!-- Static text display -->
-                        <p id="Email" 
+                        <p id="g_email" 
                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
                                 bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
                         </p>
@@ -291,7 +291,7 @@
                         Contact Number
                     </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
-                        <input   id="phone" 
+                        <input   id="g_phone" 
                                 type="tel" 
                               
                                 readonly
@@ -358,10 +358,98 @@
                 <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
                     Proof of Membership
                 </h3>
-                <div class="text-gray-800">
-                    <p><span class="font-semibold">Uploaded File:</span> <span id="r_proof">No file uploaded</span>
-                    </p>
-                </div>
+                 <div id="fileuploadSection"
+                    class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    ><!-- 🔹 FILE UPLOAD SECTION -->
+                    <div
+                    class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                    >
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-800 text-sm sm:text-base">
+                        <span id="proofLabel" class="flex items-center gap-2">
+                            <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+                        </span>
+                        </p>
+                        <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+                        (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
+                        Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
+                        <b>5MB</b><br />
+                        </p>
+
+                        <!-- File preview details -->
+                        <div
+                        id="proofFileInfo"
+                        class="mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm hidden"
+                        >
+                        <div class="flex items-center justify-between gap-4 p-2 border rounded-lg shadow-sm bg-white">
+                    <!-- File icon + name -->
+                    <div class="flex items-center gap-2">
+                        <span id="proofFileIcon" class="text-2xl">📄</span>
+                        <span
+                        id="proofFileName"
+                        class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"
+                        ></span>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex gap-3">
+                        <button
+                        id="proofViewBtn"
+                        type="button"
+                        class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
+                        >
+                        View / Tingnan
+                        </button>
+                        <button
+                        id="proofRemoveBtn"
+                        type="button"
+                        class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
+                        >
+                        Remove / Alisin
+                        </button>
+                    </div>
+                    </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Upload button -->
+                    <label
+                    id="ChooseFilelabel"
+                        for="proof"
+                        class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
+                                            px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
+                    >
+                        📁 Choose File / Pumili ng File
+                    </label>
+
+                    <input
+                        id="proof"
+                        name="proof"
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        class="hidden"
+                        required
+                    />
+                    </div>
+
+                    <!-- 🔹 MODAL PREVIEW -->
+                    <div
+                    id="fileModal"
+                    class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
+                    >
+                    <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+                        <button
+                        id="closeModalBtn"
+                        class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl"
+                        >
+                        ×
+                        </button>
+                        <div id="modalContent" class="p-2 text-center"></div>
+                                </div>
+                    </div>
+                    </div>
+
             </div>
         </div>
 
@@ -1009,6 +1097,135 @@
                 try { window.addEventListener('storage', function(e){ if (e && (e.key === 'rpi_personal' || e.key === 'registrationDraft')) setTimeout(applyWithRetry, 80); }); } catch(e){}
             })();
         </script>
+
+         <script>
+            (function () {
+            const fileInput = document.getElementById("proof");
+            const fileInfo = document.getElementById("proofFileInfo");
+            const fileName = document.getElementById("proofFileName");
+            const fileIcon = document.getElementById("proofFileIcon");
+            const viewBtn = document.getElementById("proofViewBtn");
+            const removeBtn = document.getElementById("proofRemoveBtn");
+            const modal = document.getElementById("fileModal");
+            const modalContent = document.getElementById("modalContent");
+            const closeModal = document.getElementById("closeModalBtn");
+            const hintEl = document.getElementById("proofHint");
+            const prevFileEl = document.getElementById("r_proof");
+
+            console.log("✅ File upload script initialized");
+
+            // 🔹 Load file from localStorage (base64)
+            const savedFileData = localStorage.getItem("uploadedProofData1");
+            const savedFileType = localStorage.getItem("uploadedProofType1");
+            const savedFileName = localStorage.getItem("uploadedProofName1");
+
+            if (savedFileData && savedFileType && savedFileName) {
+                showFileInfo(savedFileName, savedFileType);
+                makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
+            } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
+                // If coming from previous form
+                const prevFileName = prevFileEl.textContent.trim();
+                showFileInfo(prevFileName, getFileType(prevFileName));
+                makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
+            }
+
+            // 🔹 When a new file is selected
+            fileInput.addEventListener("change", function () {
+                const file = this.files[0];
+                if (!file) return;
+
+                const ext = getFileType(file.name);
+                if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
+                alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
+                fileInput.value = "";
+                return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                const fileData = e.target.result; // base64 content
+                localStorage.setItem("uploadedProofData1", fileData);
+                localStorage.setItem("uploadedProofType1", ext);
+                localStorage.setItem("uploadedProofName1", file.name);
+
+                showFileInfo(file.name, ext);
+                makeFileClickable(prevFileEl, file.name, fileData, ext);
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // 🔹 View button
+            viewBtn.addEventListener("click", () => {
+                const name = localStorage.getItem("uploadedProofName1");
+                const data = localStorage.getItem("uploadedProofData1");
+                const type = localStorage.getItem("uploadedProofType1");
+                if (data && type && name) openModalPreview(name, data, type);
+            });
+
+            // 🔹 Remove file
+            removeBtn.addEventListener("click", () => {
+                localStorage.removeItem("uploadedProofData1");
+                localStorage.removeItem("uploadedProofType1");
+                localStorage.removeItem("uploadedProofName1");
+                fileInput.value = "";
+                hideFileInfo();
+            });
+
+            // 🔹 Close modal
+            closeModal.addEventListener("click", closeModalFn);
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) closeModalFn();
+            });
+
+            // ===============================
+            // 🔹 Helper Functions
+            // ===============================
+
+            function showFileInfo(name, type) {
+                fileInfo.classList.remove("hidden");
+                if (hintEl) hintEl.style.display = "none";
+                fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
+                fileName.textContent = name;
+            }
+
+            function hideFileInfo() {
+                fileInfo.classList.add("hidden");
+                fileName.textContent = "";
+                fileIcon.textContent = "";
+                if (hintEl) hintEl.style.display = "";
+            }
+
+            function closeModalFn() {
+                modal.classList.add("hidden");
+                modalContent.innerHTML = "";
+            }
+
+            function getFileType(filename) {
+                return filename.split(".").pop().toLowerCase();
+            }
+
+            // 🔹 Make filename clickable
+            function makeFileClickable(el, name, data, type) {
+                if (!el) return;
+                el.classList.add("text-blue-600", "underline", "cursor-pointer");
+                el.title = "Click to view uploaded file";
+                el.onclick = () => openModalPreview(name, data, type);
+            }
+
+            // 🔹 Open modal preview
+            function openModalPreview(name, data, type) {
+                modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
+                if (["jpg", "jpeg", "png"].includes(type)) {
+                modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
+                } else if (type === "pdf") {
+                modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
+                } else {
+                modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                }
+                modal.classList.remove("hidden");
+            }
+            })();
+            </script>
 </body>
 
 </html>

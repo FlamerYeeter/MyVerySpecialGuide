@@ -150,7 +150,7 @@
                     </p>
                 </div>
                        <!-- Certificates -->
-            <div id = "certificateCard" class="mt-8 text-left px-2 sm:px-4">
+            <div id = "certificateCard" class="hidden mt-8 text-left px-2 sm:px-4">
                 <!-- Main Label -->
                 <label for="certs" class="font-semibold text-base sm:text-lg flex items-center gap-2">
                     Do you have any certificates or special trainings?
@@ -201,59 +201,58 @@
                 </div>
                 
            <div id="fileuploadSection"
-  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-><!-- 🔹 FILE UPLOAD SECTION -->
-<div
-  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
->
-  <div class="flex-1">
-    <p class="font-medium text-gray-800 text-sm sm:text-base">
-      <span id="proofLabel" class="flex items-center gap-2">
-        <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
-      </span>
-    </p>
-    <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-      (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
-      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
-      <b>5MB</b><br />
-    </p>
+                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                ><!-- 🔹 FILE UPLOAD SECTION -->
+                <div
+                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+                >
+                <div class="flex-1">
+                    <p class="font-medium text-gray-800 text-sm sm:text-base">
+                    <span id="proofLabel" class="flex items-center gap-2">
+                        <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+                    </span>
+                    </p>
+                    <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+                    (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
+                    Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
+                    <b>5MB</b><br />
+                    </p>
 
-    <!-- File preview details -->
-    <div
-      id="proofFileInfo"
-      class="mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm hidden"
-    >
-      <div class="flex items-center justify-between gap-4 p-2 border rounded-lg shadow-sm bg-white">
-  <!-- File icon + name -->
-  <div class="flex items-center gap-2">
-    <span id="proofFileIcon" class="text-2xl">📄</span>
-    <span
-      id="proofFileName"
-      class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"
-    ></span>
-  </div>
+                    <!-- File preview details -->
+                    <div
+                    id="proofFileInfo"
+                    class="mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm hidden"
+                    >
+                    <div class="flex items-center justify-between gap-4 p-2 border rounded-lg shadow-sm bg-white">
+                <!-- File icon + name -->
+                <div class="flex items-center gap-2">
+                    <span id="proofFileIcon" class="text-2xl">📄</span>
+                    <span
+                    id="proofFileName"
+                    class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"
+                    ></span>
+                </div>
 
-  <!-- Buttons -->
-  <div class="flex gap-3">
-    <button
-      id="proofViewBtn"
-      type="button"
-      class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
-    >
-      View / Tingnan
-    </button>
-    <button
-      id="proofRemoveBtn"
-      type="button"
-      class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
-    >
-      Remove / Alisin
-    </button>
-  </div>
-</div>
-
+                <!-- Buttons -->
+                <div class="flex gap-3">
+                    <button
+                    id="proofViewBtn"
+                    type="button"
+                    class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
+                    >
+                    View / Tingnan
+                    </button>
+                    <button
+                    id="proofRemoveBtn"
+                    type="button"
+                    class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
+                    >
+                    Remove / Alisin
+                    </button>
+            </div>
+         </div>
     </div>
-  </div>
+ </div>
 
   <!-- Upload button -->
   <label
@@ -414,9 +413,7 @@
 
             <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
            <script>
-                document.getElementById("ChooseFilelabel").style.display = "none";
-                document.getElementById("proof").style.display = "none";
-                document.getElementById("proofRemoveBtn").style.display = "none";
+                
                 const editBtn = document.getElementById('editSchoolBtn') || document.getElementById('review_certfile');
                 const schoolLabel = document.getElementById('review_school');
                 const schoolInput = document.getElementById('edit_school_input');
@@ -446,10 +443,10 @@
                     otherInput.value = otherLabel.textContent.trim() || '';
                     otherLabel.classList.add('hidden');
                     otherInput.classList.remove('hidden');
-                    
+                    reviewCertEl3.classList.add('hidden');
+                    certificateCard.classList.remove('hidden');
                     editBtn.textContent = '💾 Save';
-                    certificateCard.style.display = "none";
-                    reviewCertEl3.style.display = "block";
+                
                     } else {
                     // 🔸 Switch back to label mode (save)
                     const newSchoolVal = schoolInput.value.trim();
@@ -469,11 +466,9 @@
                     localStorage.setItem('review_other', newOtherVal);
                     otherInput.classList.add('hidden');
                     otherLabel.classList.remove('hidden');
-
+                    reviewCertEl3.classList.remove('hidden');
+                    certificateCard.classList.add('hidden');
                     editBtn.textContent = '✏️ Edit';
-
-                    certificateCard.style.display = "block";
-                    reviewCertEl3.style.display = "none";
                     }
                 });
 
@@ -1339,6 +1334,85 @@
                 }
             });
             </script>
+
+            <script>
+                window.addEventListener("DOMContentLoaded", () => {
+                    const reviewCertEl = document.getElementById("review_certs_123");
+                    const certRadios = document.querySelectorAll('input[name="certs"]');
+
+                    if (!reviewCertEl || certRadios.length === 0) return;
+
+                    const updateReviewCert = (value) => {
+                        reviewCertEl.textContent = value; // pass value to the element
+                        localStorage.setItem("review_certs_123", value); // store in localStorage
+                        console.log("review_certs_123 updated to:", value);
+                    };
+
+                    // Restore value from localStorage on page load
+                    const savedCert = localStorage.getItem("review_certs_123");
+                    if (savedCert) {
+                        reviewCertEl.textContent = savedCert;
+                        const radio = document.getElementById(savedCert === "yes" ? "certYes" : "certNo");
+                        if (radio) radio.checked = true;
+                        console.log("Restored cert from localStorage:", savedCert);
+                    }
+
+                    // Add change listeners to radios
+                    certRadios.forEach(radio => {
+                        radio.addEventListener('change', () => {
+                            if (radio.checked) {
+                                updateReviewCert(radio.value);
+                            }
+                        });
+                    });
+                });
+                </script>
+
+                <script>
+                    window.addEventListener("DOMContentLoaded", () => {
+                        const certYes = document.getElementById("certYes");
+                        const certNo = document.getElementById("certNo");
+
+                        const chooseFileLabel = document.getElementById("ChooseFilelabel");
+                        const proofInput = document.getElementById("proof");
+                        const proofRemoveBtn = document.getElementById("proofRemoveBtn");
+                        const editBtn_2 = document.getElementById("editSchoolBtn"); 
+
+                        if (!chooseFileLabel || !proofInput || !proofRemoveBtn || !editBtn_2) return;
+
+                        const updateVisibility = (value) => {
+                            if (certYes && certYes.checked && certYes.value === "yes") {
+                                chooseFileLabel.style.display = "block";
+                              //  proofInput.style.display = "block";
+                                proofRemoveBtn.style.display = "block";
+                                console.log("certYes selected & editBtn_2 says 💾 Save → elements shown");
+                            } else {
+                                chooseFileLabel.style.display = "none";
+                             //   proofInput.style.display = "none";
+                                proofRemoveBtn.style.display = "none";
+                                console.log("certNo selected or editBtn_2 not 💾 Save → elements hidden");
+                            }
+                        };
+
+                        // Add change listeners to radio buttons
+                        [certYes, certNo].forEach(radio => {
+                            radio.addEventListener("change", () => {
+                                if (radio.checked) {
+                                    updateVisibility(radio.value);
+                                }
+                            });
+                        });
+
+                        // Restore state from localStorage if exists
+                        const savedCert = localStorage.getItem("review_certs_123");
+                        if (savedCert) {
+                            updateVisibility(savedCert);
+                            console.log("Restored cert state from localStorage:", savedCert);
+                        }
+                    });
+                    </script>
+
+
 
 
 </body>

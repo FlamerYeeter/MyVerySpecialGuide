@@ -471,104 +471,131 @@
                 <!-- Script -->
                 <script>
                     (function() {
-                        const fileInput = document.getElementById('proof');
-                        const fileInfo = document.getElementById('proofFileInfo');
-                        const fileName = document.getElementById('proofFileName');
-                        const fileIcon = document.getElementById('proofFileIcon');
-                        const viewBtn = document.getElementById('proofViewBtn');
-                        const removeBtn = document.getElementById('proofRemoveBtn');
-                        const modal = document.getElementById('fileModal');
-                        const modalContent = document.getElementById('modalContent');
-                        const closeModal = document.getElementById('closeModalBtn');
-                        const hintEl = document.getElementById('proofHint');
+                        const fileInput = document.getElementById("proof");
+            const fileInfo = document.getElementById("proofFileInfo");
+            const fileName = document.getElementById("proofFileName");
+            const fileIcon = document.getElementById("proofFileIcon");
+            const viewBtn = document.getElementById("proofViewBtn");
+            const removeBtn = document.getElementById("proofRemoveBtn");
+            const modal = document.getElementById("fileModal");
+            const modalContent = document.getElementById("modalContent");
+            const closeModal = document.getElementById("closeModalBtn");
+            const hintEl = document.getElementById("proofHint");
+            const prevFileEl = document.getElementById("r_proof");
 
-                        let currentFileURL = null;
-                        let currentFileType = null;
+            console.log("✅ File upload script initialized");
 
-                        // When user selects a file
-                        fileInput.addEventListener('change', function() {
-                            const file = this.files[0];
-                            if (file) {
-                                const name = file.name.length > 50 ? file.name.slice(0, 47) + '...' : file.name;
-                                const ext = file.name.split('.').pop().toLowerCase();
-                                currentFileType = ext;
+            // 🔹 Load file from localStorage (base64)
+            const savedFileData = localStorage.getItem("uploadedProofData1");
+            const savedFileType = localStorage.getItem("uploadedProofType1");
+            const savedFileName = localStorage.getItem("uploadedProofName1");
 
-                                // Set icon based on file type
-                                if (['jpg', 'jpeg', 'png'].includes(ext)) {
-                                    fileIcon.textContent = '🖼️';
-                                } else if (ext === 'pdf') {
-                                    fileIcon.textContent = '📄';
-                                } else {
-                                    fileIcon.textContent = '📁';
-                                }
+            if (savedFileData && savedFileType && savedFileName) {
+                showFileInfo(savedFileName, savedFileType);
+                makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
+            } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
+                // If coming from previous form
+                const prevFileName = prevFileEl.textContent.trim();
+                showFileInfo(prevFileName, getFileType(prevFileName));
+                makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
+            }
 
-                                fileName.textContent = name;
-                                fileInfo.classList.remove('hidden');
-                                if (hintEl) hintEl.style.display = 'none';
+            // 🔹 When a new file is selected
+            fileInput.addEventListener("change", function () {
+                const file = this.files[0];
+                if (!file) return;
 
-                                // Create object URL for preview
-                                if (currentFileURL) URL.revokeObjectURL(currentFileURL);
-                                currentFileURL = URL.createObjectURL(file);
-                            } else {
-                                fileInfo.classList.add('hidden');
-                                fileName.textContent = '';
-                                fileIcon.textContent = '';
-                                if (hintEl) hintEl.style.display = '';
-                            }
-                        });
+                const ext = getFileType(file.name);
+                if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
+                alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
+                fileInput.value = "";
+                return;
+                }
 
-                        // View file in modal
-                        viewBtn.addEventListener('click', () => {
-                            if (currentFileURL) {
-                                modalContent.innerHTML = ''; // Clear previous preview
-                                if (['jpg', 'jpeg', 'png'].includes(currentFileType)) {
-                                    const img = document.createElement('img');
-                                    img.src = currentFileURL;
-                                    img.alt = 'Uploaded Image';
-                                    img.className = 'max-h-[80vh] rounded shadow';
-                                    modalContent.appendChild(img);
-                                } else if (currentFileType === 'pdf') {
-                                    const iframe = document.createElement('iframe');
-                                    iframe.src = currentFileURL;
-                                    iframe.className = 'w-full h-[80vh] rounded';
-                                    modalContent.appendChild(iframe);
-                                } else {
-                                    modalContent.innerHTML =
-                                        '<p class="text-gray-600">Preview not available for this file type.</p>';
-                                }
-                                modal.classList.remove('hidden');
-                            }
-                        });
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                const fileData = e.target.result; // base64 content
+                localStorage.setItem("uploadedProofData1", fileData);
+                localStorage.setItem("uploadedProofType1", ext);
+                localStorage.setItem("uploadedProofName1", file.name);
 
-                        // Close modal without removing file
-                        closeModal.addEventListener('click', (e) => {
-                        e.preventDefault(); // 🚫 stops form submission/refresh
-                        modal.classList.add('hidden');
-                        modalContent.innerHTML = ''; // clear preview only
-                    });
+                showFileInfo(file.name, ext);
+                makeFileClickable(prevFileEl, file.name, fileData, ext);
+                };
+                reader.readAsDataURL(file);
+            });
 
+            // 🔹 View button
+            viewBtn.addEventListener("click", () => {
+                const name = localStorage.getItem("uploadedProofName1");
+                const data = localStorage.getItem("uploadedProofData1");
+                const type = localStorage.getItem("uploadedProofType1");
+                if (data && type && name) openModalPreview(name, data, type);
+            });
 
-                        // Close modal by clicking outside 
-                        modal.addEventListener('click', (e) => {
-                            if (e.target === modal) {
-                                modal.classList.add('hidden');
-                                modalContent.innerHTML = '';
-                            }
-                        });
+            // 🔹 Remove file
+            removeBtn.addEventListener("click", () => {
+                localStorage.removeItem("uploadedProofData1");
+                localStorage.removeItem("uploadedProofType1");
+                localStorage.removeItem("uploadedProofName1");
+                fileInput.value = "";
+                hideFileInfo();
+            });
 
-                        // Remove file manually
-                        removeBtn.addEventListener('click', () => {
-                            fileInput.value = '';
-                            if (currentFileURL) {
-                                URL.revokeObjectURL(currentFileURL);
-                                currentFileURL = null;
-                            }
-                            fileInfo.classList.add('hidden');
-                            fileName.textContent = '';
-                            fileIcon.textContent = '';
-                            if (hintEl) hintEl.style.display = '';
-                        });
-                    })();
+            // 🔹 Close modal
+            closeModal.addEventListener("click", closeModalFn);
+            modal.addEventListener("click", (e) => {
+                if (e.target === modal) closeModalFn();
+            });
+
+            // ===============================
+            // 🔹 Helper Functions
+            // ===============================
+
+            function showFileInfo(name, type) {
+                fileInfo.classList.remove("hidden");
+                if (hintEl) hintEl.style.display = "none";
+                fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
+                fileName.textContent = name;
+            }
+
+            function hideFileInfo() {
+                fileInfo.classList.add("hidden");
+                fileName.textContent = "";
+                fileIcon.textContent = "";
+                if (hintEl) hintEl.style.display = "";
+            }
+
+            function closeModalFn() {
+                modal.classList.add("hidden");
+                modalContent.innerHTML = "";
+            }
+
+            function getFileType(filename) {
+                return filename.split(".").pop().toLowerCase();
+            }
+
+            // 🔹 Make filename clickable
+            function makeFileClickable(el, name, data, type) {
+                if (!el) return;
+                el.classList.add("text-blue-600", "underline", "cursor-pointer");
+                el.title = "Click to view uploaded file";
+                el.onclick = () => openModalPreview(name, data, type);
+            }
+
+            // 🔹 Open modal preview
+            function openModalPreview(name, data, type) {
+                modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
+                if (["jpg", "jpeg", "png"].includes(type)) {
+                modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
+                } else if (type === "pdf") {
+                modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
+                } else {
+                modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                }
+                modal.classList.remove("hidden");
+            }
+            })();
 
                     const phoneInput = document.getElementById('phone');
 
