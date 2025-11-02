@@ -647,7 +647,7 @@
                 const confirmPasswordInput = document.getElementById('confirmPassword');
                 const confirmMessage = document.getElementById('confirmMessage');
                 const createAccountBtn = document.getElementById('createAccountBtn');
-                const togglePassword = document.getElementById('togglePassword');
+                // const togglePassword = document.getElementById('togglePassword');
 
                 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
@@ -726,11 +726,11 @@
                 }
 
                 // 🔹 Toggle password visibility
-                togglePassword.addEventListener('change', () => {
-                const type = togglePassword.checked ? 'text' : 'password';
-                passwordInput.type = type;
-                confirmPasswordInput.type = type;
-                });
+                // togglePassword.addEventListener('change', () => {
+                // const type = togglePassword.checked ? 'text' : 'password';
+                // passwordInput.type = type;
+                // confirmPasswordInput.type = type;
+                // });
 
 
                 </script>
@@ -824,6 +824,27 @@
                     } catch (err) {
                         console.warn('Could not save rpi_personal', err);
                     }
+
+  const storedData = localStorage.getItem('rpi_personal');
+  if (!storedData) {
+    alert("No local data found!");
+    return;
+  }
+
+  const datax = JSON.parse(storedData);
+
+  fetch("registerdata.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datax)
+  })
+  .then(res => res.text())
+  .then(response => {
+    console.log("Server response:", response);
+    alert(response);
+  })
+  .catch(err => console.error("Error sending data:", err));
+
                     console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
                     // dispatch event for other scripts to pick up
                     try {
@@ -835,18 +856,6 @@
                         }));
                     } catch (e) {}
 
-                    // Debug: report firebase config presence and firebase.auth availability
-                    try {
-                        console.info('[adminapprove] FIREBASE_CONFIG present?', !!window.FIREBASE_CONFIG, window
-                            .FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId);
-                        console.info('[adminapprove] window.firebase available?', !!window.firebase);
-                        if (window.firebase && firebase.auth) console.info(
-                            '[adminapprove] firebase.currentUser', firebase.auth().currentUser);
-                    } catch (e) {
-                        console.warn('[adminapprove] debug probe failed', e);
-                    }
-
-                    // Do not navigate here — allow register.js to run account creation and handle navigation.
                 } catch (err) {
                     console.error('[adminapprove] submit failed', err);
                     btn.disabled = false;
