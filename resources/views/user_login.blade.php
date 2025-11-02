@@ -60,6 +60,47 @@
             <a href="{{ route('user.role') }}" class="text-blue-600 font-semibold hover:underline">Create Account</a>
         </p>
     </div>
+<!-- Modal (hidden by default) -->
+<div id="verifyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+  <div class="bg-white rounded-2xl shadow-lg p-8 w-11/12 max-w-md text-center">
+    <h3 class="text-2xl font-bold mb-4 text-gray-900">Email Verification Required</h3>
+    <p class="text-gray-700 mb-6">
+      Please verify your email before you can log in. We have sent a verification link to your Gmail account.
+    </p>
+    <button id="resendEmail" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md transition-all duration-300 mb-4">
+      Resend Verification Email
+    </button>
+    <button id="closeModal" class="text-gray-500 hover:text-gray-700 underline font-medium">
+      Close
+    </button>
+  </div>
+</div>
+<script>
+  // Example: show modal if email is not verified
+  document.addEventListener('DOMContentLoaded', () => {
+      const isVerified = {{ auth()->user() && auth()->user()->email_verified_at ? 'true' : 'false' }};
+      
+      if(!isVerified) {
+          document.getElementById('verifyModal').classList.remove('hidden');
+      }
 
+      document.getElementById('closeModal').addEventListener('click', () => {
+          document.getElementById('verifyModal').classList.add('hidden');
+      });
+
+      document.getElementById('resendEmail').addEventListener('click', () => {
+          fetch('{{ route("verification.send") }}', {
+              method: 'POST',
+              headers: {
+                  'X-CSRF-TOKEN': '{{ csrf_token() }}'
+              }
+          }).then(() => {
+              alert('Verification email sent! Please check your Gmail.');
+          });
+      });
+  });
+</script>
 </body>
 </html>
+
+
