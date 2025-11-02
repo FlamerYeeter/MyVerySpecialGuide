@@ -10,19 +10,18 @@ if (!$data) {
     die("Invalid data");
 }
 
-$sql = "INSERT INTO mvsg.audit_logs (
-    id,
-    actor_id,
-    actor_type
+$sql = "INSERT INTO experts (
+    first_name,
+    last_name,
+    email
 ) VALUES ( :v0,
            :v1,
-           :v2
-           )";
+           :v2 )";
 $stid = oci_parse($conn, $sql);
 
-oci_bind_by_name($stid, ':v1',  $data['firstName']);
-oci_bind_by_name($stid, ':v2',   $data['lastName']);
-oci_bind_by_name($stid, ':v3',  $data['email']);
+oci_bind_by_name($stid, ':v0',  $data['firstName']);
+oci_bind_by_name($stid, ':v1',  $data['lastName']);
+oci_bind_by_name($stid, ':v2',   $data['email']);
 
 $r = oci_execute($stid);
 if ($r) echo "✅ Saved successfully!";
