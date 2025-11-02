@@ -52,8 +52,6 @@
         </h2>
       </div>
 
-   
-
       <!-- Continue Button -->
       <div class="text-center mt-10">
         <button type="button"

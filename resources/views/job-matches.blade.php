@@ -480,7 +480,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             </div>
 
             <div class="text-gray-800">
-                <h2 class="text-2xl font-bold text-[#92400E]">Therapist Assessment Required</h2>
+                <h2 class="text-2xl font-bold text-[#92400E]">Therapist Job Readiness Assessment Required</h2>
                 <p class="text-lg mt-2 leading-relaxed">
                     Before you can apply for a job, you first need to complete a
                     <span class="font-semibold text-[#B45309]">Therapist Assessment</span>.
@@ -607,7 +607,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             <div class="flex justify-end mt-10">
                 <button
                     class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[480px] hover:bg-[#D78203] transition text-center">
-                    Apply for Therapist Assessment
+                    Apply for Therapist Job Readiness Assessment
                 </button>
             </div>
 
@@ -767,7 +767,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                         <!-- Assessment Button -->
                         <button
                             class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[365px] mb-4 hover:bg-[#D78203] transition text-center">
-                            Apply for Therapist Assessment
+                            Apply for Therapist Job Readiness Assessment
                         </button>
 
                         <!-- Action Buttons -->
@@ -787,7 +787,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                         </div>
 
                         <!-- Progress Bar -->
-                        <div class="w-full sm:w-[350px]">
+                        <div class="w-full sm:w-[360px]">
                             <div class="h-3 bg-gray-200 rounded-none overflow-hidden">
                                 <div class="h-full bg-[#88BF02] w-1/2 rounded-none"></div>
                             </div>
@@ -816,7 +816,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
                     <!-- Modal Content -->
                     <p class="text-lg text-gray-800 font-semibold mb-4">
-                        Thank you for applying for an assessment!
+                        Thank you for applying for a job readiness assessment!
                     </p>
 
                     <p class="text-gray-700 text-base mb-4 leading-relaxed">
@@ -880,7 +880,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 document.addEventListener("DOMContentLoaded", () => {
                     // Select all buttons with exact text "Apply for Therapist Assessment"
                     const openModalBtns = Array.from(document.querySelectorAll("button"))
-                        .filter(btn => btn.textContent.trim() === "Apply for Therapist Assessment");
+                        .filter(btn => btn.textContent.trim() === "Apply for Therapist Job Readiness Assessment");
 
                     const modal = document.getElementById("assessmentModal");
                     const closeModalBtn = document.getElementById("closeModalBtn");

@@ -81,7 +81,7 @@
                 class="w-full block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">My Job Applications</button>
             </form>
               <button type="submit"
-                class="w-full block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">Logout</button>
+                class="w-full block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">Logout</button>
             </form>
           </div>
         </div>

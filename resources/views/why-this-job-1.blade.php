@@ -15,27 +15,17 @@
   </div>
 </div>
 
-<!-- Hero Section -->
-<section class="bg-pink-400 flex flex-col items-center justify-center py-20 px-6 sm:px-12 lg:px-20">
-  <div class="container mx-auto px-6">
-    <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-10 max-w-5xl w-full">
-      
-      <!-- Icon -->
-      <div class="flex-shrink-0 flex justify-center">
-        <img src="{{ asset('image/brain.png') }}" alt="Brain Icon" class="w-24 h-24 md:w-28 md:h-28">
-      </div>
-
-      <!-- Text -->
-      <div class="flex flex-col items-center lg:items-start">
-        <h2 class="text-4xl sm:text-3xl lg:text-4xl font-extrabold text-[#1E40AF] drop-shadow-md">
-          Why This Job Match You?
-        </h2>
-        <p class="text-lg sm:text-xl text-black mt-4 leading-relaxed max-w-3xl">
-          Discover how your unique skills and interests align with this job role.<br>
-          Learn the step-by-step path to achieve your aspirations.
-        </p>
-      </div>
-    </div>
+<!-- HERO SECTION -->
+<section class="bg-pink-400 py-10 text-center shadow-md rounded-b-3xl">
+  <div class="flex flex-col items-center justify-center">
+    <img src="{{ asset('image/brain.png') }}" alt="Brain Icon" 
+         class="w-24 h-24 mb-3 animate-bounce-slow">
+    <h2 class="text-4xl font-extrabold text-white tracking-wide drop-shadow-md">
+      Why This Job Match You?
+    </h2>
+    <p class="text-lg text-white/90 mt-2 max-w-2xl">
+      Discover how your unique skills and interests align with this job role.  
+    </p>
   </div>
 </section>
 
