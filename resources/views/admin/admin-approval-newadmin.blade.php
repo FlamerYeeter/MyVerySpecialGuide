@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AdminHub - View Job Post</title>
+    <title>AdminHub - New Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
   </head>
@@ -355,8 +355,7 @@
               class="w-3 h-3 sm:w-4 sm:h-4 text-gray-500"
               fill="none"
               viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
+              stroke="currentColor">
               <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
@@ -409,8 +408,7 @@
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round"
-              >
+                stroke-linejoin="round">
                 <path d="M12 20h9"></path>
                 <path
                   d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
@@ -428,8 +426,7 @@
                 stroke="currentColor"
                 stroke-width="2"
                 stroke-linecap="round"
-                stroke-linejoin="round"
-              >
+                stroke-linejoin="round">
                 <circle cx="12" cy="5" r="1"></circle>
                 <circle cx="12" cy="12" r="1"></circle>
                 <circle cx="12" cy="19" r="1"></circle>
@@ -438,13 +435,10 @@
 
             <!-- Dropdown Menu -->
             <div
-              class="hidden absolute right-6 top-10 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-50"
-            >
+              class="hidden absolute right-6 top-10 w-32 bg-white border border-gray-200 rounded-md shadow-lg z-50">
               <a
                 href="#"
-                class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center"
-              >
-                Remove
+                class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 text-center">Remove
               </a>
             </div>
           </div>
