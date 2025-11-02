@@ -65,7 +65,7 @@
 
   <!-- Main Content -->
   <main id="mainContent" class="flex-grow w-full transition-all duration-300 ml-64 p-6">
-    @yield('content')
+    <?php echo $__env->yieldContent('content'); ?>
   </main>
 
   <script>
@@ -346,7 +346,7 @@
                   <h2 class="text-3xl font-bold text-gray-900">8</h2>
                   <p class="text-gray-600 text-sm">New Candidates</p>
                 </div>
-              <img src="{{ asset('image/NewUsers.png') }}" class="max-w-[80px] h-auto object-contain">
+              <img src="<?php echo e(asset('image/NewUsers.png')); ?>" class="max-w-[80px] h-auto object-contain">
               </div>
 
               <!-- Job Post -->
@@ -355,7 +355,7 @@
                   <h2 class="text-3xl font-bold text-gray-900">25</h2>
                   <p class="text-gray-600 text-sm">Job Post</p>
                 </div>
-                    <img src="{{ asset('image/Therapist.png') }}" class="max-w-[80px] h-auto object-contain">
+                    <img src="<?php echo e(asset('image/Therapist.png')); ?>" class="max-w-[80px] h-auto object-contain">
 
               </div>
               <!-- Job Opens -->
@@ -364,7 +364,7 @@
                   <h2 class="text-3xl font-bold text-gray-900">12</h2>
                   <p class="text-gray-600 text-sm">Job Opens</p>
                 </div>
-                    <img src="{{ asset('image/Job Posting.png') }}" class="max-w-[80px] h-auto object-contain">
+                    <img src="<?php echo e(asset('image/Job Posting.png')); ?>" class="max-w-[80px] h-auto object-contain">
 
               </div>
 
@@ -545,4 +545,4 @@
   </div>
 </body>
 
-</html>
+</html><?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\MyVerySpecialGuide\resources\views/company-dashboard.blade.php ENDPATH**/ ?>
