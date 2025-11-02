@@ -131,7 +131,7 @@
 </div>
 
 <!-- Ensure global Firebase config is present for the module -->
-<script src="{{ asset('js/firebase-config-global.js') }}"></script>
+{{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
 <script type="module">
 import { submitJobApplication, isSignedIn, signInWithServerToken } from "{{ asset('js/job-application-firebase.js') }}";
 

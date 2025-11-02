@@ -665,7 +665,7 @@
     @endif
 
     <!-- Ensure global Firebase config is present and require login for actions on this page -->
-    <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
     <script>
         @auth
         window.__SERVER_AUTH = true;

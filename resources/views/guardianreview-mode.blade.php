@@ -176,10 +176,8 @@
   // Attempt server-backed Firebase sign-in so client can get ID token for approve/flag actions
   (function(){
     try {
-      const script = document.createElement('script');
-      script.src = "{{ asset('js/firebase-config-global.js') }}";
-      script.defer = true;
-      document.head.appendChild(script);
+  // Firebase removed: do not load firebase-config-global.js
+  // (shim available at /js/firebase-config-global.js if needed)
       (async function(){
         try {
           const mod = await import("{{ asset('js/job-application-firebase.js') }}");

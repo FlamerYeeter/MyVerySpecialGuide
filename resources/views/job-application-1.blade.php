@@ -577,7 +577,7 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
         </script>
 
         <!-- Ensure global Firebase config is present and autofill profile for signed-in users -->
-        <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
         <script type="module">
             import {
                 getUserProfile,
@@ -610,7 +610,7 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
         </script>
 
         <!-- Ensure global Firebase config is present and autofill profile for logged-in users -->
-        <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
         <script type="module">
             import {
                 getUserProfile,

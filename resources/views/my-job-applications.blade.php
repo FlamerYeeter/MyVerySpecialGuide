@@ -219,7 +219,7 @@
 @endsection
 
 <!-- Require sign-in on My Job Applications page -->
-<script src="{{ asset('js/firebase-config-global.js') }}"></script>
+{{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
 <script type="module">
   (async function(){
     try {

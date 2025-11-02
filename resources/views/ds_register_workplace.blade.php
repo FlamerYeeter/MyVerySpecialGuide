@@ -188,30 +188,36 @@
             <input id="workplace_choice" type="hidden" value="" />
 
             <script>
-                 document.addEventListener("DOMContentLoaded", () => {
-                    
-                const workplaceNextbtn = document.getElementById('workplaceNext');  
-                
-                    workplaceNextbtn.addEventListener('click', function() {
-                        // Handle the next button click event here   
-                        const allCards = document.querySelectorAll('.workplace-card');
-                        allCards.forEach(card => card.classList.remove('selected'));
+                document.addEventListener("DOMContentLoaded", () => {
+                const workplaceNextbtn = document.getElementById('workplaceNext');
 
-                        // add "selected" to the clicked one
-                        element.classList.add('selected');
+                workplaceNextbtn.addEventListener('click', function() {
+                    // Find the card that currently has the "selected" class
+                    const selectedCard = document.querySelector('.workplace-card.selected');
 
-                        // save to localStorage (optional)
-                        if (value === 'other') {
-                            const otherInput = document.getElementById('selectworkplace_other_text');
-                            localStorage.setItem('workplace', otherInput.value || 'other');
-                        } else {
-                            localStorage.setItem('workplace', value);
-                        }
+                    if (!selectedCard) return; // do nothing if none selected
 
-                // window.location.href = '{{ route("registerskills1") }}';
+                    // Extract the value from onclick attribute
+                    const onclickAttr = selectedCard.getAttribute('onclick');
+                    const match = onclickAttr.match(/'([^']+)'/); // value inside single quotes
+                    const selectedValue = match ? match[1] : null;
+
+                    if (!selectedValue) return;
+
+                    // If "other", use input text; otherwise save the value
+                    if (selectedValue === 'other') {
+                        const otherInput = document.getElementById('selectworkplace_other_text');
+                        const otherValue = otherInput.value.trim();
+                        localStorage.setItem('workplace', otherValue || 'other');
+                    } else {
+                        localStorage.setItem('workplace', selectedValue);
+                    }
+
+                    console.log("Saved to localStorage:", localStorage.getItem('workplace'));
+                    // Optional redirect here
+                    window.location.href = '{{ route("registerjobpreference1") }}';
                     });
-                 });
-                
+                });
             </script>
 
             <script>

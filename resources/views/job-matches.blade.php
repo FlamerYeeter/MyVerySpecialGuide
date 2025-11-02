@@ -1368,7 +1368,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             </div>
         </div>
         <!-- Ensure user is signed-in before taking actions like Apply or Save -->
-        <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
         <script>
             @auth
             window.__SERVER_AUTH = true;

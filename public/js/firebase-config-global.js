@@ -25,14 +25,6 @@
 
   // Fallback: mirror the values present in public/js/firebase-config.js
   // Keep this minimal and safe to include in the browser
-  window.FIREBASE_CONFIG = window.FIREBASE_CONFIG || {
-    apiKey: "AIzaSyCb2wiXLmVeOJS6T25tXk8sgbgp4zJvqRM",
-    authDomain: "myveryspecialguide.firebaseapp.com",
-    projectId: "myveryspecialguide",
-    storageBucket: "myveryspecialguide.firebasestorage.app",
-    messagingSenderId: "1092348597749",
-    appId: "1:1092348597749:web:2e662681864dd53c9cbcbc"
-  };
-  // mark source so debug logs can identify it
-  try { window.__MVSG_FIREBASE_CONFIG__ = window.FIREBASE_CONFIG; } catch(e){}
+    window.FIREBASE_CONFIG = window.FIREBASE_CONFIG || null;
+    console.warn('firebase-config-global.js loaded: Firebase integration removed from this build.');
 })();

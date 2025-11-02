@@ -876,7 +876,7 @@
     </script>
 
     <!-- Include Firebase config -->
-    <script src="js/firebase-config-global.js"></script>
+    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
 
     <!-- LocalStorage-first autofill: read rpi_personal early and apply to form -->
     <script>
