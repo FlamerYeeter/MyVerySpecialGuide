@@ -75,31 +75,7 @@
     </button>
   </div>
 </div>
-<script>
-  // Example: show modal if email is not verified
-  document.addEventListener('DOMContentLoaded', () => {
-      const isVerified = {{ auth()->user() && auth()->user()->email_verified_at ? 'true' : 'false' }};
-      
-      if(!isVerified) {
-          document.getElementById('verifyModal').classList.remove('hidden');
-      }
 
-      document.getElementById('closeModal').addEventListener('click', () => {
-          document.getElementById('verifyModal').classList.add('hidden');
-      });
-
-      document.getElementById('resendEmail').addEventListener('click', () => {
-          fetch('{{ route("verification.send") }}', {
-              method: 'POST',
-              headers: {
-                  'X-CSRF-TOKEN': '{{ csrf_token() }}'
-              }
-          }).then(() => {
-              alert('Verification email sent! Please check your Gmail.');
-          });
-      });
-  });
-</script>
 </body>
 </html>
 

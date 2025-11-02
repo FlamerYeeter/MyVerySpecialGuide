@@ -582,7 +582,7 @@
                 // Save only selected values to localStorage
                 localStorage.setItem("selected_work_experience", JSON.stringify(selectedWorkExpValues));
                 const selectedCard = document.querySelector(".workyr-card.selected");
-                debugger;
+     
                 if (selectedCard) {
                     const onclickAttr = selectedCard.getAttribute("onclick");
                     const match = onclickAttr.match(/selectWorkYearsChoice\(this,\s*'([^']+)'\)/);
@@ -595,6 +595,30 @@
                     console.log("No work year selected.");
                 }
 
+                const jobExperiences = [];
+
+                // Loop through all job experience cards
+                document.querySelectorAll('#job_experiences_container .job_exp_item').forEach(item => {
+                    const jobTitle = item.querySelector('.job_title')?.value?.trim() || '';
+                    const companyName = item.querySelector('.company_name')?.value?.trim() || '';
+                    const workYear = item.querySelector('.job_work_year')?.value?.trim() || '';
+                    const jobDescription = item.querySelector('.job_description')?.value?.trim() || '';
+
+                    // Add only if at least one field has data
+                    if (jobTitle || companyName || workYear || jobDescription) {
+                        jobExperiences.push({
+                            title: jobTitle,
+                            company: companyName,
+                            year: workYear,
+                            description: jobDescription
+                        });
+                    }
+                });
+
+                // Save to localStorage
+                localStorage.setItem('job_experiences', JSON.stringify(jobExperiences));
+                console.log('✅ Job experiences saved:', jobExperiences);
+                
                 });
             }
         });
