@@ -188,6 +188,33 @@
             <input id="workplace_choice" type="hidden" value="" />
 
             <script>
+                 document.addEventListener("DOMContentLoaded", () => {
+                    
+                const workplaceNextbtn = document.getElementById('workplaceNext');  
+                
+                    workplaceNextbtn.addEventListener('click', function() {
+                        // Handle the next button click event here   
+                        const allCards = document.querySelectorAll('.workplace-card');
+                        allCards.forEach(card => card.classList.remove('selected'));
+
+                        // add "selected" to the clicked one
+                        element.classList.add('selected');
+
+                        // save to localStorage (optional)
+                        if (value === 'other') {
+                            const otherInput = document.getElementById('selectworkplace_other_text');
+                            localStorage.setItem('workplace', otherInput.value || 'other');
+                        } else {
+                            localStorage.setItem('workplace', value);
+                        }
+
+                // window.location.href = '{{ route("registerskills1") }}';
+                    });
+                 });
+                
+            </script>
+
+            <script>
                 // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workplace.blade.php
                 function selectWorkplaceChoice(el, value) {
                     try {

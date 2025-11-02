@@ -618,7 +618,8 @@
                 // Save to localStorage
                 localStorage.setItem('job_experiences', JSON.stringify(jobExperiences));
                 console.log('✅ Job experiences saved:', jobExperiences);
-                
+
+                window.location.href = '{{ route("registersupportneed") }}';
                 });
             }
         });

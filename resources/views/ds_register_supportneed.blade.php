@@ -295,6 +295,39 @@
     <script src="{{ asset('js/register.js') }}"></script>
 
     <!-- TTS: Web Speech API handler -->
+
+    <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+        
+    const supportNextbtn = document.getElementById('supportNext');
+
+    supportNextbtn.addEventListener('click', function () {
+        console.log('Support Next button clicked!');
+        const selectedSupportCards = document.querySelectorAll(".support-card.selected");
+
+        let supportValues = [];
+
+        selectedSupportCards.forEach(card => {
+            const onclickAttr = card.getAttribute("onclick");
+            const match = onclickAttr?.match(/selectSupportChoice\(this,\s*'([^']+)'\)/);
+            if (match && match[1]) {
+                supportValues.push(match[1]);
+            }
+        });
+
+        localStorage.setItem("support", JSON.stringify(supportValues));
+
+        console.log("Saved to localStorage:", supportValues);
+
+        window.location.href = '{{ route("registerworkplace") }}';
+
+    });
+
+    });
+    </script>
+
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const buttons = document.querySelectorAll('.tts-btn');
