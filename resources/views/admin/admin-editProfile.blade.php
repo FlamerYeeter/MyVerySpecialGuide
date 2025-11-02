@@ -51,7 +51,7 @@
 
   <!-- Notification Dropdown -->
   <div id="notifDropdown"
-    class="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50">
+    class="absolute right-0 mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-lg hidden">
 
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-gray-100">
@@ -176,7 +176,7 @@
 
             <!-- Dropdown Menu (White Background) -->
             <div id="profileDropdown"
-               class="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg hidden z-50">
+                class="absolute right-0 mt-2 w-44 bg-white text-gray-700 border border-gray-200 rounded-lg shadow-lg hidden">
                 <a href="#"
                     class="flex items-center px-4 py-2 hover:bg-gray-100 rounded-t-md transition">
                     <i class="ri-user-line mr-2 text-sm text-gray-600"></i> Admin Profile
@@ -221,24 +221,87 @@
                       </div>
                   </div>
 
-        <!-- Profile Content -->
-        <h1 class="text-lg font-medium mb-4">My Profile</h1>
+                  <!-- Profile Content -->
+        <h2 class="text-lg font-medium mb-4">My Profile</h2>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <!-- LEFT CARD -->
-            <div class="border rounded-lg p-6 flex flex-col items-center text-center shadow-sm bg-white">
-                <div
-                    class="w-24 h-24 bg-yellow-200 rounded-full flex items-center justify-center text-2xl font-medium text-gray-800 mb-4">
-                    JD
-                </div>
-                <h2 class="text-lg font-medium text-gray-800">Juan Dela Cruz</h2>
-                <p class="text-sm text-gray-500 mb-2">Admin</p>
-                <p class="text-xs text-gray-400 mb-4">Last login 4 minutes ago</p>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- LEFT CARD -->
+      <div class="bg-white rounded-lg shadow p-6 flex flex-col items-center">
+      
+         <!-- Profile Avatar -->
+<div class="relative">
+  <!-- Avatar Circle -->
+  <div id="avatarPreview"
+    class="w-32 h-32 rounded-full bg-yellow-100 flex items-center justify-center text-4xl font-semibold text-gray-800 overflow-hidden">
+    JD
+  </div>
 
-                <hr class="w-full mb-4 border-gray-200">
+  <!-- Upload Button -->
+  <label class="absolute bottom-2 right-2 bg-gray-200 rounded-full p-2 cursor-pointer hover:bg-gray-300 transition">
+    <input id="avatarInput" type="file" accept="image/*" class="hidden" />
+    <img src="camera-svgrepo-com.png" alt="Upload" class="w-5 h-5" />
+  </label>
+</div>
 
-                <div class="flex items-center text-sm text-gray-700 mb-2">
+
+<!-- Script -->
+<script>
+  const avatarPreview = document.getElementById('avatarPreview');
+  const avatarInput = document.getElementById('avatarInput');
+  const firstNameInput = document.getElementById('firstName');
+  const lastNameInput = document.getElementById('lastName');
+
+  // Generate initials (e.g., Juan Dela Cruz → JD)
+  function updateInitials() {
+    const first = firstNameInput.value.trim();
+    const last = lastNameInput.value.trim();
+    let initials = "";
+
+    if (first) initials += first[0].toUpperCase();
+    if (last) initials += last[0].toUpperCase();
+
+    if (!initials) initials = "NA"; // fallback
+
+    avatarPreview.innerHTML = initials;
+    avatarPreview.classList.add("bg-yellow-100", "text-gray-800");
+  }
+
+  // When typing names → update initials if no uploaded image
+  firstNameInput.addEventListener("input", updateInitials);
+  lastNameInput.addEventListener("input", updateInitials);
+
+  // When uploading an image → replace initials with photo
+  avatarInput.addEventListener("change", (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        avatarPreview.innerHTML = `<img src="${e.target.result}" class="w-32 h-32 rounded-full object-cover" alt="Avatar">`;
+        avatarPreview.classList.remove("bg-yellow-100", "text-gray-800");
+      };
+      reader.readAsDataURL(file);
+    } else {
+      updateInitials(); // restore initials if upload canceled
+    }
+  });
+
+  // Initial display
+  updateInitials();
+</script>
+
+
+
+        <!-- Name -->
+        <h2 class="mt-4 text-lg font-semibold">Juan Dela Cruz</h2>
+        <p class="text-sm text-gray-500">Admin</p>
+
+        <hr class="w-full my-4">
+
+        <!-- Contact Info -->
+        <div class="w-full space-y-3 text-sm">
+          <div class="flex items-center text-sm text-gray-700 mb-2">
                     <img src="{{ asset('mail-svgrepo-com.png') }}" alt="Email Icon"
                         class="h-4 w-4 mr-2 object-contain">
                     juandelacruz@admin.com
@@ -249,58 +312,60 @@
                         class="h-4 w-4 mr-2 object-contain">
                     +639 123 4567
                 </div>
-            </div>
 
-            <!-- RIGHT CARD -->
-           <div class="border rounded-lg p-6 shadow-sm bg-white relative z-0">
-                <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-700">
-                    <i class="ri-edit-2-line text-lg"></i>
-                </button>
-      
-                <form class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
-                    <div>
-                        <label class="block text-sm text-gray-700 mb-1">First Name</label>
-                        <input type="text" placeholder="Juan"
-                            class="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-700 mb-1">Middle Name</label>
-                        <input type="text" placeholder="Dela"
-                            class="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm text-gray-700 mb-1">Last Name</label>
-                        <input type="text" placeholder="Cruz"
-                            class="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-700 mb-1">Phone Number</label>
-                        <input type="text" placeholder="+639 123 4567"
-                            class="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-                    </div>
-
-                    <div>
-                        <label class="block text-sm text-gray-700 mb-1">Gender</label>
-                        <input type="text" placeholder="Male"
-                            class="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-                    </div>
-                    <div>
-                        <label class="block text-sm text-gray-700 mb-1">Birthday</label>
-                        <input type="date"
-                            class="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-                    </div>
-
-                    <div class="sm:col-span-2">
-                        <label class="block text-sm text-gray-700 mb-1">Password</label>
-                        <input type="password" placeholder="********"
-                            class="w-full border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-300">
-                    </div>
-                </form>
-            </div>
-
+          <!-- Bio -->
+          <textarea placeholder="Type here your bio" 
+            class="w-full mt-3 border border-gray-300 rounded-md p-2 focus:ring-2 focus:ring-blue-400 focus:outline-none"></textarea>
         </div>
-    </main>
+      </div>
+
+      <!-- RIGHT CARD -->
+      <div class="bg-white rounded-lg shadow p-6">
+        <!-- Edit Profile -->
+        <h2 class="text-lg font-semibold mb-4">Edit Profile</h2>
+
+        <div class="grid grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="text-sm font-medium">First Name</label>
+            <input type="text" placeholder="Type here" class="mt-1 w-full border-b border-gray-300 focus:border-blue-400 outline-none" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Middle Name</label>
+            <input type="text" placeholder="Type here" class="mt-1 w-full border-b border-gray-300 focus:border-blue-400 outline-none" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Last Name</label>
+            <input type="text" placeholder="Type here" class="mt-1 w-full border-b border-gray-300 focus:border-blue-400 outline-none" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Phone Number</label>
+            <input type="text" placeholder="+63" class="mt-1 w-full border-b border-gray-300 focus:border-blue-400 outline-none" />
+          </div>
+          <div>
+            <label class="text-sm font-medium">Gender</label>
+            <select class="mt-1 w-full border-b border-gray-300 focus:border-blue-400 outline-none bg-transparent">
+              <option value="">Select Gender</option>
+              <option>Male</option>
+              <option>Female</option>
+            </select>
+          </div>
+          <div>
+            <label class="text-sm font-medium">Birthday</label>
+            <input type="date" class="mt-1 w-full border-b border-gray-300 focus:border-blue-400 outline-none" />
+          </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-end items-center gap-3 mb-6">
+          <button class="px-4 py-2 rounded-md border border-gray-300 text-gray-600 hover:bg-gray-100">Cancel</button>
+          <button class="px-4 py-2 rounded-md bg-blue-500 text-white hover:bg-blue-600">Save Changes</button>
+        </div>
+
+        
+
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
