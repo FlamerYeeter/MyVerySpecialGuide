@@ -471,131 +471,131 @@
                 <!-- Script -->
                 <script>
                     (function() {
-                        const fileInput = document.getElementById("proof");
-            const fileInfo = document.getElementById("proofFileInfo");
-            const fileName = document.getElementById("proofFileName");
-            const fileIcon = document.getElementById("proofFileIcon");
-            const viewBtn = document.getElementById("proofViewBtn");
-            const removeBtn = document.getElementById("proofRemoveBtn");
-            const modal = document.getElementById("fileModal");
-            const modalContent = document.getElementById("modalContent");
-            const closeModal = document.getElementById("closeModalBtn");
-            const hintEl = document.getElementById("proofHint");
-            const prevFileEl = document.getElementById("r_proof");
+                    const fileInput = document.getElementById("proof");
+                    const fileInfo = document.getElementById("proofFileInfo");
+                    const fileName = document.getElementById("proofFileName");
+                    const fileIcon = document.getElementById("proofFileIcon");
+                    const viewBtn = document.getElementById("proofViewBtn");
+                    const removeBtn = document.getElementById("proofRemoveBtn");
+                    const modal = document.getElementById("fileModal");
+                    const modalContent = document.getElementById("modalContent");
+                    const closeModal = document.getElementById("closeModalBtn");
+                    const hintEl = document.getElementById("proofHint");
+                    const prevFileEl = document.getElementById("r_proof");
 
-            console.log("✅ File upload script initialized");
+                    console.log("✅ File upload script initialized");
 
-            // 🔹 Load file from localStorage (base64)
-            const savedFileData = localStorage.getItem("uploadedProofData1");
-            const savedFileType = localStorage.getItem("uploadedProofType1");
-            const savedFileName = localStorage.getItem("uploadedProofName1");
+                    // 🔹 Load file from localStorage (base64)
+                    const savedFileData = localStorage.getItem("uploadedProofData0");
+                    const savedFileType = localStorage.getItem("uploadedProofType0");
+                    const savedFileName = localStorage.getItem("uploadedProofName0");
 
-            if (savedFileData && savedFileType && savedFileName) {
-                showFileInfo(savedFileName, savedFileType);
-                makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
-            } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
-                // If coming from previous form
-                const prevFileName = prevFileEl.textContent.trim();
-                showFileInfo(prevFileName, getFileType(prevFileName));
-                makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
-            }
+                    if (savedFileData && savedFileType && savedFileName) {
+                        showFileInfo(savedFileName, savedFileType);
+                        makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
+                    } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
+                        // If coming from previous form
+                        const prevFileName = prevFileEl.textContent.trim();
+                        showFileInfo(prevFileName, getFileType(prevFileName));
+                        makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
+                    }
 
-            // 🔹 When a new file is selected
-            fileInput.addEventListener("change", function () {
-                const file = this.files[0];
-                if (!file) return;
+                    // 🔹 When a new file is selected
+                    fileInput.addEventListener("change", function () {
+                        const file = this.files[0];
+                        if (!file) return;
 
-                const ext = getFileType(file.name);
-                if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
-                alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
-                fileInput.value = "";
-                return;
-                }
+                        const ext = getFileType(file.name);
+                        if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
+                        alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
+                        fileInput.value = "";
+                        return;
+                        }
 
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                const fileData = e.target.result; // base64 content
-                localStorage.setItem("uploadedProofData1", fileData);
-                localStorage.setItem("uploadedProofType1", ext);
-                localStorage.setItem("uploadedProofName1", file.name);
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                        const fileData = e.target.result; // base64 content
+                        localStorage.setItem("uploadedProofData1", fileData);
+                        localStorage.setItem("uploadedProofType1", ext);
+                        localStorage.setItem("uploadedProofName1", file.name);
 
-                showFileInfo(file.name, ext);
-                makeFileClickable(prevFileEl, file.name, fileData, ext);
-                };
-                reader.readAsDataURL(file);
-            });
+                        showFileInfo(file.name, ext);
+                        makeFileClickable(prevFileEl, file.name, fileData, ext);
+                        };
+                        reader.readAsDataURL(file);
+                    });
 
-            // 🔹 View button
-            viewBtn.addEventListener("click", () => {
-                const name = localStorage.getItem("uploadedProofName1");
-                const data = localStorage.getItem("uploadedProofData1");
-                const type = localStorage.getItem("uploadedProofType1");
-                if (data && type && name) openModalPreview(name, data, type);
-            });
+                    // 🔹 View button
+                    viewBtn.addEventListener("click", () => {
+                        const name = localStorage.getItem("uploadedProofName1");
+                        const data = localStorage.getItem("uploadedProofData1");
+                        const type = localStorage.getItem("uploadedProofType1");
+                        if (data && type && name) openModalPreview(name, data, type);
+                    });
 
-            // 🔹 Remove file
-            removeBtn.addEventListener("click", () => {
-                localStorage.removeItem("uploadedProofData1");
-                localStorage.removeItem("uploadedProofType1");
-                localStorage.removeItem("uploadedProofName1");
-                fileInput.value = "";
-                hideFileInfo();
-            });
+                    // 🔹 Remove file
+                    removeBtn.addEventListener("click", () => {
+                        localStorage.removeItem("uploadedProofData1");
+                        localStorage.removeItem("uploadedProofType1");
+                        localStorage.removeItem("uploadedProofName1");
+                        fileInput.value = "";
+                        hideFileInfo();
+                    });
 
-            // 🔹 Close modal
-            closeModal.addEventListener("click", closeModalFn);
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) closeModalFn();
-            });
+                    // 🔹 Close modal
+                    closeModal.addEventListener("click", closeModalFn);
+                    modal.addEventListener("click", (e) => {
+                        if (e.target === modal) closeModalFn();
+                    });
 
-            // ===============================
-            // 🔹 Helper Functions
-            // ===============================
+                    // ===============================
+                    // 🔹 Helper Functions
+                    // ===============================
 
-            function showFileInfo(name, type) {
-                fileInfo.classList.remove("hidden");
-                if (hintEl) hintEl.style.display = "none";
-                fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
-                fileName.textContent = name;
-            }
+                    function showFileInfo(name, type) {
+                        fileInfo.classList.remove("hidden");
+                        if (hintEl) hintEl.style.display = "none";
+                        fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
+                        fileName.textContent = name;
+                    }
 
-            function hideFileInfo() {
-                fileInfo.classList.add("hidden");
-                fileName.textContent = "";
-                fileIcon.textContent = "";
-                if (hintEl) hintEl.style.display = "";
-            }
+                    function hideFileInfo() {
+                        fileInfo.classList.add("hidden");
+                        fileName.textContent = "";
+                        fileIcon.textContent = "";
+                        if (hintEl) hintEl.style.display = "";
+                    }
 
-            function closeModalFn() {
-                modal.classList.add("hidden");
-                modalContent.innerHTML = "";
-            }
+                    function closeModalFn() {
+                        modal.classList.add("hidden");
+                        modalContent.innerHTML = "";
+                    }
 
-            function getFileType(filename) {
-                return filename.split(".").pop().toLowerCase();
-            }
+                    function getFileType(filename) {
+                        return filename.split(".").pop().toLowerCase();
+                    }
 
-            // 🔹 Make filename clickable
-            function makeFileClickable(el, name, data, type) {
-                if (!el) return;
-                el.classList.add("text-blue-600", "underline", "cursor-pointer");
-                el.title = "Click to view uploaded file";
-                el.onclick = () => openModalPreview(name, data, type);
-            }
+                    // 🔹 Make filename clickable
+                    function makeFileClickable(el, name, data, type) {
+                        if (!el) return;
+                        el.classList.add("text-blue-600", "underline", "cursor-pointer");
+                        el.title = "Click to view uploaded file";
+                        el.onclick = () => openModalPreview(name, data, type);
+                    }
 
-            // 🔹 Open modal preview
-            function openModalPreview(name, data, type) {
-                modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
-                if (["jpg", "jpeg", "png"].includes(type)) {
-                modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
-                } else if (type === "pdf") {
-                modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
-                } else {
-                modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
-                }
-                modal.classList.remove("hidden");
-            }
-            })();
+                    // 🔹 Open modal preview
+                    function openModalPreview(name, data, type) {
+                        modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
+                        if (["jpg", "jpeg", "png"].includes(type)) {
+                        modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
+                        } else if (type === "pdf") {
+                        modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
+                        } else {
+                        modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                        }
+                        modal.classList.remove("hidden");
+                    }
+                    })();
 
                     const phoneInput = document.getElementById('phone');
 
@@ -816,7 +816,8 @@
                         guardian_last: data.guardian_last || data.guardianLast || '',
                         guardian_email: data.guardian_email || '',
                         guardian_phone: data.guardian_phone || '',
-                        guardian_relationship: data.guardian_relationship || data.guardianRelationship || ''
+                        guardian_relationship: data.guardian_relationship || data.guardianRelationship || '',
+                        password: data.password || '',
                     };
 
                     try {
@@ -824,26 +825,6 @@
                     } catch (err) {
                         console.warn('Could not save rpi_personal', err);
                     }
-
-  const storedData = localStorage.getItem('rpi_personal');
-  if (!storedData) {
-    alert("No local data found!");
-    return;
-  }
-
-  const datax = JSON.parse(storedData);
-
-  fetch("registerdata.php", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(datax)
-  })
-  .then(res => res.text())
-  .then(response => {
-    console.log("Server response:", response);
-    alert(response);
-  })
-  .catch(err => console.error("Error sending data:", err));
 
                     console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
                     // dispatch event for other scripts to pick up
@@ -855,6 +836,8 @@
                             }
                         }));
                     } catch (e) {}
+
+                    window.location.href = '{{ route("registereducation") }}';
 
                 } catch (err) {
                     console.error('[adminapprove] submit failed', err);

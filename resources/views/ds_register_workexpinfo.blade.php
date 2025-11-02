@@ -42,7 +42,7 @@
         transform: scale(1.03);
     }
     </style>
-    <script>
+    <!-- <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workinfo.blade.php
         // Multi-select toggle: clicking a card toggles its selected state and updates #work_type
         function selectWorkTypeChoice(el, value) {
@@ -105,7 +105,7 @@
                 console.warn('init work_type failed', e);
             }
         });
-    </script>
+    </script> -->
 </head>
 
 <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
@@ -561,6 +561,21 @@
                     });
                 }
             } catch (e) { console.warn('workexp init failed', e); }
+
+            const workExpNextBtn = document.getElementById('workExpNext');
+            if (workExpNextBtn) {
+                workExpNextBtn.addEventListener('click', function() {
+
+                const selectedWorkExp = document.querySelector(".workexp-card.selected");
+                if (selectedWorkExp) {
+                    const workExpValue = selectedWorkExp.getAttribute("data-value") || "";
+                    localStorage.setItem("work_experience", workExpValue);
+                    console.log("Saved work experience:", workExpValue);
+                }
+                   
+                 
+                }); 
+            }
         });
     </script>
 

@@ -146,7 +146,7 @@
                 <div class="mt-4 text-gray-800 mb-3" id="certificateReview">
                     <p>
                         <span class="font-semibold">Certificates / Trainings:</span>
-                        <span id="review_certs_123" class="ml-1"></span>
+                        <span id="review_certs" class="ml-1"></span>
                     </p>
                 </div>
                        <!-- Certificates -->
@@ -394,11 +394,11 @@
                 window.addEventListener("DOMContentLoaded", () => {
                     console.log("Page loaded, attempting to retrieve saved cert...");
 
-                    const savedCert = localStorage.getItem("review_certs_123"); // same key as saved
+                    const savedCert = localStorage.getItem("review_certs"); // same key as saved
                     console.log("Retrieved from localStorage:", savedCert);
 
                     // Set span text
-                    const certSpan = document.getElementById("review_certs_123");
+                    const certSpan = document.getElementById("review_certs");
                     if (certSpan) {
                         if (savedCert) {
                             certSpan.textContent = savedCert; // display "yes" or "no"
@@ -1309,26 +1309,26 @@
                 const fileUploadSection = document.getElementById("fileuploadSection");
                 if (!fileUploadSection) return;
 
-                // Function to update visibility based on review_certs_123 value
+                // Function to update visibility based on review_certs value
                 const updateSectionVisibility = () => {
-                    const certValueEl = document.getElementById("review_certs_123"); // the element storing yes/no
+                    const certValueEl = document.getElementById("review_certs"); // the element storing yes/no
                     const certValue = certValueEl ? certValueEl.textContent || certValueEl.value : null;
 
                     if (certValue === "yes") {
                         fileUploadSection.style.display = "block";
-                        console.log("review_certs_123 is 'yes' → fileuploadSection shown");
+                        console.log("review_certs is 'yes' → fileuploadSection shown");
                     } else {
                         fileUploadSection.style.display = "none";
-                        console.log("review_certs_123 is 'no' or missing → fileuploadSection hidden");
+                        console.log("review_certs is 'no' or missing → fileuploadSection hidden");
                     }
                 };
 
                 // Initial check
                 updateSectionVisibility();
 
-                // Optional: if the value of review_certs_123 can change dynamically, you can watch for changes:
+                // Optional: if the value of review_certs can change dynamically, you can watch for changes:
                 const observer = new MutationObserver(updateSectionVisibility);
-                const certValueEl = document.getElementById("review_certs_123");
+                const certValueEl = document.getElementById("review_certs");
                 if (certValueEl) {
                     observer.observe(certValueEl, { characterData: true, childList: true, subtree: true });
                 }
@@ -1337,19 +1337,19 @@
 
             <script>
                 window.addEventListener("DOMContentLoaded", () => {
-                    const reviewCertEl = document.getElementById("review_certs_123");
+                    const reviewCertEl = document.getElementById("review_certs");
                     const certRadios = document.querySelectorAll('input[name="certs"]');
 
                     if (!reviewCertEl || certRadios.length === 0) return;
 
                     const updateReviewCert = (value) => {
                         reviewCertEl.textContent = value; // pass value to the element
-                        localStorage.setItem("review_certs_123", value); // store in localStorage
-                        console.log("review_certs_123 updated to:", value);
+                        localStorage.setItem("review_certs", value); // store in localStorage
+                        console.log("review_certs updated to:", value);
                     };
 
                     // Restore value from localStorage on page load
-                    const savedCert = localStorage.getItem("review_certs_123");
+                    const savedCert = localStorage.getItem("review_certs");
                     if (savedCert) {
                         reviewCertEl.textContent = savedCert;
                         const radio = document.getElementById(savedCert === "yes" ? "certYes" : "certNo");
@@ -1404,7 +1404,7 @@
                         });
 
                         // Restore state from localStorage if exists
-                        const savedCert = localStorage.getItem("review_certs_123");
+                        const savedCert = localStorage.getItem("review_certs");
                         if (savedCert) {
                             updateVisibility(savedCert);
                             console.log("Restored cert state from localStorage:", savedCert);

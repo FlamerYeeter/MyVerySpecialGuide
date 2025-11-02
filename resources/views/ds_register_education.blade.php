@@ -200,7 +200,7 @@
                 </div>
 
                 <!-- Other Option -->
-                <div class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                <div id="otherEducation" class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectEducationChoice(this, 'other')">
 
                     <!-- Audio Button -->
@@ -767,9 +767,9 @@
             console.log("✅ File upload script initialized");
 
             // 🔹 Load file from localStorage (base64)
-            const savedFileData = localStorage.getItem("uploadedProofData");
-            const savedFileType = localStorage.getItem("uploadedProofType");
-            const savedFileName = localStorage.getItem("uploadedProofName");
+            const savedFileData = localStorage.getItem("uploadedProofData1");
+            const savedFileType = localStorage.getItem("uploadedProofType1");
+            const savedFileName = localStorage.getItem("uploadedProofName1");
 
             if (savedFileData && savedFileType && savedFileName) {
                 showFileInfo(savedFileName, savedFileType);
@@ -796,9 +796,9 @@
                 const reader = new FileReader();
                 reader.onload = function (e) {
                 const fileData = e.target.result; // base64 content
-                localStorage.setItem("uploadedProofData", fileData);
-                localStorage.setItem("uploadedProofType", ext);
-                localStorage.setItem("uploadedProofName", file.name);
+                localStorage.setItem("uploadedProofData1", fileData);
+                localStorage.setItem("uploadedProofType1", ext);
+                localStorage.setItem("uploadedProofName1", file.name);
 
                 showFileInfo(file.name, ext);
                 makeFileClickable(prevFileEl, file.name, fileData, ext);
@@ -808,17 +808,17 @@
 
             // 🔹 View button
             viewBtn.addEventListener("click", () => {
-                const name = localStorage.getItem("uploadedProofName");
-                const data = localStorage.getItem("uploadedProofData");
-                const type = localStorage.getItem("uploadedProofType");
+                const name = localStorage.getItem("uploadedProofName1");
+                const data = localStorage.getItem("uploadedProofData1");
+                const type = localStorage.getItem("uploadedProofType1");
                 if (data && type && name) openModalPreview(name, data, type);
             });
 
             // 🔹 Remove file
             removeBtn.addEventListener("click", () => {
-                localStorage.removeItem("uploadedProofData");
-                localStorage.removeItem("uploadedProofType");
-                localStorage.removeItem("uploadedProofName");
+                localStorage.removeItem("uploadedProofData1");
+                localStorage.removeItem("uploadedProofType1");
+                localStorage.removeItem("uploadedProofName1");
                 fileInput.value = "";
                 hideFileInfo();
             });
@@ -886,65 +886,90 @@
             </script>
             <script>
             // List of button IDs
-            const audioButtons = [
-                "VocationalAudioBtn",
-                "ElementaryAudioBtn",
-                "HighSchoolAudioBtn",
-                "CollegeAudioBtn"
-            ];
+            document.addEventListener("DOMContentLoaded", () => {
+                const audioButtons = [
+                    "VocationalAudioBtn",
+                    "ElementaryAudioBtn",
+                    "HighSchoolAudioBtn",
+                    "CollegeAudioBtn",
+                    "otherEducation"
+                ];
 
-            audioButtons.forEach(btnId => {
-                const btn = document.getElementById(btnId);
-                if (btn) {
-                btn.addEventListener("click", () => {
-                    // Clear review_other input
-                    const otherField = document.getElementById("review_other");
-                    if (otherField) {
-                    otherField.value = "";
+                audioButtons.forEach(btnId => {
+                    const btn = document.getElementById(btnId);
+                    if (btn) {
+                        btn.addEventListener("click", () => {
+                            const onclickAttr = btn.getAttribute("onclick");
+                            let educationValue = "";
+                            if (onclickAttr) {
+                                const match = onclickAttr.match(/selectEducationChoice\(this,\s*'([^']+)'\)/);
+                                if (match && match[1]) {
+                                    educationValue = match[1];
+                                    const otherField = document.getElementById("review_other");
+                                    if (educationValue != 'other'){
+                                         otherField.value = "";
+                                    }
+                                }
+                            }
+                        });
                     }
-
-                    // Clear localStorage for review_other
-                    localStorage.removeItem("review_other");
-
-                    console.log(`${btnId} clicked: review_other cleared`);
                 });
-                }
+
             });
             </script>
             <script>
             document.addEventListener("DOMContentLoaded", () => {
-            const nextBtn = document.getElementById("educNext");
+                const nextBtn = document.getElementById("educNext");
 
-            // Load saved values on page load
-            const savedCert = localStorage.getItem("review_certs_123");
-            if (savedCert) {
-            const radio = document.getElementById(savedCert === "yes" ? "certYes" : "certNo");
-            if (radio) radio.checked = true;
-            console.log("Loaded cert:", savedCert);
-            }
+                const audioButtons = [
+                    "VocationalAudioBtn",
+                    "ElementaryAudioBtn",
+                    "HighSchoolAudioBtn",
+                    "CollegeAudioBtn",
+                    "otherEducation"
+                ];
 
-            const savedOther = localStorage.getItem("review_other");
-            if (savedOther) {
-            const otherField = document.getElementById("review_other");
-            if (otherField) otherField.value = savedOther;
-            console.log("Loaded other:", savedOther);
-            }
+                // Load saved values on page load
+                const savedCert = localStorage.getItem("review_certs");
+                const radio = document.getElementById(savedCert === "yes" ? "certYes" : "certNo");
+                if (radio) radio.checked = true;
+                console.log("Loaded cert:", savedCert);
+                
+                // Save on button click
+                if (nextBtn) {
+                nextBtn.addEventListener("click", () => {
+  
+                    let educationValuex = "";
 
-            // Save on button click
-            if (nextBtn) {
-            nextBtn.addEventListener("click", () => {
-                const selected = document.querySelector('input[name="certs"]:checked');
-                if (selected) {
-                localStorage.setItem("review_certs_123", selected.value);
-                console.log("Saved cert:", selected.value);
-                }
+                    const selectedBtn = document.querySelector(".education-card.selected");
+                    if (selectedBtn) {
+                        const onclickAttr = selectedBtn.getAttribute("onclick");
+                        if (onclickAttr) {
+                            const match = onclickAttr.match(/selectEducationChoice\(this,\s*'([^']+)'\)/);
+                            if (match && match[1]) {
+                                educationValuex = match[1];
 
-                const otherField = document.getElementById("review_other");
-                if (otherField) {
-                localStorage.setItem("review_other", otherField.value.trim());
-                console.log("Saved other:", otherField.value.trim());
-                }
-            });
+                                const otherField = document.getElementById("review_other");
+                                if (educationValuex === "other" && otherField) {
+                                    educationValuex = otherField.value;
+                                }
+                            }
+                        }
+                    }
+
+                    const selectedReviewCerts = document.querySelector('input[name="certs"]:checked');
+                    const selected = document.querySelector('input[name="certs"]:checked');
+                    if (selected) {
+                        localStorage.setItem("review_certs", selected.value);
+                        console.log("Saved cert:", selected.value);
+                    }
+                    localStorage.setItem("education", educationValuex);
+                    console.log(`stored: ${educationValuex}`);
+                    let schoolName = document.getElementById("school_name").value;
+                    localStorage.setItem("school_name", schoolName);
+
+                    window.location.href = '{{ route("registerworkexpinfo") }}';
+                });
             }
         });
         </script>
@@ -979,7 +1004,7 @@
                 // Add change listeners to all cert radios
                 certRadios.forEach(radio => {
                     radio.addEventListener('change', () => {
-                        localStorage.setItem("review_certs_123", radio.value);
+                        localStorage.setItem("review_certs", radio.value);
                         console.log("Saved cert:", radio.value);
                         updateFileInput();
                     });
@@ -1003,9 +1028,9 @@
 
                                 // Clear file input & localStorage
                                 if (fileInput) fileInput.value = "";
-                                localStorage.removeItem("uploadedProofData");
-                                localStorage.removeItem("uploadedProofType");
-                                localStorage.removeItem("uploadedProofName");
+                                localStorage.removeItem("uploadedProofData1");
+                                localStorage.removeItem("uploadedProofType1");
+                                localStorage.removeItem("uploadedProofName1");
                                 if (typeof hideFileInfo === "function") hideFileInfo();
                                 console.log("File input cleared & localStorage removed");
                             } else {
@@ -1022,7 +1047,7 @@
                     certRadios.forEach(radio => {
                         radio.addEventListener('change', () => {
                             // Save selection to localStorage
-                            localStorage.setItem("review_certs_123", radio.value);
+                            localStorage.setItem("review_certs", radio.value);
                             console.log("Saved cert:", radio.value);
 
                             // Update visibility & clear file if needed
