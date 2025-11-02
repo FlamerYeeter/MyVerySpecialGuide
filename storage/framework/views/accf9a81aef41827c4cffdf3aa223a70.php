@@ -46,7 +46,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registersupportneed') }}')">
+        onclick="(history.length>1 ? history.back() : window.location.href='<?php echo e(route('registersupportneed')); ?>')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-3 h-3 sm:w-6 sm:h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -215,7 +215,7 @@
 
                     console.log("Saved to localStorage:", localStorage.getItem('workplace'));
                     // Optional redirect here
-                    window.location.href = '{{ route("registerjobpreference1") }}';
+                    window.location.href = '<?php echo e(route("registerjobpreference1")); ?>';
                     });
                 });
             </script>
@@ -257,7 +257,7 @@
     </form>
     </div>
 
-    <script src="{{ asset('js/register.js') }}"></script>
+    <script src="<?php echo e(asset('js/register.js')); ?>"></script>
 
     <!-- TTS: Web Speech API handler -->
     <script>
@@ -392,3 +392,4 @@
 </body>
 
 </html>
+<?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\resources\views/ds_register_workplace.blade.php ENDPATH**/ ?>
