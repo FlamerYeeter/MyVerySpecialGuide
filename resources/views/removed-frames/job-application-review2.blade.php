@@ -140,7 +140,7 @@
       </button>
     </div>
 
-    <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+  {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
     <script type="module">
   import { signInWithServerToken } from "{{ asset('js/job-application-firebase.js') }}";
   (function(){

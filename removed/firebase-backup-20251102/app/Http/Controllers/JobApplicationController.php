@@ -113,57 +113,129 @@ class JobApplicationController extends Controller
             }
         }
 
-        // Previously this method wrote to Firestore using a service account. Firebase/Firestore
-        // has been removed from the project. To preserve behavior without external dependencies
-        // we persist submitted applications to local storage (storage/app/job_applications.json)
-        // so that the application remains functional and submissions are retained for later
-        // migration if needed.
-
-        $storePath = storage_path('app/job_applications.json');
-        $entries = [];
-        try {
-            if (file_exists($storePath)) {
-                $entries = json_decode(file_get_contents($storePath), true) ?: [];
+    // Load service account
+    $serviceAccountPath = (getenv('FIREBASE_SERVICE_ACCOUNT') ?: '') ?: storage_path('app/firebase-service-account.json');
+        if (!file_exists($serviceAccountPath)) {
+            logger()->error('JobApplicationController: service account missing: ' . $serviceAccountPath);
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'service_account_missing', 'message' => 'Server misconfiguration (service account missing).'], 500);
             }
-        } catch (\Throwable $e) {
-            logger()->warning('JobApplicationController: failed to read local job applications store: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Server misconfiguration (service account missing).');
         }
 
-        try {
-            $id = bin2hex(random_bytes(8));
-        } catch (\Throwable $e) {
-            $id = uniqid('app_', true);
+        $sa = json_decode(file_get_contents($serviceAccountPath), true);
+        if (!$sa || empty($sa['client_email']) || empty($sa['private_key']) || empty($sa['project_id'])) {
+            logger()->error('JobApplicationController: invalid service account JSON');
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'service_account_invalid', 'message' => 'Server misconfiguration (invalid service account).'], 500);
+            }
+            return redirect()->back()->with('error', 'Server misconfiguration (invalid service account).');
         }
 
-        $record = [
-            'id' => $id,
-            'created_at' => date('c'),
-            'laravel_user_id' => $laravelUserId,
-            'firebase_uid' => $firebaseUid,
-            'payload' => $data,
-            'remote_addr' => $request->getClientIp(),
+        $clientEmail = $sa['client_email'];
+        $privateKey = $sa['private_key'];
+        $projectId = $sa['project_id'];
+
+        // Create JWT assertion for OAuth2
+        $now = time();
+        $tokenUrl = 'https://oauth2.googleapis.com/token';
+        $scope = 'https://www.googleapis.com/auth/datastore https://www.googleapis.com/auth/cloud-platform';
+
+        $assertion = [
+            'iss' => $clientEmail,
+            'scope' => $scope,
+            'aud' => $tokenUrl,
+            'exp' => $now + 3600,
+            'iat' => $now,
         ];
 
-        $entries[] = $record;
+        try {
+            $jwt = $this->createSignedJwt($assertion, $privateKey);
+        } catch (\Throwable $e) {
+            logger()->error('JobApplicationController: JWT encode failed: ' . $e->getMessage());
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'jwt_sign_failed', 'message' => 'Server error creating auth token'], 500);
+            }
+            return redirect()->back()->with('error', 'Server error creating auth token');
+        }
+
+        // Exchange assertion for access token
+        try {
+            $resp = Http::asForm()->post($tokenUrl, [
+                'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+                'assertion' => $jwt,
+            ]);
+        } catch (\Throwable $e) {
+            logger()->error('JobApplicationController: token request failed: ' . $e->getMessage());
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'token_request_failed', 'message' => 'Server error requesting access token'], 500);
+            }
+            return redirect()->back()->with('error', 'Server error requesting access token');
+        }
+
+        if (!$resp->successful()) {
+            logger()->error('JobApplicationController: token endpoint error: ' . $resp->body());
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'token_endpoint_error', 'body' => $resp->body()], 500);
+            }
+            return redirect()->back()->with('error', 'Server error obtaining access token');
+        }
+
+        $tokenData = $resp->json();
+        $accessToken = $tokenData['access_token'] ?? null;
+        if (!$accessToken) {
+            logger()->error('JobApplicationController: no access_token in response');
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'no_access_token', 'message' => 'Server error obtaining access token'], 500);
+            }
+            return redirect()->back()->with('error', 'Server error obtaining access token');
+        }
+
+        // Prepare Firestore REST create document URL
+        $url = "https://firestore.googleapis.com/v1/projects/{$projectId}/databases/(default)/documents/applications";
+
+        // Convert PHP array to Firestore fields
+        $fields = $this->phpValueToFirestoreFields($data);
+
+        $body = [
+            'fields' => $fields,
+        ];
 
         try {
-            if (@file_put_contents($storePath, json_encode($entries, JSON_PRETTY_PRINT)) === false) {
-                logger()->error('JobApplicationController: failed to write application to local store: ' . $storePath);
-                if ($request->wantsJson() || $request->isJson()) {
-                    return response()->json(['success' => false, 'error' => 'storage_write_failed', 'message' => 'Failed to persist application.'], 500);
-                }
-                return redirect()->back()->with('error', 'Failed to submit application (storage error).');
-            }
+            $writeResp = Http::withToken($accessToken)
+                ->post($url, $body);
         } catch (\Throwable $e) {
-            logger()->error('JobApplicationController: exception writing application to local store: ' . $e->getMessage());
+            logger()->error('JobApplicationController: Firestore request failed: ' . $e->getMessage());
             if ($request->wantsJson() || $request->isJson()) {
-                return response()->json(['success' => false, 'error' => 'storage_write_exception', 'message' => $e->getMessage()], 500);
+                return response()->json(['error' => 'firestore_request_failed', 'message' => $e->getMessage()], 500);
             }
-            return redirect()->back()->with('error', 'Failed to submit application (storage exception).');
+            return redirect()->back()->with('error', 'Server error writing to Firestore');
+        }
+
+        if (!$writeResp->successful()) {
+            $bodyText = $writeResp->body();
+            logger()->error('JobApplicationController: Firestore API error: ' . $bodyText);
+            // If permission error, surface a helpful message for debugging
+            if (stripos($bodyText, 'permission') !== false || stripos($bodyText, 'PERMISSION_DENIED') !== false) {
+                logger()->warning('JobApplicationController: permission error writing to Firestore. Check service account roles and Firestore rules.');
+            }
+            if ($request->wantsJson() || $request->isJson()) {
+                return response()->json(['error' => 'firestore_api_error', 'body' => $bodyText], 500);
+            }
+            return redirect()->back()->with('error', 'Failed to submit application');
+        }
+
+        // On success, Firestore returns a document resource name like projects/{projectId}/databases/(default)/documents/applications/{docId}
+        $respJson = $writeResp->json();
+        $docName = $respJson['name'] ?? null;
+        $docId = null;
+        if ($docName) {
+            $parts = explode('/', $docName);
+            $docId = end($parts);
         }
 
         if ($request->wantsJson() || $request->isJson()) {
-            return response()->json(['success' => true, 'id' => $id, 'stored_in' => $storePath]);
+            return response()->json(['success' => true, 'id' => $docId, 'name' => $docName]);
         }
 
         return redirect()->route('job.application.submit')->with('success', 'Application submitted!');
@@ -455,4 +527,3 @@ class JobApplicationController extends Controller
         return $json['access_token'];
     }
 }
-

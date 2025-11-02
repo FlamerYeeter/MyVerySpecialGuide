@@ -188,7 +188,7 @@
     </div>
 
 
-    <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
         // Focused helper: only extract explicit job preference arrays from the draft.

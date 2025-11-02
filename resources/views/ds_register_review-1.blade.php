@@ -483,7 +483,7 @@
     </div>
 
 
-    <script src="{{ asset('js/firebase-config-global.js') }}"></script>
+    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
         // Save the currently-displayed review draft into localStorage so the adminapprove page

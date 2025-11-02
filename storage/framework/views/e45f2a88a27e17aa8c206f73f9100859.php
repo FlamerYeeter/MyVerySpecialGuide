@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>MyVerySpecialGuide</title>
-    <link rel="stylesheet" href="{{ asset('build/app.css') }}">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="<?php echo e(asset('build/app.css')); ?>">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
 </head>
 <body>
     <div id="app">
@@ -14,9 +14,9 @@
     </div>
 </body>
 </html>
-@extends('layouts.app')
 
-  @section('content')
+
+  <?php $__env->startSection('content'); ?>
       <!-- Hero Section -->
       <section class="w-full relative overflow-hidden bg-cover bg-center" style="background-image: url('image/herobg.png');">
           <div
@@ -29,7 +29,7 @@
                       WELCOME to<br>
                       <span class="text-blue-600">MyVerySpecialGuide</span>
                   </h1>
-                  <a href="{{ route('login') }}"
+                  <a href="<?php echo e(route('login')); ?>"
                      class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
                      Get Started
                  </a>
@@ -98,7 +98,7 @@
                       This difference may affect learning, growth, and development, but it does not define a person's full
                       potential.
                   </p>
-                  <a href="{{ route('about.ds') }}"
+                  <a href="<?php echo e(route('about.ds')); ?>"
                       class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105 text-sm sm:text-base">
                       Learn More
                   </a>
@@ -110,4 +110,6 @@
       <div class="relative w-full -mb-14 z-10">
           <img src="image/border3.png" alt="Yellow Border" class="w-full object-cover h-16 md:h-20 block relative z-10">
       </div>
-  @endsection
+  <?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\resources\views/home.blade.php ENDPATH**/ ?>
