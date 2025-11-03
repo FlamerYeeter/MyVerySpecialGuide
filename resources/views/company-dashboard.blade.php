@@ -109,7 +109,6 @@
                 <div class="text-sm text-gray-500">
                     <span class="text-[#FBBF24] font-medium">Home</span>
                     <span class="mx-2 text-gray-400">›</span>
-                    <span class="text-gray-700 font-medium">Company Dashboard</span>
                 </div>
             </div>
 
