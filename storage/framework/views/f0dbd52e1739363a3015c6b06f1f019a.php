@@ -1,6 +1,4 @@
-@extends('layouts.includes')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 
     <!-- Icon link -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
@@ -10,7 +8,7 @@
         <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-10 max-w-5xl w-full">
 
             <div class="flex-shrink-0 flex justify-center">
-                <img src="{{ asset('image/jobsicon.png') }}" alt="Job Search Icon" class="w-32 sm:w-40 lg:w-52">
+                <img src="<?php echo e(asset('image/jobsicon.png')); ?>" alt="Job Search Icon" class="w-32 sm:w-40 lg:w-52">
             </div>
 
             <!-- Text Content -->
@@ -43,32 +41,32 @@
                     <select name="industry"
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
                         <option value="">Select Industry</option>
-                        <option value="Healthcare" {{ request('industry') == 'Healthcare' ? 'selected' : '' }}>Healthcare
+                        <option value="Healthcare" <?php echo e(request('industry') == 'Healthcare' ? 'selected' : ''); ?>>Healthcare
                         </option>
-                        <option value="Retail" {{ request('industry') == 'Retail' ? 'selected' : '' }}>Retail
+                        <option value="Retail" <?php echo e(request('industry') == 'Retail' ? 'selected' : ''); ?>>Retail
                         </option>
-                        <option value="Food Service" {{ request('industry') == 'Food Service' ? 'selected' : '' }}>Food
+                        <option value="Food Service" <?php echo e(request('industry') == 'Food Service' ? 'selected' : ''); ?>>Food
                             Service
                         </option>
-                        <option value="Education" {{ request('education') == 'Education' ? 'selected' : '' }}>Education
+                        <option value="Education" <?php echo e(request('education') == 'Education' ? 'selected' : ''); ?>>Education
                         </option>
-                        <option value="Hospitality" {{ request('hospitality') == 'Hospitality' ? 'selected' : '' }}>
+                        <option value="Hospitality" <?php echo e(request('hospitality') == 'Hospitality' ? 'selected' : ''); ?>>
                             Hospitality
                         </option>
-                        <option value="Manufacturing" {{ request('industry') == 'Manufacturing' ? 'selected' : '' }}>
+                        <option value="Manufacturing" <?php echo e(request('industry') == 'Manufacturing' ? 'selected' : ''); ?>>
                             Manufacturing
                         </option>
-                        <option value="Transportation" {{ request('industry') == 'Transportation' ? 'selected' : '' }}>
+                        <option value="Transportation" <?php echo e(request('industry') == 'Transportation' ? 'selected' : ''); ?>>
                             Transportation
                         </option>
-                        <option value="Cleaning" {{ request('industry') == 'Cleaning' ? 'selected' : '' }}>Cleaning</option>
-                        <option value="Office" {{ request('office') == 'Office' ? 'selected' : '' }}>Office</option>
-                        <option value="Construction" {{ request('industry') == 'Construction' ? 'selected' : '' }}>
+                        <option value="Cleaning" <?php echo e(request('industry') == 'Cleaning' ? 'selected' : ''); ?>>Cleaning</option>
+                        <option value="Office" <?php echo e(request('office') == 'Office' ? 'selected' : ''); ?>>Office</option>
+                        <option value="Construction" <?php echo e(request('industry') == 'Construction' ? 'selected' : ''); ?>>
                             Construction
                         </option>
-                        <option value="Creative"{{ request('creative') == 'Creative' ? 'selected' : '' }}>Creative</option>
-                        <option value="Packing" {{ request('industry') == 'Packing' ? 'selected' : '' }}>Packing</option>
-                        <option value="Other" {{ request('other') == 'Other' ? 'selected' : '' }}>Other</option>
+                        <option value="Creative"<?php echo e(request('creative') == 'Creative' ? 'selected' : ''); ?>>Creative</option>
+                        <option value="Packing" <?php echo e(request('industry') == 'Packing' ? 'selected' : ''); ?>>Packing</option>
+                        <option value="Other" <?php echo e(request('other') == 'Other' ? 'selected' : ''); ?>>Other</option>
                     </select>
                     <svg xmlns="http://www.w3.org/2000/svg"
                         class="w-7 h-7 text-blue-600 absolute right-5 top-[70%] transform -translate-y-1/2 pointer-events-none"
@@ -83,9 +81,9 @@
                     <select name="fit_level" onchange="this.form.submit()"
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
                         <option value="">Select Level</option>
-                        <option value="Excellent Fit" {{ request('fit_level') == 'Excellent Fit' ? 'selected' : '' }}>
+                        <option value="Excellent Fit" <?php echo e(request('fit_level') == 'Excellent Fit' ? 'selected' : ''); ?>>
                             Excellent Fit</option>
-                        <option value="Good Fit" {{ request('fit_level') == 'Good Fit' ? 'selected' : '' }}>Good Fit
+                        <option value="Good Fit" <?php echo e(request('fit_level') == 'Good Fit' ? 'selected' : ''); ?>>Good Fit
                         </option>
                     </select>
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -102,12 +100,12 @@
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
                         <option value="">Select Job Type</option>
                         <option value="High Potential"
-                            {{ request('growth_potential') == 'High Potential' ? 'selected' : '' }}>Full-Time</option>
+                            <?php echo e(request('growth_potential') == 'High Potential' ? 'selected' : ''); ?>>Full-Time</option>
                         <option value="Medium Potential"
-                            {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Part-Time
+                            <?php echo e(request('growth_potential') == 'Medium Potential' ? 'selected' : ''); ?>>Part-Time
                         </option>
                         <option value="Medium Potential"
-                            {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Internship
+                            <?php echo e(request('growth_potential') == 'Medium Potential' ? 'selected' : ''); ?>>Internship
                         </option>
                     </select>
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -123,9 +121,9 @@
                     <select name="work_environment" onchange="this.form.submit()"
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
                         <option value="">Select Environment</option>
-                        <option value="Quiet" {{ request('work_environment') == 'Quiet' ? 'selected' : '' }}>Quiet
+                        <option value="Quiet" <?php echo e(request('work_environment') == 'Quiet' ? 'selected' : ''); ?>>Quiet
                         </option>
-                        <option value="Busy" {{ request('work_environment') == 'Busy' ? 'selected' : '' }}>Busy</option>
+                        <option value="Busy" <?php echo e(request('work_environment') == 'Busy' ? 'selected' : ''); ?>>Busy</option>
                     </select>
                     <svg xmlns="http://www.w3.org/2000/svg"
                         class="w-7 h-7 text-blue-600 absolute right-5 top-[70%] transform -translate-y-1/2 pointer-events-none"
@@ -202,7 +200,7 @@
                                         </div>
                                 -->
 
-    @php
+    <?php
         // Try to load evaluation metrics from public/eval_metrics.json
         $evalPath = public_path('eval_metrics.json');
         $eval = [];
@@ -422,50 +420,9 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 $display[$k] = null;
             }
         }
-    @endphp
+    ?>
 
-    {{-- @if (!empty($eval) && (array_filter($display) || !empty($perModelMetrics)))
-            <div class="mt-4 bg-white p-4 rounded-lg shadow w-full">
-                <h4 class="text-gray-800 font-semibold">Evaluation Metrics</h4>
-                <p class="text-sm text-gray-600">Displayed below are evaluation results (from <code>public/eval_metrics.json</code>).</p>
-                <div class="flex flex-wrap gap-3 mt-3 text-sm">
-                    @if (!empty($perModelMetrics))
-                        @foreach ($perModelMetrics as $m)
-                            <div class="px-4 py-2 bg-gray-50 rounded border">
-                                <div class="font-semibold text-sm">{{ $m['model'] }}</div>
-                                <div class="text-xs text-gray-600 mt-1">
-                                    @if ($m['accuracy'] !== null)<div><strong>Accuracy:</strong> {{ $m['accuracy'] }}%</div>@endif
-                                    @if ($m['precision'] !== null)<div><strong>Precision:</strong> {{ $m['precision'] }}%</div>@endif
-                                    @if ($m['recall'] !== null)<div><strong>Recall:</strong> {{ $m['recall'] }}%</div>@endif
-                                    @if ($m['f1'] !== null)<div><strong>F1:</strong> {{ $m['f1'] }}%</div>@endif
-                                </div>
-                            </div>
-                        @endforeach
-                    @else
-                        @if ($display['accuracy'] !== null)
-                            <div class="px-4 py-2 bg-gray-100 rounded">
-                                <strong>Accuracy:</strong> {{ $display['accuracy'] }}% 
-                            </div>
-                        @endif
-                        @if ($display['precision'] !== null)
-                            <div class="px-4 py-2 bg-gray-100 rounded">
-                                <strong>Precision:</strong> {{ $display['precision'] }}% 
-                            </div>
-                        @endif
-                        @if ($display['recall'] !== null)
-                            <div class="px-4 py-2 bg-gray-100 rounded">
-                                <strong>Recall:</strong> {{ $display['recall'] }}% 
-                            </div>
-                        @endif
-                        @if ($display['f1'] !== null)
-                            <div class="px-4 py-2 bg-gray-100 rounded">
-                                <strong>F1 Score:</strong> {{ $display['f1'] }}% 
-                            </div>
-                        @endif
-                    @endif
-                </div>
-            </div>
-        @endif --}}
+    
 
 
     <!-- Therapist Assessment Notice -->
@@ -541,15 +498,15 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
                         <!-- Company Logo -->
                         <div class="flex-shrink-0">
-                            @if (!empty($company->logo))
-                                <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
+                            <?php if(!empty($company->logo)): ?>
+                                <img src="<?php echo e(asset('storage/' . $company->logo)); ?>" alt="Company Logo"
                                     class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover">
-                            @else
+                            <?php else: ?>
                                 <div
                                     class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
                                     <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
 
@@ -727,15 +684,15 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
                         <!-- Company Logo -->
                         <div class="flex-shrink-0">
-                            @if (!empty($company->logo))
-                                <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
+                            <?php if(!empty($company->logo)): ?>
+                                <img src="<?php echo e(asset('storage/' . $company->logo)); ?>" alt="Company Logo"
                                     class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover">
-                            @else
+                            <?php else: ?>
                                 <div
                                     class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
                                     <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
                                 </div>
-                            @endif
+                            <?php endif; ?>
                         </div>
 
                         <!-- Job Info -->
@@ -965,7 +922,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
 
             <!-- Job Cards -->
-            @php
+            <?php
                 // defensive fallbacks used by scoring logic to avoid undefined variable errors
                 if (!isset($recommendations)) {
                     $recommendations = [];
@@ -1172,32 +1129,32 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 $total = count($filtered);
                 $recommendations = array_slice($filtered, ($page - 1) * $perPage, $perPage);
                 $lastPage = max(1, (int) ceil($total / $perPage));
-            @endphp
+            ?>
 
             <script>
                 // Signal to client-side scripts that server rendered per-user recommendations are present
-                window.__SERVER_RECO_LOADED = @json(!empty($recommendations) && count($recommendations) > 0);
+                window.__SERVER_RECO_LOADED = <?php echo json_encode(!empty($recommendations) && count($recommendations) > 0, 15, 512) ?>;
             </script>
 
             <div class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
-                @if (empty($recommendations))
+                <?php if(empty($recommendations)): ?>
                     <div class="bg-yellow-100 p-6 rounded-xl text-center text-gray-600">
                         <p class="mb-3">No personalized job recommendations found for your account.</p>
                         <p class="text-sm mb-4">This page displays per-user recommendations only (stored as
                             <code>storage/app/reco_user_{uid}.json</code>).
                         </p>
-                        @auth
+                        <?php if(auth()->guard()->check()): ?>
                             <button id="btn-generate-recs" class="bg-blue-500 text-white px-4 py-2 rounded">Generate
                                 recommendations now</button>
                             <p id="btn-generate-status" class="text-xs text-gray-600 mt-2"></p>
-                        @else
+                        <?php else: ?>
                             <p class="text-sm">Please sign in to generate and view your personalized recommendations.</p>
-                        @endauth
+                        <?php endif; ?>
                     </div>
-                @else
-                    @foreach ($recommendations as $idx => $job)
-                        @php $job_dom_id = 'job_'.$job['job_id'] ?? ('p'.($page - 1) * $perPage + $idx); @endphp
-                        @php
+                <?php else: ?>
+                    <?php $__currentLoopData = $recommendations; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idx => $job): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                        <?php $job_dom_id = 'job_'.$job['job_id'] ?? ('p'.($page - 1) * $perPage + $idx); ?>
+                        <?php
                             // raw content/match scores (preserve original for display)
                             $rawContentValue =
                                 $job['content_score'] ?? ($job['computed_score'] ?? ($job['match_score'] ?? 0));
@@ -1266,33 +1223,33 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                     $rawMatchDisplay = $m;
                                 }
                             }
-                        @endphp
-                        <div id="{{ $job_dom_id }}"
-                            data-job-id="{{ $job['job_id'] ?? ($page - 1) * $perPage + $idx }}"
-                            data-title="{{ e($titleShort) }}" data-company="{{ e($companyName) }}"
-                            data-description="{{ e(Str::limit($job['job_description'], 400)) }}"
-                            data-location="{{ e($job['location']) }}" data-fit-level="{{ e($job['fit_level'] ?? '') }}"
-                            data-content-score="{{ $contentAttr }}" data-raw-content="{{ e($rawContentValue) }}"
-                            data-match-percent="{{ $matchPercent }}" data-raw-match="{{ e($rawMatchDisplay) }}"
+                        ?>
+                        <div id="<?php echo e($job_dom_id); ?>"
+                            data-job-id="<?php echo e($job['job_id'] ?? ($page - 1) * $perPage + $idx); ?>"
+                            data-title="<?php echo e(e($titleShort)); ?>" data-company="<?php echo e(e($companyName)); ?>"
+                            data-description="<?php echo e(e(Str::limit($job['job_description'], 400))); ?>"
+                            data-location="<?php echo e(e($job['location'])); ?>" data-fit-level="<?php echo e(e($job['fit_level'] ?? '')); ?>"
+                            data-content-score="<?php echo e($contentAttr); ?>" data-raw-content="<?php echo e(e($rawContentValue)); ?>"
+                            data-match-percent="<?php echo e($matchPercent); ?>" data-raw-match="<?php echo e(e($rawMatchDisplay)); ?>"
                             class="job-card bg-white border border-gray-300 rounded-xl p-6 flex justify-between items-center">
                             <div>
-                                <h3 class="text-lg font-semibold text-gray-800">{{ $titleShort }}</h3>
-                                <p class="text-gray-600">{{ $companyName }}</p>
-                                <p class="text-sm text-gray-500 mb-2">{{ $job['location'] ?? '' }}</p>
+                                <h3 class="text-lg font-semibold text-gray-800"><?php echo e($titleShort); ?></h3>
+                                <p class="text-gray-600"><?php echo e($companyName); ?></p>
+                                <p class="text-sm text-gray-500 mb-2"><?php echo e($job['location'] ?? ''); ?></p>
                                 <div class="flex gap-2 text-xs text-gray-700 mb-3">
-                                    @if (!empty($job['industry']))
-                                        <span class="bg-gray-100 px-3 py-1 rounded-md">{{ $job['industry'] }}</span>
-                                    @endif
-                                    @if (!empty($job['work_environment']))
+                                    <?php if(!empty($job['industry'])): ?>
+                                        <span class="bg-gray-100 px-3 py-1 rounded-md"><?php echo e($job['industry']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if(!empty($job['work_environment'])): ?>
                                         <span
-                                            class="bg-gray-100 px-3 py-1 rounded-md">{{ $job['work_environment'] }}</span>
-                                    @endif
+                                            class="bg-gray-100 px-3 py-1 rounded-md"><?php echo e($job['work_environment']); ?></span>
+                                    <?php endif; ?>
                                 </div>
-                                <p class="text-sm text-gray-700">{{ Str::limit($job['job_description'], 220) }}</p>
+                                <p class="text-sm text-gray-700"><?php echo e(Str::limit($job['job_description'], 220)); ?></p>
 
                                 <div class="flex gap-2 mt-3 text-xs">
-                                    @if (!empty($job['skills_desc']))
-                                        @php
+                                    <?php if(!empty($job['skills_desc'])): ?>
+                                        <?php
                                             $skillTags = [];
                                             try {
                                                 $skillTags = is_string($job['skills_desc'])
@@ -1303,86 +1260,87 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                             } catch (Exception $e) {
                                                 $skillTags = [];
                                             }
-                                        @endphp
-                                        @foreach (array_slice($skillTags, 0, 5) as $st)
+                                        ?>
+                                        <?php $__currentLoopData = array_slice($skillTags, 0, 5); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $st): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                             <span
-                                                class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md">{{ $st }}</span>
-                                        @endforeach
-                                    @endif
+                                                class="bg-[#C7F9CC] text-[#036666] px-3 py-1 rounded-md"><?php echo e($st); ?></span>
+                                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                    <?php endif; ?>
                                 </div>
 
                                 <div class="flex gap-2 mt-3 text-xs">
-                                    @if ($job['fit_level'])
+                                    <?php if($job['fit_level']): ?>
                                         <span class="bg-[#D1FFD6] text-green-800 px-3 py-1 rounded-md">⭐
-                                            {{ $job['fit_level'] }}</span>
-                                    @endif
-                                    @if ($job['growth_potential'])
+                                            <?php echo e($job['fit_level']); ?></span>
+                                    <?php endif; ?>
+                                    <?php if($job['growth_potential']): ?>
                                         <span class="bg-[#E6E9FF] text-[#4F46E5] px-3 py-1 rounded-md">📈
-                                            {{ $job['growth_potential'] }}</span>
-                                    @endif
+                                            <?php echo e($job['growth_potential']); ?></span>
+                                    <?php endif; ?>
                                 </div>
 
                                 <p class="text-xs text-gray-500 mt-3">
-                                    @if (isset($job['listed_time']))
-                                        {{ $job['listed_time'] }}@else{{ ' ' }}
-                                    @endif
+                                    <?php if(isset($job['listed_time'])): ?>
+                                        <?php echo e($job['listed_time']); ?><?php else: ?><?php echo e(' '); ?>
+
+                                    <?php endif; ?>
                                 </p>
                                 <span class="job-id-debug"
                                     style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id:
-                                    {{ $job['job_id'] ?? ($page - 1) * $perPage + $idx }}</span>
+                                    <?php echo e($job['job_id'] ?? ($page - 1) * $perPage + $idx); ?></span>
                             </div>
 
                             <div class="flex flex-col items-end space-y-3">
                                 <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="w-16 h-16"
                                     alt="logo">
                                 <div class="flex gap-2">
-                                    <a href="{{ route('job.details', ['job_id' => $job['job_id'] ?? ($page - 1) * $perPage + $idx]) }}"
+                                    <a href="<?php echo e(route('job.details', ['job_id' => $job['job_id'] ?? ($page - 1) * $perPage + $idx])); ?>"
                                         class="bg-[#007BFF] text-white px-4 py-2 rounded-md text-sm">View Details</a>
-                                    <form method="POST" action="{{ route('my.job.applications') }}"
+                                    <form method="POST" action="<?php echo e(route('my.job.applications')); ?>"
                                         class="inline-block">
-                                        @csrf
+                                        <?php echo csrf_field(); ?>
                                         <input type="hidden" name="job_id"
-                                            value="{{ $job['job_id'] ?? ($page - 1) * $perPage + $idx }}">
+                                            value="<?php echo e($job['job_id'] ?? ($page - 1) * $perPage + $idx); ?>">
                                         <button type="submit"
                                             class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Save</button>
                                     </form>
                                 </div>
                             </div>
                         </div>
-                    @endforeach
+                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
                     <!-- Pagination -->
                     <div class="flex justify-center mt-8">
-                        @if ($page > 1)
-                            <a href="{{ request()->fullUrlWithQuery(['page' => $page - 1]) }}"
+                        <?php if($page > 1): ?>
+                            <a href="<?php echo e(request()->fullUrlWithQuery(['page' => $page - 1])); ?>"
                                 class="px-4 py-2 bg-blue-100 rounded-l hover:bg-blue-200">Previous</a>
-                        @endif
-                        <span class="px-4 py-2 bg-white border-t border-b">{{ $page }} /
-                            {{ $lastPage }}</span>
-                        @if ($page < $lastPage)
-                            <a href="{{ request()->fullUrlWithQuery(['page' => $page + 1]) }}"
+                        <?php endif; ?>
+                        <span class="px-4 py-2 bg-white border-t border-b"><?php echo e($page); ?> /
+                            <?php echo e($lastPage); ?></span>
+                        <?php if($page < $lastPage): ?>
+                            <a href="<?php echo e(request()->fullUrlWithQuery(['page' => $page + 1])); ?>"
                                 class="px-4 py-2 bg-blue-100 rounded-r hover:bg-blue-200">Next</a>
-                        @endif
+                        <?php endif; ?>
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
         </div>
         <!-- Ensure user is signed-in before taking actions like Apply or Save -->
-    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
+    
         <script>
             // Development convenience: disable login requirement so auto-trigger runs for all visitors.
             // WARNING: This treats every visitor as authenticated for recommendation generation on this page.
-            // Revert to the @auth directive for production.
+            // Revert to the <?php if(auth()->guard()->check()): ?> directive for production.
             window.__SERVER_AUTH = true;
         </script>
         <script type="module">
             (async function() {
                 try {
-                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                    const logger = await import("{{ asset('js/client-logger.js') }}");
+                    const mod = await import("<?php echo e(asset('js/job-application-firebase.js')); ?>");
+                    const logger = await import("<?php echo e(asset('js/client-logger.js')); ?>");
                     // Attempt server-backed sign-in (makes Firebase ID token available to the page)
                     try {
-                        await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                        await mod.signInWithServerToken("<?php echo e(route('firebase.token')); ?>");
                     } catch (e) {
                         console.debug('job-matches signInWithServerToken failed', e);
                         try {
@@ -1413,7 +1371,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 } catch (err) {
                     console.error('job-matches auth guard failed', err);
                     try {
-                        (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error',
+                        (await import("<?php echo e(asset('js/client-logger.js')); ?>")).sendClientLog('error',
                             'job-matches auth guard failed', {
                                 error: String(err)
                             });
@@ -1438,12 +1396,12 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                         when: Date.now(),
                         ev: 'auto_trigger_via_server_session'
                     });
-                    const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+                    const resp = await fetch('<?php echo e(url('/api/recommendations/user')); ?>', {
                         method: 'POST',
                         credentials: 'same-origin',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                         },
                         // request a forced synchronous generation when possible (dev-friendly)
                         body: JSON.stringify({
@@ -1517,8 +1475,8 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                             </div>
                                             <div class="flex items-center gap-3 mt-4 md:mt-0">
                                                 <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
-                                                <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                <form method="POST" action="<?php echo e(route('my.job.applications')); ?>" class="inline-block">
+                                                    <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                                                     <input type="hidden" name="job_id" value="${jid}">
                                                     <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
                                                 </form>
@@ -1534,12 +1492,12 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     console.debug('auto server-side reco trigger failed', e);
                 }
             })();
-            @if (app()->environment('local') || request()->getHost() === 'localhost')
+            <?php if(app()->environment('local') || request()->getHost() === 'localhost'): ?>
                 // In local environment, also trigger a bulk generation for all users so per-UID caches are created.
                 (async function() {
                     try {
                         // Run bulk generation (restricted to local by server route). Do not block UI.
-                        fetch('{{ url('/api/recommendations/all') }}', {
+                        fetch('<?php echo e(url('/api/recommendations/all')); ?>', {
                             method: 'POST',
                             credentials: 'same-origin',
                             headers: {
@@ -1552,7 +1510,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                         console.debug('bulk reco all start failed', e);
                     }
                 })();
-            @endif
+            <?php endif; ?>
         </script>
         <script>
             // Hook up the "Generate recommendations now" button to call the per-user API
@@ -1570,12 +1528,12 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     try {
                         btn.disabled = true;
                         status.textContent = 'Requesting generation...';
-                        const r = await fetch('{{ url('/api/recommendations/user') }}', {
+                        const r = await fetch('<?php echo e(url('/api/recommendations/user')); ?>', {
                             method: 'POST',
                             credentials: 'same-origin',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                             },
                             body: JSON.stringify({
                                 force: true
@@ -1655,8 +1613,8 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                             </div>
                                             <div class="flex items-center gap-3 mt-4 md:mt-0">
                                                 <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
-                                                <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                <form method="POST" action="<?php echo e(route('my.job.applications')); ?>" class="inline-block">
+                                                    <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                                                     <input type="hidden" name="job_id" value="${jid}">
                                                     <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
                                                 </form>
@@ -1687,7 +1645,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         </script>
         <script>
             // expose guardian approvals to client-side renderer
-            window.__GUARDIAN_APPROVALS = {!! json_encode($guardianApprovals ?? []) !!};
+            window.__GUARDIAN_APPROVALS = <?php echo json_encode($guardianApprovals ?? []); ?>;
 
             function escapeHtml(s) {
                 if (!s) return '';
@@ -1704,7 +1662,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         <script type="module">
             // Load the lightweight per-user rescoring helper that uses the signed-in Firebase profile
             try {
-                await import("{{ asset('js/job-rescore-client.js') }}");
+                await import("<?php echo e(asset('js/job-rescore-client.js')); ?>");
             } catch (e) {
                 console.debug('failed to load job-rescore-client', e);
             }
@@ -1712,10 +1670,10 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         <script type="module">
             (async function() {
                 try {
-                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                    const mod = await import("<?php echo e(asset('js/job-application-firebase.js')); ?>");
                     console.debug('Auth guard: waiting for sign-in resolution (7s)');
                     try {
-                        await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                        await mod.signInWithServerToken("<?php echo e(route('firebase.token')); ?>");
                     } catch (e) {
                         console.debug('signInWithServerToken failed', e);
                     }
@@ -1752,7 +1710,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                        'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                     },
                     body: JSON.stringify(body || {})
                 }).then(r => r.json());
@@ -1764,13 +1722,13 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             // Re-score job cards using the user's Firestore profile (if available)
             (async function() {
                 try {
-                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                    const mod = await import("<?php echo e(asset('js/job-application-firebase.js')); ?>");
                     await mod.ensureInit?.();
                     // Ensure server-backed sign-in so getUserProfile can access Firestore document
                     let profile = null;
                     try {
                         try {
-                            await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                            await mod.signInWithServerToken("<?php echo e(route('firebase.token')); ?>");
                         } catch (e) {
                             console.debug('signInWithServerToken (rescore) failed', e);
                         }
@@ -1897,15 +1855,15 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                             } catch (e) {}
                         }
                         hdbg('request_start', {
-                            url: '{{ url('/api/recommendations/user') }}',
+                            url: '<?php echo e(url('/api/recommendations/user')); ?>',
                             uid: profile.uid || profile.userId || profile.user_id || ''
                         });
-                        const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+                        const resp = await fetch('<?php echo e(url('/api/recommendations/user')); ?>', {
                             method: 'POST',
                             credentials: 'same-origin',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                             },
                             // ask server to force generation/sync when possible for immediate results
                             body: JSON.stringify(Object.assign({
@@ -1953,12 +1911,12 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                     hdbg('poll_attempt', {
                                         attempt: attempts
                                     });
-                                    const pollResp = await fetch('{{ url('/api/recommendations/user') }}', {
+                                    const pollResp = await fetch('<?php echo e(url('/api/recommendations/user')); ?>', {
                                         method: 'POST',
                                         credentials: 'same-origin',
                                         headers: {
                                             'Content-Type': 'application/json',
-                                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                            'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                                         },
                                         body: JSON.stringify(Object.assign({
                                             uid: profile.uid || profile.userId || profile.user_id ||
@@ -2044,8 +2002,8 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                         </div>
                                         <div class="flex items-center gap-3 mt-4 md:mt-0">
                                             <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
-                                            <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-                                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                            <form method="POST" action="<?php echo e(route('my.job.applications')); ?>" class="inline-block">
+                                                <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                                                 <input type="hidden" name="job_id" value="${jid}">
                                                 <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
                                             </form>
@@ -2115,8 +2073,8 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                                             <img src="https://cdn-icons-png.flaticon.com/512/616/616408.png" class="w-16 h-16" alt="logo">
                                                             <div class="flex gap-2">
                                                                 <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="bg-[#007BFF] text-white px-4 py-2 rounded-md text-sm">View Details</a>
-                                                                <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-                                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                                                <form method="POST" action="<?php echo e(route('my.job.applications')); ?>" class="inline-block">
+                                                                    <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                                                                     <input type="hidden" name="job_id" value="${jid}">
                                                                     <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-md text-sm">Save</button>
                                                                 </form>
@@ -2175,7 +2133,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                             // attempt to read client profile if available
                             let profile = null;
                             try {
-                                const mod = await import("{{ asset('js/job-application-firebase.js') }}");
+                                const mod = await import("<?php echo e(asset('js/job-application-firebase.js')); ?>");
                                 if (mod && typeof mod.getUserProfile === 'function') profile = await mod
                                     .getUserProfile();
                             } catch (e) {
@@ -2184,12 +2142,12 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                             const body = profile ? Object.assign({
                                 uid: profile.uid || profile.userId || profile.user_id || ''
                             }, profile) : {};
-                            const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+                            const resp = await fetch('<?php echo e(url('/api/recommendations/user')); ?>', {
                                 method: 'POST',
                                 credentials: 'same-origin',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                                 },
                                 body: JSON.stringify(Object.assign(body, {
                                     force: false
@@ -2260,8 +2218,8 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                     </div>
                                     <div class="flex items-center gap-3 mt-4 md:mt-0">
                                             <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
-                                            <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-                                                <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                                            <form method="POST" action="<?php echo e(route('my.job.applications')); ?>" class="inline-block">
+                                                <input type="hidden" name="_token" value="<?php echo e(csrf_token()); ?>">
                                                 <input type="hidden" name="job_id" value="${jid}">
                                                 <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
                                             </form>
@@ -2285,4 +2243,6 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 }
             })();
         </script>
-    @endsection
+    <?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.includes', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\resources\views/job-matches.blade.php ENDPATH**/ ?>

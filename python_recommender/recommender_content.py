@@ -13,7 +13,7 @@ def _safe_text(row, fields):
     return " ".join(parts)
 
 
-def content_based_recommendation(user_id, users_df, jobs_df, top_n=10):
+def content_based_recommendation(user_id, users_df, jobs_df, top_n=10, context_text: str = None):
     """
     Simple TF-IDF content-based recommender.
 
@@ -38,6 +38,12 @@ def content_based_recommendation(user_id, users_df, jobs_df, top_n=10):
         "JOB_PREFERENCE",
         "CERTIFICATE",
     ])
+    # append optional context text (free-form) to bias recommendations
+    if context_text:
+        try:
+            user_text = f"{user_text} {str(context_text)}"
+        except Exception:
+            pass
 
     # job text
     def job_text(row):

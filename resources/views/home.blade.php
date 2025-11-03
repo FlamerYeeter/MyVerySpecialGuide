@@ -7,12 +7,6 @@
     <link rel="stylesheet" href="{{ asset('build/app.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
-<body>
-    <div id="app">
-        <h1>Welcome to MyVerySpecialGuide</h1>
-        <p>This is a lightweight placeholder home view used during tests.</p>
-    </div>
-</body>
 </html>
 @extends('layouts.app')
 

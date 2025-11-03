@@ -43,8 +43,19 @@ def test_content_based_returns_scores():
 def test_collaborative_returns_expected():
     users, jobs, interactions = make_mock_data()
     res = collaborative_item_based(1, jobs, interactions, top_n=3)
-    assert isinstance(res, list)
+    # support both old signature (list) and new signature (result, meta)
+    if isinstance(res, tuple) or isinstance(res, list) and len(res) == 2 and isinstance(res[1], dict):
+        # new signature
+        results, meta = res
+    elif isinstance(res, tuple):
+        results, meta = res
+    else:
+        # legacy: just a list of results
+        results = res
+        meta = {}
+
+    assert isinstance(results, list)
     # For our tiny dataset user 1 interacted with 101 and 103; expect recommendations exist
-    assert len(res) >= 0
-    if len(res) > 0:
-        assert "cf_score" in res[0]
+    assert len(results) >= 0
+    if len(results) > 0:
+        assert "cf_score" in results[0]

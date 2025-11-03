@@ -59,6 +59,19 @@ def fetch_table(query):
     conn = get_connection()
     try:
         df = pd.read_sql(query, conn)
+        # Convert any DB LOB objects (CLOB/BLOB) to Python strings while the
+        # connection is still open. Some Oracle drivers return LOB objects that
+        # require an active connection to read; converting them here prevents
+        # "not connected to database" errors when the connection is closed.
+        for col in df.columns:
+            # only attempt on object columns (likely to contain LOBs)
+            if df[col].dtype == object:
+                try:
+                    # apply conversion where the cell provides a .read() method
+                    df[col] = df[col].apply(lambda v: v.read() if (hasattr(v, 'read') and callable(v.read)) else v)
+                except Exception:
+                    # best-effort: if conversion fails, leave values as-is
+                    pass
     finally:
         try:
             conn.close()

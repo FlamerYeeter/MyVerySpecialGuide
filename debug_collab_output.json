@@ -1,0 +1,15 @@
+{
+  "users_shape": [
+    30,
+    31
+  ],
+  "jobs_shape": [
+    500,
+    8
+  ],
+  "interactions_shape": [
+    0,
+    9
+  ],
+  "cf_len": 0
+}

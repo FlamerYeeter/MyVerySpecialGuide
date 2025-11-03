@@ -1,0 +1,95 @@
+{
+  "seed_dtypes": {
+    "USER_ID": "int64",
+    "JOB_ID": "int64",
+    "FIT_SCORE": "float64"
+  },
+  "seed_sample": [
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3709615746,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3813645405,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3827945924,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3780415828,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3582587683,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3844031840,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3763494664,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3773564741,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 3792953441,
+      "FIT_SCORE": 0.5
+    },
+    {
+      "USER_ID": 7,
+      "JOB_ID": 2147609816,
+      "FIT_SCORE": 0.5
+    }
+  ],
+  "score_col": "FIT_SCORE",
+  "pivot_shape": [
+    1,
+    10
+  ],
+  "pivot_index": [
+    7
+  ],
+  "user_id_cast": 7,
+  "user_in_pivot": true,
+  "user_jobs_dtype": "float64",
+  "user_jobs_sample": {
+    "2147609816": 0.5,
+    "3582587683": 0.5,
+    "3709615746": 0.5,
+    "3763494664": 0.5,
+    "3773564741": 0.5,
+    "3780415828": 0.5,
+    "3792953441": 0.5,
+    "3813645405": 0.5,
+    "3827945924": 0.5,
+    "3844031840": 0.5
+  },
+  "interacted_count": 10,
+  "interacted_sample": [
+    2147609816,
+    3582587683,
+    3709615746,
+    3763494664,
+    3773564741,
+    3780415828,
+    3792953441,
+    3813645405,
+    3827945924,
+    3844031840
+  ]
+}
