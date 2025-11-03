@@ -137,7 +137,8 @@
     <div class="bg-green-50 border border-green-400 rounded-lg px-4 sm:px-6 py-4 mt-6 shadow-sm">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <p class="text-sm sm:text-[15px] text-black leading-relaxed flex-1">
-          Upon account creation, a therapist will review your provided information to assess your skills and preferences. You will be notified once your evaluation has been completed and the assessment phase can begin.
+          By creating an account, you confirm that the information entered is true and that you are an authorized 
+          individual to use this platform. Any misuse or false representation may lead to account restriction.
         </p>
         <button type="button"
           class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
@@ -146,8 +147,8 @@
           aria-label="Read info aloud in English then Filipino" title="Play Audio"></button>
       </div>
       <p class="mt-2 italic text-gray-700 text-xs sm:text-[13px] leading-relaxed">
-        (Pagkatapos mong gumawa ng account, susuriin ng therapist ang iyong impormasyon para malaman ang iyong mga kakayahan at gusto. Makakatanggap ka ng abiso kapag tapos na ang iyong ebalwasyon at handa ka nang magpatuloy sa assessment.)
-      </p>
+        (Sa paglikha ng account, pinapatunayan mong totoo at tama ang impormasyong iyong inilagay at na ikaw ay awtorisadong indibidwal na gumamit ng platform na ito. Ang anumang maling paggamit o pagpapahayag ng hindi 
+        totoong impormasyon ay maaaring magresulta sa pagkakabawal o pagkakasuspinde ng iyong account.)
     </div>
 
     <!-- Buttons -->
@@ -157,7 +158,7 @@
     id="createAccountBtn"
     class="w-full sm:w-[530px] bg-[#42A5F5] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-[#1E88E5] transition-all duration-200"
   >
-    Submit for Evaluation
+    Create Account
   </button>
 </div>
 
@@ -173,31 +174,12 @@
     <input type="hidden" id="password" name="password" value="" />
     <input type="hidden" id="confirm_password" name="confirm_password" value="" />
 
-    <!-- Email verification modal (hidden by default) -->
-    <div id="emailVerifyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black opacity-40"></div>
-      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-60">
-        <div class="flex items-start justify-between">
-          <h3 class="text-lg font-semibold text-gray-800">Verify Your Email</h3>
-          <button id="emailVerifyClose" type="button" class="text-gray-500 hover:text-gray-700">✕</button>
-        </div>
-        <div class="mt-4">
-          <p class="text-sm text-gray-700">We will send a verification code to:</p>
-          <p id="verificationEmail" class="mt-2 font-medium text-gray-900 break-words"></p>
-        </div>
-        <div class="mt-6 flex justify-end gap-3">
-          <button id="emailVerifyCancel" type="button" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
-          <button id="emailVerifyProceed" type="button" class="px-4 py-2 bg-[#2E2EFF] text-white rounded-md hover:bg-blue-600">Proceed</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Helper Text -->
     <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
-      Click <span class="text-[#1E40AF] font-medium">“Submit for Evaluation”</span> to complete your registration
+      Click <span class="text-[#1E40AF] font-medium">“Create Account”</span> to complete your registration
     </p>
     <p class="text-gray-600 italic text-[12px] sm:text-[13px] text-center">
-      (Pindutin ang “Submit for Evaluation” upang tapusin ang iyong pagpaparehistro)
+      (Pindutin ang “Create Account” upang tapusin ang iyong pagpaparehistro)
     </p>
   </div>
 
