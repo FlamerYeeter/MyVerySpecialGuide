@@ -385,7 +385,7 @@
           })
             .then(res => res.text())
             .then(console.log)
-            .catch(console.error);
+            .catch(console.error);  
 
           const email = (emailField && emailField.value || '').trim();
           let hasError = false;

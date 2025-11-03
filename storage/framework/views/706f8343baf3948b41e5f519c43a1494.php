@@ -38,7 +38,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('dataprivacy') }}')">
+        onclick="(history.length>1 ? history.back() : window.location.href='<?php echo e(route('dataprivacy')); ?>')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -825,7 +825,7 @@
                         }));
                     } catch (e) {}
 
-                    window.location.href = '{{ route("registereducation") }}';
+                    window.location.href = '<?php echo e(route("registereducation")); ?>';
 
                 } catch (err) {
                     console.error('[adminapprove] submit failed', err);
@@ -864,7 +864,7 @@
     </script>
 
     <!-- Include Firebase config -->
-    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
+    
 
     <!-- LocalStorage-first autofill: read rpi_personal early and apply to form -->
     <script>
@@ -1149,3 +1149,4 @@
 </body>
 
 </html>
+<?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\resources\views/ds_register_adminapprove.blade.php ENDPATH**/ ?>
