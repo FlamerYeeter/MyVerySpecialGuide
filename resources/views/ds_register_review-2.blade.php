@@ -64,7 +64,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registereducation') }}')">
+    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview1') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -624,19 +624,9 @@
                         }
                     } catch (e) { console.warn('[review-2] saveDraftAndGoto build draft failed', e); }
 
-                    // Try to append firebase uid when available (best-effort)
+                    // Firebase removed: do not attempt client-side uid append. Always navigate to the URL.
                     try {
-                        let uid = '';
-                        if (window.firebase && firebase.auth) {
-                            const user = firebase.auth().currentUser;
-                            if (user && user.uid) uid = user.uid;
-                        }
-                        if (uid) {
-                            const sep = url.includes('?') ? '&' : '?';
-                            window.location.href = url + sep + 'uid=' + encodeURIComponent(uid);
-                        } else {
-                            window.location.href = url;
-                        }
+                        window.location.href = url;
                     } catch (e) {
                         window.location.href = url;
                     }
@@ -705,23 +695,8 @@
                     // Try to sync client Firebase ID token to the server early so server-side endpoints
                     // (like /api/server-profile) can resolve the user's uid via session('firebase_uid').
                     async function trySyncClientIdTokenToServer() {
-                        try {
-                            if (!window.firebase || !firebase.auth) return null;
-                            // initialize if needed
-                            try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){}
-                            let user = firebase.auth().currentUser;
-                            if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-                            if (!user) return null;
-                            const idToken = await user.getIdToken().catch(()=>null);
-                            if (!idToken) return null;
-                            const headers = { 'Content-Type': 'application/json' };
-                            try {
-                                const csrfMeta = document.querySelector && document.querySelector('meta[name="csrf-token"]');
-                                if (csrfMeta && csrfMeta.getAttribute) headers['X-CSRF-TOKEN'] = csrfMeta.getAttribute('content');
-                            } catch(e){}
-                            const resp = await fetch('{{ url('/session/firebase-signin') }}', { method: 'POST', credentials: 'same-origin', headers, body: JSON.stringify({ idToken }) });
-                            try { const j = await resp.json().catch(()=>null); return j || (resp.ok?{ok:true}:null); } catch(e){ return resp.ok?{ok:true}:null; }
-                        } catch (e) { return null; }
+                        // Firebase client removed — no-op sync.
+                        return null;
                     }
 
                     // Attempt sync but do not block the rest of script heavily — run and allow the later /api/server-profile call to use session if sync completed quickly.
@@ -745,44 +720,10 @@
                             return null;
                         }
                     };
-                    const initFirebase = () => {
-                        try {
-                            if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps
-                                    .length)) firebase.initializeApp(window.FIREBASE_CONFIG);
-                        } catch (e) {}
-                    };
+                    const initFirebase = () => { /* Firebase removed: noop */ };
                     const fetchFirestoreDraft = async () => {
-                        if (!window.firebase || !firebase.firestore) return null;
-                        initFirebase();
-                        try {
-                            const db = firebase.firestore();
-                            // allow override via ?uid= for admin review
-                            const params = new URLSearchParams(window.location.search || '');
-                            const overrideUid = params.get('uid') || params.get('user') || params.get('id');
-                            if (overrideUid) {
-                                try {
-                                    const snap = await db.collection('users').doc(overrideUid).get().catch(() =>
-                                        null);
-                                    if (snap && snap.exists) return snap.data();
-                                } catch (e) {
-                                    console.warn('override fetch failed', e);
-                                }
-                            }
-                            // fallback to signed-in user
-                            if (window.firebase && firebase.auth) {
-                                const auth = firebase.auth();
-                                let user = auth.currentUser;
-                                if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(
-                                    res));
-                                if (!user) return null;
-                                for (const c of ['registrations', 'users', 'registrationDrafts', 'profiles']) {
-                                    const s = await db.collection(c).doc(user.uid).get().catch(() => null);
-                                    if (s && s.exists) return s.data();
-                                }
-                            }
-                        } catch (e) {
-                            console.warn(e);
-                        }
+                        // Client Firestore usage removed. This function intentionally returns null
+                        // so the page falls back to localStorage/sessionStorage or server-side profile.
                         return null;
                     };
                     const readStored = async () => {

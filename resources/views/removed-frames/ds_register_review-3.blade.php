@@ -74,19 +74,9 @@
     <script>
       document.addEventListener('DOMContentLoaded', async () => {
         const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
-        const initFirebase = () => { try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){} };
+        const initFirebase = () => { /* Firebase client removed — noop */ };
         const fetchFirestoreDraft = async () => {
-          if (!window.firebase) return null;
-          initFirebase();
-          try {
-            const auth = firebase.auth(), db = firebase.firestore();
-            let user = auth.currentUser; if (!user) user = await new Promise(res=>firebase.auth().onAuthStateChanged(res));
-            if (!user) return null;
-            for (const c of ['registrations','users','registrationDrafts','profiles']) {
-              const s = await db.collection(c).doc(user.uid).get().catch(()=>null);
-              if (s && s.exists) return s.data();
-            }
-          } catch(e){ console.warn(e); }
+          // Firestore client removed — do not perform client-side reads here.
           return null;
         };
         const readStored = async () => {

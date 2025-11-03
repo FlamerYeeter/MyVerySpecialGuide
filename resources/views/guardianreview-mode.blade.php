@@ -217,19 +217,15 @@
           let idToken = '';
           try {
             const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-            if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
-            // attempt to get ID token for server verification if possible
-            if (mod && typeof mod.isSignedIn === 'function') {
-              const signed = await mod.isSignedIn(3000);
-              if (signed && mod && typeof mod.getCurrentUserUid === 'function' && typeof window.firebase !== 'undefined') {
-                try {
-                  const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser;
-                  if (user && typeof user.getIdToken === 'function') {
-                    idToken = await user.getIdToken();
-                  }
-                } catch(e) { /* ignore */ }
-              }
+            if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') {
+              uidTarget = await mod.getCurrentUserUid();
             }
+            // Firebase client removed: attempt to use shim-only helpers (if available) but do not dynamically import the Firebase CDN.
+            try {
+              if (mod && typeof mod.getIdToken === 'function') {
+                idToken = await mod.getIdToken().catch(() => '');
+              }
+            } catch(e) {}
           } catch(e) {}
           const body = { feedback: fb };
           if (idToken) body.idToken = idToken;
@@ -258,10 +254,7 @@
           try {
             const mod = await import("{{ asset('js/job-application-firebase.js') }}");
             if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
-            try {
-              const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser;
-              if (user && typeof user.getIdToken === 'function') idToken = await user.getIdToken();
-            } catch(e) {}
+            try { if (mod && typeof mod.getIdToken === 'function') idToken = await mod.getIdToken().catch(()=>''); } catch(e) {}
           } catch(e) {}
           const body = { feedback: fb };
           if (idToken) body.idToken = idToken;
@@ -310,18 +303,7 @@
         try {
           const mod = await import("{{ asset('js/job-application-firebase.js') }}");
           if (!uidTarget && mod && typeof mod.getCurrentUserUid === 'function') uidTarget = await mod.getCurrentUserUid();
-          // attempt to get ID token for server verification if possible
-          if (mod && typeof mod.isSignedIn === 'function') {
-            const signed = await mod.isSignedIn(3000);
-            if (signed && mod && typeof mod.getCurrentUserUid === 'function' && typeof window.firebase !== 'undefined') {
-              try {
-                const user = (await import('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js')).getAuth().currentUser;
-                if (user && typeof user.getIdToken === 'function') {
-                  idToken = await user.getIdToken();
-                }
-              } catch(e) { /* ignore */ }
-            }
-          }
+          try { if (mod && typeof mod.getIdToken === 'function') idToken = await mod.getIdToken().catch(()=>''); } catch(e) {}
         } catch(e) {}
         const body = { feedback: fb };
         if (idToken) body.idToken = idToken;

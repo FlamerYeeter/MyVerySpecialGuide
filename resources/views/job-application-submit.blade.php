@@ -130,97 +130,42 @@
 
 </div>
 
-<!-- Ensure global Firebase config is present for the module -->
-{{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
+// Firebase client removed: attach local submit handler that posts to server endpoint
 <script type="module">
-import { submitJobApplication, isSignedIn, signInWithServerToken } from "{{ asset('js/job-application-firebase.js') }}";
+import { submitJobApplication as firebaseSubmitShim } from "{{ asset('js/job-application-firebase.js') }}";
 
-// Page-level guard: redirect unauthenticated users immediately and attach handler for signed-in users
-(async function(){
-  try {
-    try { await signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { console.debug('signInWithServerToken failed', e); }
-    const signed = await isSignedIn(3000);
-    if (!signed) {
-      const current = window.location.pathname + window.location.search;
-            window.location.href = 'login?redirect=' + encodeURIComponent(current);
-      return;
-    }
-
-    // attach handler after confirming signed-in
-    document.getElementById('finalSubmit').addEventListener('click', async function() {
-      const btn = this;
-      btn.disabled = true;
-      const originalText = btn.textContent;
-      btn.textContent = 'Submitting...';
-
+(function(){
+  const btn = document.getElementById('finalSubmit');
+  if (!btn) return;
+  btn.addEventListener('click', async function(){
+    const b = this; b.disabled = true; const orig = b.textContent; b.textContent = 'Submitting...';
+    try {
       const step1 = JSON.parse(sessionStorage.getItem('jobApplication_step1') || '{}');
       const step2 = JSON.parse(sessionStorage.getItem('jobApplication_step2') || '{}');
+      const payload = { submitted_at: new Date().toISOString(), ...step1, ...step2, job_id: "{{ request('job_id') ?? '' }}", source: 'web' };
+      const confirmed = document.getElementById('confirmation') && document.getElementById('confirmation').checked;
+      if (!confirmed) { alert('Please confirm that the information you provided is accurate before submitting.'); b.disabled = false; b.textContent = orig; return; }
 
-      // combine
-      const payload = {
-        submitted_at: new Date().toISOString(),
-        ...step1,
-        ...step2,
-        job_id: "{{ request('job_id') ?? '' }}",
-        source: 'web'
-      };
-
+      // Prefer client module submit if it supports a serverless flow; otherwise POST to server route
       try {
-        // Ensure user confirmed the terms
-        const confirmed = document.getElementById('confirmation') && document.getElementById('confirmation').checked;
-        if (!confirmed) {
-          alert('Please confirm that the information you provided is accurate before submitting.');
-          btn.disabled = false;
-          btn.textContent = originalText;
-          return;
-        }
-
-        const result = await submitJobApplication(payload);
-        // clear saved steps
-        sessionStorage.removeItem('jobApplication_step1');
-        sessionStorage.removeItem('jobApplication_step2');
+        await firebaseSubmitShim(payload);
+      } catch (e) {
+        // fallback: send to server endpoint
         try {
-          localStorage.removeItem('jobApplication_step1');
-          localStorage.removeItem('jobApplication_step2');
-        } catch(e){}
-
-        // show quick success feedback then redirect
-        btn.textContent = 'Submitted ✓';
-        setTimeout(() => {
-          window.location.href = "{{ route('job.matches') }}";
-        }, 900);
-
-      } catch (err) {
-        console.error('Submit application error', err);
-        const msg = (err && err.message) ? err.message : '';
-        if (msg && msg.toLowerCase().includes('not signed in')) {
-          const current = window.location.pathname + window.location.search;
-          window.location.href = 'login?redirect=' + encodeURIComponent(current);
-          return;
-        }
-        alert('Failed to submit application. Please try again.');
-        btn.disabled = false;
-        btn.textContent = originalText;
+          const resp = await fetch("{{ route('job.application.submit') }}", { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '' }, body: JSON.stringify(payload), credentials: 'same-origin' });
+          if (!resp.ok) throw new Error('server-failed');
+        } catch (err) { throw err; }
       }
-    });
 
-  } catch (err) {
-    console.error('Auth guard failed', err);
-    // As a fallback attach the handler but let it check again on submit
-    document.getElementById('finalSubmit').addEventListener('click', async function() {
-      const btn = this; btn.disabled = true; const originalText = btn.textContent; btn.textContent = 'Submitting...';
-      const step1 = JSON.parse(sessionStorage.getItem('jobApplication_step1') || '{}');
-      const step2 = JSON.parse(sessionStorage.getItem('jobApplication_step2') || '{}');
-      try {
-        const payload = { submitted_at: new Date().toISOString(), ...step1, ...step2, job_id: "{{ request('job_id') ?? '' }}", source: 'web' };
-        const result = await submitJobApplication(payload);
-        sessionStorage.removeItem('jobApplication_step1');
-        sessionStorage.removeItem('jobApplication_step2');
-        btn.textContent = 'Submitted ✓';
-        setTimeout(() => { window.location.href = "{{ route('job.matches') }}"; }, 900);
-      } catch (e) { alert('Failed to submit application. Please try again.'); btn.disabled = false; btn.textContent = originalText; }
-    });
-  }
+      // clear saved steps
+      sessionStorage.removeItem('jobApplication_step1'); sessionStorage.removeItem('jobApplication_step2');
+      try { localStorage.removeItem('jobApplication_step1'); localStorage.removeItem('jobApplication_step2'); } catch(e){}
+
+      b.textContent = 'Submitted ✓'; setTimeout(()=> window.location.href = "{{ route('job.matches') }}", 900);
+    } catch (err) {
+      console.error('Submission failed', err); alert('Failed to submit application. Please try again.'); b.disabled = false; b.textContent = orig;
+    }
+  });
 })();
 </script>
 @endsection

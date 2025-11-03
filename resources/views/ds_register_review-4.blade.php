@@ -222,10 +222,10 @@
         // navigate and append uid when available
         try {
           let uid = '';
-          if (window.firebase && firebase.auth) {
-            const user = firebase.auth().currentUser;
-            if (user && user.uid) uid = user.uid;
-          }
+            // Firebase client removed: skip client auth checks
+            if (false) {
+              const user = null;
+            }
           if (uid) {
             const sep = url.includes('?') ? '&' : '?';
             window.location.href = url + sep + 'uid=' + encodeURIComponent(uid);

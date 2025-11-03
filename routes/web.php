@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RecommenderDebugController;
 use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\FirebaseTokenController;
 use App\Http\Controllers\JobApplicationController;
@@ -12,6 +13,9 @@ use App\Models\User;
 Route::get('/', function () {
     return view('home');
 })->name('home');
+
+// Recommender debug route: optional userId. Visit /recommender/debug or /recommender/debug/{userId}
+Route::get('/recommender/debug/{userId?}', [RecommenderDebugController::class, 'debug'])->name('recommender.debug');
 
 /*
 Route::get('/', function () {
@@ -42,8 +46,10 @@ Route::post('/client-log', function (\Illuminate\Http\Request $req) {
             default: logger()->info($message, $meta); break;
         }
     } catch (\Throwable $e) {
-        logger()->error('client-log endpoint failed: ' . $e->getMessage());
+            return view('home');
     }
+
+        // Recommender debug route (calls local Python recommender service)
     return response()->json(['ok' => true]);
 });
 

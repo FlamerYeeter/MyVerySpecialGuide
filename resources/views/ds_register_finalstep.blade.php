@@ -271,31 +271,32 @@
 
             let email = '';
 
-            // 1) if overrideUid provided, read that user's doc directly (no auth needed for public rules)
-            if (overrideUid && window.firebase && firebase.firestore) {
+            // 1) if overrideUid provided: client Firestore reads removed. No-op.
+            if (false) {
               try {
-                const db = firebase.firestore();
-                const snap = await db.collection('users').doc(overrideUid).get().catch(()=>null);
+                // Firestore client removed — no client read here.
+                const db = null;
+                const snap = null;
                 if (snap && snap.exists) {
                   const d = snap.data() || {};
                   email = d.personalInfo?.email || d.email || d.personal?.email || '';
                 }
-              } catch(e) { console.warn('override uid read failed', e); }
+              } catch(e) { console.warn('override uid read skipped (firebase removed)', e); }
             }
 
-            // 2) Try currently signed-in user doc
-            if (!email && window.firebase && firebase.auth && firebase.firestore) {
+            // 2) Try currently signed-in user doc — client Firebase disabled; no-op block retained for history.
+            if (false) {
               try {
-                let user = firebase.auth().currentUser;
-                if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                // Firestore client removed — skip client-side auth and reads.
+                let user = null;
                 if (user) {
-                  const snap = await firebase.firestore().collection('users').doc(user.uid).get().catch(()=>null);
+                  const snap = null;
                   if (snap && snap.exists) {
                     const d = snap.data() || {};
                     email = d.personalInfo?.email || d.email || d.personal?.email || '';
                   }
                 }
-              } catch(e) { console.warn('signed-in user read failed', e); }
+              } catch(e) { console.warn('signed-in user read skipped (firebase removed)', e); }
             }
 
             // 3) fallback: use register.js getDraft() which checks local/session and Firestore
@@ -429,20 +430,7 @@
           }
 
           async function tryFillFromFirestore() {
-            try {
-              // ensure firebase is initialized by register.js ensureFirebase if available
-              if (window.firebase && firebase.auth && firebase.firestore) {
-                let user = firebase.auth().currentUser;
-                if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
-                if (!user) return null;
-                const doc = await firebase.firestore().collection('users').doc(user.uid).get();
-                if (doc && doc.exists) {
-                  const d = doc.data() || {};
-                  const p = d.personalInfo || d.personal || d;
-                  if (p && (p.email || p.emailAddress)) return p.email || p.emailAddress;
-                }
-              }
-            } catch(e){ console.warn('autofill firestore fail', e); }
+            // Firebase client removed — do not attempt client-side Firestore reads.
             return null;
           }
 
