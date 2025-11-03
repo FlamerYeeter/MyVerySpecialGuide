@@ -31,7 +31,7 @@
   <!-- Back Button -->
   <button
     class="fixed left-3 top-3 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-    onclick="window.location.href='{{ route('registerreview5') }}'">
+    onclick="window.location.href='<?php echo e(route('registerreview5')); ?>'">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
       class="w-4 h-4 sm:w-6 sm:h-6">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -168,7 +168,7 @@
     </div>
 
     <!-- Hidden inputs for autofill/verification (used by inline scripts) -->
-    <input type="hidden" id="emailFromServer" name="emailFromServer" value="{{ $serverEmail ?? '' }}" />
+    <input type="hidden" id="emailFromServer" name="emailFromServer" value="<?php echo e($serverEmail ?? ''); ?>" />
     <input type="hidden" id="email" name="email" value="" />
     <input type="hidden" id="password" name="password" value="" />
     <input type="hidden" id="confirm_password" name="confirm_password" value="" />
@@ -201,8 +201,8 @@
     </p>
   </div>
 
-  {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-    <script src="{{ asset('js/register.js') }}"></script>
+  
+    <script src="<?php echo e(asset('js/register.js')); ?>"></script>
     <script>
       (function(){
         const modal = document.getElementById('emailVerifyModal');
@@ -213,7 +213,7 @@
         function show(email){ if(!modal) return; document.getElementById('verificationEmail').textContent = email || ''; modal.classList.remove('hidden'); }
         if (close) close.addEventListener('click', hide);
         if (cancel) cancel.addEventListener('click', hide);
-        if (proceed) proceed.addEventListener('click', function(){ window.location.href = '{{ route('registerverifycode') }}'; });
+        if (proceed) proceed.addEventListener('click', function(){ window.location.href = '<?php echo e(route('registerverifycode')); ?>'; });
         // expose for register.js to call
         window.mvsgShowEmailVerificationModal = show;
       })();
@@ -421,4 +421,4 @@
       })();
     </script>
 </body>
-</html>
+</html><?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\resources\views/ds_register_finalstep.blade.php ENDPATH**/ ?>
