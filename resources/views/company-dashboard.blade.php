@@ -327,18 +327,20 @@
 
             <!-- Greeting Header -->
             <header class="max-w-7xl mx-auto">
-                <h1 class="text-base sm:text-lg font-semibold text-gray-900">
+              <div class ="p-4">
+                <h1 class="text-base sm:text-3xl font-semibold text-gray-900">
                 <?= $greeting ?>, <?= htmlspecialchars($user) ?>!
                 </h1>
                 <p class="text-xs sm:text-sm text-gray-500 mt-1">
                 Here is your job listings static report
                 </p>
+                </div>
             </header>
 
             </body>
             </html>
 
-       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-2">
+       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 p-4">
 
               <!-- New Candidates -->
               <div class="flex items-center justify-between bg-white shadow-md rounded-xl border-l-4 border-yellow-400 p-5 w-60 h-32">
@@ -373,7 +375,7 @@
   
 
    <!-- Job Statistic Card -->
-  <div class="bg-white rounded-2xl shadow-md w-[700px] p-6">
+  <div class="bg-white rounded-2xl shadow-md w-[750px] p-6">
     
     <!-- Header -->
     <div class="flex flex-col sm:flex-row gap-6 sm:items-center sm:justify-between mb-5">
@@ -433,7 +435,7 @@
 
   <!-- Right Section: Applicants Summary -->
    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 p-6"></div>
- <section class="bg-white shadow rounded-2xl p-6 w-[415px] h-fit ml-auto lg:ml-[120px]">
+ <section class="bg-white shadow rounded-2xl p-6 w-[390px] h-fit ml-auto lg:ml-[180px]">
     <h2 class="text-lg font-semibold text-gray-900">Applicants Summary</h2>
     <p class="text-sm text-gray-500 mb-2">25 Applicants</p>
 
@@ -497,7 +499,7 @@
 </body>
 </html>
 
- <div class="bg-white w-[380px] sm:w-[710px] rounded-2xl shadow-sm p-6">
+ <div class="bg-white w-[450px] sm:w-[775px] rounded-2xl shadow-sm p-6">
     <!-- Header -->
     <div class="flex items-center justify-between mb-4">
       <h2 class="text-lg font-semibold text-gray-800">Recent Job Updates</h2>
