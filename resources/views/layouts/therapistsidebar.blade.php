@@ -5,12 +5,20 @@
     class="fixed left-0 top-0 h-full w-72 bg-white shadow-lg flex flex-col justify-between border-r border-gray-200 transition-all duration-300 overflow-hidden z-30">
     <div>
       <!-- Header with Toggle -->
-      <div class="flex items-center justify-between p-6 border-b border-gray-200">
-        <h1 class="text-2xl font-extrabold text-[#2563EB] tracking-tight sidebar-title transition-all duration-300">
-          AdminHub
-        </h1>
+      <div class="flex items-center justify-between p-6 border-b border-gray-200 pr-6">
+        <div class="flex items-center space-x-3 logo-section">
+          <!-- Logo -->
+          <img src="image/logo.png" alt="MVSG Logo"
+            class="w-12 h-12 object-contain rounded-full border-2 border-[#2563EB] shadow-sm">
+
+          <!-- Title -->
+          <h1 class="text-xl font-extrabold text-[#2563EB] tracking-tight sidebar-title leading-tight transition-all duration-300">
+            MyVery<br>SpecialGuide
+          </h1>
+        </div>
+
         <button id="toggleBtn"
-          class="p-2 rounded-md hover:bg-gray-100 text-gray-600 transition-all duration-200 focus:outline-none flex items-center justify-center w-10 h-10">
+          class="p-2 rounded-md hover:bg-gray-100 text-gray-600 transition-all duration-200 focus:outline-none flex items-center justify-center w-10 h-10 ml-2">
           <img id="toggleIcon" src="image/collapsed.png" alt="Toggle Menu"
             class="w-5 h-5 transition-transform duration-300">
         </button>
@@ -27,27 +35,28 @@
         </a>
 
         <a href="#"
-          data-default-icon="image/moderation.png"
-          data-active-icon="image/moderation1.png"
+          data-default-icon="image/candidate.png"
+          data-active-icon="image/candidate1.png"
           class="nav-item flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 hover:bg-[#2563EB] hover:text-white group">
-          <img src="image/moderation.png" alt="Moderation" class="nav-icon w-6 h-6 transition-all duration-200">
-          <span class="font-medium sidebar-text">Moderation</span>
+          <img src="image/candidate.png" alt="Candidates" class="nav-icon w-6 h-6 transition-all duration-200">
+          <span class="font-medium sidebar-text">Candidates</span>
         </a>
 
         <a href="#"
-          data-default-icon="image/approval.png"
-          data-active-icon="image/approval1.png"
+          data-default-icon="image/assessment.png"
+          data-active-icon="image/assessment1.png"
           class="nav-item flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 hover:bg-[#2563EB] hover:text-white group">
-          <img src="image/approval.png" alt="Approval Workflow" class="nav-icon w-5 h-5 transition-all duration-200">
-          <span class="font-semibold sidebar-text">Approval Workflow</span>
+          <img src="image/assessment.png" alt="Assessments" class="nav-icon w-5 h-5 transition-all duration-200">
+          <span class="font-semibold sidebar-text">Assessments</span>
         </a>
 
         <a href="#"
-          data-default-icon="image/compliance.png"
-          data-active-icon="image/compliance1.png"
+          data-default-icon="image/community.png"
+          data-active-icon="image/community1.png"
           class="nav-item flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 hover:bg-[#2563EB] hover:text-white group">
-          <img src="image/compliance.png" alt="Compliance & Reports" class="nav-icon w-5 h-5 transition-all duration-200">
-          <span class="font-medium sidebar-text">Compliance & Reports</span>
+          <img src="image/community.png" alt="Community
+          " class="nav-icon w-5 h-5 transition-all duration-200">
+          <span class="font-medium sidebar-text">Community</span>
         </a>
       </nav>
     </div>
@@ -62,7 +71,7 @@
   </aside>
 
   <!-- Main Content -->
-  <main id="mainContent" class="flex-grow w-full transition-all duration-300 ml-[18rem] p-6">
+  <main id="mainContent" class="flex-grow w-full transition-all duration-300 ml-72 p-6">
     @yield('content')
   </main>
 
@@ -75,6 +84,20 @@
     /* Collapsed state */
     #sidebar.collapsed {
       width: 4.5rem !important;
+    }
+
+    #sidebar .sidebar-title {
+      font-size: 1.25rem;
+      line-height: 1.3;
+    }
+
+    #sidebar img[alt="MVSG Logo"] {
+      transition: all 0.3s ease;
+    }
+
+    /* Hide logo and title when collapsed */
+    #sidebar.collapsed .logo-section {
+      display: none !important;
     }
 
     #sidebar.collapsed .sidebar-title,
@@ -104,7 +127,6 @@
       display: flex;
     }
 
-    /* Keep toggle button fixed size and position */
     #sidebar.collapsed #toggleBtn {
       width: 2.5rem;
       height: 2.5rem;
@@ -119,7 +141,7 @@
 
     /* Adjust main content shift */
     #mainContent {
-      margin-left: 18rem;
+      margin-left: 18rem; /* adjust to match widened sidebar */
     }
 
     #sidebar.collapsed + #mainContent {
