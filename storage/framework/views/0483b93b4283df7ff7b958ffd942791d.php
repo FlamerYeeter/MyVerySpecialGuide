@@ -68,7 +68,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerjobpreference1') }}')">
+    onclick="(history.length>1 ? history.back() : window.location.href='<?php echo e(route('registerjobpreference1')); ?>')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -483,8 +483,8 @@
     </div>
 
 
-    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-    <script src="{{ asset('js/register.js') }}"></script>
+    
+    <script src="<?php echo e(asset('js/register.js')); ?>"></script>
     <script>
         // Save the currently-displayed review draft into localStorage so the adminapprove page
         // (and register.js) can prefill fields. If Firebase user is available, append ?uid= to the URL.
@@ -531,9 +531,9 @@
                 // Try to get firebase uid to make adminapprove load the authoritative document when possible
             try {
                 // Firebase removed: do not attempt client auth; always navigate to route directly.
-                window.location.href = '{{ route('registeradminapprove') }}';
+                window.location.href = '<?php echo e(route('registeradminapprove')); ?>';
             } catch (e) {
-                window.location.href = '{{ route('registeradminapprove') }}';
+                window.location.href = '<?php echo e(route('registeradminapprove')); ?>';
             }
         }
     </script>
@@ -556,7 +556,7 @@
                         p && p.then && p.then(function(r){ console.debug('[review1] client->server sync result', r); }).catch(function(err){ console.debug('[review1] client->server sync error', err); });
                         await Promise.race([p, new Promise(res=>setTimeout(()=>res(null), 2000))]);
                     } catch(e){}
-                    window.location.href = '{{ route('registerreview2') }}';
+                    window.location.href = '<?php echo e(route('registerreview2')); ?>';
                 });
             }
         })();
@@ -1004,7 +1004,7 @@
                 showFileInfo(savedFileName, savedFileType);
                 makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
             } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
-                // If coming from previous form test
+                // If coming from previous form
                 const prevFileName = prevFileEl.textContent.trim();
                 showFileInfo(prevFileName, getFileType(prevFileName));
                 makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
@@ -1110,3 +1110,4 @@
 </body>
 
 </html>
+<?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\MyVerySpecialGuide\resources\views/ds_register_review-1.blade.php ENDPATH**/ ?>
