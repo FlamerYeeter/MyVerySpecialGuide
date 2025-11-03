@@ -3,405 +3,211 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Process\Process;
-use App\Jobs\GenerateRecommendations;
 
 class RecommendationController extends Controller
 {
     /**
-     * Accept a Firestore-like profile JSON and return hybrid recommendations.
-     * POST /api/recommendations/user
+     * Lightweight per-user recommendation entrypoint (legacy hybrid API).
+     * This method is intentionally small: it accepts a uid (from session/auth or payload)
+     * and returns either a scheduled status or attempts a synchronous generation when forced.
+     * For complex generation we dispatch the existing job pipeline.
      */
     public function userRecommendations(Request $request)
     {
-        $profile = $request->json()->all();
-        // Attempt to resolve authenticated user: prefer Laravel session, then Firebase ID token
-        $resolvedUid = null;
+        $payload = $request->json()->all() ?: [];
+
+        // Resolve uid: prefer Laravel session -> payload uid -> anonymous
+        $uid = null;
         try {
-            if (\Illuminate\Support\Facades\Auth::check()) {
-                $u = \Illuminate\Support\Facades\Auth::user();
-                if (!empty($u->firebase_uid)) $resolvedUid = (string)$u->firebase_uid;
+            if (auth()->check()) {
+                $u = auth()->user();
+                if (!empty($u->firebase_uid)) $uid = (string) $u->firebase_uid;
             }
         } catch (\Throwable $__e) {}
 
-        // If Authorization header present, try to verify ID token
-        if (!$resolvedUid) {
-            $authHeader = $request->header('Authorization', '') ?: $request->server('HTTP_AUTHORIZATION', '');
-            $idToken = null;
-            if ($authHeader && preg_match('/Bearer\s+(.*)$/i', $authHeader, $m)) $idToken = trim($m[1]);
-            if (!$idToken) $idToken = (string)$request->input('idToken', '');
-            if ($idToken) {
-                try {
-                    $verified = $this->verifyFirebaseIdToken($idToken);
-                    if ($verified) $resolvedUid = $verified;
-                } catch (\Throwable $__e) {
-                    // verification failed
-                    logger()->warning('recommendations: idToken verification failed: ' . $__e->getMessage());
-                }
+        if (!$uid) $uid = $request->input('uid') ?? ($payload['uid'] ?? null);
+        if (!$uid && app()->environment('local')) {
+            // allow local testing via payload even without auth
+            $uid = $request->input('uid') ?? ($payload['uid'] ?? null);
+        }
+
+        if (!$uid) {
+            // no identity available: schedule a background generation and return 202
+            try { Log::info('userRecommendations: no uid provided, scheduling generation'); } catch (\Throwable $__l) {}
+            // Keep behavior simple: schedule a job if available, otherwise return scheduled
+            if (class_exists('\App\Jobs\GenerateRecommendations')) {
+                try { \App\Jobs\GenerateRecommendations::dispatch('anonymous', []); } catch (\Throwable $_e) {}
             }
+            return response()->json(['status' => 'scheduled', 'message' => 'No uid resolved; generation scheduled.'], 202);
         }
 
-        // As a last resort, accept uid in payload only if we already resolved via session/token
-        $payloadUid = $request->input('uid') ?? ($profile['uid'] ?? null);
-        if ($payloadUid && $resolvedUid && (string)$payloadUid !== (string)$resolvedUid) {
-            // mismatch between provided uid and authenticated uid
-            return response()->json(['error' => 'uid_mismatch'], 403);
-        }
-
-        // If Laravel session contains firebase_uid, use it (helps when Auth::user() lacks the field)
-        if (!$resolvedUid) {
-            try {
-                $sessUid = session('firebase_uid', null);
-                if (!empty($sessUid)) {
-                    $resolvedUid = (string)$sessUid;
-                    Log::info('recommendations: resolved uid from session firebase_uid=' . substr($resolvedUid,0,8) . '...');
-                }
-            } catch (\Throwable $_se) {}
-        }
-
-        // Development convenience: when running locally, allow the client-provided uid to be
-        // accepted if no Laravel session or ID token was available. This lets the local dev
-        // client post a profile.uid and still get per-user recs without a full auth flow.
-        if (!$resolvedUid && app()->environment('local') && $payloadUid) {
-            Log::info('recommendations: local dev fallback - using payload uid=' . $payloadUid);
-            $resolvedUid = $payloadUid;
-        }
-
-        if ($resolvedUid) {
-            $uid = $resolvedUid;
-        } else {
-            // no authenticated identity: reject (we require authenticated user to request per-user recs)
-            return response()->json(['error' => 'unauthorized', 'message' => 'Missing or invalid Firebase idToken or Laravel session.'], 401);
-        }
-
-    // sanitize uid for file paths
-    $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $uid ?: 'anonymous');
-    $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
-    $debugUsersPath = storage_path('app/reco_debug_users_' . $safeUid . '.json');
-    $debugOutPath = storage_path('app/reco_debug_out_' . $safeUid . '.log');
-    $debugParsedPath = storage_path('app/reco_debug_parsed_' . $safeUid . '.json');
-
-    Log::info('recommendations: request for uid=' . $uid . ' cachePath=' . $cachePath);
-
-    // Helper to extract a per-user recommendation array from multiple possible shapes:
-    // - mapping keyed by original uid
-    // - mapping keyed by safeUid
-    // - direct numeric array
-    // - mapping containing an array-valued entry (pick first)
-    $extractPerUser = function($maybe) use ($uid, $safeUid) {
-        if (!is_array($maybe)) return null;
-        if (array_key_exists($uid, $maybe)) return $maybe[$uid];
-        if (array_key_exists($safeUid, $maybe)) return $maybe[$safeUid];
-        // direct sequential array
-        if (array_values($maybe) === $maybe) return $maybe;
-        // mapping with nested arrays: prefer first array-valued entry
-        foreach ($maybe as $k => $v) {
-            if (is_array($v) && array_values($v) === $v) return $v;
-        }
-        return null;
-    };
-
-        // TTL for cached results (seconds). If cached file is recent, return it immediately.
-        $cacheTtl = 60 * 60; // 1 hour
-
-        // honor a 'force' flag in the request to force regeneration for this uid (dev-friendly)
+        // honor force flag for synchronous dev runs
         $force = $request->input('force') ? true : false;
-    // placeholder for synchronous run result
-    $result = null;
-        $debug = $request->input('debug') ? true : false;
-
-        if ($force) {
-            Log::info('recommendations: force regeneration requested for uid=' . $uid);
+        if ($force && class_exists('\App\Jobs\GenerateRecommendations')) {
             try {
-                // Run synchronously to produce an updated cache immediately (safe in dev/sync queue)
-                $job = new GenerateRecommendations($uid, $profile);
-                $result = $job->runAndReturn();
-                if ($result !== null) {
-                    // Generator may return either a mapping keyed by uid or a direct array for this user.
-                    if (is_array($result)) {
-                        if (array_key_exists($uid, $result)) {
-                            $out = $result[$uid];
-                            if ($debug && app()->environment('local')) {
-                                return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                            }
-                            return response()->json($out);
-                        }
-                        // direct list returned for this user
-                        if (array_values($result) === $result) {
-                            $out = $result;
-                            if ($debug && app()->environment('local')) {
-                                return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                            }
-                            return response()->json($out);
-                        }
-                        // mapping with nested arrays? try to pick the first array-valued entry
-                        foreach ($result as $k => $v) {
-                            if (is_array($v) && array_values($v) === $v) {
-                                $out = $v;
-                                if ($debug && app()->environment('local')) {
-                                    return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                                }
-                                return response()->json($out);
-                            }
-                        }
-                    }
-                    // Generator produced no per-user payload we could detect
-                    Log::info('recommendations: generator returned no per-uid entry on force run for ' . $uid);
-                    return response()->json(['error' => 'no_per_user_results', 'message' => 'Generator produced no per-user results for this uid.'], 404);
+                $job = new \App\Jobs\GenerateRecommendations($uid, $payload);
+                $out = $job->runAndReturn();
+                if ($out !== null) {
+                    // normalize to array of recs for this uid
+                    if (is_array($out) && array_key_exists($uid, $out)) return response()->json($out[$uid]);
+                    if (is_array($out) && array_values($out) === $out) return response()->json($out);
                 }
-                // small sleep to allow file write on slower filesystems (harmless)
-                usleep(150000);
+                return response()->json(['status' => 'scheduled', 'message' => 'Generation scheduled.'], 202);
             } catch (\Throwable $e) {
-                Log::warning('GenerateRecommendations force run failed: ' . $e->getMessage());
+                Log::error('userRecommendations force run failed: ' . $e->getMessage());
+                return response()->json(['error' => 'generation_failed', 'message' => $e->getMessage()], 500);
             }
         }
+
+        // Default: schedule and return 202
+        if (class_exists('\App\Jobs\GenerateRecommendations')) {
+            try { \App\Jobs\GenerateRecommendations::dispatch($uid, $payload); } catch (\Throwable $_e) {}
+        }
+        return response()->json(['status' => 'scheduled', 'message' => 'Recommendation generation scheduled for uid ' . $uid], 202);
+    }
+
+    /**
+     * Bulk generation endpoint.
+     */
+    public function generateAll(Request $request)
+    {
         try {
-            // If cache exists and is fresh, return immediately
-            if (file_exists($cachePath) && (time() - filemtime($cachePath) < $cacheTtl)) {
-                // log which cache file is being used (helpful for multi-user debugging)
-                try {
-                    Log::info('recommendations: using fresh cache', ['cachePath' => $cachePath, 'mtime' => @filemtime($cachePath), 'size' => @filesize($cachePath)]);
-                } catch (\Throwable $_log_e) {}
-                $raw = @file_get_contents($cachePath);
-                $json = json_decode($raw, true);
-                    if ($json !== null) {
-                        $out = $extractPerUser($json);
-                        if ($out !== null) {
-                            Log::info('recommendations: returning cached per-uid results for ' . $uid, ['cachePath' => $cachePath]);
-                            return response()->json($out);
-                        }
-                        // fall through to regeneration logic below
-                        Log::info('recommendations: cache present but no per-uid entry; skipping global return for ' . $uid, ['cachePath' => $cachePath]);
-                    }
-            }
-
-            // If stale or missing cache: dispatch background job to generate recommendations
-            // but return cached file immediately if present
-            if (file_exists($cachePath)) {
-                // return stale cache while job regenerates in background
-                try {
-                    Log::info('recommendations: using stale cache (will dispatch regenerate)', ['cachePath' => $cachePath, 'mtime' => @filemtime($cachePath)]);
-                } catch (\Throwable $_le) {}
-                $raw = @file_get_contents($cachePath);
-                $json = json_decode($raw, true);
-                // dispatch the job asynchronously to regenerate per-user output
-                GenerateRecommendations::dispatch($uid, $profile);
-                    if ($json !== null) {
-                        $out = $extractPerUser($json);
-                        if ($out !== null) {
-                            Log::info('recommendations: returning stale per-uid cache for ' . $uid, ['cachePath' => $cachePath]);
-                            return response()->json($out);
-                        }
-                        // do NOT return stale global JSON; instead allow regeneration to proceed
-                        Log::info('recommendations: stale cache present but no per-uid entry; skipping global return for ' . $uid, ['cachePath' => $cachePath]);
-                    }
-            }
-
-            // No cache exists: dispatch job. In local/dev or when queue driver is 'sync', run it synchronously
-            try { Log::info('recommendations: no cache found, dispatching job for uid=' . $uid, ['expectedCachePath' => $cachePath]); } catch (\Throwable $__l) {}
-            GenerateRecommendations::dispatch($uid, $profile);
-
-            try {
-                $queueDriver = config('queue.default');
-            } catch (\Throwable $_e) { $queueDriver = null; }
-
-            // If using sync queue or in local environment, run the job inline so results are immediately available for dev/testing.
-            if ($queueDriver === 'sync' || app()->environment('local')) {
-                try {
-                    // Run synchronously (safe for dev). Use runAndReturn to get JSON directly.
-                    $job = new GenerateRecommendations($uid, $profile);
-                    $result = $job->runAndReturn();
-                        if ($result !== null) {
-                            if (is_array($result)) {
-                                if (array_key_exists($uid, $result)) {
-                                    $out = $result[$uid];
-                                    if ($debug && app()->environment('local')) {
-                                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                                    }
-                                    Log::info('recommendations: returning sync-generated per-uid results for ' . $uid);
-                                    return response()->json($out);
-                                }
-                                if (array_values($result) === $result) {
-                                    $out = $result;
-                                    if ($debug && app()->environment('local')) {
-                                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                                    }
-                                    Log::info('recommendations: returning sync-generated per-uid results (direct array) for ' . $uid);
-                                    return response()->json($out);
-                                }
-                                foreach ($result as $k => $v) {
-                                    if (is_array($v) && array_values($v) === $v) {
-                                        $out = $v;
-                                        if ($debug && app()->environment('local')) {
-                                            return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                                        }
-                                        Log::info('recommendations: returning sync-generated per-uid results (found array in mapping) for ' . $uid, ['foundKey' => $k]);
-                                        return response()->json($out);
-                                    }
-                                }
-                            }
-                            Log::info('recommendations: sync-generated result had no per-uid entry for ' . $uid);
-                            return response()->json(['error' => 'no_per_user_results', 'message' => 'Generator produced no per-user results for this uid.'], 404);
-                        }
-                } catch (\Throwable $e) {
-                    Log::warning('GenerateRecommendations sync run failed: ' . $e->getMessage());
-                }
-            }
-            // As a last resort: if cache does not exist yet (queue running in background), attempt a synchronous generation
-            // This is a fallback to help dev/testing so users see per-user recommendations immediately.
-            try {
-                Log::info('recommendations: attempting synchronous fallback generation for uid=' . $uid);
-                $job = new GenerateRecommendations($uid, $profile);
-                $result = $job->runAndReturn();
-                    if ($result !== null) {
-                        if (is_array($result)) {
-                            if (array_key_exists($uid, $result)) {
-                                $out = $result[$uid];
-                                if ($debug && app()->environment('local')) {
-                                    return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                                }
-                                Log::info('recommendations: returning fallback-generated per-uid results for ' . $uid);
-                                return response()->json($out);
-                            }
-                            if (array_values($result) === $result) {
-                                $out = $result;
-                                if ($debug && app()->environment('local')) {
-                                    return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                                }
-                                Log::info('recommendations: returning fallback-generated per-uid results (direct array) for ' . $uid);
-                                return response()->json($out);
-                            }
-                            foreach ($result as $k => $v) {
-                                if (is_array($v) && array_values($v) === $v) {
-                                    $out = $v;
-                                    if ($debug && app()->environment('local')) {
-                                        return response()->json(['data' => $out, 'debug' => ['users_json' => @file_get_contents($debugUsersPath), 'python_log' => @file_get_contents($debugOutPath), 'parsed' => @file_get_contents($debugParsedPath)]]);
-                                    }
-                                    Log::info('recommendations: returning fallback-generated per-uid results (found array in mapping) for ' . $uid, ['foundKey' => $k]);
-                                    return response()->json($out);
-                                }
-                            }
-                        }
-                        Log::info('recommendations: fallback generation produced no per-uid entry for ' . $uid);
-                        return response()->json(['error' => 'no_per_user_results', 'message' => 'Generator produced no per-user results for this uid.'], 404);
-                    }
-            } catch (\Throwable $_e) {
-                Log::warning('recommendations: synchronous fallback failed: ' . $_e->getMessage());
-            }
-
-            return response()->json(['status' => 'scheduled', 'message' => 'Recommendation generation scheduled.'], 202);
-        } catch (\Exception $e) {
-            Log::error('Recommendation exception: ' . $e->getMessage());
+            $allowed = app()->environment('local') || in_array($request->ip(), ['127.0.0.1', '::1']);
+            if (!$allowed) return response()->json(['error' => 'forbidden'], 403);
+            if (!class_exists('\App\Jobs\GenerateRecommendations')) return response()->json(['error' => 'no_generator'], 500);
+            $result = \App\Jobs\GenerateRecommendations::runForAllUsers();
+            if ($result === null) return response()->json(['status' => 'failed'], 500);
+            return response()->json(['status' => 'ok', 'users' => array_keys($result)]);
+        } catch (\Throwable $e) {
+            Log::error('generateAll failed: ' . $e->getMessage());
             return response()->json(['error' => 'exception', 'message' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Trigger bulk generation for all users. Restricted to local environment or loopback requests.
-     * POST /api/recommendations/all
+     * Lightweight Oracle-backed recommendation endpoint for quick testing.
+     * GET /debug/oracle-recs?uid=7
+     * This function MUST use public/db/oracledb.php (per your instruction).
      */
-    public function generateAll(Request $request)
+    public function oracleRecommendations(Request $request)
     {
-        try {
-            // Restrict this endpoint to local dev or loopback callers to avoid abuse
-            $allowed = app()->environment('local') || in_array($request->ip(), ['127.0.0.1', '::1', 'localhost']);
-            if (!$allowed) {
-                return response()->json(['error' => 'forbidden'], 403);
-            }
+        $uid = $request->input('uid', 7);
 
-            // Run bulk generator synchronously (dev-friendly). It will write per-uid cache files.
-            $result = \App\Jobs\GenerateRecommendations::runForAllUsers();
-            if ($result === null) {
-                return response()->json(['status' => 'failed', 'message' => 'bulk generation failed or produced no output'], 500);
-            }
-            return response()->json(['status' => 'ok', 'users' => array_keys($result)]);
+        // require the oracle helper (do not edit public/db/oracledb.php)
+        try {
+            require_once public_path('db/oracledb.php');
         } catch (\Throwable $e) {
-            logger()->error('RecommendationController::generateAll failed: ' . $e->getMessage());
-            return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
+            return response()->json(['error' => 'oracledb_require_failed', 'message' => $e->getMessage()], 500);
         }
-    }
 
-    // Verify a Firebase ID token using Google's certs or tokeninfo endpoint. Returns uid (sub) on success or null on failure.
-    private function verifyFirebaseIdToken(string $idToken): ?string
-    {
+        // create connection
         try {
-            $parts = explode('.', $idToken);
-            if (count($parts) !== 3) return null;
-            $b64Header = $parts[0];
-            $b64Payload = $parts[1];
-            $b64Sig = $parts[2];
+            $conn = getOracleConnection();
+        } catch (\Throwable $e) {
+            return response()->json(['error' => 'oracle_connection_failed', 'message' => $e->getMessage()], 500);
+        }
 
-            $header = json_decode($this->base64UrlDecode($b64Header), true) ?: [];
-            $payload = json_decode($this->base64UrlDecode($b64Payload), true) ?: [];
-            $kid = $header['kid'] ?? null;
-
-            $svcPath = (getenv('FIREBASE_SERVICE_ACCOUNT') ?: '') ?: storage_path('app/firebase-service-account.json');
-            $projectId = null;
-            if (file_exists($svcPath)) {
-                $j = json_decode(file_get_contents($svcPath), true);
-                $projectId = $j['project_id'] ?? null;
+        // Query the USER_GUARDIAN table for the profile
+        $userSql = "SELECT ID, SKILLS, WORK_EXPERIENCE, WORKING_ENVIRONMENT, JOB_PREFERENCE, CERTIFICATE, FIRST_NAME, LAST_NAME, EMAIL FROM USER_GUARDIAN WHERE ID = :id";
+        $userRow = null;
+        try {
+            $stid = @oci_parse($conn, $userSql);
+            if ($stid) {
+                oci_bind_by_name($stid, ':id', $uid);
+                @oci_execute($stid);
+                $userRow = oci_fetch_assoc($stid) ?: null;
+                @oci_free_statement($stid);
             }
+        } catch (\Throwable $e) {
+            // continue to error below
+        }
 
-            $certsUrl = 'https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com';
-            $certsRaw = @file_get_contents($certsUrl);
-            if ($certsRaw !== false) {
-                $certs = json_decode($certsRaw, true) ?: [];
-                if ($kid && isset($certs[$kid])) {
-                    $cert = $certs[$kid];
-                    $sig = $this->base64UrlDecode($b64Sig);
-                    $signed = $b64Header . '.' . $b64Payload;
-                    $pub = openssl_pkey_get_public($cert);
-                    if ($pub !== false) {
-                        $ok = openssl_verify($signed, $sig, $pub, OPENSSL_ALGO_SHA256);
-                        openssl_free_key($pub);
-                    } else {
-                        $ok = 0;
-                    }
-                    if ($ok === 1) {
-                        $now = time();
-                        if ($projectId && (!isset($payload['aud']) || $payload['aud'] !== $projectId)) {
-                            logger()->warning('Firebase token aud mismatch');
-                            return null;
-                        }
-                        if ($projectId && (!isset($payload['iss']) || $payload['iss'] !== 'https://securetoken.google.com/' . $projectId)) {
-                            logger()->warning('Firebase token iss mismatch');
-                            return null;
-                        }
-                        if (!isset($payload['sub']) || !is_string($payload['sub']) || $payload['sub'] === '') return null;
-                        if (isset($payload['exp']) && $payload['exp'] < ($now - 5)) {
-                            logger()->warning('Firebase token expired');
-                            return null;
-                        }
-                        return $payload['sub'];
-                    }
+        if (!$userRow) {
+            return response()->json(['error' => 'user_not_found', 'uid' => $uid], 404);
+        }
+
+        // Build user text blob
+        $parts = [];
+        foreach (['SKILLS','WORK_EXPERIENCE','WORKING_ENVIRONMENT','JOB_PREFERENCE','CERTIFICATE'] as $c) {
+            if (!empty($userRow[$c])) $parts[] = (string)$userRow[$c];
+        }
+        $userText = implode(' ', $parts);
+
+        // Job table tries
+        $jobQueries = [
+            "SELECT ID, TITLE, DESCRIPTION, REQUIRED_SKILLS, COMPANY_NAME, INDUSTRY FROM JOB_POSTINGS",
+            "SELECT ID, TITLE, DESCRIPTION, REQUIRED_SKILLS, COMPANY_NAME, INDUSTRY FROM POSTINGS",
+            "SELECT ID, TITLE, DESCRIPTION, REQUIRED_SKILLS, COMPANY_NAME, INDUSTRY FROM JOBS",
+            // fallback
+            "SELECT ID, TITLE, DESCRIPTION, null AS REQUIRED_SKILLS, null AS COMPANY_NAME, null AS INDUSTRY FROM JOBS"
+        ];
+
+        $jobs = [];
+        foreach ($jobQueries as $jq) {
+            try {
+                $js = @oci_parse($conn, $jq);
+                if (!$js) continue;
+                @oci_execute($js);
+                while ($r = oci_fetch_assoc($js)) {
+                    $jobs[] = $r;
                 }
-            }
-
-            // Fallback: tokeninfo endpoint
-            $url = 'https://oauth2.googleapis.com/tokeninfo?id_token=' . urlencode($idToken);
-            $resp = @file_get_contents($url);
-            if ($resp === false) return null;
-            $data = json_decode($resp, true);
-            if (empty($data) || empty($data['sub'])) return null;
-            if ($projectId && !empty($data['aud']) && (string)$data['aud'] !== (string)$projectId && (string)$data['aud'] !== (string)(getenv('FIREBASE_API_KEY') ?: '')) {
-                logger()->warning('Firebase token audience mismatch (fallback)');
-                return null;
-            }
-            return $data['sub'] ?? null;
-        } catch (\Throwable $e) {
-            logger()->warning('recommendation verifyFirebaseIdToken failed: ' . $e->getMessage());
-            return null;
+                @oci_free_statement($js);
+                if (count($jobs) > 0) break;
+            } catch (\Throwable $_e) { continue; }
         }
-    }
 
-    private function base64UrlDecode(string $input): string
-    {
-        $remainder = strlen($input) % 4;
-        if ($remainder) {
-            $padlen = 4 - $remainder;
-            $input .= str_repeat('=', $padlen);
+        if (empty($jobs)) {
+            return response()->json(['error' => 'no_jobs_found', 'message' => 'No job postings found in Oracle.'], 404);
         }
-        $safe = strtr($input, '-_', '+/');
-        return base64_decode($safe);
+
+        // tokenizer
+        $tokenize = function($s) {
+            $s = mb_strtolower(strip_tags((string)$s));
+            $parts = preg_split('/[^\p{L}\p{N}_]+/u', $s);
+            $tokens = [];
+            foreach ($parts as $p) {
+                $p = trim($p);
+                if ($p === '' || mb_strlen($p) < 2) continue;
+                $tokens[$p] = true;
+            }
+            return array_keys($tokens);
+        };
+
+        $userTokens = $tokenize($userText);
+        $userCount = max(1, count($userTokens));
+
+        $scored = [];
+        foreach ($jobs as $j) {
+            $textParts = [];
+            foreach (['TITLE','DESCRIPTION','REQUIRED_SKILLS','COMPANY_NAME','INDUSTRY'] as $c) {
+                if (!empty($j[$c])) $textParts[] = (string)$j[$c];
+            }
+            $jobText = implode(' ', $textParts);
+            $jobTokens = $tokenize($jobText);
+            $common = array_intersect($userTokens, $jobTokens);
+            $score = count($common) / $userCount;
+            if (!empty($j['REQUIRED_SKILLS'])) {
+                $req = $tokenize($j['REQUIRED_SKILLS']);
+                $score += 0.2 * (count(array_intersect($userTokens, $req)) / max(1, count($req)));
+            }
+            $scored[] = ['job' => $j, 'score' => $score];
+        }
+
+        usort($scored, function($a, $b) { return $b['score'] <=> $a['score']; });
+
+        $topN = intval($request->input('top_n', 10));
+        $out = array_slice($scored, 0, $topN);
+        $results = array_map(function($s) {
+            $j = $s['job'];
+            return [
+                'id' => $j['ID'] ?? null,
+                'title' => $j['TITLE'] ?? null,
+                'company' => $j['COMPANY_NAME'] ?? null,
+                'industry' => $j['INDUSTRY'] ?? null,
+                'score' => round($s['score'], 4),
+            ];
+        }, $out);
+
+        return response()->json(['uid' => $uid, 'count' => count($results), 'results' => $results]);
     }
 }

@@ -1147,6 +1147,86 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     <p id="btn-generate-status" class="text-xs text-gray-600 mt-2"></p>
                     <div id="client-job-list" class="mt-6 space-y-4"></div>
                 </div>
+
+                <!-- Auto-fetch Oracle-backed recommendations (debug route uid=7) -->
+                <script>
+                    (function() {
+                        try {
+                            // Only run once per page session
+                            const key = 'auto_oracle_recs_triggered_' + window.location.pathname;
+                            if (sessionStorage.getItem(key)) return;
+                            sessionStorage.setItem(key, '1');
+
+                            // Simple guard: only attempt when server auth is assumed or in local env
+                            if (!window.__SERVER_AUTH && !(location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+                                // still allow manual generation via button
+                                return;
+                            }
+
+                            const listEl = document.getElementById('client-job-list');
+                            const statusEl = document.getElementById('btn-generate-status');
+                            if (statusEl) statusEl.textContent = 'Auto-generating recommendations...';
+
+                            fetch('{{ url('/debug/oracle-recs') }}?uid=7')
+                                .then(async r => {
+                                    if (!r.ok) {
+                                        const txt = await r.text().catch(() => null);
+                                        throw new Error('HTTP ' + r.status + ' ' + r.statusText + ' ' + (txt || ''));
+                                    }
+                                    return r.json();
+                                })
+                                .then(data => {
+                                    // Normalize to the recommendations array. Controller returns {uid,count,results}
+                                    let recs = [];
+                                    if (Array.isArray(data)) recs = data;
+                                    else if (data && Array.isArray(data.results)) recs = data.results;
+                                    else if (data && Array.isArray(data.data)) recs = data.data;
+                                    else {
+                                        // fallback: find first array-valued property
+                                        for (const k of Object.keys(data || {})) {
+                                            if (Array.isArray(data[k])) { recs = data[k]; break; }
+                                        }
+                                    }
+
+                                    if (!recs || recs.length === 0) {
+                                        if (statusEl) statusEl.textContent = 'No recommendations returned.';
+                                        console.debug('oracle recs: normalized empty', data);
+                                        return;
+                                    }
+                                    if (statusEl) statusEl.textContent = 'Recommendations ready — rendering.';
+                                    const esc = s => s === null || s === undefined ? '' : String(s)
+                                        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\"/g, '&quot;');
+                                    let out = '';
+                                    recs.slice(0, 50).forEach((r, idx) => {
+                                        const jid = String(r.id ?? r.job_id ?? ('p' + idx));
+                                        const title = esc(r.title || r.Title || r.job_title || (r.job_description || '').substring(0, 80) || 'Untitled Job');
+                                        const company = esc(r.company || r.Company || r.company_name || '');
+                                        const desc = esc(r.description || r.job_description || '');
+                                        let raw = Number(r.score ?? r.content_score ?? r.match_score ?? 0) || 0;
+                                        let pct = 0;
+                                        if (raw > 0 && raw <= 1.01) pct = Math.round(raw * 100);
+                                        else if (raw > 0 && raw <= 5.0) pct = Math.round(raw * 20);
+                                        else pct = Math.round(raw);
+                                        out += `
+                                            <div id="job_${jid}" class="bg-white shadow-md rounded-xl p-6">
+                                                <h3 class="text-lg font-bold">${title}</h3>
+                                                ${ company ? `<p class="text-sm text-gray-700">${company}</p>` : '' }
+                                                <p class="text-sm text-gray-600 mt-2">${desc}</p>
+                                                <div class="mt-3"><span class="bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${pct}% Match</span></div>
+                                            </div>
+                                        `;
+                                    });
+                                    if (listEl) listEl.innerHTML = out;
+                                })
+                                .catch(err => {
+                                    console.debug('oracle recs fetch failed', err);
+                                    if (statusEl) statusEl.textContent = 'Auto-generation failed: ' + String(err);
+                                });
+                        } catch (e) {
+                            console.debug('auto oracle recs script error', e);
+                        }
+                    })();
+                </script>
             </div>
         </div>
         <!-- Ensure user is signed-in before taking actions like Apply or Save -->
@@ -1154,17 +1234,34 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         <script>
             // Development convenience: disable login requirement so auto-trigger runs for all visitors.
             // WARNING: This treats every visitor as authenticated for recommendation generation on this page.
-            // Revert to the @auth directive for production.
+            // Revert to the @@auth directive for production.
             window.__SERVER_AUTH = true;
+        </script>
+        <script>
+            // Firebase removed: provide a minimal stub so legacy client code still runs without errors.
+            // The project now uses the Oracle-backed server endpoints for recommendation generation.
+            async function importFirebaseModuleStub() {
+                return {
+                    signInWithServerToken: async function() { /* no-op */ },
+                    isSignedIn: async function(timeout) { return !!window.__SERVER_AUTH; },
+                    debugAuthLogging: function() { return function() {}; },
+                    ensureInit: async function() { /* no-op */ },
+                    getUserProfile: async function() { return null; }
+                };
+            }
         </script>
         <script type="module">
             (async function() {
                 try {
-                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                    const logger = await import("{{ asset('js/client-logger.js') }}");
+                    // Firebase removed: use stub instead of importing the old module.
+                    const mod = await importFirebaseModuleStub();
+                    // client-logger is optional; avoid importing to keep page lightweight in Oracle-only mode
+                    const logger = {
+                        sendClientLog: function() {}
+                    };
                     // Attempt server-backed sign-in (makes Firebase ID token available to the page)
                     try {
-                        await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                        <!-- firebase.token removed -->
                     } catch (e) {
                         console.debug('job-matches signInWithServerToken failed', e);
                         try {
@@ -1484,33 +1581,24 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             }
         </script>
         <script type="module">
-            // Load the lightweight per-user rescoring helper that uses the signed-in Firebase profile
-            try {
-                await import("{{ asset('js/job-rescore-client.js') }}");
-            } catch (e) {
-                console.debug('failed to load job-rescore-client', e);
-            }
+            // Rescoring client removed: server will provide rescored recommendations from Oracle-backed algorithm.
+            // No-op here to keep old code paths safe.
+            try { await Promise.resolve(); } catch (e) {}
         </script>
         <script type="module">
             (async function() {
                 try {
-                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                    console.debug('Auth guard: waiting for sign-in resolution (7s)');
+                    // Firebase removed: use stub instead of importing the old module.
+                    const mod = await importFirebaseModuleStub();
+                    console.debug('Auth guard: (oracle mode) assuming server session or anonymous');
                     try {
-                        await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                        <!-- firebase.token removed -->
                     } catch (e) {
                         console.debug('signInWithServerToken failed', e);
                     }
                     const signed = await mod.isSignedIn(7000);
                     console.debug('Auth guard: isSignedIn ->', signed);
-                    try {
-                        if (mod && typeof mod.debugAuthLogging === 'function') {
-                            // start auth state logging (returns unsubscribe function)
-                            window.__unsubAuthLog = mod.debugAuthLogging();
-                        }
-                    } catch (e) {
-                        console.warn('debugAuthLogging invocation failed', e);
-                    }
+                    // debugAuthLogging not available in Oracle-only mode
                     if (!signed) {
                         // if server has a session, assume the user is already authenticated via backend and skip client redirect
                         if (window.__SERVER_AUTH) {
@@ -1546,22 +1634,20 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             // Re-score job cards using the user's Firestore profile (if available)
             (async function() {
                 try {
-                    const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                    await mod.ensureInit?.();
-                    // Ensure server-backed sign-in so getUserProfile can access Firestore document
+                    // Firebase removed: do not attempt to read client Firestore profile.
+                    // Use server-side Oracle-backed recommendations. If you have a server session,
+                    // the server will personalize by session user; otherwise recommendations may be global.
                     let profile = null;
                     try {
-                        try {
-                            await mod.signInWithServerToken("{{ route('firebase.token') }}");
-                        } catch (e) {
-                            console.debug('signInWithServerToken (rescore) failed', e);
-                        }
-                        profile = await mod.getUserProfile();
+                        // in Oracle mode we do not fetch a client profile
+                        profile = null;
                     } catch (e) {
-                        console.debug('no profile from firebase module', e);
+                        profile = null;
                     }
 
-                    if (!profile) return;
+                    if (!profile) {
+                        // continue: server calls below will send empty profile and rely on server session
+                    }
                     // Normalize profile fields
                     const jobPrefs = [];
                     try {
@@ -1957,9 +2043,8 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                             // attempt to read client profile if available
                             let profile = null;
                             try {
-                                const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                                if (mod && typeof mod.getUserProfile === 'function') profile = await mod
-                                    .getUserProfile();
+                                // Firebase removed: do not import or query client profile; rely on server instead
+                                profile = null;
                             } catch (e) {
                                 /* ignore */
                             }

@@ -147,7 +147,7 @@
     // Guard + init for review2: require signed-in user
     async function guardAndInit() {
         try {
-          try { await signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { console.debug('signInWithServerToken failed', e); }
+          try { /* firebase.token removed */ } catch(e) { console.debug('signInWithServerToken failed', e); }
           const mod = await import("{{ asset('js/job-application-firebase.js') }}");
           console.debug('Auth guard: waiting for sign-in resolution (7s)');
           const signed = await mod.isSignedIn(7000);
