@@ -262,12 +262,12 @@
       class="absolute right-0 mt-2 w-44 bg-white text-gray-700 border border-gray-200 rounded-md shadow-lg hidden">
       <a href="#"
           class="flex items-center px-4 py-2 hover:bg-gray-100 rounded-t-md transition">
-          <i class="ri-user-line mr-2 text-sm text-gray-600"></i> Admin Profile
+          <i class="ri-user-line mr-2 text-sm text-gray-600"></i> Company Profile
       </a>
-      <a href="#"
-          class="flex items-center px-4 py-2 hover:bg-gray-100 rounded-b-md transition">
-          <i class="ri-user-add-line mr-2 text-sm text-gray-600"></i> Admin List
-      </a>
+    <a href="settings.php"
+   class="flex items-center px-4 py-2 hover:bg-gray-100 rounded-b-md transition text-gray-700">
+  <i class="ri-settings-3-line mr-2 text-gray-600 text-base"></i> Settings
+</a>
   </div>
 </div>
 
