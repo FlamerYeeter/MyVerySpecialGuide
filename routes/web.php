@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Http;
 use App\Models\User;
 
 Route::get('/', function () {
-    return view('home');
-})->name('home');
+    return view('admin-dashboard');
+})->name('admin-dashboard');
 
 // Recommender debug route: optional userId. Visit /recommender/debug or /recommender/debug/{userId}
 Route::get('/recommender/debug/{userId?}', [RecommenderDebugController::class, 'debug'])->name('recommender.debug');
@@ -46,7 +46,7 @@ Route::post('/client-log', function (\Illuminate\Http\Request $req) {
             default: logger()->info($message, $meta); break;
         }
     } catch (\Throwable $e) {
-            return view('home');
+            return view('admin-dashboard');
     }
 
         // Recommender debug route (calls local Python recommender service)
@@ -671,10 +671,16 @@ Route::post('/login', function (Request $request) {
         $oracleResp = $oracleController->loginGuardian($request);
         if ($oracleResp instanceof \Illuminate\Http\JsonResponse) {
             $odata = $oracleResp->getData(true);
-            if (!empty($odata['ok'])) {
-                logger()->info('Login: Oracle guardian login succeeded', ['email' => $credentials['email'] ?? null]);
-                // redirect to intended target or job matches
-                return redirect()->route('job.matches');
+            if (!empty($odata['ok'])) { 
+                logger()->info('Login: Oracle guardian login succeeded', ['email' => $credentials['email'] ?? null]); 
+                return redirect()->route('job.matches'); 
+            } 
+        }
+    } catch (\Throwable $__e) {
+        // Log and continue to Firebase/local fallbacks
+        logger()->warning('Oracle login attempt failed: ' . $__e->getMessage());
+    }
+
     // If local auth failed, and Firebase API key is present, try Firebase REST auth (email/password)
     $firebaseKey = env('FIREBASE_API_KEY');
     // current host used to validate redirect targets
@@ -780,9 +786,9 @@ Route::post('/login', function (Request $request) {
             } else {
                 logger()->warning('Firebase login failed: ' . $resp->body());
             }
+        } catch (\Throwable $__e) {
+            logger()->warning('Firebase login attempt failed: ' . $__e->getMessage());
         }
-    } catch (\Throwable $__e) {
-        logger()->warning('Oracle login attempt failed: ' . $__e->getMessage());
     }
 
     // Firebase REST login removed - Oracle login is used instead.
