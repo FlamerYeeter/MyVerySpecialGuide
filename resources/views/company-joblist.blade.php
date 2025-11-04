@@ -294,54 +294,81 @@
                 
             </div>
 
-             <div class="max-w-6xl mx-auto px-4 py-10">
-        <!-- Header -->
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-            <h1 class="text-2xl font-bold">Job List: <span class="text-blue-600">2</span></h1>
-            <a href="{{ route('company-dasboard') }}"
-               class="mt-3 sm:mt-0 bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition">
-               + Post a Job
-            </a>
-        </div>
-
-        <!-- Table Wrapper (responsive scroll on small screens) -->
-        <div class="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
-                <thead class="bg-gray-50">
-                    <tr class="text-left font-semibold text-gray-700">
-                        <th class="px-4 py-3">Company Name</th>
-                        <th class="px-4 py-3">Industry</th>
-                        <th class="px-4 py-3">Job Post Date</th>
-                        <th class="px-4 py-3">Job Role</th>
-                        <th class="px-4 py-3 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-100">
-                    <!-- Example Job Row -->
-                    <tr class="bg-red-50 hover:bg-red-100 transition">
-                        <td class="px-4 py-3 flex items-center gap-3 whitespace-nowrap">
-                            <img src="image/profile1.jpg" alt="Company Logo" class="w-10 h-10 rounded-full object-cover">
-                            <span class="font-medium">Shakey's Company</span>
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap">
-                            <span class="px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">
-                                Restaurant
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 whitespace-nowrap">Oct 28, 2025</td>
-                        <td class="px-4 py-3 whitespace-nowrap">Service Crew</td>
-                        <td class="px-4 py-3 text-right whitespace-nowrap">
-                            <a href="{{ route('viewjob') }}"
-                               class="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-md hover:bg-indigo-200 transition font-medium">
-                                View
-                            </a>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+            <div class="max-w-6xl mx-auto px-4 py-10">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+      <h1 class="text-2xl font-bold">Job List: <span class="text-blue-600">2</span></h1>
+      <a href="{{ route('postjob') }}"
+         class="mt-3 sm:mt-0 bg-blue-700 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-800 transition">
+         + Post a Job
+      </a>
     </div>
+
+    <!-- Table Container -->
+    <div class="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
+      <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-50">
+          <tr class="text-left font-semibold text-gray-700">
+            <th class="px-4 py-3">Company Name</th>
+            <th class="px-4 py-3">Industry</th>
+            <th class="px-4 py-3">Job Post Date</th>
+            <th class="px-4 py-3">Job Role</th>
+            <th class="px-4 py-3 text-right">Action</th>
+          </tr>
+        </thead>
+
+        <tbody class="divide-y divide-gray-100">
+          <!-- Example Row -->
+          <tr class="bg-red-50 hover:bg-red-100 transition">
+            <td class="px-4 py-3 flex items-center gap-3 whitespace-nowrap">
+              <img src="image/company1.jpg" alt="Company Logo" class="w-10 h-10 rounded-full object-cover">
+              <span class="font-medium">Shakey's Company</span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <span class="px-3 py-1 text-xs font-medium bg-yellow-100 text-yellow-700 rounded-full">
+                Restaurant
+              </span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">Oct 28, 2025</td>
+            <td class="px-4 py-3 whitespace-nowrap">Service Crew</td>
+            <td class="px-4 py-3 text-right whitespace-nowrap">
+              <a href="{{ route('viewjob') }}"
+                 class="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-md hover:bg-indigo-200 transition font-medium">
+                 View
+              </a>
+            </td>
+          </tr>
+
+          <!-- Add more rows dynamically -->
+          <?php /*
+          @foreach($jobs as $job)
+          <tr class="hover:bg-gray-50">
+            <td class="px-4 py-3 flex items-center gap-3">
+              <img src="{{ $job->company_logo }}" alt="Logo" class="w-10 h-10 rounded-full object-cover">
+              <span class="font-medium">{{ $job->company_name }}</span>
+            </td>
+            <td class="px-4 py-3">
+              <span class="px-3 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">
+                {{ $job->industry }}
+              </span>
+            </td>
+            <td class="px-4 py-3">{{ $job->date_posted }}</td>
+            <td class="px-4 py-3">{{ $job->role }}</td>
+            <td class="px-4 py-3 text-right">
+              <a href="{{ route('viewjob', $job->id) }}" 
+                 class="bg-indigo-100 text-indigo-700 px-4 py-1.5 rounded-md hover:bg-indigo-200 transition font-medium">
+                 View
+              </a>
+            </td>
+          </tr>
+          @endforeach
+          */ ?>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
 </body>
 </html>
 
+       
