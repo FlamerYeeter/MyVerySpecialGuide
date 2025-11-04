@@ -592,18 +592,7 @@ Route::post('/login', function (Request $request) {
                                 Auth::login($user);
                                 $request->session()->regenerate();
                                 logger()->info('Login: authenticated via Oracle USER_GUARDIAN', ['email' => $email]);
-                                // Respect any requested redirect (validate host) or fall back to navigation-buttons
-                                try {
-                                    if (!empty($redirect)) {
-                                        $host = parse_url($redirect, PHP_URL_HOST);
-                                        $currentHost = request()->getHost();
-                                        if ($host === null || $host === $currentHost) {
-                                            return redirect()->to($redirect);
-                                        }
-                                    }
-                                } catch (\Throwable $__e) {
-                                    // ignore and fall back
-                                }
+                                // Emergency behavior: always land on navigation-buttons after Oracle auth
                                 return redirect()->route('navigation_buttons');
                             } catch (\Throwable $__e) {
                                 logger()->warning('Oracle login: failed to create/login local user: ' . $__e->getMessage());
@@ -781,6 +770,28 @@ Route::post('/login', function (Request $request) {
             }
         } catch (\Throwable $e) {
             logger()->error('Firebase auth error: ' . $e->getMessage());
+        }
+    }
+
+    // Emergency local fallback: when running in local environment, allow quick login
+    // by creating or finding a local user and redirecting to navigation-buttons.
+    if (app()->environment('local') && !empty($credentials['email'])) {
+        try {
+            $email = (string) $credentials['email'];
+            $user = User::where('email', $email)->first();
+            if (!$user) {
+                $user = User::create([
+                    'name' => explode('@', $email)[0],
+                    'email' => $email,
+                    'password' => bcrypt(bin2hex(random_bytes(8))),
+                ]);
+            }
+            Auth::login($user);
+            $request->session()->regenerate();
+            logger()->warning('Emergency local fallback login used for ' . $email);
+            return redirect()->route('navigation_buttons');
+        } catch (\Throwable $e) {
+            logger()->warning('Emergency local fallback failed: ' . $e->getMessage());
         }
     }
 
@@ -1448,3 +1459,44 @@ Route::get('/__key_check', function () {
     ]);
     return response('key-checked');
 });
+
+// Dev-only: quick Oracle lookup/login test (LOCAL environment only)
+// POST JSON { email, password } -> { ok, found, match, email }
+Route::post('/__oracle-test-login', function (Request $request) {
+    if (!app()->environment('local')) {
+        return response()->json(['ok' => false, 'error' => 'forbidden - local only'], 403);
+    }
+    $email = strtolower((string) ($request->input('email') ?? ''));
+    $password = $request->input('password');
+    if ($email === '') return response()->json(['ok' => false, 'error' => 'missing email'], 400);
+
+    $oracleFile = public_path('db/oracledb.php');
+    if (!file_exists($oracleFile)) {
+        return response()->json(['ok' => false, 'error' => 'oracledb.php not found'], 500);
+    }
+    require_once $oracleFile;
+    if (!function_exists('getOracleConnection')) {
+        return response()->json(['ok' => false, 'error' => 'getOracleConnection not available'], 500);
+    }
+
+    try {
+        $conn = getOracleConnection();
+        $sql = 'SELECT EMAIL, PASSWORD FROM USER_GUARDIAN WHERE LOWER(EMAIL) = :email';
+        $stid = oci_parse($conn, $sql);
+        oci_bind_by_name($stid, ':email', $email);
+        oci_execute($stid);
+        $row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+        if (!$row) {
+            return response()->json(['ok' => true, 'found' => false, 'match' => false]);
+        }
+        $stored = $row['PASSWORD'] ?? ($row['password'] ?? null);
+        $match = false;
+        if ($stored !== null && $password !== null) {
+            $match = strval($password) === strval($stored);
+        }
+        return response()->json(['ok' => true, 'found' => true, 'match' => $match, 'email' => ($row['EMAIL'] ?? null)]);
+    } catch (\Throwable $e) {
+        logger()->warning('oracle-test-login failed: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
+    }
+})->name('debug.oracle_test');
