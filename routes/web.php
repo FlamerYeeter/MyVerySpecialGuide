@@ -2,8 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RecommenderDebugController;
+// Oracle registration server-backed endpoints will be added below (draft/submit handlers)
 use App\Http\Controllers\SavedJobController;
-use App\Http\Controllers\FirebaseTokenController;
 use App\Http\Controllers\JobApplicationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -52,6 +52,8 @@ Route::post('/client-log', function (\Illuminate\Http\Request $req) {
         // Recommender debug route (calls local Python recommender service)
     return response()->json(['ok' => true]);
 });
+// Quick debug route to call the Oracle-backed recommender (no login required).
+Route::get('/debug/oracle-recs', [\App\Http\Controllers\RecommendationController::class, 'oracleRecommendations']);
 
 // Navigation targets used by navigation-buttons view
 Route::get('/why-this-job-1', function (\Illuminate\Http\Request $request) {
@@ -554,8 +556,60 @@ Route::post('/logout', function (Request $request) {
 // Handle login POST - attempt authentication and redirect to job matches
 Route::post('/login', function (Request $request) {
     $credentials = $request->only(['email', 'password']);
-    // optional redirect (full URL) to return to after successful login
+    // capture optional redirect early so Oracle branch can respect it
     $redirect = $request->input('redirect');
+    // Emergency: try Oracle DB (public/db/oracledb.php) for guardian accounts.
+    // Do not edit public/db/oracledb.php — we require it and call getOracleConnection().
+    try {
+        $oracleFile = public_path('db/oracledb.php');
+        if (file_exists($oracleFile)) {
+            // load the helper that provides getOracleConnection()
+            require_once $oracleFile;
+            if (function_exists('getOracleConnection')) {
+                try {
+                    $conn = getOracleConnection();
+                    // lookup guardian by email (case-insensitive) and fetch stored password
+                    $sql = 'SELECT EMAIL, PASSWORD, FIRST_NAME, LAST_NAME FROM USER_GUARDIAN WHERE LOWER(EMAIL) = :email';
+                    $stid = oci_parse($conn, $sql);
+                    $emailLower = strtolower($credentials['email'] ?? '');
+                    oci_bind_by_name($stid, ':email', $emailLower);
+                    oci_execute($stid);
+                    $row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+                    if ($row) {
+                        $stored = isset($row['PASSWORD']) ? $row['PASSWORD'] : (isset($row['password']) ? $row['password'] : null);
+                        // direct comparison (emergency): compare plaintext password from form to stored value
+                        if (!empty($stored) && isset($credentials['password']) && strval($credentials['password']) === strval($stored)) {
+                            // ensure a local User exists and log them in
+                            $email = $row['EMAIL'] ?? $credentials['email'];
+                            try {
+                                $user = User::where('email', $email)->first();
+                                if (!$user) {
+                                    $user = User::create([
+                                        'name' => trim(($row['FIRST_NAME'] ?? '') . ' ' . ($row['LAST_NAME'] ?? '')) ?: explode('@', $email)[0],
+                                        'email' => $email,
+                                        // random local password; authentication will rely on Oracle for this emergency flow
+                                        'password' => bcrypt(bin2hex(random_bytes(8))),
+                                    ]);
+                                }
+                                Auth::login($user);
+                                $request->session()->regenerate();
+                                logger()->info('Login: authenticated via Oracle USER_GUARDIAN', ['email' => $email]);
+                                // Emergency behavior: always land on navigation-buttons after Oracle auth
+                                return redirect()->route('navigation_buttons');
+                            } catch (\Throwable $__e) {
+                                logger()->warning('Oracle login: failed to create/login local user: ' . $__e->getMessage());
+                            }
+                        }
+                    }
+                } catch (\Throwable $__e) {
+                    logger()->warning('Oracle lookup failed: ' . $__e->getMessage());
+                }
+            }
+        }
+    } catch (\Throwable $__e) {
+        logger()->warning('Oracle auth integration failed: ' . $__e->getMessage());
+    }
+    // optional redirect (full URL) to return to after successful login
     // Use Auth facade if available
     try {
         if (Auth::attempt($credentials)) {
@@ -604,13 +658,29 @@ Route::post('/login', function (Request $request) {
                 // ignore and fall back to job matches
             }
 
-            return redirect()->route('job.matches');
+            return redirect()->route('navigation_buttons');
         }
     } catch (\Throwable $e) {
         // If Auth is not configured, just redirect for now (placeholder)
         // Log the exception to laravel log
         logger()->error('Login error: ' . $e->getMessage());
     }
+    // First try Oracle-backed auth (if configured) before falling back to Firebase.
+    try {
+        $oracleController = app(\App\Http\Controllers\OracleAuthController::class);
+        $oracleResp = $oracleController->loginGuardian($request);
+        if ($oracleResp instanceof \Illuminate\Http\JsonResponse) {
+            $odata = $oracleResp->getData(true);
+            if (!empty($odata['ok'])) { 
+                logger()->info('Login: Oracle guardian login succeeded', ['email' => $credentials['email'] ?? null]); 
+                return redirect()->route('job.matches'); 
+            } 
+        }
+    } catch (\Throwable $__e) {
+        // Log and continue to Firebase/local fallbacks
+        logger()->warning('Oracle login attempt failed: ' . $__e->getMessage());
+    }
+
     // If local auth failed, and Firebase API key is present, try Firebase REST auth (email/password)
     $firebaseKey = env('FIREBASE_API_KEY');
     // current host used to validate redirect targets
@@ -712,12 +782,35 @@ Route::post('/login', function (Request $request) {
                     // ignore and fall back to job matches
                 }
 
-                return redirect()->route('job.matches');
+                return redirect()->route('navigation_buttons');
             } else {
                 logger()->warning('Firebase login failed: ' . $resp->body());
             }
+        } catch (\Throwable $__e) {
+            logger()->warning('Firebase login attempt failed: ' . $__e->getMessage());
+        }
+    }
+
+    // Firebase REST login removed - Oracle login is used instead.
+    // Emergency local fallback: when running in local environment, allow quick login
+    // by creating or finding a local user and redirecting to navigation-buttons.
+    if (app()->environment('local') && !empty($credentials['email'])) {
+        try {
+            $email = (string) $credentials['email'];
+            $user = User::where('email', $email)->first();
+            if (!$user) {
+                $user = User::create([
+                    'name' => explode('@', $email)[0],
+                    'email' => $email,
+                    'password' => bcrypt(bin2hex(random_bytes(8))),
+                ]);
+            }
+            Auth::login($user);
+            $request->session()->regenerate();
+            logger()->warning('Emergency local fallback login used for ' . $email);
+            return redirect()->route('navigation_buttons');
         } catch (\Throwable $e) {
-            logger()->error('Firebase auth error: ' . $e->getMessage());
+            logger()->warning('Emergency local fallback failed: ' . $e->getMessage());
         }
     }
 
@@ -727,93 +820,9 @@ Route::post('/login', function (Request $request) {
 // Client-side Firebase sign-in helper: accepts a Firebase ID token (idToken) and
 // verifies it with the Identity Toolkit API. If valid, create or find a local
 // user, log them in, persist firebase_uid to session and the users table.
-Route::post('/session/firebase-signin', function (Request $request) {
-    $idToken = $request->json('idToken') ?: $request->input('idToken');
-    if (empty($idToken)) {
-        return response()->json(['ok' => false, 'error' => 'missing_idToken'], 400);
-    }
-    $apiKey = env('FIREBASE_API_KEY');
-    if (empty($apiKey)) {
-        logger()->warning('firebase-signin: FIREBASE_API_KEY missing');
-        return response()->json(['ok' => false, 'error' => 'server_misconfigured'], 500);
-    }
+// /session/firebase-signin removed: registration and sign-in no longer rely on Firebase.
 
-    try {
-        $resp = Http::post("https://identitytoolkit.googleapis.com/v1/accounts:lookup?key={$apiKey}", [
-            'idToken' => $idToken,
-        ]);
-        if (!$resp->successful()) {
-            logger()->warning('firebase-signin: accounts:lookup failed', ['status' => $resp->status(), 'body' => $resp->body()]);
-            return response()->json(['ok' => false, 'error' => 'invalid_idToken'], 401);
-        }
-        $data = $resp->json();
-        if (empty($data['users']) || !is_array($data['users'])) {
-            return response()->json(['ok' => false, 'error' => 'invalid_idToken_no_user'], 401);
-        }
-        $u = $data['users'][0];
-        $firebaseUid = $u['localId'] ?? null;
-        $email = $u['email'] ?? null;
-
-        if (empty($firebaseUid) || empty($email)) {
-            return response()->json(['ok' => false, 'error' => 'invalid_user_payload'], 400);
-        }
-
-        // find or create local user by email
-        $user = User::where('email', $email)->first();
-        if (!$user) {
-            $user = User::create([
-                'name' => explode('@', $email)[0],
-                'email' => $email,
-                'password' => bcrypt(bin2hex(random_bytes(8))),
-            ]);
-        }
-
-        // log the user in and persist firebase UID
-        Auth::login($user);
-        session(['firebase_uid' => $firebaseUid]);
-        try {
-            if (empty($user->firebase_uid) || $user->firebase_uid !== $firebaseUid) {
-                $user->firebase_uid = $firebaseUid;
-                $user->save();
-                logger()->info('firebase-signin: persisted firebase_uid to user', ['user_id' => $user->id, 'hint' => substr($firebaseUid, 0, 6) . '...']);
-            }
-        } catch (\Throwable $e) {
-            logger()->warning('firebase-signin: failed to persist firebase_uid: ' . $e->getMessage());
-        }
-
-        // Check Firestore admin assignments and grant local admin flags if present
-        try {
-            $fsAdmin = app(\App\Services\FirestoreAdminService::class);
-            if (!empty($firebaseUid) && $fsAdmin->isAdmin($firebaseUid)) {
-                // Simplified: only set the role locally. Approval flags are not required.
-                $user->role = 'admin';
-                $user->save();
-                logger()->info('firebase-signin: granted admin role from Firestore assignment', ['user_id' => $user->id, 'uid_hint' => substr($firebaseUid, 0, 6) . '...']);
-            }
-        } catch (\Throwable $__fs_e) {
-            logger()->warning('firebase-signin: Firestore admin check failed: ' . $__fs_e->getMessage());
-        }
-
-        $request->session()->regenerate();
-        return response()->json(['ok' => true, 'firebase_uid' => $firebaseUid]);
-    } catch (\Throwable $e) {
-        logger()->error('firebase-signin: exception: ' . $e->getMessage());
-        return response()->json(['ok' => false, 'error' => 'exception'], 500);
-    }
-})->name('session.firebase_signin');
-
-// Debug helper (development only): return current session and user firebase_uid
-// Use this to verify the client successfully synced the firebase UID into the session.
-Route::get('/debug/firebase-session', function (Request $request) {
-    try {
-        $sess = session('firebase_uid', null);
-        $user = Auth::user();
-        $modelUid = $user && !empty($user->firebase_uid) ? $user->firebase_uid : null;
-        return response()->json(['ok' => true, 'session_firebase_uid' => $sess, 'user_firebase_uid' => $modelUid]);
-    } catch (\Throwable $e) {
-        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
-    }
-})->name('debug.firebase_session');
+// Debug helper removed: we no longer expose a Firebase-session debug endpoint.
 
 // Development helper: return the server-resolved recommendation cache path and a small summary
 // Usage: while signed-in (or in local env) visit /debug/reco-cache to see which per-user cache
@@ -1195,8 +1204,7 @@ use App\Http\Controllers\RecommendationController;
 Route::post('/api/recommendations/user', [RecommendationController::class, 'userRecommendations']);
 Route::post('/api/recommendations/all', [RecommendationController::class, 'generateAll']);
 
-// Endpoint to issue Firebase custom token for current Laravel user
-Route::get('/firebase-token', [FirebaseTokenController::class, 'token'])->middleware('auth')->name('firebase.token');
+// (Firebase token endpoint removed - registration/login now Oracle-backed)
 
 Route::get('/my-job-applications', [SavedJobController::class, 'index'])->name('my.job.applications');
 Route::post('/my-job-applications', [SavedJobController::class, 'store'])->name('my.job.applications');
@@ -1218,96 +1226,145 @@ Route::get('/registerfinalstep', function () {
     return view('ds_register_finalstep');
 })->name('registerfinalstep');
 
+Route::post('/register/draft', function (\Illuminate\Http\Request $request) {
+    try {
+        $payload = $request->json()->all() ?: $request->all();
+        if (!is_array($payload)) $payload = (array)$payload;
+        $step = isset($payload['step']) ? (string)$payload['step'] : null;
+        $data = $payload['data'] ?? $payload;
+        if (!is_array($data)) $data = (array)$data;
+
+        $draft = session('register_draft', []);
+        if ($step) {
+            $draft[$step] = array_merge(is_array($draft[$step] ?? []) ? $draft[$step] : [], $data);
+        } else {
+            $draft = array_merge($draft, $data);
+        }
+        session(['register_draft' => $draft]);
+        return response()->json(['ok' => true, 'draft_keys' => array_keys($draft)]);
+    } catch (\Throwable $e) {
+        logger()->warning('register.draft failed: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
+    }
+});
+
+// Server-backed registration draft endpoints (store per-step data in session)
+Route::post('/register/draft', function (\Illuminate\Http\Request $request) {
+    try {
+        $payload = $request->json()->all() ?: $request->all();
+        if (!is_array($payload)) $payload = (array)$payload;
+        $step = isset($payload['step']) ? (string)$payload['step'] : null;
+        $data = $payload['data'] ?? $payload;
+        if (!is_array($data)) $data = (array)$data;
+
+        $draft = session('register_draft', []);
+        if ($step) {
+            $draft[$step] = array_merge(is_array($draft[$step] ?? []) ? $draft[$step] : [], $data);
+        } else {
+            $draft = array_merge($draft, $data);
+        }
+        session(['register_draft' => $draft]);
+        return response()->json(['ok' => true, 'draft_keys' => array_keys($draft)]);
+    } catch (\Throwable $e) {
+        logger()->warning('register.draft failed: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
+    }
+});
+
+Route::get('/register/draft', function (\Illuminate\Http\Request $request) {
+    try {
+        $draft = session('register_draft', []);
+        return response()->json(['ok' => true, 'draft' => $draft]);
+    } catch (\Throwable $e) {
+        return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
+    }
+});
+
+// Final submit: aggregate session draft and request payload, then call OracleAuthController::registerGuardian
+Route::post('/register/submit', function (\Illuminate\Http\Request $request) {
+    try {
+        $draft = session('register_draft', []);
+        $payload = $request->json()->all() ?: $request->all();
+        if (!is_array($payload)) $payload = (array)$payload;
+        $merged = array_merge(is_array($draft) ? $draft : [], $payload ?: []);
+
+        $data = [
+            'first_name' => $merged['first_name'] ?? $merged['fname'] ?? ($merged['personalInfo']['first'] ?? null),
+            'last_name' => $merged['last_name'] ?? $merged['lname'] ?? ($merged['personalInfo']['last'] ?? null),
+            'email' => $merged['email'] ?? ($merged['personalInfo']['email'] ?? ($merged['emailFromServer'] ?? null)),
+            'password' => $merged['password'] ?? $merged['pwd'] ?? null,
+            'contact_number' => $merged['contact_number'] ?? $merged['contactNumber'] ?? ($merged['personalInfo']['contact_number'] ?? null),
+            'role' => $merged['role'] ?? 'guardian',
+        ];
+
+        if (empty($data['email'])) {
+            return response()->json(['ok' => false, 'error' => 'email_required'], 400);
+        }
+        if (empty($data['password'])) {
+            $data['password'] = bin2hex(random_bytes(8));
+        }
+
+        $internalReq = new \Illuminate\Http\Request();
+        $internalReq->replace($data);
+        $controller = app(\App\Http\Controllers\OracleAuthController::class);
+        $resp = $controller->registerGuardian($internalReq);
+
+        if ($resp instanceof \Illuminate\Http\JsonResponse) {
+            $j = $resp->getData(true);
+            if (!empty($j['ok'])) {
+                session()->forget('register_draft');
+                try { session()->regenerate(); } catch (\Throwable $__e) {}
+                return response()->json(['ok' => true, 'uid' => $j['uid'] ?? null, 'id' => $j['id'] ?? null]);
+            }
+            return response()->json($j, $resp->getStatusCode());
+        }
+
+        session()->forget('register_draft');
+        try { session()->regenerate(); } catch (\Throwable $__e) {}
+        return response()->json(['ok' => true]);
+    } catch (\Throwable $e) {
+        logger()->error('register.submit exception: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
+    }
+});
+
+
+
+// Oracle-backed auth endpoints (login only).
+use App\Http\Controllers\OracleAuthController;
+// Note: registration via Oracle is handled exclusively through the
+// server-backed /register/submit endpoint which aggregates session draft
+// data and delegates to OracleAuthController::registerGuardian.
+// We intentionally do not expose a separate /oracle/guardian/register POST
+// route to avoid duplicate registration entry points.
+Route::post('/oracle/guardian/login', [OracleAuthController::class, 'loginGuardian']);
+
 // Review pages
 Route::get('/registerreview1', function () {
     return view('ds_register_review-1');
 })->name('registerreview1');
 
 Route::get('/registerreview2', function () {
-    // Try to resolve a firebase UID and inject the Firestore profile into the
-    // view so front-end review fields (education, work, support, workplace)
-    // can be populated reliably without requiring a client-side Firestore read.
-    $uid = request()->query('uid');
-
-    // If not provided via query, attempt to resolve from authenticated user or session
-    if (empty($uid)) {
-        try {
-            if (\Illuminate\Support\Facades\Auth::check()) {
-                $u = \Illuminate\Support\Facades\Auth::user();
-                if (!empty($u->firebase_uid)) $uid = (string)$u->firebase_uid;
-            }
-        } catch (\Throwable $__e) {
-            // ignore
-        }
-    }
-
-    if (empty($uid)) {
-        $sess = session('firebase_uid', null);
-        if ($sess) $uid = (string)$sess;
-    }
-
-    if (!empty($uid)) {
-        try {
-            $controller = app(\App\Http\Controllers\GuardianJobController::class);
-            $profile = $controller->fetchUserProfileFromFirestore($uid);
-            return view('ds_register_review-2', ['serverProfile' => $profile, 'serverProfileUid' => $uid]);
-        } catch (\Throwable $e) {
-            logger()->warning('registerreview2: failed to fetch serverProfile for uid ' . $uid . ': ' . $e->getMessage());
-            // Fall through to render the normal view if fetch fails.
-        }
-    }
-
+    // Render the review page without server-side Firestore/Firebase lookups.
+    // Front-end remains responsible for collecting review data. If the
+    // registration front-end has previously saved draft data in session (via
+    // /register/draft) the client can fetch it using /register/draft.
     return view('ds_register_review-2');
 })->name('registerreview2');
 
 // Server-side helper API used by review pages when client cannot read Firestore directly.
-// Returns the server-side Firestore profile for the currently resolved firebase_uid
-// (from authenticated user or session). Useful for pages that should work without
-// including a ?uid= override for admin debugging.
+// This endpoint no longer calls Firestore or relies on Firebase; instead it
+// returns the current registration draft stored in the session (if any).
 Route::get('/api/server-profile', function (Request $request) {
     try {
-        $resolved = null;
-        try {
-            if (\Illuminate\Support\Facades\Auth::check()) {
-                $u = \Illuminate\Support\Facades\Auth::user();
-                if (!empty($u->firebase_uid)) $resolved = (string)$u->firebase_uid;
-            }
-        } catch (\Throwable $__e) {}
-        if (!$resolved) {
-            $sess = session('firebase_uid', null);
-            if ($sess) $resolved = (string)$sess;
+        // Return the registration draft stored in session. Front-end pages
+        // should call /register/draft to save per-step data and can use this
+        // endpoint to retrieve the draft for pre-filling review forms.
+        $draft = session('register_draft', []);
+        if (empty($draft)) {
+            return response()->json(['ok' => false, 'error' => 'profile_not_available'], 404);
         }
-        // Allow a debug override via ?uid=. For safety:
-        // - always allow in non-production environments (local, staging, etc.)
-        // - in production, allow only for authenticated admin users
-        $providedUid = $request->query('uid');
-        if (!$resolved && $providedUid) {
-            $allowOverride = false;
-            try {
-                // non-production environments are allowed
-                if (!app()->environment('production')) $allowOverride = true;
-            } catch (\Throwable $__e) {}
-            if (!$allowOverride) {
-                try {
-                    if (\Illuminate\Support\Facades\Auth::check()) {
-                        $u = \Illuminate\Support\Facades\Auth::user();
-                        if (!empty($u->role) && $u->role === 'admin') $allowOverride = true;
-                    }
-                } catch (\Throwable $__e) {}
-            }
-            if ($allowOverride) {
-                $resolved = (string)$providedUid;
-                logger()->info('api.server-profile: using uid from query via override', ['env' => app()->environment(), 'uid_hint' => substr($resolved,0,6) . '...']);
-            } else {
-                logger()->warning('api.server-profile: rejected uid override attempt', ['env' => app()->environment()]);
-            }
-        }
-        if (!$resolved) return response()->json(['ok' => false, 'error' => 'no firebase_uid resolved - sign in or provide ?uid in non-production or be admin'], 400);
-
-        $controller = app(\App\Http\Controllers\GuardianJobController::class);
-        $profile = $controller->fetchUserProfileFromFirestore($resolved);
-        if (!is_array($profile)) return response()->json(['ok' => false, 'error' => 'profile_not_found'], 404);
-        return response()->json(['ok' => true, 'profile' => $profile]);
+        return response()->json(['ok' => true, 'profile' => $draft]);
     } catch (\Throwable $e) {
         logger()->warning('api.server-profile failed: ' . $e->getMessage());
         return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
@@ -1385,3 +1442,44 @@ Route::get('/__key_check', function () {
     ]);
     return response('key-checked');
 });
+
+// Dev-only: quick Oracle lookup/login test (LOCAL environment only)
+// POST JSON { email, password } -> { ok, found, match, email }
+Route::post('/__oracle-test-login', function (Request $request) {
+    if (!app()->environment('local')) {
+        return response()->json(['ok' => false, 'error' => 'forbidden - local only'], 403);
+    }
+    $email = strtolower((string) ($request->input('email') ?? ''));
+    $password = $request->input('password');
+    if ($email === '') return response()->json(['ok' => false, 'error' => 'missing email'], 400);
+
+    $oracleFile = public_path('db/oracledb.php');
+    if (!file_exists($oracleFile)) {
+        return response()->json(['ok' => false, 'error' => 'oracledb.php not found'], 500);
+    }
+    require_once $oracleFile;
+    if (!function_exists('getOracleConnection')) {
+        return response()->json(['ok' => false, 'error' => 'getOracleConnection not available'], 500);
+    }
+
+    try {
+        $conn = getOracleConnection();
+        $sql = 'SELECT EMAIL, PASSWORD FROM USER_GUARDIAN WHERE LOWER(EMAIL) = :email';
+        $stid = oci_parse($conn, $sql);
+        oci_bind_by_name($stid, ':email', $email);
+        oci_execute($stid);
+        $row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+        if (!$row) {
+            return response()->json(['ok' => true, 'found' => false, 'match' => false]);
+        }
+        $stored = $row['PASSWORD'] ?? ($row['password'] ?? null);
+        $match = false;
+        if ($stored !== null && $password !== null) {
+            $match = strval($password) === strval($stored);
+        }
+        return response()->json(['ok' => true, 'found' => true, 'match' => $match, 'email' => ($row['EMAIL'] ?? null)]);
+    } catch (\Throwable $e) {
+        logger()->warning('oracle-test-login failed: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
+    }
+})->name('debug.oracle_test');

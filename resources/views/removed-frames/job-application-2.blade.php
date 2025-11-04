@@ -235,7 +235,7 @@ async function autofillEducation() {
 (async function(){
   try {
     // try to sign-in the client using a server-issued custom token (will be no-op if not available)
-    try { await signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { console.debug('signInWithServerToken failed', e); }
+  try { /* firebase.token removed */ } catch(e) { console.debug('signInWithServerToken failed', e); }
     const signed = await isSignedIn(3000);
     if (!signed) {
       if (window.__SERVER_AUTH) {

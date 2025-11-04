@@ -53,74 +53,6 @@
             </div>
         </div>
 
-        <script>
-            document.addEventListener("DOMContentLoaded", () => {
-
-                // --- PROFILE DROPDOWN ---
-                const profileBtn = document.getElementById('profileBtn');
-                const dropdownIcon = document.getElementById('dropdownIcon');
-                const dropdownMenu = document.getElementById('dropdownMenu');
-
-                [profileBtn, dropdownIcon].forEach(el => {
-                    el.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        dropdownMenu.classList.toggle('hidden');
-                    });
-                });
-
-                window.addEventListener('click', () => dropdownMenu.classList.add('hidden'));
-
-                // --- STATUS DROPDOWN (inside table) ---
-                window.toggleDropdown = function(event) {
-                    event.stopPropagation();
-                    const button = event.currentTarget;
-                    const menu = button.nextElementSibling;
-
-                    // Close all other dropdowns first
-                    document.querySelectorAll('.dropdown-menu').forEach(m => {
-                        if (m !== menu) m.classList.add('hidden');
-                    });
-
-                    menu.classList.toggle('hidden');
-                }
-
-                window.selectStatus = function(button, status, colorClass) {
-                    const dropdown = button.closest('.dropdown-menu');
-                    const triggerBtn = dropdown.previousElementSibling;
-                    dropdown.classList.add('hidden');
-
-                    // Update button label
-                    triggerBtn.innerHTML = `${status} <i class="ri-arrow-down-s-line ml-1"></i>`;
-
-                    // Find main status pill in the same row
-                    const row = button.closest('tr');
-                    const statusSpan = row.querySelector('td:nth-child(8) span');
-                    if (statusSpan) {
-                        statusSpan.textContent = status;
-                        statusSpan.className =
-                            `inline-flex items-center justify-center px-3 sm:px-4 py-1.5 text-xs sm:text-sm rounded-full font-medium whitespace-nowrap ${colorClass}`;
-                    }
-                }
-
-                // --- Close dropdowns when clicking outside ---
-                window.addEventListener('click', () => {
-                    document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
-                });
-
-                // --- TOGGLE DETAIL (eye icon) ---
-                document.querySelectorAll('.toggle-detail').forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const row = btn.closest('tr').nextElementSibling;
-                        if (row && row.classList.contains('detail-row')) {
-                            row.classList.toggle('hidden');
-                        }
-                    });
-                });
-            });
-        </script>
-
-
 
         <div class="max-w-7xl mx-auto px-4">
 
@@ -308,69 +240,137 @@
             </div>
 
 
-        <!-- Pagination -->
-        <div class="flex flex-col sm:flex-row justify-between items-center px-6 py-4 border-t border-gray-200">
-            <span class="text-sm text-gray-600 mb-2 sm:mb-0">Showing 0 to 0 of 0 entries</span>
-            <div class="flex items-center space-x-2">
-                <button
-                    class="px-4 py-2 bg-[#057773] text-white text-sm font-medium rounded-md hover:bg-[#036F6A] transition">
-                    Previous
-                </button>
-                <button
-                    class="px-4 py-2 bg-[#057773] text-white text-sm font-medium rounded-md hover:bg-[#036F6A] transition">
-                    Next
-                </button>
+            <!-- Pagination -->
+            <div class="flex flex-col sm:flex-row justify-between items-center px-6 py-4 border-t border-gray-200">
+                <span class="text-sm text-gray-600 mb-2 sm:mb-0">Showing 0 to 0 of 0 entries</span>
+                <div class="flex items-center space-x-2">
+                    <button
+                        class="px-4 py-2 bg-[#057773] text-white text-sm font-medium rounded-md hover:bg-[#036F6A] transition">
+                        Previous
+                    </button>
+                    <button
+                        class="px-4 py-2 bg-[#057773] text-white text-sm font-medium rounded-md hover:bg-[#036F6A] transition">
+                        Next
+                    </button>
+                </div>
+            </div>
+
+            <!-- Overview -->
+            <h3 class="py-4 font-semibold text-gray-700 text-2xl">Overview</h3>
+            <div class="bg-white shadow-md rounded-lg overflow-x-auto mb-6">
+                <table class="min-w-full border-collapse text-sm table-auto w-full">
+                    <thead>
+                        <tr class="bg-[#1E40AF] text-white text-left">
+                            <th class="px-4 py-3">First Name</th>
+                            <th class="px-4 py-3">Last Name</th>
+                            <th class="px-4 py-3">Age</th>
+                            <th class="px-4 py-3">Email Address</th>
+                            <th class="px-4 py-3">Contact Number</th>
+                            <th class="px-4 py-3">Date of Birth</th>
+                            <th class="px-4 py-3">Address</th>
+                            <th class="px-4 py-3 text-center">Status</th>
+                            <th class="px-4 py-3 text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 text-gray-700">
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">-</td>
+                            <td class="px-4 py-3">-</td>
+                            <td class="px-4 py-3">-</td>
+                            <td class="px-4 py-3">-</td>
+                            <td class="px-4 py-3">-</td>
+                            <td class="px-4 py-3">-</td>
+                            <td class="px-4 py-3">-</td>
+                            <td class="px-4 py-3 text-center">
+                                <!-- Status -->
+                                <span
+                                    class="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 text-xs sm:text-sm rounded-full font-medium bg-yellow-100 text-yellow-700 whitespace-nowrap">
+                                    Pending
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-center">
+                                <button
+                                    class="bg-[#057773] hover:bg-[#036F6A] text-white text-xs font-medium px-4 py-2 rounded-md shadow transition duration-200">
+                                    View Assessment
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-
-        <!-- Overview -->
-        <h3 class="py-4 font-semibold text-gray-700 text-2xl">Overview</h3>
-        <div class="bg-white shadow-md rounded-lg overflow-x-auto mb-6">
-            <table class="min-w-full border-collapse text-sm table-auto w-full">
-                <thead>
-                    <tr class="bg-[#1E40AF] text-white text-left">
-                        <th class="px-4 py-3">First Name</th>
-                        <th class="px-4 py-3">Last Name</th>
-                        <th class="px-4 py-3">Age</th>
-                        <th class="px-4 py-3">Email Address</th>
-                        <th class="px-4 py-3">Contact Number</th>
-                        <th class="px-4 py-3">Date of Birth</th>
-                        <th class="px-4 py-3">Address</th>
-                        <th class="px-4 py-3 text-center">Status</th>
-                        <th class="px-4 py-3 text-center">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200 text-gray-700">
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-3">-</td>
-                        <td class="px-4 py-3">-</td>
-                        <td class="px-4 py-3">-</td>
-                        <td class="px-4 py-3">-</td>
-                        <td class="px-4 py-3">-</td>
-                        <td class="px-4 py-3">-</td>
-                        <td class="px-4 py-3">-</td>
-                        <td class="px-4 py-3 text-center">
-                            <!-- Status -->
-                            <span
-                                class="inline-flex items-center justify-center px-3 sm:px-4 py-1.5 text-xs sm:text-sm rounded-full font-medium bg-yellow-100 text-yellow-700 whitespace-nowrap">
-                                Pending
-                            </span>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <button
-                                class="bg-[#057773] hover:bg-[#036F6A] text-white text-xs font-medium px-4 py-2 rounded-md shadow transition duration-200">
-                                View Assessment
-                            </button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
         </div>
-        </div>
-     </div>
 
         </div>
     </main>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+
+            // --- PROFILE DROPDOWN ---
+            const profileBtn = document.getElementById('profileBtn');
+            const dropdownIcon = document.getElementById('dropdownIcon');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+
+            [profileBtn, dropdownIcon].forEach(el => {
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('hidden');
+                });
+            });
+
+            window.addEventListener('click', () => dropdownMenu.classList.add('hidden'));
+
+            // --- STATUS DROPDOWN (inside table) ---
+            window.toggleDropdown = function(event) {
+                event.stopPropagation();
+                const button = event.currentTarget;
+                const menu = button.nextElementSibling;
+
+                // Close all other dropdowns first
+                document.querySelectorAll('.dropdown-menu').forEach(m => {
+                    if (m !== menu) m.classList.add('hidden');
+                });
+
+                menu.classList.toggle('hidden');
+            }
+
+            window.selectStatus = function(button, status, colorClass) {
+                const dropdown = button.closest('.dropdown-menu');
+                const triggerBtn = dropdown.previousElementSibling;
+                dropdown.classList.add('hidden');
+
+                // Update button label
+                triggerBtn.innerHTML = `${status} <i class="ri-arrow-down-s-line ml-1"></i>`;
+
+                // Find main status pill in the same row
+                const row = button.closest('tr');
+                const statusSpan = row.querySelector('td:nth-child(8) span');
+                if (statusSpan) {
+                    statusSpan.textContent = status;
+                    statusSpan.className =
+                        `inline-flex items-center justify-center px-3 sm:px-4 py-1.5 text-xs sm:text-sm rounded-full font-medium whitespace-nowrap ${colorClass}`;
+                }
+            }
+
+            // --- Close dropdowns when clicking outside ---
+            window.addEventListener('click', () => {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => menu.classList.add('hidden'));
+            });
+
+            // --- TOGGLE DETAIL (eye icon) ---
+            document.querySelectorAll('.toggle-detail').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const row = btn.closest('tr').nextElementSibling;
+                    if (row && row.classList.contains('detail-row')) {
+                        row.classList.toggle('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>

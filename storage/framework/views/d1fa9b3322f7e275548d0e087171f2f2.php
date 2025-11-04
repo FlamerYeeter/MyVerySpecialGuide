@@ -59,7 +59,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview4') }}')">
+    onclick="(history.length>1 ? history.back() : window.location.href='<?php echo e(route('registerreview4')); ?>')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-3 h-3 sm:w-6 sm:h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -188,8 +188,8 @@
     </div>
 
 
-    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-    <script src="{{ asset('js/register.js') }}"></script>
+    
+    <script src="<?php echo e(asset('js/register.js')); ?>"></script>
     <script>
         // Focused helper: only extract explicit job preference arrays from the draft.
         (function(){
@@ -297,59 +297,76 @@
 
             const runRestore = function(){
                 try {
-                    // Simplified: prefer hidden input #jobpref1, then localStorage fallbacks
-                    let arr = [];
-                    try {
-                        const hidden = document.getElementById('jobpref1');
-                        if (hidden && hidden.value) {
-                            const v = (hidden.value||'').trim();
-                            if (v) {
-                                if ((v.startsWith('[') && v.endsWith(']')) || (v.startsWith('{') && v.endsWith('}'))) arr = JSON.parse(v) || [];
-                                else if (v.indexOf(',') !== -1) arr = v.split(',').map(s=>s.trim()).filter(Boolean);
-                                else arr = [v];
+                    // Only pull explicit job-preference keys. Do NOT inspect or flatten the whole draft.
+                    let prefs = [];
+                    try { prefs = (window.getDraftJobPreferences && window.getDraftJobPreferences()) || []; } catch(e) { prefs = []; }
+                    prefs = Array.from(new Set((prefs||[]).map(x=>String(x||'').trim()).filter(Boolean)));
+                    // sanitize prefs same as later rendering: remove personal info, emails, phones, filenames, [object Object]
+                    const sanitize = (arr, draftObj) => {
+                        try {
+                            const emailRe = /\S+@\S+\.\S+/;
+                            const phoneRe = /\+?\d[\d\s\-()]{5,}\d/;
+                            const fileExtRe = /\.(pdf|docx|doc|png|jpg|jpeg|gif)$/i;
+                            const personalSet = new Set();
+                            try {
+                                const d = draftObj || (window.__mvsg_lastLoadedDraft || {});
+                                const p = d.personalInfo || d.personal || d;
+                                const addIf = v => { try { if (v !== undefined && v !== null) { const s = String(v).trim(); if (s) personalSet.add(s.toLowerCase()); } } catch(e){} };
+                                if (p && typeof p === 'object') {
+                                    addIf(p.first_name || p.first || p.firstName);
+                                    addIf(p.last_name || p.last || p.lastName);
+                                    addIf(p.email || p.emailAddress);
+                                    addIf(p.phone || p.mobile);
+                                    addIf(p.address || p.addr);
+                                }
+                                addIf(d.proofFilename || d.cert_file || d.certfile || d.proof || d.proofFilename);
+                                addIf(d.role || d.userRole || d.roleName);
+                                const g = d.guardianInfo || d.guardian || {};
+                                if (g && typeof g === 'object') { addIf(g.guardian_first_name || g.first_name || g.guardian_first); addIf(g.guardian_last_name || g.last_name || g.guardian_last); }
+                            } catch(e) {}
+                            return arr.filter(item => {
+                                try {
+                                    if (!item) return false;
+                                    const s = String(item).trim();
+                                    if (emailRe.test(s)) return false;
+                                    if (phoneRe.test(s)) return false;
+                                    if (fileExtRe.test(s)) return false;
+                                    if (/\[object\s+object\]/i.test(s)) return false;
+                                    if (personalSet.size && personalSet.has(s.toLowerCase())) return false;
+                                    if (/^\d{1,3}$/.test(s)) return false;
+                                    if (s.length > 120) return false;
+                                    return true;
+                                } catch(e){ return false; }
+                            });
+                        } catch(e) { return arr; }
+                    };
+
+                    const safePrefs = sanitize(prefs, window.__mvsg_lastLoadedDraft || (localStorage.getItem('rpi_personal') ? tryParse(localStorage.getItem('rpi_personal')) : null));
+                    // Intersect with known card labels on the page to avoid showing unrelated values
+                    const knownLabels = Array.from(document.querySelectorAll('.jobpref-card h3, .selectable-card h3')).map(n=>String(n.textContent||'').trim().toLowerCase()).filter(Boolean);
+                    const finalPrefs = (knownLabels.length > 0) ? safePrefs.filter(p => knownLabels.indexOf(String(p||'').trim().toLowerCase()) !== -1) : safePrefs;
+                    if (finalPrefs.length) {
+                        try {
+                            if (window.renderPillList) window.renderPillList('review_jobprefs_list', finalPrefs);
+                            else {
+                                const el = document.getElementById('review_jobprefs_list'); if (el) { el.innerHTML = ''; for (const it of finalPrefs) { const sp = document.createElement('span'); sp.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm'; sp.textContent = it; el.appendChild(sp); } }
                             }
-                        }
-                    } catch(e) { arr = []; }
-
-                    if (!arr.length) {
-                        const keys = ['jobPreferences','jobpref1','jobpref','jobpref_1','jobprefs','job_preferences'];
-                        for (const k of keys) {
-                            try {
-                                const raw = localStorage.getItem(k);
-                                if (!raw) continue;
-                                const s = raw.trim();
-                                if (!s) continue;
-                                if (s.startsWith('[')) arr = JSON.parse(s) || [];
-                                else if (s.indexOf(',') !== -1) arr = s.split(',').map(x=>x.trim()).filter(Boolean);
-                                else arr = [s];
-                            } catch(e) { arr = []; }
-                            if (arr.length) break;
-                        }
-                    }
-
-                    arr = Array.from(new Set((arr||[]).map(x=>String(x||'').trim()).filter(Boolean)));
-                    const el = document.getElementById('review_jobprefs_list');
-                    if (!el) return;
-                    el.innerHTML = '';
-                    if (!arr.length) {
-                        const none = document.createElement('span'); none.className = 'text-gray-600'; none.textContent = 'None'; el.appendChild(none);
+                        } catch(e){}
+                        // mark matching cards selected and set preview image
+                        try {
+                            setChoiceImage && setChoiceImage('review_jobprefs_img', prefs[0], ['.jobpref-card', '.selectable-card']);
+                            document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card => {
+                                try {
+                                    const title = card.querySelector('h3')?.textContent?.trim();
+                                    if (title && prefs.indexOf(title) !== -1) card.classList.add('selected'); else card.classList.remove('selected');
+                                } catch(e){}
+                            });
+                        } catch(e){}
+                        // restored
                     } else {
-                        if (window.renderPillList) window.renderPillList('review_jobprefs_list', arr);
-                        else for (const it of arr) { const sp = document.createElement('span'); sp.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm'; sp.textContent = it; el.appendChild(sp); }
-
-                        // select matching cards (case-insensitive)
-                        const lc = arr.map(s=>s.toLowerCase());
-                        try { setChoiceImage && setChoiceImage('review_jobprefs_img', arr[0], ['.jobpref-card', '.selectable-card']); } catch(e){}
-                        document.querySelectorAll('.jobpref-card, .selectable-card').forEach(card=>{
-                            try {
-                                const title = (card.querySelector('h3')?.textContent||'').trim();
-                                const v = (card.getAttribute('data-value')||'').trim();
-                                const matched = (title && lc.includes(title.toLowerCase())) || (v && lc.includes(v.toLowerCase()));
-                                if (matched) card.classList.add('selected'); else card.classList.remove('selected');
-                            } catch(e){}
-                        });
+                        // nothing found — silently leave the container as-is
                     }
-                } catch(e) { console.debug('[review-5] simplified restore failed', e); }
+                } catch(e) { console.debug('[review-5] restore prefs failed', e); }
             };
 
             // initial run
@@ -361,26 +378,34 @@
     </script>
 
     <script>
-        // Save the visible job preferences into localStorage['jobpref1'] then navigate
+        // Save the visible job preferences into localStorage['rpi_personal'] then navigate (preserve uid when available)
         function saveDraftAndGotoJobPrefs(url) {
             try {
+                let draft = window.__mvsg_lastLoadedDraft || {};
+                if (!draft || typeof draft !== 'object') draft = {};
+                draft.jobPreferences = draft.jobPreferences || {};
+
                 try {
                     const container = document.getElementById('review_jobprefs_list');
                     if (container) {
                         const spans = Array.from(container.querySelectorAll('span'));
                         const vals = spans.map(s => (s.textContent||'').trim()).filter(Boolean);
                         if (vals.length) {
-                            // store canonical simple array under both jobPreferences (existing page key) and jobpref1 (review canonical)
-                            try { localStorage.setItem('jobPreferences', JSON.stringify(vals)); } catch(e) { console.warn('[review-5] failed to write jobPreferences', e); }
-                            try { localStorage.setItem('jobpref1', JSON.stringify(vals)); } catch(e) { console.warn('[review-5] failed to write jobpref1', e); }
-                            // also mirror into hidden input if present
-                            try { const h = document.getElementById('jobpref1'); if (h) h.value = JSON.stringify(vals); } catch(e){}
+                            // store both shapes: nested map and top-level key
+                            draft.jobPreferences.jobpref1 = vals;
+                            draft.jobpref1 = JSON.stringify(vals);
                         }
                     }
                 } catch(e) { console.debug('[review-5] collect prefs failed', e); }
+
+                try {
+                    localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                    try { console.info('[review-5] saveDraftAndGotoJobPrefs wrote rpi_personal', JSON.parse(localStorage.getItem('rpi_personal'))); } catch(e) { console.info('[review-5] wrote rpi_personal (readback failed)'); }
+                } catch(e) { console.warn('[review-5] failed to write rpi_personal', e); }
             } catch(e) { console.warn('[review-5] build draft failed', e); }
 
             try {
+                // Firebase removed: do not attempt client-side uid append. Always navigate to the URL.
                 window.location.href = url;
             } catch(e) { window.location.href = url; }
         }
@@ -388,7 +413,7 @@
         document.addEventListener('DOMContentLoaded', function(){
             try {
                 const btn = document.getElementById('rv5_change_jobprefs_btn');
-                if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoJobPrefs('{{ route('registerjobpreference1') }}'); });
+                if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoJobPrefs('<?php echo e(route('registerjobpreference1')); ?>'); });
             } catch(e) { console.debug('[review-5] wiring change button failed', e); }
         });
     </script>
@@ -480,19 +505,22 @@
 
                     // build draft and persist locally
                     try {
-                        // Persist canonical canonical jobpref1 array for review pages and future restores
-                        try { localStorage.setItem('jobpref1', JSON.stringify(prefs)); } catch(e) { console.warn('[review-5] could not write jobpref1', e); }
-                        try { const h = document.getElementById('jobpref1'); if (h) h.value = JSON.stringify(prefs); } catch(e){}
-                        console.info('[review-5] wrote jobpref1 with jobpref1', prefs);
-                    } catch (e) { console.warn('[review-5] could not persist jobpref1', e); }
+                        let draft = window.__mvsg_lastLoadedDraft || {};
+                        if (!draft || typeof draft !== 'object') draft = {};
+                        draft.jobPreferences = draft.jobPreferences || {};
+                        draft.jobPreferences.jobpref1 = prefs;
+                        draft.jobpref1 = JSON.stringify(prefs);
+                        localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                        console.info('[review-5] wrote rpi_personal with jobpref1', prefs);
+                    } catch (e) { console.warn('[review-5] could not write rpi_personal', e); }
 
                     // Firebase client removed: skip client-side Firestore write. Local persistence was already done above.
                     console.info('[review-5] firebase client removed; skipping Firestore write (local only)');
 
                     // navigate to final step (do not attempt client-side firebase uid append)
                     try {
-                        window.location.href = '{{ route('registerfinalstep') }}';
-                    } catch (e) { window.location.href = '{{ route('registerfinalstep') }}'; }
+                        window.location.href = '<?php echo e(route('registerfinalstep')); ?>';
+                    } catch (e) { window.location.href = '<?php echo e(route('registerfinalstep')); ?>'; }
 
                 } catch (e) { console.error('[review-5] continue handler failed', e); }
             });
@@ -513,27 +541,6 @@
                     // Only pull explicit job preference keys using the centralized helper
                     let prefsRaw = [];
                     try { prefsRaw = (window.getDraftJobPreferences && window.getDraftJobPreferences()) || []; } catch(e) { prefsRaw = []; }
-                    // If centralized helper returns nothing, fallback to canonical localStorage keys that the job-pref page writes
-                    if ((!prefsRaw || prefsRaw.length === 0) && typeof localStorage !== 'undefined') {
-                        const fallbackKeys = ['jobPreferences','jobpref1','jobpref','jobprefs','job_preferences'];
-                        for (const k of fallbackKeys) {
-                            try {
-                                const raw = localStorage.getItem(k);
-                                if (!raw) continue;
-                                const s = raw.trim();
-                                if (!s) continue;
-                                if (s.startsWith('[')) {
-                                    prefsRaw = JSON.parse(s) || [];
-                                } else if (s.indexOf(',') !== -1) {
-                                    prefsRaw = s.split(',').map(x=>x.trim()).filter(Boolean);
-                                } else {
-                                    // single value
-                                    prefsRaw = [s];
-                                }
-                            } catch(e) { prefsRaw = []; }
-                            if (prefsRaw && prefsRaw.length) break;
-                        }
-                    }
 
                 // normalize final list (dedupe and trim)
                 try {
@@ -661,3 +668,4 @@
 </body>
 
 </html>
+<?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\MyVerySpecialGuide\resources\views/ds_register_review-5.blade.php ENDPATH**/ ?>

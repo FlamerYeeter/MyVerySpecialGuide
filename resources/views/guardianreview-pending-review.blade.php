@@ -441,7 +441,7 @@
       await mod.ensureInit?.();
       let profile = null;
       try {
-        try { await mod.signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { console.debug('signInWithServerToken (guardian) failed', e); }
+  try { /* firebase.token removed */ } catch(e) { console.debug('signInWithServerToken (guardian) failed', e); }
         profile = await mod.getUserProfile();
       } catch(e) { console.debug('no profile from firebase module', e); }
           if (!profile) return; // nothing to do
@@ -523,7 +523,7 @@
       const mod = await import("{{ asset('js/job-application-firebase.js') }}");
       const logger = await import("{{ asset('js/client-logger.js') }}");
       try {
-        await mod.signInWithServerToken("{{ route('firebase.token') }}");
+    <!-- firebase.token removed -->
       } catch(e) {
         console.debug('guardian signInWithServerToken failed', e);
         try { logger.sendClientLog('debug', 'guardian signInWithServerToken failed', { error: String(e) }); } catch(_) {}
