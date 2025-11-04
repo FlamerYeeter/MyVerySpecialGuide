@@ -395,28 +395,28 @@
     <script>
         // Continue: collect visible prefs, save local draft, attempt Firestore write, then navigate
         (function(){
-            const normalizeSpans = (containerId) => {
-                const container = document.getElementById(containerId);
-                if (!container) return [];
-                const spans = Array.from(container.querySelectorAll('span'));
-                // filter out header placeholders like "Chosen Work" if present (heuristic: ignore exact 'Chosen Work')
-                return spans.map(s => (s.textContent||'').trim()).filter(t => t && t.toLowerCase() !== 'chosen work');
-            };
+            // const normalizeSpans = (containerId) => {
+            //     const container = document.getElementById(containerId);
+            //     if (!container) return [];
+            //     const spans = Array.from(container.querySelectorAll('span'));
+            //     // filter out header placeholders like "Chosen Work" if present (heuristic: ignore exact 'Chosen Work')
+            //     return spans.map(s => (s.textContent||'').trim()).filter(t => t && t.toLowerCase() !== 'chosen work');
+            // };
 
-            const storePendingWrite = (uid, section, data) => {
-                try {
-                    const all = JSON.parse(localStorage.getItem('pending_writes') || '{}');
-                    if (!all[uid]) all[uid] = {};
-                    all[uid][section] = { data };
-                    localStorage.setItem('pending_writes', JSON.stringify(all));
-                    console.info('[review-5] stored pending_writes for', uid, section);
-                } catch (e) { console.warn('[review-5] storePendingWrite failed', e); }
-            };
+            // const storePendingWrite = (uid, section, data) => {
+            //     try {
+            //         const all = JSON.parse(localStorage.getItem('pending_writes') || '{}');
+            //         if (!all[uid]) all[uid] = {};
+            //         all[uid][section] = { data };
+            //         localStorage.setItem('pending_writes', JSON.stringify(all));
+            //         console.info('[review-5] stored pending_writes for', uid, section);
+            //     } catch (e) { console.warn('[review-5] storePendingWrite failed', e); }
+            // };
 
-            const writeToFirestore = async (uid, prefs) => {
-                // Firebase client removed: do not attempt Firestore writes from client. Return failure so caller can fallback to local store.
-                return { ok: false, error: 'firebase-client-removed' };
-            };
+            // const writeToFirestore = async (uid, prefs) => {
+            //     // Firebase client removed: do not attempt Firestore writes from client. Return failure so caller can fallback to local store.
+            //     return { ok: false, error: 'firebase-client-removed' };
+            // };
 
             const btn = document.getElementById('rv5_continue');
             if (!btn) return;
