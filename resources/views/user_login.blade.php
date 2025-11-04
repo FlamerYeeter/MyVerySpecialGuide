@@ -78,7 +78,9 @@
 </div>
 
 </body>
-<script>
+
+
+<!-- <script>
     (function(){
         // safe JSON parse helper
         function safeParse(s){ try { return JSON.parse(s); } catch(e){ return null; } }
@@ -174,7 +176,7 @@
             });
         });
     })();
-</script>
+</script> -->
 </html>
 
 
