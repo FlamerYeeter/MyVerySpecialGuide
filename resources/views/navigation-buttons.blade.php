@@ -71,7 +71,7 @@
             </a>
 
             <!-- Card 2: Saved Jobs -->
-            <a href="{{ route('saved.jobs') }}" class="block h-full">
+            <a href="/" class="block h-full">
                 <div
                     class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
                     <div class="flex items-center gap-5">
@@ -90,7 +90,7 @@
             </a>
 
             <!-- Card 3: Assessment Progress -->
-            <a href="{{ route('career.goals.progress') }}" class="block h-full">
+            <a href="#" class="block h-full">
                 <div
                     class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
                     <div class="flex items-center gap-5">
@@ -108,7 +108,7 @@
             </a>
 
             <!-- Card 4: Why This Job -->
-            <a href="{{ route('career.goals.details') }}" class="block h-full">
+            <a href="#" class="block h-full">
                 <div
                     class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
                     <div class="flex items-center gap-5">
