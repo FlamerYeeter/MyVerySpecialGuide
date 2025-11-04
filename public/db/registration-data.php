@@ -51,10 +51,10 @@ $password    = password_hash($user_info['password'] ?? 'temp123', PASSWORD_DEFAU
 $types_of_ds = $user_info['r_dsType1'] ?? null;
 
 // Guardian
-$gf = $user_info['guardian_first'] ?? null;
-$gl = $user_info['guardian_last'] ?? null;
-$ge = $user_info['guardian_email'] ?? null;
-$gp = $user_info['guardian_phone'] ?? null;
+$gf = $user_info['g_first_name'] ?? null;
+$gl = $user_info['g_last_name'] ?? null;
+$ge = $user_info['g_email'] ?? null;
+$gp = $user_info['g_phone'] ?? null;
 $gr = $user_info['guardian_relationship'] ?? null;
 
 // IDs
