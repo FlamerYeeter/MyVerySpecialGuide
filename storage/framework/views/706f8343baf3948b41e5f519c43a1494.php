@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Approval</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+    /* Floating animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-float-slow { animation: float 5s ease-in-out infinite; }
+    .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
+    .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+    .tts-btn.speaking {
+        background-color: #2563eb !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        transform: scale(1.03);
+    }
+    </style>
+</head>
+
+<body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
+
+    <!-- Floating Mascots (hidden on very small screens to avoid clutter) -->
+    <img src="image/obj4.png" alt="Yellow Mascot"
+        class="hidden sm:block fixed left-6 top-1/3 w-28 lg:w-36 opacity-90 animate-float-slow z-0">
+    <img src="image/obj7.png" alt="Triangle Mascot"
+        class="fixed left-1 sm:left-4 md:left-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-20 md:w-28 opacity-90 animate-float-medium z-0">
+    <img src="image/obj3.png" alt="Blue Mascot"
+        class="hidden sm:block fixed right-6 top-1/4 w-28 lg:w-36 opacity-90 animate-float-fast z-0">
+    <img src="image/obj8.png" alt="Twin Mascot"
+        class="hidden sm:block fixed right-6 bottom-24 w-28 lg:w-36 opacity-90 animate-float-medium z-0">
+
+    <!-- Back Button -->
+    <button
+        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        onclick="(history.length>1 ? history.back() : window.location.href='<?php echo e(route('dataprivacy')); ?>')">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
+            class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back
+    </button>
+
+    <!-- Main Container -->
+    <div
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
+
+        <!-- Header -->
+        <div class="text-center mt-6">
+            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">Create an
+                Account</h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-24 sm:w-32 md:w-36 mb-6">
+
+            <!-- Instruction Box -->
+            <div class="bg-white rounded-3xl p-5 sm:p-7 md:p-8 border-4 border-blue-300 shadow-lg text-left">
+                <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex flex-wrap items-center gap-x-3">
+                    For Admin Approval
+                    <span class="text-gray-600 italic text-sm sm:text-base">(Pahintulot sa Admin)</span>
+                    <button type="button" class="text-xl hover:scale-110 transition-transform tts-btn"
+                        data-tts-en="For Admin Approval. Please type your information inside the box. The fields marked with a star must be filled in and attach a valid proof of membership."
+                        data-tts-tl="Pahintulot sa Admin. Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may bituin ay dapat sagutan at mag-upload ng patunay na miyembro."
+                        aria-label="Play audio for admin instruction">🔊</button>
+                </h2>
+                <p class="text-gray-800 text-sm sm:text-base mt-2">
+                    Please type your information inside the box. The text with a ⭐ star must be filled in and attach a
+                    valid proof of membership.
+                </p>
+                <p class="text-gray-600 italic text-sm sm:text-base mt-4 border-b-2 border-blue-400 pb-2">
+                    (Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may ⭐ bituin ay dapat sagutan at
+                    mag-upload ng patunay na miyembro ka ng organisasyon.)
+                </p>
+            </div>
+        </div>
+
+        <!-- Overall Information Note -->
+        <div
+            class="relative bg-[#EEF4FF] border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
+
+            <!-- Audio Button -->
+            <button type="button" aria-label="Play audio for information note"
+                class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
+                text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                data-tts-en="Please fill out all the required information below accurately. The details you provide help our administrators verify your account, confirm your eligibility, and ensure proper communication during the approval process."
+                data-tts-tl="Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account, kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso ng pag-apruba.">
+                🔊
+            </button>
+
+            <div class="flex items-start gap-3 pr-20"> <!-- Added right padding here -->
+                <!-- Info Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+                </svg>
+
+                <!-- Text Content -->
+                <div class="flex-1">
+                    <p class="font-semibold text-sm sm:text-base leading-relaxed text-blue-800">
+                        Please fill out all the required information below accurately. The details you provide help our
+                        administrators verify your account, confirm your eligibility, and ensure proper communication
+                        during the approval process.
+                    </p>
+                    <p class="italic text-gray-600 text-xs sm:text-sm mt-2 leading-relaxed">
+                        (Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng
+                        iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account,
+                        kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso
+                        ng pag-apruba.)
+                    </p>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Form -->
+        <form id="registrationForm" class="mt-10 space-y-10 text-left">
+            <!-- Personal Information -->
+            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+                <h3
+                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                    Personal Information
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- First Name -->
+                    <div>
+                        <label for="first_name"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            First Name <span>⭐</span>
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
+                        <input id="first_name" type="text" placeholder="First Name" required
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+
+                    <!-- Last Name -->
+                    <div>
+                        <label for="last_name"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Last Name <span>⭐</span>
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
+                        <input id="last_name" type="text" placeholder="Last Name" required
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+
+                    <!-- Age -->
+                    <div>
+                        <label for="age"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Age <span>⭐</span>
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Edad</p>
+                        <input id="age" type="number" placeholder="Age" required
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Email -->
+                    <div>
+                        <label for="email"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Email <span>⭐</span>
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
+                        <input id="email" type="email" placeholder="Email" required
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+
+                    <!-- Contact Number -->
+                    <div>
+                        <label for="phone"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Contact Number <span>⭐</span>
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
+                        <input   id="phone" 
+                                type="tel" 
+                                placeholder="+63 9XX XXX XXXX" required
+                                pattern="^\+63\s?9\d{2}\s?\d{3}\s?\d{4}$"
+                                title="Please enter a valid Philippine number (e.g. +63 912 345 6789)"
+                                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div class="mt-6">
+                    <label for="address" class="font-semibold text-gray-800 text-sm sm:text-base">
+                        Address <span>⭐</span>
+                    </label>
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
+                    <input id="address" type="text" placeholder="Complete Address" required
+                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                </div>
+            </div>
+
+            <!-- Type of Down Syndrome -->
+            <div
+                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
+
+                <!-- Text Section -->
+                <div class="flex-1">
+                    <h3
+                        class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                        Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
+                    </h3>
+                    <p class="text-black-600 text-xs sm:text-sm leading-snug mt-1">
+                        You may fill this in if you already have records or a doctor’s assessment that shows your type
+                        of Down syndrome.
+                        It’s perfectly okay if you’re not aware of it yet — you can leave it blank.
+                    </p>
+
+                    <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4">
+                        (Opsyonal lamang ito. Maaari mo itong sagutan kung mayroon ka nang tala o pagsusuri mula sa
+                        doktor na nagpapakita
+                        ng uri ng iyong Down syndrome. Ayos lang din kung hindi mo pa ito alam — maaari mo itong
+                        laktawan.)
+                    </p>
+                </div>
+
+                <!-- Dropdown Selector -->
+                <div class="flex-shrink-0 w-full sm:w-auto">
+                    <select id="r_dsType1" name="r_dsType1" required
+                        class="w-full sm:w-60 border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">-- Select Type --</option>
+                        <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
+                        <option value="Mosaic Down Syndrome">Mosaic Down Syndrome</option>
+                        <option value="Translocation Down">Translocation Down Syndrome</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <!-- Guardian Information -->
+            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+                <h3
+                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                    Guardian Information
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Guardian First Name -->
+                    <div>
+                        <label for="g_first_name"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            First Name <span>⭐</span>
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
+                        <input id="g_first_name" type="text" placeholder="First Name" required
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+
+                    <!-- Guardian Last Name -->
+                    <div>
+                        <label for="g_last_name"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Last Name <span>⭐</span>
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
+                        <input id="g_last_name" type="text" placeholder="Last Name" required
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <!-- Guardian Email -->
+                    <div>
+                        <label for="g_email"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Email <span>⭐</span> 
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
+                        <input id="g_email" type="email" placeholder="Email" required
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+
+                    <!-- Guardian Contact -->
+                    <div>
+                        <label for="g_phone"
+                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                            Contact Number <span>⭐</span>
+                        </label>
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
+                        <input id="g_phone" type="tel" placeholder="+63 9XX XXX XXXX" required
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+                </div>
+
+                <!-- Relationship -->
+                <div class="mt-6">
+                    <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">
+                        Relationship to User <span>⭐</span>
+                    </label>
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa Gagamit</p>
+                    <select id="guardian_relationship" required
+                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
+                        <option value="" disabled selected>Select Relationship</option>
+                        <option value="Parent">Parent</option>
+                        <option value="Guardian">Guardian</option>
+                        <option value="Sibling">Sibling</option>
+                        <option value="Relative">Relative</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Account Details -->
+            <div class="bg-white rounded-2xl shadow-lg p-5 sm:p-6 border border-gray-200">
+                <h3
+                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                    Account Details</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Username -->
+                    <div>
+                        <label for="username" class="font-semibold flex items-center gap-1">Username
+                            <span>⭐</span></label>
+                        <input id="username" name="username" type="text" placeholder="Enter your username" required
+                            class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+                        <p class="text-gray-500 text-xs mt-1">(example: @juancruz)</p>
+                    </div>
+
+                    <!-- Create Password -->
+                    <div>
+                        <label for="password" class="font-semibold flex items-center gap-1">Create Password
+                            <span>⭐</span></label>
+                        <input   id="password" 
+                                    name="password" 
+                                    type="password" 
+                                    placeholder="Enter your password" required
+                                    pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
+                                    title="Password must have at least 1 uppercase letter, 1 lowercase letter, 1 number, and be 8+ characters long."
+                                    class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+                            <label for="togglePassword" class="text-sm text-gray-700 cursor-pointer leading-snug">
+                                 <p id="passwordMessage" 
+                                class="mt-1 text-sm text-red-500 italic hidden">
+                                Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
+                                </p>
+                    </div>
+                </div>
+                 
+
+                <!-- Password Rules -->
+                <div
+                    class="grid grid-cols-1 md:grid-cols-2 bg-blue-50 border border-blue-300 rounded-xl p-6 mt-6 text-sm gap-6 shadow-inner">
+                    <!-- English -->
+                    <div>
+                        <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">English <button
+                                type="button"
+                                class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
+                                title="Play audio" aria-label="Play audio for password rules (English)"
+                                data-tts-en="Password must have: One uppercase letter, one lowercase letter, one number, and at least eight characters. Example: Lovedog12."
+                                >🔊</button>
+                        </p>
+                        <p class="mb-2">Password must have:</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>One uppercase letter (A, B, C)</li>
+                            <li>One lowercase letter (a, b, c)</li>
+                            <li>One number (1, 2, 3)</li>
+                            <li>At least 8 characters (letters + numbers)</li>
+                        </ul>
+                        <p class="mt-3 text-gray-800 font-semibold">Example: Lovedog12</p>
+                    </div>
+
+                    <!-- Tagalog -->
+                    <div>
+                        <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">Tagalog <button
+                                type="button"
+                                class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
+                                title="Play audio" aria-label="Play audio for password rules (Tagalog)"
+                                data-tts-tl="Ang password ay dapat mayroong: isang malaking letra, isang maliit na letra, isang numero, at hindi bababa sa 8 karakter na halo ng letra at numero. Halimbawa: Lovedog12.">🔊</button>
+                        </p>
+                        <p class="mb-2">Ang password ay dapat mayroong:</p>
+                        <ul class="list-disc list-inside space-y-1 text-gray-700">
+                            <li>Isang malaking letra (A, B, C)</li>
+                            <li>Isang maliit na letra (a, b, c)</li>
+                            <li>Isang numero (1, 2, 3)</li>
+                            <li>Hindi bababa sa 8 karakter na halo ng letra at numero</li>
+                        </ul>
+                        <p class="mt-3 text-gray-800 font-semibold">Halimbawa: Lovedog12</p>
+                    </div>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mt-6">
+                    <label for="confirmPassword" class="font-semibold text-base flex items-center gap-1">Confirm
+                        Password <span>⭐</span></label>
+                    <input id="confirmPassword" name="confirmPassword" type="password"
+                        placeholder="Re-enter your password"
+                        class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+                </div>
+                  <p id="confirmMessage" class="mt-1 text-sm text-red-500 italic hidden">
+                    Passwords do not match.
+                </p>
+            </div>
+
+            <!-- Proof of Membership -->
+            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+                <h3
+                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                    Proof of Membership <span class="text-gray-500 text-m">(optional)</span>
+                </h3>
+                
+
+                <!-- File Upload Box -->
+                <div
+                    class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div class="flex-1">
+                        <p class="font-medium text-gray-800 text-sm sm:text-base">
+                            <span id="proofLabel" class="flex items-center gap-2">
+                                <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+                            </span>
+                        </p>
+                        <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+                            (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br><br>
+                            Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br>
+                        </p>
+
+                        <!-- File preview details -->
+                        <div id="proofFileInfo"
+                            class="hidden mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm">
+                            <div class="flex items-center gap-2">
+                                <span id="proofFileIcon" class="text-2xl"></span>
+                                <span id="proofFileName"
+                                    class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"></span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button id="proofViewBtn" type="button"
+                                    class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">View
+                                    / Tingnan</button>
+                                <button id="proofRemoveBtn" type="button"
+                                    class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">Remove
+                                    / Alisin</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <label for="proof"
+                        class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
+                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+                        📁 Choose File / Pumili ng File
+                    </label>
+
+                    <input id="proof" name="proof" type="file" accept=".jpg,.jpeg,.png,.pdf"
+                        class="hidden" required>
+                </div>
+
+                <!-- Modal for File Preview -->
+                <div id="fileModal"
+                    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
+                    <div
+                        class="bg-white rounded-lg shadow-lg max-w-3xl w-[90%] max-h-[85vh] flex flex-col overflow-hidden">
+                        <div class="flex justify-between items-center bg-[#2E2EFF] text-white px-4 py-2">
+                            <h2 class="font-semibold text-base">File Preview / Pagtingin ng File</h2>
+                            <button id="closeModalBtn" type="button"
+                            class="text-white font-bold text-lg hover:text-gray-300">✕</button>
+                        </div>
+                        <div id="modalContent"
+                            class="flex-1 bg-gray-100 overflow-auto flex items-center justify-center p-4">
+                            <!-- File content will appear here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Script -->
+                <script>
+                    (function() {
+                    const fileInput = document.getElementById("proof");
+                    const fileInfo = document.getElementById("proofFileInfo");
+                    const fileName = document.getElementById("proofFileName");
+                    const fileIcon = document.getElementById("proofFileIcon");
+                    const viewBtn = document.getElementById("proofViewBtn");
+                    const removeBtn = document.getElementById("proofRemoveBtn");
+                    const modal = document.getElementById("fileModal");
+                    const modalContent = document.getElementById("modalContent");
+                    const closeModal = document.getElementById("closeModalBtn");
+                    const hintEl = document.getElementById("proofHint");
+                    const prevFileEl = document.getElementById("r_proof");
+
+                    console.log("✅ File upload script initialized");
+
+                    // 🔹 Load file from localStorage (base64)
+                    const savedFileData = localStorage.getItem("uploadedProofData1");
+                    const savedFileType = localStorage.getItem("uploadedProofType1");
+                    const savedFileName = localStorage.getItem("uploadedProofName1");
+
+                    if (savedFileData && savedFileType && savedFileName) {
+                        showFileInfo(savedFileName, savedFileType);
+                        makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
+                    } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
+                        // If coming from previous form
+                        const prevFileName = prevFileEl.textContent.trim();
+                        showFileInfo(prevFileName, getFileType(prevFileName));
+                        makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
+                    }
+
+                    // 🔹 When a new file is selected
+                    fileInput.addEventListener("change", function () {
+                        const file = this.files[0];
+                        if (!file) return;
+
+                        const ext = getFileType(file.name);
+                        if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
+                        alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
+                        fileInput.value = "";
+                        return;
+                        }
+
+                        const reader = new FileReader();
+                        reader.onload = function (e) {
+                        const fileData = e.target.result; // base64 content
+                        localStorage.setItem("uploadedProofData1", fileData);
+                        localStorage.setItem("uploadedProofType1", ext);
+                        localStorage.setItem("uploadedProofName1", file.name);
+
+                        showFileInfo(file.name, ext);
+                        makeFileClickable(prevFileEl, file.name, fileData, ext);
+                        };
+                        reader.readAsDataURL(file);
+                    });
+
+                    // 🔹 View button
+                    viewBtn.addEventListener("click", () => {
+                        const name = localStorage.getItem("uploadedProofName1");
+                        const data = localStorage.getItem("uploadedProofData1");
+                        const type = localStorage.getItem("uploadedProofType1");
+                        if (data && type && name) openModalPreview(name, data, type);
+                    });
+
+                    // 🔹 Remove file
+                    removeBtn.addEventListener("click", () => {
+                        localStorage.removeItem("uploadedProofData1");
+                        localStorage.removeItem("uploadedProofType1");
+                        localStorage.removeItem("uploadedProofName1");
+                        fileInput.value = "";
+                        hideFileInfo();
+                    });
+
+                    // 🔹 Close modal
+                    closeModal.addEventListener("click", closeModalFn);
+                    modal.addEventListener("click", (e) => {
+                        if (e.target === modal) closeModalFn();
+                    });
+
+                    // ===============================
+                    // 🔹 Helper Functions
+                    // ===============================
+
+                    function showFileInfo(name, type) {
+                        fileInfo.classList.remove("hidden");
+                        if (hintEl) hintEl.style.display = "none";
+                        fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
+                        fileName.textContent = name;
+                    }
+
+                    function hideFileInfo() {
+                        fileInfo.classList.add("hidden");
+                        fileName.textContent = "";
+                        fileIcon.textContent = "";
+                        if (hintEl) hintEl.style.display = "";
+                    }
+
+                    function closeModalFn() {
+                        modal.classList.add("hidden");
+                        modalContent.innerHTML = "";
+                    }
+
+                    function getFileType(filename) {
+                        return filename.split(".").pop().toLowerCase();
+                    }
+
+                    // 🔹 Make filename clickable
+                    function makeFileClickable(el, name, data, type) {
+                        if (!el) return;
+                        el.classList.add("text-blue-600", "underline", "cursor-pointer");
+                        el.title = "Click to view uploaded file";
+                        el.onclick = () => openModalPreview(name, data, type);
+                    }
+
+                    // 🔹 Open modal preview
+                    function openModalPreview(name, data, type) {
+                        modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
+                        if (["jpg", "jpeg", "png"].includes(type)) {
+                        modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
+                        } else if (type === "pdf") {
+                        modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
+                        } else {
+                        modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                        }
+                        modal.classList.remove("hidden");
+                    }
+                    })();
+
+                    const phoneInput = document.getElementById('phone');
+
+                    phoneInput.addEventListener('input', () => {
+                        let value = phoneInput.value;
+
+                        // 1️⃣ Alisin lahat ng hindi digits or '+' sign
+                        value = value.replace(/[^\d+]/g, '');
+
+                        // 2️⃣ Kung nagsimula sa '0', palitan ng '+63'
+                        if (value.startsWith('0')) {
+                            value = '+63' + value.substring(1);
+                        }
+
+                        // 3️⃣ Kung hindi pa nagsisimula sa '+63', pilitin itong maging '+63'
+                        if (!value.startsWith('+63')) {
+                            value = '+63';
+                        }
+
+                        // 4️⃣ Limitahan ang haba: +63 (3 chars) + 10 digits = total 13
+                        if (value.length > 13) {
+                            value = value.slice(0, 13);
+                        }
+
+                        // 5️⃣ Optional: kung gusto mo lagyan ng space after +63 para readability
+                        // value = value.replace(/(\+63)(\d)/, '$1 $2'); // uncomment if you want "+63 9..."
+
+                        // 6️⃣ Update input value
+                        phoneInput.value = value;
+                    });
+                  
+                   window.addEventListener('load', () => {
+                    document.getElementById('first_name').value = '';
+                    document.getElementById('last_name').value = '';
+                    document.getElementById('age').value = '';
+                    document.getElementById('email').value = '';
+                    document.getElementById('phone').value = '';
+                    document.getElementById('address').value = '';
+                    document.getElementById('r_dsType1').selectedIndex = 0;
+                    document.getElementById('g_first_name').value = '';
+                    document.getElementById('g_last_name').value = '';
+                    document.getElementById('g_email').value = '';
+                    document.getElementById('g_phone').value = '';
+                    document.getElementById('guardian_relationship').selectedIndex = 0;
+                });
+
+                const passwordInput = document.getElementById('password');
+                const passwordMessage = document.getElementById('passwordMessage');
+                const confirmPasswordInput = document.getElementById('confirmPassword');
+                const confirmMessage = document.getElementById('confirmMessage');
+                const createAccountBtn = document.getElementById('createAccountBtn');
+                // const togglePassword = document.getElementById('togglePassword');
+
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+                // 🔹 Password validation
+                passwordInput.addEventListener('input', () => {
+                const value = passwordInput.value.trim();
+
+                if (value === '') {
+                    passwordMessage.classList.add('hidden');
+                    passwordInput.style.borderColor = '';
+                //    disableButton();
+                    return;
+                }
+
+                passwordMessage.classList.remove('hidden');
+
+                if (passwordRegex.test(value)) {
+                    passwordInput.style.borderColor = 'green';
+                    passwordMessage.textContent = '✅ Strong password. Ready to go!';
+                    passwordMessage.classList.remove('text-red-500');
+                    passwordMessage.classList.add('text-green-600');
+                } else {
+                    passwordInput.style.borderColor = 'red';
+                    passwordMessage.textContent =
+                    '❌ Must contain 1 uppercase, 1 lowercase, 1 number, and 8+ characters.';
+                    passwordMessage.classList.remove('text-green-600');
+                    passwordMessage.classList.add('text-red-500');
+                }
+
+                validateConfirmPassword();
+                });
+
+                // 🔹 Confirm password validation
+                confirmPasswordInput.addEventListener('input', validateConfirmPassword);
+
+                function validateConfirmPassword() {
+                const passwordVal = passwordInput.value.trim();
+                const confirmVal = confirmPasswordInput.value.trim();
+
+                if (confirmVal === '') {
+                    confirmMessage.classList.add('hidden');
+                    confirmPasswordInput.style.borderColor = '';
+                  //  disableButton();
+                    return;
+                }
+
+                confirmMessage.classList.remove('hidden');
+
+                if (passwordRegex.test(passwordVal) && passwordVal === confirmVal) {
+                    confirmPasswordInput.style.borderColor = 'green';
+                    confirmMessage.textContent = '✅ Passwords match.';
+                    confirmMessage.classList.remove('text-red-500');
+                    confirmMessage.classList.add('text-green-600');
+                  //  enableButton();
+                } else {
+                    confirmPasswordInput.style.borderColor = 'red';
+                    confirmMessage.textContent = '❌ Passwords do not match.';
+                    confirmMessage.classList.remove('text-green-600');
+                    confirmMessage.classList.add('text-red-500');
+                   // disableButton();
+                }
+                }
+
+
+                // 🔹 Toggle password visibility
+                // togglePassword.addEventListener('change', () => {
+                // const type = togglePassword.checked ? 'text' : 'password';
+                // passwordInput.type = type;
+                // confirmPasswordInput.type = type;
+                // });
+
+
+                </script>
+
+            </div>
+
+            <!-- Submit Button -->
+            <div class="flex flex-col items-center mt-6">
+                <button 
+                id="createAccountBtn" 
+                type="button" 
+                class="text-white text-base sm:text-lg font-semibold px-6 sm:px-12 py-3 
+                        rounded-xl transition-colors duration-300 shadow-md w-full sm:w-auto 
+                        bg-blue-600 opacity-90">
+                Submit for Approval
+                </button>
+                <p class="text-gray-600 text-sm mt-3 text-center">
+                    Click <span class="text-[#1E40AF] font-medium">“Submit for Approval”</span> to continue<br>
+                    <span class="italic text-gray-600">(Pindutin upang magpatuloy sa susunod na hakbang)</span>
+                </p>
+            </div>
+            <!-- Notes Section -->
+            <div class="mt-8 flex justify-center">
+                <div
+                    class="bg-white shadow-md rounded-2xl px-5 sm:px-6 py-6 max-w-lg w-full text-center border border-gray-100">
+                    <div class="mb-5">
+                        <h3 class="text-gray-800 font-semibold text-sm uppercase tracking-wide">Next Step</h3>
+                        <p class="text-gray-700 text-[13px] mt-2 leading-relaxed">
+                            Check your email inbox for the approval confirmation message to proceed to the next step.
+                        </p>
+                        <p class="text-gray-600 italic text-[12px] mt-1">
+                            (Suriin ang iyong email inbox para sa mensahe ng kumpirmasyon ng pag-apruba upang magpatuloy
+                            sa susunod na hakbang)
+                        </p>
+                    </div>
+
+                    <div class="border-t border-gray-200 my-4"></div>
+
+                    <div>
+                        <p class="text-gray-600 text-sm">
+                            Didn’t receive confirmation?
+                            <a href="#" class="text-[#1E40AF] font-medium hover:underline">Resend</a>
+                        </p>
+                        <p class="text-gray-500 italic text-[12px] mt-1">(Hindi nakatanggap ng kumpirmasyon? I-click
+                            ang “Resend”)</p>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+
+    <!-- Save draft script: persist to rpi_personal so register.js autofills personal page -->
+    <script>
+        (function() {
+            // Save-only helper: persist draft so the central register.js can pick it up and create the account.
+            const btn = document.getElementById('createAccountBtn');
+            if (!btn) return;
+
+            btn.addEventListener('click', function() {
+                try {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-60');
+                    const data = {};
+                    // collect all inputs/selects/textareas that have an id
+                    document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+                        const id = el.id;
+                        if (!id) return;
+                        if (el.type === 'checkbox') data[id] = !!el.checked;
+                        else data[id] = el.value || '';
+                    });
+
+                    // normalize common fields to expected keys
+                    const draft = {
+                        firstName: data.first_name || data.firstName || data.first || '',
+                        lastName: data.last_name || data.lastName || data.last || '',
+                        email: data.email || '',
+                        phone: data.phone || '',
+                        age: data.age || '',
+                        address: data.address || '',
+                        username: data.username || '',
+                        g_first_name: data.g_first_name || data.guardianFirst || '',
+                        g_last_name: data.g_last_name || data.guardianLast || '',
+                        g_email: data.g_email || '',
+                        g_phone: data.g_phone || '',
+                        guardian_relationship: data.guardian_relationship || data.guardianRelationship || '',
+                        r_dsType1: data.r_dsType1 || '',
+                        password: data.password || '',
+                    };
+
+                    try {
+                        localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                    } catch (err) {
+                        console.warn('Could not save rpi_personal', err);
+                    }
+
+                    console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
+                    // dispatch event for other scripts to pick up
+                    try {
+                        window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
+                            detail: {
+                                key: 'rpi_personal',
+                                data: draft
+                            }
+                        }));
+                    } catch (e) {}
+
+                    window.location.href = '<?php echo e(route("registereducation")); ?>';
+
+                } catch (err) {
+                    console.error('[adminapprove] submit failed', err);
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-60');
+                }
+            });
+        })();
+    </script>
+
+    <!-- Show/hide password toggles -->
+    <script>
+        (function() {
+            function toggleField(checkboxId, fieldId) {
+                const cb = document.getElementById(checkboxId);
+                const field = document.getElementById(fieldId);
+                if (!cb || !field) return;
+                // initialize based on checkbox state
+                field.type = cb.checked ? 'text' : 'password';
+                cb.addEventListener('change', function() {
+                    field.type = this.checked ? 'text' : 'password';
+                });
+            }
+
+            // Run after DOM loaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', function() {
+                    toggleField('togglePassword', 'password');
+                    toggleField('toggleConfirm', 'confirmPassword');
+                });
+            } else {
+                toggleField('togglePassword', 'password');
+                toggleField('toggleConfirm', 'confirmPassword');
+            }
+        })();
+    </script>
+
+    <!-- Include Firebase config -->
+    
+
+    <!-- LocalStorage-first autofill: read rpi_personal early and apply to form -->
+    <script>
+    (function(){
+        function normalizeFilename(s){
+            if(!s) return '';
+            try{ const parts = String(s).split(/[/\\]+/); return parts[parts.length-1]||'';}catch(e){ return String(s||''); }
+        }
+
+        function setIf(id, val){
+            try{
+                const el = document.getElementById(id);
+                if(!el) return false;
+                if(el.tagName === 'INPUT' || el.tagName === 'SELECT' || el.tagName === 'TEXTAREA') el.value = val || '';
+                else el.textContent = val || '';
+                return true;
+            }catch(e){ return false; }
+        }
+
+        function setProofPreview(name){
+            try{
+                const info = document.getElementById('proofFileInfo');
+                const fileName = document.getElementById('proofFileName');
+                const icon = document.getElementById('proofFileIcon');
+                const hint = document.getElementById('proofHint');
+                if(!name){ if(info) info.classList.add('hidden'); if(hint) hint.style.display = ''; return; }
+                const ext = (name.split('.').pop()||'').toLowerCase();
+                if(icon) icon.textContent = (['jpg','jpeg','png'].includes(ext)?'🖼️': (ext==='pdf'?'📄':'📁'));
+                if(fileName) fileName.textContent = name;
+                if(info) info.classList.remove('hidden');
+                if(hint) hint.style.display = 'none';
+            }catch(e){}
+        }
+
+        function applyDraftToDom(d){
+            try{
+                if(!d || typeof d !== 'object') return false;
+                const p = d.personal || d.personalInfo || d;
+                const first = p.firstName || p.first_name || p.first || p.fname || '';
+                const last = p.lastName || p.last_name || p.last || p.lname || '';
+                const email = p.email || '';
+                const phone = p.phone || p.mobile || '';
+                const age = p.age || '';
+                const address = p.address || '';
+                const username = p.username || p.userName || '';
+                let applied = false;
+                applied = setIf('first_name', first) || applied;
+                applied = setIf('last_name', last) || applied;
+                applied = setIf('email', email) || applied;
+                applied = setIf('phone', phone) || applied;
+                applied = setIf('age', age) || applied;
+                applied = setIf('address', address) || applied;
+                applied = setIf('username', username) || applied;
+
+                // dsType
+                const ds = d.dsType || d.ds_type || p.dsType || p.ds_type || '';
+                if(ds){
+                    try{
+                        const select = document.getElementById('r_dsType1');
+                        if(select){
+                            let found = false;
+                            for(const opt of select.options){ if(String(opt.value||'').toLowerCase()===String(ds).toLowerCase()){ select.value = opt.value; found = true; break; } }
+                            if(!found){ for(const opt of select.options){ if(String(opt.textContent||'').toLowerCase()===String(ds).toLowerCase()){ select.value = opt.value; break; } } }
+                            applied = true;
+                        }
+                    }catch(e){}
+                }
+
+                // guardian
+                const g = d.guardian || d.guardianInfo || d;
+                const gfirst = g.g_first_name_name || g.g_first_name || g.first || g.first_name || '';
+                const glast = g.g_last_name_name || g.g_last_name || g.last || g.last_name || '';
+                const gemail = g.g_email || g.email || '';
+                const gphone = g.g_phone || g.phone || '';
+                const grel = g.guardian_relationship || g.guardian_choice || g.relationship || '';
+                applied = setIf('g_first_name', gfirst) || applied;
+                applied = setIf('g_last_name', glast) || applied;
+                applied = setIf('g_email', gemail) || applied;
+                applied = setIf('g_phone', gphone) || applied;
+                if(grel) applied = setIf('guardian_relationship', grel) || applied;
+
+                // proof filename preview
+                const proof = d.proofFilename || p.proofFilename || d.proof || d.cert_file || p.proof || '';
+                const proofName = normalizeFilename(proof||''); if(proofName){ setProofPreview(proofName); applied = true; }
+                return applied;
+            }catch(e){ console.warn('applyDraftToDom failed', e); return false; }
+        }
+
+        function parseStored(raw){
+            if(!raw) return null;
+            try{ let parsed = JSON.parse(raw); if(parsed && parsed.data) parsed = parsed.data; return parsed; }catch(e){ return raw; }
+        }
+
+        function tryLoadAndApplyOnce(){
+            try{
+                const raw = localStorage.getItem('rpi_personal') || sessionStorage.getItem('rpi_personal');
+                if(!raw) return null;
+                return parseStored(raw);
+            }catch(e){ console.warn('tryLoadAndApplyOnce failed', e); return null; }
+        }
+
+        // Boot: attempt application with retry
+        const parsed = tryLoadAndApplyOnce();
+        if(parsed){
+            try{ console.info('[adminapprove-autofill] rpi_personal found, attempting to apply', Object.keys(parsed || {})); }catch(_){}
+            let attempts = 0;
+            const maxAttempts = 12;
+            const interval = 120;
+            function attempt(){
+                attempts++;
+                try{
+                    const ok = applyDraftToDom(parsed);
+                    if(ok){
+                        try{ console.info('[adminapprove-autofill] applied local draft to form'); }catch(_){}
+                        window.__mvsg_local_applied = true;
+                        window.dispatchEvent(new CustomEvent('mvsg:localApplied',{detail:{key:'rpi_personal'}}));
+                        return;
+                    }
+                }catch(e){}
+                if(attempts < maxAttempts) setTimeout(attempt, interval);
+            }
+            attempt();
+        }
+
+        // Listen for storage changes and custom events
+        window.addEventListener('storage', function(e){
+            try{ if((e.key === 'rpi_personal' || e.key === null) && e.newValue){ const parsed = parseStored(e.newValue); if(parsed) applyDraftToDom(parsed); } }catch(_){}
+        });
+
+        window.addEventListener('mvsg:adminSaved', function(ev){
+            try{ const d = (ev && ev.detail && ev.detail.data) ? ev.detail.data : null; if(d) applyDraftToDom(d); }catch(_){}
+        });
+
+    })();
+    </script>
+
+    <script src="js/register.js"></script>
+
+    <!-- TTS: Web Speech API handler -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const buttons = document.querySelectorAll('.tts-btn');
+            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            let preferredVoice = null;
+            let currentBtn = null;
+            let availableVoices = [];
+
+            function populateVoices() {
+                availableVoices = window.speechSynthesis.getVoices() || [];
+                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName) ||
+                    availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name)) ||
+                    null;
+            }
+
+            function chooseVoiceForLang(langCode) {
+                if (!availableVoices.length) return null;
+                langCode = (langCode || '').toLowerCase();
+                let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                if (candidates.length) return pickBest(candidates);
+                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i
+                    .test(v.name));
+                if (candidates.length) return pickBest(candidates);
+                return availableVoices[0];
+            }
+
+            function pickBest(list) {
+                let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                if (preferred.length) return preferred[0];
+                return list[0];
+            }
+
+            function stopSpeaking() {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+                if (currentBtn) {
+                    currentBtn.classList.remove('speaking');
+                    currentBtn.removeAttribute('aria-pressed');
+                    currentBtn = null;
+                }
+            }
+
+            buttons.forEach(function(btn) {
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('tabindex', '0');
+
+                btn.addEventListener('click', function() {
+                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                    if (!textEn && !textTl) return;
+
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn ===
+                        btn) {
+                        stopSpeaking();
+                        return;
+                    }
+
+                    stopSpeaking();
+                    setTimeout(function() {
+                        if (!window.speechSynthesis) return;
+
+                        function voiceFor(langHint) {
+                            if (preferredVoice) return preferredVoice;
+                            if (langHint) {
+                                const hint = (langHint || '').toLowerCase();
+                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint
+                                    .includes('tagalog')) {
+                                    return chooseVoiceForLang('tl');
+                                }
+                                return chooseVoiceForLang(langHint);
+                            }
+                            return chooseVoiceForLang('en') || (availableVoices.length ?
+                                availableVoices[0] : null);
+                        }
+
+                        const seq = [];
+                        if (textEn) {
+                            const uEn = new SpeechSynthesisUtterance(textEn);
+                            uEn.lang = 'en-US';
+                            const v = voiceFor('en');
+                            if (v) uEn.voice = v;
+                            seq.push(uEn);
+                        }
+                        if (textTl) {
+                            const uTl = new SpeechSynthesisUtterance(textTl);
+                            uTl.lang = 'tl-PH';
+                            const v2 = voiceFor('tl');
+                            if (v2) uTl.voice = v2;
+                            seq.push(uTl);
+                        }
+
+                        if (!seq.length) return;
+
+                        seq[0].onstart = function() {
+                            btn.classList.add('speaking');
+                            btn.setAttribute('aria-pressed', 'true');
+                            currentBtn = btn;
+                        };
+
+                        for (let i = 0; i < seq.length; i++) {
+                            const ut = seq[i];
+                            ut.onerror = function() {
+                                if (btn) btn.classList.remove('speaking');
+                                if (btn) btn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            };
+                            if (i < seq.length - 1) {
+                                ut.onend = function() {
+                                    window.speechSynthesis.speak(seq[i + 1]);
+                                };
+                            } else {
+                                ut.onend = function() {
+                                    if (btn) btn.classList.remove('speaking');
+                                    if (btn) btn.removeAttribute('aria-pressed');
+                                    currentBtn = null;
+                                };
+                            }
+                        }
+
+                        window.speechSynthesis.speak(seq[0]);
+                    }, 50);
+                });
+
+                btn.addEventListener('keydown', function(ev) {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+
+            window.addEventListener('beforeunload', function() {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            });
+
+            if (window.speechSynthesis) {
+                populateVoices();
+                window.speechSynthesis.onvoiceschanged = function() {
+                    populateVoices();
+                };
+            }
+        });
+    </script>
+</body>
+
+</html>
+<?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\resources\views/ds_register_adminapprove.blade.php ENDPATH**/ ?>

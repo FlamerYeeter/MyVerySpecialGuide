@@ -28,6 +28,9 @@
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">LOG IN</h2>
 
         <!-- Form -->
+        <form method="POST" action="<?php echo e(route('login.post')); ?>" class="space-y-5">
+            <?php echo csrf_field(); ?>
+            <input type="hidden" name="redirect" value="/navigation-buttons" />
         <form id="loginForm" method="POST" action="<?php echo e(route('login.post')); ?>" class="space-y-5">
             <?php echo csrf_field(); ?>
             <input type="hidden" name="redirect" value="/navigation-buttons" />

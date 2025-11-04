@@ -514,20 +514,25 @@
                 });
             </script>
             <script>
-            // Save selected skills to localStorage before navigating (no rpi_personal usage)
-            (function(){
-                const btn = document.getElementById('skills1Next');
-                if (!btn) return;
-                btn.addEventListener('click', function(e){
-                    try {
-                        const hidden = document.getElementById('skills_page1');
-                        let arr = [];
-                        try { arr = JSON.parse(hidden && hidden.value ? hidden.value : '[]'); } catch(e){ arr = []; }
-                        try { localStorage.setItem('skills_page1', JSON.stringify(arr)); } catch(e) { console.debug('save skills failed', e); }
-                    } catch(e) { console.debug('collect skills failed', e); }
+                document.getElementById('skills1Next').addEventListener('click', () => {
+                    const selected = [];
+
+                    document.querySelectorAll('.skills-card.selected').forEach(card => {
+                        const value = card.getAttribute('data-value');
+                        if (value === 'other') {
+                            const otherInput = document.getElementById('skills1_other_text').value.trim();
+                            if (otherInput) selected.push(otherInput);
+                        } else {
+                            selected.push(value);
+                        }
+                    });
+
+                    // Save all selected skills to localStorage at once
+                    localStorage.setItem('skills1_selected', JSON.stringify(selected));
+
+                    // Navigate to next page
                     window.location.href = '{{ route("registerjobpreference1") }}';
                 });
-            })();
             </script>
     </div>
     </div>

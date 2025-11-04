@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Http;
 use App\Models\User;
 
 Route::get('/', function () {
-    return view('home');
-})->name('home');
+    return view('admin-dashboard');
+})->name('admin-dashboard');
 
 // Recommender debug route: optional userId. Visit /recommender/debug or /recommender/debug/{userId}
 Route::get('/recommender/debug/{userId?}', [RecommenderDebugController::class, 'debug'])->name('recommender.debug');
@@ -46,7 +46,7 @@ Route::post('/client-log', function (\Illuminate\Http\Request $req) {
             default: logger()->info($message, $meta); break;
         }
     } catch (\Throwable $e) {
-            return view('home');
+            return view('admin-dashboard');
     }
 
         // Recommender debug route (calls local Python recommender service)

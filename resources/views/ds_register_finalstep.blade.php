@@ -394,6 +394,38 @@
           e.preventDefault();
           clearErrors();
 
+          // Collect all data from localStorage
+          const data = {
+            education: localStorage.getItem('education'),
+            job_experiences: localStorage.getItem('job_experiences'),
+            review_certs: localStorage.getItem('review_certs'),
+            rpi_personal: localStorage.getItem('rpi_personal'),
+            school_name: localStorage.getItem('school_name'),
+            selected_work_experience: localStorage.getItem('selected_work_experience'),
+            selected_work_year: localStorage.getItem('selected_work_year'),
+            support: localStorage.getItem('support'),
+            uploadedProofData0: localStorage.getItem('uploadedProofData0'),
+            uploadedProofData1: localStorage.getItem('uploadedProofData1'),
+            uploadedProofName0: localStorage.getItem('uploadedProofName0'),
+            uploadedProofName1: localStorage.getItem('uploadedProofName1'),
+            uploadedProofType0: localStorage.getItem('uploadedProofType0'),
+            uploadedProofType1: localStorage.getItem('uploadedProofType1'),
+            workplace: localStorage.getItem('workplace'),
+            jobPreferences: localStorage.getItem('jobPreferences'),
+            skills1_selected: localStorage.getItem('skills1_selected')
+          };
+
+          // Send to PHP backend
+          fetch('/db/registration-data.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          })
+            .then(res => res.text())
+            .then(console.log)
+            .catch(console.error);  
+
+          const email = (emailField && emailField.value || '').trim();
           // try hidden/server email first, then multiple fallbacks
           const email = ( (emailField && (emailField.value || '').trim()) || resolveEmailFallback() ).trim();
           let hasError = false;
@@ -424,142 +456,10 @@
               agree2: !!(agree2 && agree2.checked)
             }
           };
-
-          // Build a local account object from drafts in localStorage (temporary local-only account store)
-          try {
-            const ensureParse = (s) => { try { return s ? JSON.parse(s) : null; } catch(e) { return null; } };
-            const collectDrafts = () => {
-              const out = {};
-              out.personal = ensureParse(localStorage.getItem('rpi_personal')) || ensureParse(sessionStorage.getItem('rpi_personal')) || {};
-              out.jobPreferences = ensureParse(localStorage.getItem('jobPreferences')) || ensureParse(localStorage.getItem('jobpref1')) || [];
-              out.skills = ensureParse(localStorage.getItem('skills_page1')) || ensureParse(localStorage.getItem('skills')) || [];
-              out.experiences = ensureParse(localStorage.getItem('job_experiences')) || [];
-              out.registrationDraft = ensureParse(localStorage.getItem('registrationDraft')) || ensureParse(sessionStorage.getItem('registrationDraft')) || {};
-              out.proof = {
-                name: localStorage.getItem('uploadedProofName1') || localStorage.getItem('uploadedProofName0') || null,
-                dataKey: localStorage.getItem('uploadedProofData1') ? 'uploadedProofData1' : (localStorage.getItem('uploadedProofData0') ? 'uploadedProofData0' : null)
-              };
-              return out;
-            };
-
-            const makePassword = (len=12) => {
-              const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()-_';
-              let p = ''; for (let i=0;i<len;i++) p += chars[Math.floor(Math.random()*chars.length)];
-              return p;
-            };
-
-            const account = {};
-            account.email = email;
-            account.agreements = window.finalRegistrationData.agreements || {};
-            account.draft = collectDrafts();
-            // prefer any generated password kept on window, otherwise create a random one (local-only)
-            account.password = window.__mvsg_generatedPassword || makePassword(12);
-            account.createdAt = (new Date()).toISOString();
-            account.status = 'pending_local';
-
-            // persist into a local accounts store
-            try {
-              const key = 'local_accounts';
-              let list = [];
-              try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
-              // remove any existing entry for same email
-              list = list.filter(x => String(x.email||'').toLowerCase() !== String(account.email||'').toLowerCase());
-              list.push(account);
-              localStorage.setItem(key, JSON.stringify(list));
-              // also mark current email for quick lookup
-              localStorage.setItem('local_current_email', account.email);
-              console.info('[finalstep] saved local account for', account.email);
-            } catch(e) { console.warn('[finalstep] could not persist local account', e); }
-
-          } catch(e) { console.warn('[finalstep] build local account failed', e); }
-
-          // show success modal (instead of redirecting immediately) and then go to login
-          try {
-            const modal = document.getElementById('createdModal');
-            if (modal) {
-              modal.classList.remove('hidden');
-              const ok = document.getElementById('createdModalOk');
-              if (ok) {
-                ok.focus();
-                ok.addEventListener('click', function(){
-                  try { window.location.href = '{{ route('login') }}'; } catch(e){ window.location.href = '/login'; }
-                });
-              }
-            } else {
-              try { window.location.href = '{{ route('login') }}'; } catch(e){ window.location.href = '/login'; }
-            }
-            return;
-          } catch (e) {
-            console.warn('show created modal failed', e);
-            try { window.location.href = '{{ route('login') }}'; } catch(err){ window.location.href = '/login'; }
-          }
+            
         });
+
       })();
     </script>
-      <script>
-        // Autofill hidden email/password fields from available drafts or Firestore
-        (function(){
-          const emailField = document.getElementById('email');
-          const emailFromServer = document.getElementById('emailFromServer');
-          const passField = document.getElementById('password');
-          const confirmField = document.getElementById('confirm_password');
-
-          function genRandomPassword() {
-            // simple 12-char password: letters + numbers
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()-_';
-            let p = ''; for (let i=0;i<12;i++) p += chars[Math.floor(Math.random()*chars.length)];
-            return p;
-          }
-
-          async function tryFillFromDrafts() {
-            try {
-              // register.js exposes getDraft() and readStored(); use them if available
-              if (window.getDraft && typeof window.getDraft === 'function') {
-                const d = await window.getDraft();
-                const data = d && (d.data || d) || {};
-                const personal = data.personalInfo || data.personal || data;
-                if (personal && (personal.email || personal.emailAddress)) return personal.email || personal.emailAddress;
-              }
-              // fallback to readStored
-              if (window.readStored && typeof window.readStored === 'function') {
-                const e = window.readStored('email') || window.readStored('emailAddress') || window.readStored('personal.email');
-                if (e) return e;
-              }
-            } catch(e){ /* ignore */ }
-            return null;
-          }
-
-          async function tryFillFromFirestore() {
-            // Firebase client removed — do not attempt client-side Firestore reads.
-            return null;
-          }
-
-          async function main() {
-            // priority: server-provided hidden value -> drafts -> firestore
-            let e = (emailFromServer && emailFromServer.value && emailFromServer.value.trim()) || '';
-            if (!e) e = (await tryFillFromDrafts()) || '';
-            if (!e) e = (await tryFillFromFirestore()) || '';
-
-            if (e && emailField) {
-              emailField.value = e;
-              if (emailFromServer && !emailFromServer.value) emailFromServer.value = e;
-            }
-
-            // If password fields are empty, generate a random password so create flow validates
-            if (passField && confirmField && !passField.value) {
-              const p = genRandomPassword();
-              passField.value = p; confirmField.value = p;
-              // keep in-memory only; do not persist to server-side templates
-              window.__mvsg_generatedPassword = p;
-            }
-
-            // expose a helper for debugging
-            window.mvsgAutoFilled = { email: emailField && emailField.value, password: passField && passField.value };
-          }
-
-          // run after DOMContentLoaded to ensure register.js may have attached helpers
-          if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', main); else main();
-        })();
-      </script>
 </body>
 </html>
