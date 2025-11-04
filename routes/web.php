@@ -54,6 +54,8 @@ Route::post('/client-log', function (\Illuminate\Http\Request $req) {
 });
 // Quick debug route to call the Oracle-backed recommender (no login required).
 Route::get('/debug/oracle-recs', [\App\Http\Controllers\RecommendationController::class, 'oracleRecommendations']);
+// Debug route to list job postings directly from Oracle (bounded)
+Route::get('/debug/job-postings', [\App\Http\Controllers\RecommendationController::class, 'oracleJobPostings']);
 
 // Navigation targets used by navigation-buttons view
 Route::get('/why-this-job-1', function (\Illuminate\Http\Request $request) {
