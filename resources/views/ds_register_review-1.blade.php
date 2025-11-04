@@ -271,104 +271,7 @@
                 </div>
 
 
-            <!-- Proof of Membership -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Proof of Membership
-                </h3>
-                 <div id="fileuploadSection"
-                    class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-                    ><!-- 🔹 FILE UPLOAD SECTION -->
-                    <div
-                    class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-                    >
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-800 text-sm sm:text-base">
-                        <span id="proofLabel" class="flex items-center gap-2">
-                            <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
-                        </span>
-                        </p>
-                        <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-                        (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
-                         Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
-                        <b>5MB</b><br />
-                        </p>
 
-                        <!-- File preview details -->
-                        <div
-                        id="proofFileInfo"
-                        class="mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm hidden"
-                        >
-                        <div class="flex items-center justify-between gap-4 p-2 border rounded-lg shadow-sm bg-white">
-                    <!-- File icon + name -->
-                    <div class="flex items-center gap-2">
-                        <span id="proofFileIcon" class="text-2xl">📄</span>
-                        <span
-                        id="proofFileName"
-                        class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"
-                        ></span>
-                    </div>
-
-                    <!-- Buttons -->
-                    <div class="flex gap-3">
-                        <button
-                        id="proofViewBtn"
-                        type="button"
-                        class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
-                        >
-                        View / Tingnan
-                        </button>
-                        <button
-                        id="proofRemoveBtn"
-                        type="button"
-                        class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
-                        >
-                        Remove / Alisin
-                        </button>
-                    </div>
-                    </div>
-
-                        </div>
-                    </div>
-
-                    <!-- Upload button -->
-                    <label
-                    id="ChooseFilelabel"
-                        for="proof"
-                        class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
-                                            px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
-                    >
-                        📁 Choose File / Pumili ng File
-                    </label>
-
-                    <input
-                        id="proof"
-                        name="proof"
-                        type="file"
-                        accept=".jpg,.jpeg,.png,.pdf"
-                        class="hidden"
-                          />
-                    </div>
-
-                    <!-- 🔹 MODAL PREVIEW -->
-                    <div
-                    id="fileModal"
-                    class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
-                    >
-                    <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
-                        <button
-                        id="closeModalBtn"
-                        class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl"
-                        >
-                        ×
-                        </button>
-                        <div id="modalContent" class="p-2 text-center"></div>
-                                </div>
-                    </div>
-                    </div>
-
-            </div>
-        </div>
          <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
 
@@ -1280,18 +1183,6 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
                 showFileInfo(prevFileName, getFileType(prevFileName));
                 makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
             }
-
-            // 🔹 When a new file is selected
-            fileInput.addEventListener("change", function () {
-                const file = this.files[0];
-                if (!file) return;
-
-                const ext = getFileType(file.name);
-                if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
-                alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
-                fileInput.value = "";
-                return;
-                }
 
                 const reader = new FileReader();
                 reader.onload = function (e) {
