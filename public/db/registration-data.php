@@ -76,13 +76,13 @@ $allGood = true;
 // ——— 1. INSERT user_guardian ———
 $sql1 = "INSERT INTO user_guardian (
     id, role, first_name, last_name, email, contact_number, password,
-    age, education, school, certificate,
+    age, education, school,
     guardian_first_name, guardian_last_name, guardian_email,
     guardian_contact_number, relationship_to_user, created_at, updated_at,
     address, types_of_ds, proof_of_membership, certificates, username
 ) VALUES (
     :v0,'User',:v2,:v3,:v4,:v5,:v6,
-    :v7,:v8,:v9,:v10,
+    :v7,:v8,:v9,
     :v11,:v12,:v13,:v14,:v15,SYSDATE,SYSDATE,
     :v16,:v17,:v18,:v19,:v20
 )";
@@ -98,7 +98,7 @@ oci_bind_by_name($stid1, ':v6',  $password);
 oci_bind_by_name($stid1, ':v7',  $age);
 oci_bind_by_name($stid1, ':v8',  $education_level);
 oci_bind_by_name($stid1, ':v9',  $main_course);
-oci_bind_by_name($stid1, ':v10', $is_graduate);
+// oci_bind_by_name($stid1, ':v10', $is_graduate);
 oci_bind_by_name($stid1, ':v11', $gf);
 oci_bind_by_name($stid1, ':v12', $gl);
 oci_bind_by_name($stid1, ':v13', $ge);
@@ -119,7 +119,7 @@ if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
 if ($allGood) {
     $work_exp = json_decode($data['job_experiences'] ?? '[]', true);
     foreach ($work_exp as $work) {
-        $sql2 = "INSERT INTO job_experiences (
+        $sql2 = "INSERT INTO job_experience (
                     guardian_id, job_title, company_name, work_year, job_description
                 ) VALUES (
                     :v1,:v2,:v3,:v4,:v5
