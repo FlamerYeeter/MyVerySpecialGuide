@@ -354,9 +354,9 @@
             }
             if ($anyCtx) {
                 // put context-aware first so it's visible
-        array_unshift($perModelMetrics, $ctx);
-    }
-}
+                array_unshift($perModelMetrics, $ctx);
+            }
+        }
 // If counts are provided, compute metrics: accept many variants for keys
 $getCount = function ($keys) use ($eval) {
     foreach ((array) $keys as $k) {
@@ -1154,7 +1154,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         <script>
             // Development convenience: disable login requirement so auto-trigger runs for all visitors.
             // WARNING: This treats every visitor as authenticated for recommendation generation on this page.
-            // Revert to the @auth directive for production.
+            // Revert to the @@auth directive for production.
             window.__SERVER_AUTH = true;
         </script>
         <script type="module">

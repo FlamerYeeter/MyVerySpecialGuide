@@ -183,6 +183,16 @@
     </p>
   </div>
 
+  <!-- Created Success Modal (hidden) -->
+  <div id="createdModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-lg p-8 w-11/12 max-w-lg text-center">
+      <div class="mb-4 text-5xl">🎉</div>
+      <h3 class="text-2xl font-bold mb-2">Account<br/>Successfully Created!</h3>
+      <p class="text-gray-700 mb-6">Congratulations! Click OK to proceed to login.</p>
+      <button id="createdModalOk" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md transition-all duration-200">Okay</button>
+    </div>
+  </div>
+
   {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
@@ -335,11 +345,57 @@
           [agree1, agree2].forEach(el => { if(el && el.parentElement) el.parentElement.classList.remove('ring','ring-2','ring-red-300'); });
         }
 
+        // Resolve email from multiple local sources as a last-resort fallback
+        function resolveEmailFallback() {
+          try {
+            // 1) prefer the server-hidden field
+            const hidden = (emailField && (emailField.value || '').trim()) || (document.getElementById('email') && (document.getElementById('email').value || '').trim());
+            if (hidden) return hidden;
+
+            // 2) prefer an explicit marker set earlier in the flow
+            const localCurrent = (localStorage.getItem('local_current_email') || sessionStorage.getItem('local_current_email') || '').trim();
+            if (localCurrent) return localCurrent;
+
+            // 3) try the local_accounts store (most recent)
+            try {
+              const accs = JSON.parse(localStorage.getItem('local_accounts') || '[]');
+              if (Array.isArray(accs) && accs.length) {
+                const last = accs[accs.length - 1];
+                if (last && last.email) return (last.email || '').trim();
+              }
+            } catch(e){}
+
+            // 4) try rpi_personal stored draft
+            try {
+              const r = localStorage.getItem('rpi_personal') || sessionStorage.getItem('rpi_personal');
+              if (r) {
+                const parsed = JSON.parse(r);
+                const e = parsed?.personalInfo?.email || parsed?.personal?.email || parsed?.email;
+                if (e) return (e || '').trim();
+              }
+            } catch(e){}
+
+            // 5) common registration draft keys
+            const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','registerDraft','regDraft','reg_data'];
+            for (const k of keys) {
+              try {
+                const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+                if (!v) continue;
+                const parsed = JSON.parse(v);
+                const e = parsed?.personalInfo?.email || parsed?.personal?.email || parsed?.emailAddress || parsed?.email;
+                if (e) return (e || '').trim();
+              } catch(e) { /* ignore parse errors */ }
+            }
+          } catch(e) { console.warn('resolveEmailFallback error', e); }
+          return '';
+        }
+
         createBtn && createBtn.addEventListener('click', function(e){
           e.preventDefault();
           clearErrors();
 
-          const email = (emailField && emailField.value || '').trim();
+          // try hidden/server email first, then multiple fallbacks
+          const email = ( (emailField && (emailField.value || '').trim()) || resolveEmailFallback() ).trim();
           let hasError = false;
 
           if (!agree1 || !agree1.checked || !agree2 || !agree2.checked) {
@@ -349,7 +405,8 @@
           }
 
           if (!email) {
-            finalError.textContent = 'No email available for verification.';
+            // clearer guidance for the user
+            finalError.textContent = 'No email available for verification. Please return to the previous steps or ensure your draft data contains an email.';
             hasError = true;
           }
 
@@ -368,12 +425,73 @@
             }
           };
 
-          // For now, skip verification flow and go straight to home
+          // Build a local account object from drafts in localStorage (temporary local-only account store)
           try {
-            window.location.href = '{{ route('home') }}';
+            const ensureParse = (s) => { try { return s ? JSON.parse(s) : null; } catch(e) { return null; } };
+            const collectDrafts = () => {
+              const out = {};
+              out.personal = ensureParse(localStorage.getItem('rpi_personal')) || ensureParse(sessionStorage.getItem('rpi_personal')) || {};
+              out.jobPreferences = ensureParse(localStorage.getItem('jobPreferences')) || ensureParse(localStorage.getItem('jobpref1')) || [];
+              out.skills = ensureParse(localStorage.getItem('skills_page1')) || ensureParse(localStorage.getItem('skills')) || [];
+              out.experiences = ensureParse(localStorage.getItem('job_experiences')) || [];
+              out.registrationDraft = ensureParse(localStorage.getItem('registrationDraft')) || ensureParse(sessionStorage.getItem('registrationDraft')) || {};
+              out.proof = {
+                name: localStorage.getItem('uploadedProofName1') || localStorage.getItem('uploadedProofName0') || null,
+                dataKey: localStorage.getItem('uploadedProofData1') ? 'uploadedProofData1' : (localStorage.getItem('uploadedProofData0') ? 'uploadedProofData0' : null)
+              };
+              return out;
+            };
+
+            const makePassword = (len=12) => {
+              const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()-_';
+              let p = ''; for (let i=0;i<len;i++) p += chars[Math.floor(Math.random()*chars.length)];
+              return p;
+            };
+
+            const account = {};
+            account.email = email;
+            account.agreements = window.finalRegistrationData.agreements || {};
+            account.draft = collectDrafts();
+            // prefer any generated password kept on window, otherwise create a random one (local-only)
+            account.password = window.__mvsg_generatedPassword || makePassword(12);
+            account.createdAt = (new Date()).toISOString();
+            account.status = 'pending_local';
+
+            // persist into a local accounts store
+            try {
+              const key = 'local_accounts';
+              let list = [];
+              try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+              // remove any existing entry for same email
+              list = list.filter(x => String(x.email||'').toLowerCase() !== String(account.email||'').toLowerCase());
+              list.push(account);
+              localStorage.setItem(key, JSON.stringify(list));
+              // also mark current email for quick lookup
+              localStorage.setItem('local_current_email', account.email);
+              console.info('[finalstep] saved local account for', account.email);
+            } catch(e) { console.warn('[finalstep] could not persist local account', e); }
+
+          } catch(e) { console.warn('[finalstep] build local account failed', e); }
+
+          // show success modal (instead of redirecting immediately) and then go to login
+          try {
+            const modal = document.getElementById('createdModal');
+            if (modal) {
+              modal.classList.remove('hidden');
+              const ok = document.getElementById('createdModalOk');
+              if (ok) {
+                ok.focus();
+                ok.addEventListener('click', function(){
+                  try { window.location.href = '{{ route('login') }}'; } catch(e){ window.location.href = '/login'; }
+                });
+              }
+            } else {
+              try { window.location.href = '{{ route('login') }}'; } catch(e){ window.location.href = '/login'; }
+            }
             return;
           } catch (e) {
-            console.warn('redirect to home failed', e);
+            console.warn('show created modal failed', e);
+            try { window.location.href = '{{ route('login') }}'; } catch(err){ window.location.href = '/login'; }
           }
         });
       })();

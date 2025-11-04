@@ -554,8 +554,71 @@ Route::post('/logout', function (Request $request) {
 // Handle login POST - attempt authentication and redirect to job matches
 Route::post('/login', function (Request $request) {
     $credentials = $request->only(['email', 'password']);
-    // optional redirect (full URL) to return to after successful login
+    // capture optional redirect early so Oracle branch can respect it
     $redirect = $request->input('redirect');
+    // Emergency: try Oracle DB (public/db/oracledb.php) for guardian accounts.
+    // Do not edit public/db/oracledb.php — we require it and call getOracleConnection().
+    try {
+        $oracleFile = public_path('db/oracledb.php');
+        if (file_exists($oracleFile)) {
+            // load the helper that provides getOracleConnection()
+            require_once $oracleFile;
+            if (function_exists('getOracleConnection')) {
+                try {
+                    $conn = getOracleConnection();
+                    // lookup guardian by email (case-insensitive) and fetch stored password
+                    $sql = 'SELECT EMAIL, PASSWORD, FIRST_NAME, LAST_NAME FROM USER_GUARDIAN WHERE LOWER(EMAIL) = :email';
+                    $stid = oci_parse($conn, $sql);
+                    $emailLower = strtolower($credentials['email'] ?? '');
+                    oci_bind_by_name($stid, ':email', $emailLower);
+                    oci_execute($stid);
+                    $row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+                    if ($row) {
+                        $stored = isset($row['PASSWORD']) ? $row['PASSWORD'] : (isset($row['password']) ? $row['password'] : null);
+                        // direct comparison (emergency): compare plaintext password from form to stored value
+                        if (!empty($stored) && isset($credentials['password']) && strval($credentials['password']) === strval($stored)) {
+                            // ensure a local User exists and log them in
+                            $email = $row['EMAIL'] ?? $credentials['email'];
+                            try {
+                                $user = User::where('email', $email)->first();
+                                if (!$user) {
+                                    $user = User::create([
+                                        'name' => trim(($row['FIRST_NAME'] ?? '') . ' ' . ($row['LAST_NAME'] ?? '')) ?: explode('@', $email)[0],
+                                        'email' => $email,
+                                        // random local password; authentication will rely on Oracle for this emergency flow
+                                        'password' => bcrypt(bin2hex(random_bytes(8))),
+                                    ]);
+                                }
+                                Auth::login($user);
+                                $request->session()->regenerate();
+                                logger()->info('Login: authenticated via Oracle USER_GUARDIAN', ['email' => $email]);
+                                // Respect any requested redirect (validate host) or fall back to navigation-buttons
+                                try {
+                                    if (!empty($redirect)) {
+                                        $host = parse_url($redirect, PHP_URL_HOST);
+                                        $currentHost = request()->getHost();
+                                        if ($host === null || $host === $currentHost) {
+                                            return redirect()->to($redirect);
+                                        }
+                                    }
+                                } catch (\Throwable $__e) {
+                                    // ignore and fall back
+                                }
+                                return redirect()->route('navigation_buttons');
+                            } catch (\Throwable $__e) {
+                                logger()->warning('Oracle login: failed to create/login local user: ' . $__e->getMessage());
+                            }
+                        }
+                    }
+                } catch (\Throwable $__e) {
+                    logger()->warning('Oracle lookup failed: ' . $__e->getMessage());
+                }
+            }
+        }
+    } catch (\Throwable $__e) {
+        logger()->warning('Oracle auth integration failed: ' . $__e->getMessage());
+    }
+    // optional redirect (full URL) to return to after successful login
     // Use Auth facade if available
     try {
         if (Auth::attempt($credentials)) {
@@ -604,7 +667,7 @@ Route::post('/login', function (Request $request) {
                 // ignore and fall back to job matches
             }
 
-            return redirect()->route('job.matches');
+            return redirect()->route('navigation_buttons');
         }
     } catch (\Throwable $e) {
         // If Auth is not configured, just redirect for now (placeholder)
@@ -712,7 +775,7 @@ Route::post('/login', function (Request $request) {
                     // ignore and fall back to job matches
                 }
 
-                return redirect()->route('job.matches');
+                return redirect()->route('navigation_buttons');
             } else {
                 logger()->warning('Firebase login failed: ' . $resp->body());
             }

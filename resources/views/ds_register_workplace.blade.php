@@ -214,8 +214,8 @@
                     }
 
                     console.log("Saved to localStorage:", localStorage.getItem('workplace'));
-                    // Optional redirect here
-                    window.location.href = '{{ route("registerjobpreference1") }}';
+                    // Navigate to the Skills page next (was mistakenly pointing to job preference)
+                    window.location.href = '{{ route("registerskills1") }}';
                     });
                 });
             </script>
@@ -388,11 +388,7 @@
             }
         });
     </script>
-     <script>
-        document.getElementById('workplaceNext').addEventListener('click', function() {
-            window.location.href = '{{ route("registerskills1") }}';
-        });
-    </script>
+    
 
 </body>
 

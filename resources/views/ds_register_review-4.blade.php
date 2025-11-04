@@ -191,6 +191,116 @@
     });
     </script>
     <script>
+      // Defensive fallback: only target explicit skills keys (avoid flattening whole rpi_personal objects)
+      document.addEventListener('DOMContentLoaded', function(){
+        try {
+          const el = document.getElementById('review_skills_list');
+          if (!el) return;
+          const hasContent = el.children && el.children.length && Array.from(el.children).some(c=> (c.textContent||'').trim());
+          if (hasContent) return; // already populated
+
+          const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
+          const normalizeArray = v => {
+            if (!v && v !== 0) return [];
+            if (Array.isArray(v)) return v.map(x=> (typeof x==='string'?x.trim():x)).filter(Boolean);
+            if (typeof v === 'string') {
+              const s = v.trim(); if (!s) return [];
+              if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) return normalizeArray(tryParse(s) || []);
+              if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
+              return [s];
+            }
+            return [];
+          };
+
+          // Look for skills only in targeted keys (localStorage, hidden inputs, or rpi_personal.skills)
+          const lsKeys = ['skills_page1','skills_page_1','skills1','skills','selected_skills','selectedSkills','skills_page','skills_page1_value','skills_page1_value'];
+          let found = [];
+
+          // 1) check for a hidden input on the page (skills_page1)
+          try {
+            const hidden = document.getElementById('skills_page1');
+            if (hidden && hidden.value) {
+              const parsed = tryParse(hidden.value) || hidden.value;
+              const norm = normalizeArray(parsed);
+              if (norm && norm.length) found = norm;
+            }
+          } catch(e){}
+
+          // 2) then check localStorage keys if not found
+          if (!found.length) {
+            for (const k of lsKeys) {
+              try {
+                const raw = localStorage.getItem(k);
+                if (!raw) continue;
+                const parsed = tryParse(raw) || raw;
+                const norm = normalizeArray(parsed);
+                if (norm && norm.length) { found = norm; break; }
+              } catch(e){}
+            }
+          }
+
+          // If not found, check rpi_personal but only the skills namespace (do NOT flatten entire object)
+          if (!found.length) {
+            try {
+              const rpRaw = localStorage.getItem('rpi_personal');
+              const rp = tryParse(rpRaw) || rpRaw;
+              if (rp && typeof rp === 'object') {
+                const candidates = [];
+                if (rp.skills) candidates.push(rp.skills);
+                if (rp.selected_skills) candidates.push(rp.selected_skills);
+                if (rp.selectedSkills) candidates.push(rp.selectedSkills);
+                if (rp.skills_page1) candidates.push(rp.skills_page1);
+                for (const c of candidates) {
+                  const norm = normalizeArray(c);
+                  if (norm && norm.length) { found = norm; break; }
+                }
+              }
+            } catch(e){}
+          }
+
+          // Also check a preloaded draft object for skills specifically
+          if (!found.length && window.__mvsg_lastLoadedDraft && typeof window.__mvsg_lastLoadedDraft === 'object') {
+            try {
+              const d = window.__mvsg_lastLoadedDraft;
+              const candidates = [];
+              if (d.skills) candidates.push(d.skills);
+              if (d.selected_skills) candidates.push(d.selected_skills);
+              if (d.selectedSkills) candidates.push(d.selectedSkills);
+              if (d.skills_page1) candidates.push(d.skills_page1);
+              for (const c of candidates) {
+                const norm = normalizeArray(c);
+                if (norm && norm.length) { found = norm; break; }
+              }
+            } catch(e){}
+          }
+
+          if (!found.length) return;
+
+          // render only the found skills
+          el.innerHTML = '';
+          for (const s of found) {
+            const span = document.createElement('span');
+            span.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
+            span.textContent = s;
+            el.appendChild(span);
+          }
+
+          // mark matching cards selected if present (case-sensitive match to card <h3>)
+          try {
+            const cards = document.querySelectorAll('.skills-card, .selectable-card');
+            cards.forEach(card=>{
+              const title = card.querySelector('h3')?.textContent?.trim();
+              if (!title) return card.classList.remove('selected');
+              // match case-insensitive and trimmed
+              const lcTitle = title.toLowerCase();
+              const matched = found.some(f => String(f || '').trim().toLowerCase() === lcTitle);
+              if (matched) card.classList.add('selected'); else card.classList.remove('selected');
+            });
+          } catch(e){}
+        } catch(e){ console.debug('review4 fallback skills render failed', e); }
+      });
+    </script>
+    <script>
       // Save visible skills review to localStorage['rpi_personal'] then navigate to the given url (preserve uid if available)
       function saveDraftAndGotoSkills(url) {
         try {

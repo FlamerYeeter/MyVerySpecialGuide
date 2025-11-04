@@ -513,6 +513,98 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
 }
 
      </script>
+        <!-- Simple deterministic fallback: directly apply common draft keys to visible fields -->
+        <script>
+        (function(){
+            function tryParse(s){ try { return s && typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } }
+            function setIf(id, val){ try{ const el=document.getElementById(id); if(!el) return false; const out = val==null? '': String((typeof val === 'object')? (Array.isArray(val)? val.join(', '): JSON.stringify(val)) : val); if(el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = out; else el.textContent = out; return true;}catch(e){return false;} }
+            function setSelectByValueOrText(id, value){
+                try{
+                    if(!value) return false;
+                    const el = document.getElementById(id);
+                    if(!el || el.tagName !== 'SELECT') return false;
+
+                    const normalizeStr = s => String(s||'').toLowerCase().replace(/\(.*?\)/g,'').replace(/[\W_]+/g,' ').trim();
+                    const wantRaw = String(value||'');
+                    const want = normalizeStr(wantRaw);
+
+                    // 1) exact value/text match
+                    for(const opt of Array.from(el.options||[])){
+                        const v = normalizeStr(opt.value||'');
+                        const t = normalizeStr(opt.text||'');
+                        if(v === want || t === want){ el.value = opt.value; try{ el.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} return true; }
+                    }
+
+                    // 2) contains match (option text contains want) or want contains option text
+                    for(const opt of Array.from(el.options||[])){
+                        const v = normalizeStr(opt.value||'');
+                        const t = normalizeStr(opt.text||'');
+                        if(v && want.includes(v) || t && want.includes(t) || v && t && (v.includes(want) || t.includes(want))){ el.value = opt.value; try{ el.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} return true; }
+                    }
+
+                    // 3) startsWith match
+                    for(const opt of Array.from(el.options||[])){
+                        const v = normalizeStr(opt.value||'');
+                        const t = normalizeStr(opt.text||'');
+                        if(v && v.startsWith(want) || t && t.startsWith(want)){ el.value = opt.value; try{ el.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} return true; }
+                    }
+
+                    // not found -> insert a visible selected option at the top (so the user sees the original value)
+                    const newOpt = document.createElement('option'); newOpt.value = wantRaw; newOpt.text = wantRaw; newOpt.selected = true; // insert at top so visible
+                    try { el.insertBefore(newOpt, el.firstChild); el.selectedIndex = 0; el.dispatchEvent(new Event('change',{bubbles:true})); } catch(e) { try { el.appendChild(newOpt); el.value = wantRaw; el.dispatchEvent(new Event('change',{bubbles:true})); } catch(err){} }
+                    return true;
+                }catch(e){
+                    console.warn('[review] setSelectByValueOrText error', e);
+                    return false;
+                }
+            }
+            function mapRelationship(raw){ if(!raw) return ''; const s = raw.toString().toLowerCase(); const mapping = { parent: 'Parent', mother: 'Parent', father: 'Parent', mom: 'Parent', dad: 'Parent', guardian: 'Guardian', sibling: 'Sibling', brother: 'Sibling', sister: 'Sibling', relative: 'Relative', aunty: 'Relative', aunt: 'Relative', other: 'Other' }; for(const k of Object.keys(mapping)){ if(s.includes(k)) return mapping[k]; } return raw; }
+
+            function loadDraft(){
+                // priority: last loaded draft, rpi_personal, registrationDraft, registration_draft
+                let draft = window.__mvsg_lastLoadedDraft || null;
+                if(!draft) draft = tryParse(localStorage.getItem('rpi_personal')) || tryParse(sessionStorage.getItem('rpi_personal')) || tryParse(localStorage.getItem('registrationDraft')) || tryParse(localStorage.getItem('registration_draft')) || tryParse(localStorage.getItem('regDraft')) || null;
+                return draft || null;
+            }
+
+            function applyOnce(){
+                try{
+                    const d = loadDraft(); if(!d) return false;
+                    const p = d.personal || d.personalInfo || d || {};
+                    const g = d.guardian || d.guardianInfo || d || {};
+                    // guardian fields
+                    setIf('g_first_name', g.guardian_first_name || g.first_name || g.first || g.guardian_first || p.guardian_first_name || '');
+                    setIf('g_last_name', g.guardian_last_name || g.last_name || g.last || g.guardian_last || p.guardian_last_name || '');
+                    setIf('g_email', g.guardian_email || g.email || p.guardian_email || p.email || '');
+                    setIf('g_phone', g.guardian_phone || g.phone || p.guardian_phone || p.phone || '');
+                    // relationship
+                    const rawRel = g.guardian_choice || g.relationship || d.guardian_relationship || p.guardian_relationship || '';
+                    const mapped = mapRelationship(rawRel);
+                    if(!setSelectByValueOrText('guardian_relationship', mapped)) setIf('guardian_relationship', mapped || '');
+                    // ds type
+                    // Check many possible locations and key names for DS type (top-level, personal, and legacy keys)
+                    const ds = d.dsType || d.ds_type || d.r_dsType1 || d.r_dsType || p.dsType || p.ds_type || p.r_dsType1 || p.r_dsType || p.type || '';
+                    if (ds) setSelectByValueOrText('r_dsType1', ds);
+                    return true;
+                }catch(e){ console.warn('[review-fallback] applyOnce failed', e); return false; }
+            }
+
+            // run on DOM ready
+            function boot(){
+                let applied = applyOnce();
+                if(!applied){ // retry a couple times in case register.js writes later
+                    let attempts = 0; const max = 6; const iv = setInterval(()=>{ attempts++; if(applyOnce() || attempts>=max) clearInterval(iv); }, 250);
+                }
+            }
+
+            if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+
+            // re-apply when storage or custom populate event occurs
+            window.addEventListener('storage', function(e){ if(e && (e.key==='rpi_personal' || e.key==='registrationDraft' || e.key==='regDraft')) setTimeout(applyOnce, 80); });
+            window.addEventListener('mvsg:populateDone', function(){ setTimeout(applyOnce, 80); });
+            window.addEventListener('mvsg:adminSaved', function(){ setTimeout(applyOnce, 80); });
+        })();
+        </script>
     <script>
         // Try to sync client Firebase ID token to the server before navigating to review-2.
         // This helps populate Laravel session('firebase_uid') so the next page can fetch server-profile.
@@ -826,8 +918,51 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
                 try { console.debug('[review] personalInfo (p):', p); } catch(e){}
                 const dsType = resolveDsType(data, p);
                 try { console.debug('[review] resolved dsType:', dsType); } catch(e){}
-                // ensure Down Syndrome info is shown in review (fallback to a placeholder if missing)
-                safeSet('r_dsType', dsType || 'Not provided');
+                // ensure Down Syndrome info is shown in review (set the SELECT with id r_dsType1)
+                try {
+                    // prefer using the page's select-setter if available so we get fuzzy matching and change events
+                    if (dsType) {
+                        // normalize and attempt mapped display values for common synonyms
+                        const normalize = s => (s||'').toString().replace(/\(.*?\)/g,'').replace(/[\W_]+/g,' ').trim();
+                        const raw = String(dsType||'').trim();
+                        const norm = normalize(raw);
+                        const syn = (function(v){
+                            const m = v.toLowerCase();
+                            if (m.includes('trisomy') || m.includes('trisomy 21') || m.includes('non') || m.includes('nondisjunction')) return 'Trisomy 21 (Nondisjunction)';
+                            if (m.includes('mosaic')) return 'Mosaic Down Syndrome';
+                            if (m.includes('translocation')) return 'Translocation Down Syndrome';
+                            return null;
+                        })(norm);
+
+                        if (typeof setSelectByValueOrText === 'function') {
+                            // try mapped canonical value first, then original, then normalized
+                            if (syn) setSelectByValueOrText('r_dsType1', syn) || setSelectByValueOrText('r_dsType1', raw) || setSelectByValueOrText('r_dsType1', norm);
+                            else setSelectByValueOrText('r_dsType1', raw) || setSelectByValueOrText('r_dsType1', norm);
+                        } else {
+                            // helper not available yet: directly set the select value (best-effort) and dispatch change
+                            const sel = document.getElementById('r_dsType1');
+                            if (sel) {
+                                try {
+                                    // try to set exact match first
+                                    let matched = false;
+                                    for (const o of Array.from(sel.options||[])) {
+                                        const ov = (o.value||'').toString().trim().toLowerCase();
+                                        const ot = (o.text||'').toString().trim().toLowerCase();
+                                        if (ov === raw.toLowerCase() || ot === raw.toLowerCase() || ov === norm.toLowerCase() || ot === norm.toLowerCase()) { sel.value = o.value; matched = true; break; }
+                                    }
+                                    if (!matched) {
+                                        // append a selected option at top
+                                        const opt = document.createElement('option'); opt.value = raw; opt.text = raw; opt.selected = true;
+                                        try { sel.insertBefore(opt, sel.firstChild); sel.selectedIndex = 0; } catch(e){ sel.appendChild(opt); sel.value = raw; }
+                                    }
+                                    try { sel.dispatchEvent(new Event('change',{bubbles:true})); } catch(e){}
+                                } catch(e) { console.warn('[review] set r_dsType1 direct failed', e); }
+                            }
+                        }
+                    } else {
+                        // nothing found, leave default -- do not overwrite empty select
+                    }
+                } catch(e) { console.warn('[review] dsType apply error', e); }
 
                 // If dsType wasn't found in the merged/local draft, attempt an authoritative read
                 // from Firestore (this will respect ?uid= override or the current firebase auth user).
@@ -904,6 +1039,61 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
                 console.error('preview loader failed', e);
             }
         });
+    </script>
+    <!-- Final safety re-apply for DS type: run after all other scripts to beat race conditions -->
+    <script>
+    (function(){
+        function tryParse(s){ try{ return s? JSON.parse(s): null; }catch(e){ return null; } }
+        function normalize(s){ return String(s||'').toLowerCase().replace(/\(.*?\)/g,'').replace(/[\W_]+/g,' ').trim(); }
+        function mapSynonym(raw){ if(!raw) return null; const m = normalize(raw); if(m.includes('trisomy')) return 'Trisomy 21 (Nondisjunction)'; if(m.includes('mosaic')) return 'Mosaic Down Syndrome'; if(m.includes('transloc')) return 'Translocation Down Syndrome'; return null; }
+
+        function findDsInStorage(){
+            // direct small keys
+            const direct = localStorage.getItem('dsType') || sessionStorage.getItem('dsType') || localStorage.getItem('r_dsType') || sessionStorage.getItem('r_dsType');
+            if(direct) return direct;
+            // try rpi_personal or registrationDraft shapes
+            const candidates = ['rpi_personal','registrationDraft','registration_draft','regDraft','reg_data'];
+            for(const k of candidates){
+                const raw = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k));
+                if(raw){
+                    // common shapes
+                    if(raw.dsType) return raw.dsType;
+                    if(raw.ds_type) return raw.ds_type;
+                    if(raw.personal && (raw.personal.dsType || raw.personal.ds_type)) return raw.personal.dsType||raw.personal.ds_type;
+                    // sometimes stored under simple key name mapping
+                    if(raw.r_dsType) return raw.r_dsType;
+                    if(raw.r_dsType1) return raw.r_dsType1;
+                }
+            }
+            // try window-exposed merged draft
+            try{ const w = window.__mvsg_lastLoadedDraft; if(w){ if(w.dsType) return w.dsType; if(w.personal && (w.personal.dsType||w.personal.ds_type)) return w.personal.dsType||w.personal.ds_type; } }catch(e){}
+            return null;
+        }
+
+        function applyNow(){
+            try{
+                const raw = findDsInStorage();
+                if(!raw) return false;
+                const syn = mapSynonym(raw);
+                if(typeof setSelectByValueOrText === 'function'){
+                    if(syn) setSelectByValueOrText('r_dsType1', syn) || setSelectByValueOrText('r_dsType1', raw);
+                    else setSelectByValueOrText('r_dsType1', raw);
+                } else {
+                    // fallback to direct DOM set
+                    const sel = document.getElementById('r_dsType1'); if(!sel) return false;
+                    const want = String(raw||'');
+                    try{ for(const o of sel.options){ if(String(o.value||'').toLowerCase()===want.toLowerCase()||String(o.text||'').toLowerCase()===want.toLowerCase()){ sel.value = o.value; sel.dispatchEvent(new Event('change',{bubbles:true})); return true; } }
+                        const mapped = syn || want; const opt = document.createElement('option'); opt.value = mapped; opt.text = mapped; opt.selected = true; sel.insertBefore(opt, sel.firstChild); sel.selectedIndex = 0; sel.dispatchEvent(new Event('change',{bubbles:true})); return true; }catch(e){ return false; }
+                }
+                return true;
+            }catch(e){ console.warn('[review-final-reapply] error', e); return false; }
+        }
+
+        // run a few times with short backoff to beat timing issues
+        let attempts = 0; const max = 8; const iv = setInterval(()=>{ attempts++; if(applyNow() || attempts>=max) clearInterval(iv); }, 180);
+        // also run once after DOM ready
+        if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyNow); else setTimeout(applyNow, 40);
+    })();
     </script>
     <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
     <script>
