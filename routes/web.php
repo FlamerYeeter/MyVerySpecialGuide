@@ -1339,6 +1339,19 @@ use App\Http\Controllers\OracleAuthController;
 // route to avoid duplicate registration entry points.
 Route::post('/oracle/guardian/login', [OracleAuthController::class, 'loginGuardian']);
 
+Route::get('/saved', function () {
+    return view('saved-jobs');
+})->name('saved');
+
+Route::get('/assessment', function () {
+    return view('career-goals-progress');
+})->name('assessment');
+
+Route::get('/whythisjob', function () {
+    return view('why-this-job-1');
+})->name('whythisjob');
+
+
 // Review pages
 Route::get('/registerreview1', function () {
     return view('ds_register_review-1');
