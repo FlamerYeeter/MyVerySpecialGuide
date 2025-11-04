@@ -224,7 +224,7 @@
 
     // Try server-backed sign-in first so we can fetch per-UID recs
     try {
-      await mod.signInWithServerToken("{{ route('firebase.token') }}");
+      <!-- firebase.token removed -->
     } catch(e) { console.debug('signInWithServerToken (why-this-job) failed', e); }
 
     const signed = await mod.isSignedIn(5000).catch(()=>false);

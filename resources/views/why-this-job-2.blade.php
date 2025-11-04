@@ -240,7 +240,7 @@
     try {
       const mod = await import('/js/job-application-firebase.js');
       try { await mod.ensureInit?.(); } catch(e){}
-      try { await mod.signInWithServerToken("{{ route('firebase.token') }}"); } catch(e) { /* ignore */ }
+  try { /* firebase.token removed */ } catch(e) { /* ignore */ }
       let profile = null;
       try { profile = await (mod.getUserProfile?.() || Promise.resolve(null)); } catch(e) { profile = null; }
 

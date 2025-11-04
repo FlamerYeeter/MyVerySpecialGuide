@@ -209,7 +209,7 @@
                 async function guardAndInit() {
                     try {
                         try {
-                            await signInWithServerToken("{{ route('firebase.token') }}");
+                            <!-- firebase.token removed -->
                         } catch (e) {
                             console.debug('signInWithServerToken failed', e);
                         }
