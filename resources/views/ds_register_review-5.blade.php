@@ -395,101 +395,101 @@
     <script>
         // Continue: collect visible prefs, save local draft, attempt Firestore write, then navigate
         (function(){
-            const normalizeSpans = (containerId) => {
-                const container = document.getElementById(containerId);
-                if (!container) return [];
-                const spans = Array.from(container.querySelectorAll('span'));
-                // filter out header placeholders like "Chosen Work" if present (heuristic: ignore exact 'Chosen Work')
-                return spans.map(s => (s.textContent||'').trim()).filter(t => t && t.toLowerCase() !== 'chosen work');
-            };
+            // const normalizeSpans = (containerId) => {
+            //     const container = document.getElementById(containerId);
+            //     if (!container) return [];
+            //     const spans = Array.from(container.querySelectorAll('span'));
+            //     // filter out header placeholders like "Chosen Work" if present (heuristic: ignore exact 'Chosen Work')
+            //     return spans.map(s => (s.textContent||'').trim()).filter(t => t && t.toLowerCase() !== 'chosen work');
+            // };
 
-            const storePendingWrite = (uid, section, data) => {
-                try {
-                    const all = JSON.parse(localStorage.getItem('pending_writes') || '{}');
-                    if (!all[uid]) all[uid] = {};
-                    all[uid][section] = { data };
-                    localStorage.setItem('pending_writes', JSON.stringify(all));
-                    console.info('[review-5] stored pending_writes for', uid, section);
-                } catch (e) { console.warn('[review-5] storePendingWrite failed', e); }
-            };
+            // const storePendingWrite = (uid, section, data) => {
+            //     try {
+            //         const all = JSON.parse(localStorage.getItem('pending_writes') || '{}');
+            //         if (!all[uid]) all[uid] = {};
+            //         all[uid][section] = { data };
+            //         localStorage.setItem('pending_writes', JSON.stringify(all));
+            //         console.info('[review-5] stored pending_writes for', uid, section);
+            //     } catch (e) { console.warn('[review-5] storePendingWrite failed', e); }
+            // };
 
-            const writeToFirestore = async (uid, prefs) => {
-                // Firebase client removed: do not attempt Firestore writes from client. Return failure so caller can fallback to local store.
-                return { ok: false, error: 'firebase-client-removed' };
-            };
+            // const writeToFirestore = async (uid, prefs) => {
+            //     // Firebase client removed: do not attempt Firestore writes from client. Return failure so caller can fallback to local store.
+            //     return { ok: false, error: 'firebase-client-removed' };
+            // };
 
             const btn = document.getElementById('rv5_continue');
             if (!btn) return;
             btn.addEventListener('click', async function(e){
                 try {
                     e.preventDefault();
-                    const errEl = document.getElementById('jobpref1Error');
-                    // collect prefs from the rendered review list, fallback to draft
-                    let prefs = normalizeSpans('review_jobprefs_list');
-                    if (!prefs.length) {
-                        try { prefs = (window.getDraftJobPreferences && window.getDraftJobPreferences()) || []; } catch(e) { prefs = []; }
-                    }
-                    // sanitize prefs to remove any personal-info or filenames that may have leaked into the draft
-                    const sanitizePrefs = (arr, draftObj) => {
-                        try {
-                            let a = (arr || []).map(x => String(x||'').trim()).filter(Boolean);
-                            const emailRe = /\S+@\S+\.\S+/;
-                            const phoneRe = /\+?\d[\d\s\-()]{5,}\d/;
-                            const fileExtRe = /\.(pdf|docx|doc|png|jpg|jpeg|gif)$/i;
-                            const personalSet = new Set();
-                            try {
-                                const d = draftObj || (window.__mvsg_lastLoadedDraft || {});
-                                const p = d.personalInfo || d.personal || d;
-                                const addIf = v => { try { if (v !== undefined && v !== null) { const s = String(v).trim(); if (s) personalSet.add(s.toLowerCase()); } } catch(e){} };
-                                if (p && typeof p === 'object') {
-                                    addIf(p.first_name || p.first || p.firstName);
-                                    addIf(p.last_name || p.last || p.lastName);
-                                    addIf(p.email || p.emailAddress);
-                                    addIf(p.phone || p.mobile);
-                                    addIf(p.address || p.addr);
-                                }
-                                addIf(d.proofFilename || d.cert_file || d.certfile || d.proof || d.proofFilename);
-                                addIf(d.role || d.userRole || d.roleName);
-                            } catch(e) {}
-                            a = a.filter(s => {
-                                try {
-                                    if (!s) return false;
-                                    if (emailRe.test(s)) return false;
-                                    if (phoneRe.test(s)) return false;
-                                    if (fileExtRe.test(s)) return false;
-                                    if (/\[object\s+object\]/i.test(s)) return false;
-                                    if (personalSet.size && personalSet.has(s.toLowerCase())) return false;
-                                    if (/^\d{1,3}$/.test(s)) return false;
-                                    if (s.length > 120) return false;
-                                    return true;
-                                } catch(e) { return false; }
-                            });
-                            return [...new Set(a)];
-                        } catch(e) { return (arr||[]).map(x=>String(x||'').trim()).filter(Boolean); }
-                    };
-                    prefs = sanitizePrefs(prefs, window.__mvsg_lastLoadedDraft || (localStorage.getItem('rpi_personal') ? JSON.parse(localStorage.getItem('rpi_personal')) : null));
-                    if (!prefs || prefs.length < 3) {
-                        if (errEl) errEl.textContent = 'Please select at least 3 options.';
-                        return;
-                    }
-                    if (prefs.length > 5) {
-                        if (errEl) errEl.textContent = 'Please select no more than 5 options.';
-                        return;
-                    }
-                    if (errEl) errEl.textContent = '';
+                    // const errEl = document.getElementById('jobpref1Error');
+                    // // collect prefs from the rendered review list, fallback to draft
+                    // let prefs = normalizeSpans('review_jobprefs_list');
+                    // if (!prefs.length) {
+                    //     try { prefs = (window.getDraftJobPreferences && window.getDraftJobPreferences()) || []; } catch(e) { prefs = []; }
+                    // }
+                    // // sanitize prefs to remove any personal-info or filenames that may have leaked into the draft
+                    // const sanitizePrefs = (arr, draftObj) => {
+                    //     try {
+                    //         let a = (arr || []).map(x => String(x||'').trim()).filter(Boolean);
+                    //         const emailRe = /\S+@\S+\.\S+/;
+                    //         const phoneRe = /\+?\d[\d\s\-()]{5,}\d/;
+                    //         const fileExtRe = /\.(pdf|docx|doc|png|jpg|jpeg|gif)$/i;
+                    //         const personalSet = new Set();
+                    //         try {
+                    //             const d = draftObj || (window.__mvsg_lastLoadedDraft || {});
+                    //             const p = d.personalInfo || d.personal || d;
+                    //             const addIf = v => { try { if (v !== undefined && v !== null) { const s = String(v).trim(); if (s) personalSet.add(s.toLowerCase()); } } catch(e){} };
+                    //             if (p && typeof p === 'object') {
+                    //                 addIf(p.first_name || p.first || p.firstName);
+                    //                 addIf(p.last_name || p.last || p.lastName);
+                    //                 addIf(p.email || p.emailAddress);
+                    //                 addIf(p.phone || p.mobile);
+                    //                 addIf(p.address || p.addr);
+                    //             }
+                    //             addIf(d.proofFilename || d.cert_file || d.certfile || d.proof || d.proofFilename);
+                    //             addIf(d.role || d.userRole || d.roleName);
+                    //         } catch(e) {}
+                    //         a = a.filter(s => {
+                    //             try {
+                    //                 if (!s) return false;
+                    //                 if (emailRe.test(s)) return false;
+                    //                 if (phoneRe.test(s)) return false;
+                    //                 if (fileExtRe.test(s)) return false;
+                    //                 if (/\[object\s+object\]/i.test(s)) return false;
+                    //                 if (personalSet.size && personalSet.has(s.toLowerCase())) return false;
+                    //                 if (/^\d{1,3}$/.test(s)) return false;
+                    //                 if (s.length > 120) return false;
+                    //                 return true;
+                    //             } catch(e) { return false; }
+                    //         });
+                    //         return [...new Set(a)];
+                    //     } catch(e) { return (arr||[]).map(x=>String(x||'').trim()).filter(Boolean); }
+                    // };
+                    // prefs = sanitizePrefs(prefs, window.__mvsg_lastLoadedDraft || (localStorage.getItem('rpi_personal') ? JSON.parse(localStorage.getItem('rpi_personal')) : null));
+                    // if (!prefs || prefs.length < 3) {
+                    //     if (errEl) errEl.textContent = 'Please select at least 3 options.';
+                    //     return;
+                    // }
+                    // if (prefs.length > 5) {
+                    //     if (errEl) errEl.textContent = 'Please select no more than 5 options.';
+                    //     return;
+                    // }
+                    // if (errEl) errEl.textContent = '';
 
-                    // build draft and persist locally
-                    try {
-                        // Persist canonical canonical jobpref1 array for review pages and future restores
-                        try { localStorage.setItem('jobpref1', JSON.stringify(prefs)); } catch(e) { console.warn('[review-5] could not write jobpref1', e); }
-                        try { const h = document.getElementById('jobpref1'); if (h) h.value = JSON.stringify(prefs); } catch(e){}
-                        console.info('[review-5] wrote jobpref1 with jobpref1', prefs);
-                    } catch (e) { console.warn('[review-5] could not persist jobpref1', e); }
+                    // // build draft and persist locally
+                    // try {
+                    //     // Persist canonical canonical jobpref1 array for review pages and future restores
+                    //     try { localStorage.setItem('jobpref1', JSON.stringify(prefs)); } catch(e) { console.warn('[review-5] could not write jobpref1', e); }
+                    //     try { const h = document.getElementById('jobpref1'); if (h) h.value = JSON.stringify(prefs); } catch(e){}
+                    //     console.info('[review-5] wrote jobpref1 with jobpref1', prefs);
+                    // } catch (e) { console.warn('[review-5] could not persist jobpref1', e); }
 
-                    // Firebase client removed: skip client-side Firestore write. Local persistence was already done above.
-                    console.info('[review-5] firebase client removed; skipping Firestore write (local only)');
+                    // // Firebase client removed: skip client-side Firestore write. Local persistence was already done above.
+                    // console.info('[review-5] firebase client removed; skipping Firestore write (local only)');
 
-                    // navigate to final step (do not attempt client-side firebase uid append)
+                    // // navigate to final step (do not attempt client-side firebase uid append)
                     try {
                         window.location.href = '{{ route('registerfinalstep') }}';
                     } catch (e) { window.location.href = '{{ route('registerfinalstep') }}'; }

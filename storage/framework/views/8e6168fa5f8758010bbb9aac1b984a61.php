@@ -28,9 +28,6 @@
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">LOG IN</h2>
 
         <!-- Form -->
-        <form method="POST" action="<?php echo e(route('login.post')); ?>" class="space-y-5">
-            <?php echo csrf_field(); ?>
-            <input type="hidden" name="redirect" value="/navigation-buttons" />
         <form id="loginForm" method="POST" action="<?php echo e(route('login.post')); ?>" class="space-y-5">
             <?php echo csrf_field(); ?>
             <input type="hidden" name="redirect" value="/navigation-buttons" />
@@ -81,7 +78,41 @@
 </div>
 
 </body>
+
 <script>
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const email = document.querySelector('input[name="email"]').value.trim();
+  const password = document.querySelector('input[name="password"]').value;
+  const errorDiv = document.getElementById('loginError');
+
+  try {
+    const res = await fetch('/db/login.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      // ✅ Store session ID in localStorage
+      localStorage.setItem('session_id', data.session_id);
+      localStorage.setItem('user_id', data.user.id);
+      localStorage.setItem('user_email', data.user.email);
+
+      window.location.href = '/navigation-buttons';
+    } else {
+      errorDiv.textContent = data.message || 'Login failed.';
+    }
+  } catch (err) {
+    errorDiv.textContent = 'Server error.';
+  }
+});
+</script>
+
+<!-- <script>
     (function(){
         // safe JSON parse helper
         function safeParse(s){ try { return JSON.parse(s); } catch(e){ return null; } }
@@ -177,7 +208,7 @@
             });
         });
     })();
-</script>
+</script> -->
 </html>
 
 

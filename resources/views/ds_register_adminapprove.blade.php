@@ -792,7 +792,7 @@
 
             btn.addEventListener('click', function() {
                 try {
-                    btn.disabled = true;
+                    // btn.disabled = true;
                     btn.classList.add('opacity-60');
                     const data = {};
                     // collect all inputs/selects/textareas that have an id
@@ -846,7 +846,7 @@
 
                 } catch (err) {
                     console.error('[adminapprove] submit failed', err);
-                    btn.disabled = false;
+                    // btn.disabled = false;
                     btn.classList.remove('opacity-60');
                 }
             });

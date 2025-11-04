@@ -40,21 +40,21 @@ $proof = saveBase64File($data['uploadedProofData0'] ?? '');
 $certs = saveBase64File($data['uploadedProofData1'] ?? '');
 
 // Personal
-$firstName     = $user_info['firstName'] ?? null;
-$lastName      = $user_info['lastName'] ?? null;
-$email         = $user_info['email'] ?? null;
-$phone         = $user_info['phone'] ?? null;
-$age           = $user_info['age'] ?? null;
-$address       = $user_info['address'] ?? null;
-$username      = $user_info['username'] ?? null;
-$password      = password_hash($user_info['password'] ?? 'temp123', PASSWORD_DEFAULT);
-$types_of_ds   = $user_info['r_dsType1'] ?? null;
+$firstName   = $user_info['firstName'] ?? null;
+$lastName    = $user_info['lastName'] ?? null;
+$email       = $user_info['email'] ?? null;
+$phone       = $user_info['phone'] ?? null;
+$age         = $user_info['age'] ?? null;
+$address     = $user_info['address'] ?? null;
+$username    = $user_info['username'] ?? null;
+$password    = password_hash($user_info['password'] ?? 'temp123', PASSWORD_DEFAULT);
+$types_of_ds = $user_info['r_dsType1'] ?? null;
 
 // Guardian
-$gf = $user_info['guardian_first'] ?? null;
-$gl = $user_info['guardian_last'] ?? null;
-$ge = $user_info['guardian_email'] ?? null;
-$gp = $user_info['guardian_phone'] ?? null;
+$gf = $user_info['g_first_name'] ?? null;
+$gl = $user_info['g_last_name'] ?? null;
+$ge = $user_info['g_email'] ?? null;
+$gp = $user_info['g_phone'] ?? null;
 $gr = $user_info['guardian_relationship'] ?? null;
 
 // IDs
@@ -62,9 +62,18 @@ $user_guardian_id = generateNumericId();
 
 // Connect
 $conn = getOracleConnection();
-if (!$conn) die(json_encode(['success'=>false, 'error'=>'DB connect failed']));
+if (!$conn) {
+    http_response_code(500);
+    die(json_encode(['success'=>false, 'error'=>'DB connection failed']));
+}
 
-// ——— 1. INSERT user_guardian (24 columns) ———
+// Disable auto-commit
+oci_set_action($conn, "Registration Transaction");
+
+// BEGIN TRANSACTION
+$allGood = true;
+
+// ——— 1. INSERT user_guardian ———
 $sql1 = "INSERT INTO user_guardian (
     id, role, first_name, last_name, email, contact_number, password,
     age, education, school, certificate,
@@ -72,7 +81,7 @@ $sql1 = "INSERT INTO user_guardian (
     guardian_contact_number, relationship_to_user, created_at, updated_at,
     address, types_of_ds, proof_of_membership, certificates, username
 ) VALUES (
-    :v0,:v1,:v2,:v3,:v4,:v5,:v6,
+    :v0,'User',:v2,:v3,:v4,:v5,:v6,
     :v7,:v8,:v9,:v10,
     :v11,:v12,:v13,:v14,:v15,SYSDATE,SYSDATE,
     :v16,:v17,:v18,:v19,:v20
@@ -80,7 +89,7 @@ $sql1 = "INSERT INTO user_guardian (
 
 $stid1 = oci_parse($conn, $sql1);
 oci_bind_by_name($stid1, ':v0',  $user_guardian_id);
-oci_bind_by_name($stid1, ':v1',  $status);
+// oci_bind_by_name($stid1, ':v1',  $status);
 oci_bind_by_name($stid1, ':v2',  $firstName);
 oci_bind_by_name($stid1, ':v3',  $lastName);
 oci_bind_by_name($stid1, ':v4',  $email);
@@ -101,130 +110,76 @@ oci_bind_by_name($stid1, ':v18', $proof);
 oci_bind_by_name($stid1, ':v19', $certs);
 oci_bind_by_name($stid1, ':v20', $username);
 
-if (!oci_execute($stid1)) {
+if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
     $e = oci_error($stid1);
-    http_response_code(500);
-    echo json_encode(['success'=>false, 'error'=>'Guardian: '.$e['message']]);
-    oci_close($conn);
-    exit;
+    $allGood = false;
 }
 
-$work_type        = json_decode($data['selected_work_experience'] ?? '[]', true);
-$skills1_selected = json_decode($data['skills1_selected'] ?? '[]', true);
-$job_category     = json_decode($data['jobPreferences'] ?? '[]', true);
-$support          = json_decode($data['support'] ?? '[]', true);
-$work_exp         = json_decode($data['job_experiences'] ?? '[]', true);
-$status           = $status ?? 'active';
-
-// ——— 2. INSERT user_profile (15 columns) ———
-foreach ($work_exp as $work) {
-
-    $sql2 = "
-        INSERT INTO job_experiences (
-            guardian_id,
-            job_title,
-            company_name,
-            work_year,
-            job_description
-        ) VALUES (
-            :v1,
-            :v2,
-            :v3,
-            :v4,
-            :v5
-        )
-    ";
-
-    $stid2 = oci_parse($conn, $sql2);
-
-    oci_bind_by_name($stid2, ':v1', $user_guardian_id);
-    oci_bind_by_name($stid2, ':v2', $work['title']);
-    oci_bind_by_name($stid2, ':v3', $work['company']);
-    oci_bind_by_name($stid2, ':v4', $work['year']);
-    oci_bind_by_name($stid2, ':v5', $work['description']);
-
-    $exec2 = oci_execute($stid2, OCI_COMMIT_ON_SUCCESS);
-
-    if ($exec2) {
-        echo "✅ Inserted work experience: {$work['title']}<br>";
-    } else {
-        $e = oci_error($stid2);
-        echo "❌ Error inserting work {$work['title']}: " . $e['message'] . "<br>";
+// ——— 2. INSERT job_experiences ———
+if ($allGood) {
+    $work_exp = json_decode($data['job_experiences'] ?? '[]', true);
+    foreach ($work_exp as $work) {
+        $sql2 = "INSERT INTO job_experiences (
+                    guardian_id, job_title, company_name, work_year, job_description
+                ) VALUES (
+                    :v1,:v2,:v3,:v4,:v5
+                )";
+        $stid2 = oci_parse($conn, $sql2);
+        oci_bind_by_name($stid2, ':v1', $user_guardian_id);
+        oci_bind_by_name($stid2, ':v2', $work['title']);
+        oci_bind_by_name($stid2, ':v3', $work['company']);
+        oci_bind_by_name($stid2, ':v4', $work['year']);
+        oci_bind_by_name($stid2, ':v5', $work['description']);
+        if (!oci_execute($stid2, OCI_NO_AUTO_COMMIT)) {
+            $e = oci_error($stid2);
+            $allGood = false;
+            break;
+        }
     }
 }
 
-$work_type        = json_decode($data['selected_work_experience'] ?? '[]', true);
-$skills1_selected = json_decode($data['skills1_selected'] ?? '[]', true);
-$job_category     = json_decode($data['jobPreferences'] ?? '[]', true);
-$support          = json_decode($data['support'] ?? '[]', true);
-
-// Helper function for inserting rows
+// ——— 3. INSERT guardian_job_details (work/support/skills/category) ———
 function insertGuardianDetail($conn, $guardian_id, $type, $value) {
-    $sql = "
-        INSERT INTO guardian_job_details (
-            guardian_id,
-            type,
-            value
-        ) VALUES (
-            :guardian_id,
-            :type,
-            :value
-        )
-    ";
+    $sql = "INSERT INTO user_profile (guardian_id, type, value)
+            VALUES (:guardian_id, :type, :value)";
     $stid = oci_parse($conn, $sql);
-
     oci_bind_by_name($stid, ':guardian_id', $guardian_id);
     oci_bind_by_name($stid, ':type', $type);
     oci_bind_by_name($stid, ':value', $value);
-
-    $exec = oci_execute($stid, OCI_COMMIT_ON_SUCCESS);
-
-    if ($exec) {
-        echo "✅ Inserted $type → $value<br>";
-    } else {
-        $e = oci_error($stid);
-        echo "❌ Error inserting $type → $value: " . $e['message'] . "<br>";
-    }
-
+    $ok = oci_execute($stid, OCI_NO_AUTO_COMMIT);
+    if (!$ok) $GLOBALS['allGood'] = false;
     oci_free_statement($stid);
 }
 
-// Insert Work Types
-foreach ($work_type as $w_type) {
-    insertGuardianDetail($conn, $guardian_id, 'work_experience', $w_type);
+if ($allGood) {
+    $work_type        = json_decode($data['selected_work_experience'] ?? '[]', true);
+    $skills1_selected = json_decode($data['skills1_selected'] ?? '[]', true);
+    $job_category     = json_decode($data['jobPreferences'] ?? '[]', true);
+    $support          = json_decode($data['support'] ?? '[]', true);
+
+    foreach ($work_type as $v) insertGuardianDetail($conn, $user_guardian_id, 'work_experience', $v);
+    foreach ($skills1_selected as $v) insertGuardianDetail($conn, $user_guardian_id, 'skills', $v);
+    foreach ($job_category as $v) insertGuardianDetail($conn, $user_guardian_id, 'job_category', $v);
+    foreach ($support as $v) insertGuardianDetail($conn, $user_guardian_id, 'support', $v);
 }
 
-// Insert Skills
-foreach ($skills1_selected as $skill) {
-    insertGuardianDetail($conn, $guardian_id, 'skills', $skill);
-}
-
-// Insert Job Categories
-foreach ($job_category as $category) {
-    insertGuardianDetail($conn, $guardian_id, 'job_category', $category);
-}
-
-// Insert Support Options
-foreach ($support as $sup) {
-    insertGuardianDetail($conn, $guardian_id, 'support', $sup);
-}
-
-if (!oci_execute($stid2)) {
-    $e = oci_error($stid2);
-    oci_rollback($conn);
-    http_response_code(500);
-    echo json_encode(['success'=>false, 'error'=>'Profile: '.$e['message']]);
-} else {
+// ——— FINAL COMMIT OR ROLLBACK ———
+if ($allGood) {
+    oci_commit($conn);
     http_response_code(200);
     echo json_encode([
         'success' => true,
-        'user_id' => $user_guardian_id,
-        'profile_id' => $user_profile_id,
+        'guardian_id' => $user_guardian_id,
         'files' => ['proof' => $proof, 'certs' => $certs]
     ]);
+} else {
+    oci_rollback($conn);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => $e['message'] ?? 'Transaction failed']);
 }
 
+// ——— CLEANUP ———
 oci_free_statement($stid1);
-oci_free_statement($stid2);
+if (isset($stid2)) oci_free_statement($stid2);
 oci_close($conn);
 ?>
