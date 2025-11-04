@@ -206,8 +206,12 @@
                         // swallow and let client fallback handle it
                         $oracleRecs = null;
                     }
-                    $contentRecs = $oracleRecs['content'] ?? ($oracleRecs['results'] ?? []);
-                    $collabRecs = $oracleRecs['collab'] ?? ($oracleRecs['data'] ?? []);
+                    // Prefer hybrid results only. Force the page to treat recommendations
+                    // as a single blended list. Clear legacy content/collab arrays so
+                    // UI always renders hybrid-only.
+                    $hybridRecs = is_array($oracleRecs) ? ($oracleRecs['hybrid'] ?? []) : [];
+                    $contentRecs = [];
+                    $collabRecs = [];
 
                     // If no oracle response, try to load a per-user cached recommendations file
                     if (empty($oracleRecs)) {
@@ -274,9 +278,9 @@
                 @endphp
 
                 <div id="client-job-list" class="mt-6 space-y-4">
-                    <div class="text-left"><h4 class="text-2xl font-bold mb-3">Content-based (Experts)</h4></div>
-                    @if (!empty($contentRecs) && is_array($contentRecs) && count($contentRecs) > 0)
-                        @foreach ($contentRecs as $idx => $r)
+                    <div class="text-left"><h4 class="text-2xl font-bold mb-3">Hybrid (Blended)</h4></div>
+                    @if (!empty($hybridRecs) && is_array($hybridRecs) && count($hybridRecs) > 0)
+                        @foreach ($hybridRecs as $idx => $r)
                             @php
                                 if ($idx >= 12) { $hide = 'hidden rec-hidden rec-content'; } else { $hide = ''; }
                                 $title = e($r['title'] ?? $r['job_title'] ?? $r['Title'] ?? 'Untitled');
@@ -337,70 +341,16 @@
                             </div>
                         @endforeach
 
-                        @if (count($contentRecs) > 12)
+                        @if (count($hybridRecs) > 12)
                             <div class="text-center mb-6">
                                 <button id="show-more-content" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-md border">Show more</button>
                             </div>
                         @endif
                     @else
-                        <p class="text-sm text-gray-500 mb-6">No content-based recommendations available.</p>
+                        <p class="text-sm text-gray-500 mb-6">No hybrid recommendations available.</p>
                     @endif
 
-                    <div class="text-left mt-4"><h4 class="text-2xl font-bold mb-3">Collaborative</h4></div>
-                    @if (!empty($collabRecs) && is_array($collabRecs) && count($collabRecs) > 0)
-                        @foreach ($collabRecs as $idx => $r)
-                            @php
-                                if ($idx >= 12) { $hide = 'hidden rec-hidden rec-collab'; } else { $hide = ''; }
-                                $title = e($r['title'] ?? $r['job_title'] ?? $r['Title'] ?? 'Untitled');
-                                $companyName = e($r['company'] ?? $r['company_name'] ?? $r['Company'] ?? '');
-                                $location = e($r['location'] ?? $r['city'] ?? $r['CITY'] ?? '');
-                                $desc = e(substr($r['description'] ?? $r['job_description'] ?? '', 0, 300));
-                                $skills = $r['required_skills'] ?? $r['skills'] ?? '';
-                                $logoUrl = $resolveLogo($r);
-                            @endphp
-
-                            <div class="bg-white border-2 border-blue-100 rounded-none shadow-lg p-8 flex flex-col lg:flex-row justify-between items-start gap-8 hover:scale-[1.01] transition-all {{ $hide }}">
-                                <div class="flex items-center gap-5 w-full lg:w-2/3">
-                                    <button class="flag-btn text-gray-400 text-5xl font-bold focus:outline-none hover:text-red-500 transition-all duration-300"><i class="ri-flag-line"></i></button>
-                                    <div class="flex-shrink-0">
-                                        @if ($logoUrl)
-                                            <img src="{{ $logoUrl }}" alt="Company Logo" class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover" />
-                                        @else
-                                            <div class="w-32 h-32 flex items-center justify-center rounded-2xl border-2 border-gray-300 bg-gray-50">
-                                                <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
-                                            </div>
-                                        @endif
-                                    </div>
-                                    <div>
-                                        <h3 class="font-bold text-2xl text-gray-800">{!! $title !!}</h3>
-                                        <p class="text-lg text-gray-600 mt-2 flex items-center gap-2">@if($location)<img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/> <span>{!! $location !!}</span>@endif</p>
-                                        <div class="flex flex-wrap gap-2 mt-2">@php echo $renderTags($skills); @endphp</div>
-                                    </div>
-                                </div>
-
-                                <div class="flex flex-col items-center lg:items-end w-full lg:w-1/3 mt-4 lg:mt-0">
-                                    <button class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[365px] mb-4 hover:bg-[#D78203] transition text-center">Apply for Therapist Job Readiness Assessment</button>
-                                    <div class="flex gap-4 mb-4">
-                                        <button class="bg-[#55BEBB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#399f96] transition-all w-[110px]">Details</button>
-                                        <button class="bg-[#2563EB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#1b3999] transition-all w-[110px]">Apply</button>
-                                        <button class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 hover:bg-[#006400] transition w-[110px]">Save</button>
-                                    </div>
-                                    <div class="w-full sm:w-[360px]">
-                                        <div class="h-3 bg-gray-200 rounded-none overflow-hidden"><div class="h-full bg-[#88BF02] w-1/2 rounded-none"></div></div>
-                                        <p class="text-sm text-gray-500 font-semibold mt-2 text-center lg:text-right"><span class="font-semibold text-black">5 applied</span> of 10 capacity</p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-
-                        @if (count($collabRecs) > 12)
-                            <div class="text-center mt-6">
-                                <button id="show-more-collab" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-md border">Show more</button>
-                            </div>
-                        @endif
-                    @else
-                        <p class="text-sm text-gray-500">No collaborative recommendations available.</p>
-                    @endif
+                    {{-- Collaborative section removed — page now shows only Hybrid results --}}
                 </div>
 
                 <script>
@@ -1502,8 +1452,10 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                     // Expect controller to return { uid, collab: [...], content: [...] }
                                     let contentRecs = [];
                                     let collabRecs = [];
+                                    let hybridRecs = [];
                                     if (data && Array.isArray(data.content)) contentRecs = data.content;
                                     if (data && Array.isArray(data.collab)) collabRecs = data.collab;
+                                    if (data && Array.isArray(data.hybrid)) hybridRecs = data.hybrid;
 
                                     // Fallback compatibility: older single-array responses
                                     if ((contentRecs.length === 0 && collabRecs.length === 0)) {
@@ -1525,9 +1477,68 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                     // Build sectioned HTML using the provided list templates
                                     let out = '';
 
-                                    // Header for Content-based
-                                    out += `<div class="text-left"><h4 class="text-2xl font-bold mb-3">Content-based (Experts)</h4></div>`;
-                                    if (contentRecs && contentRecs.length > 0) {
+                                    // If hybrid results are returned prefer rendering them first
+                                    if (hybridRecs && hybridRecs.length > 0) {
+                                        out += `<div class="text-left"><h4 class="text-2xl font-bold mb-3">Hybrid (Blended)</h4></div>`;
+                                        hybridRecs.slice(0, 50).forEach((r, idx) => {
+                                            const jid = String(r.id ?? r.job_id ?? ('h' + idx));
+                                            const title = esc(r.title || r.Title || r.job_title || 'Untitled');
+                                            const company = esc(r.company || r.company_name || r.Company || '');
+                                            const location = esc(r.location || r.city || r.CITY || '');
+                                            const desc = esc((r.description || r.job_description || '').substring(0, 400));
+                                            const skills = r.required_skills || r.skills || r.REQUIRED_SKILLS || '';
+
+                                            out += `
+                                                <div class="relative bg-white border-2 border-green-200 rounded-3xl shadow-lg p-10 mb-6 transition-transform hover:scale-[1.02]">
+                                                    <div class="flex flex-col lg:flex-row justify-between items-start gap-8">
+                                                        <div class="flex items-start gap-6">
+                                                            <div class="flex items-center gap-4">
+                                                                <button class="flag-btn text-gray-400 text-5xl focus:outline-none hover:text-red-500 transition-all duration-300"><i class="ri-flag-line"></i></button>
+                                                                <div class="flex-shrink-0">
+                                                                    <div class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
+                                                                        <i class="ri-building-4-fill text-[#15803D] text-6xl"></i>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                            <div>
+                                                                <h3 class="font-bold text-3xl text-gray-900">${title}</h3>
+                                                                <p class="text-gray-700 text-2xl font-medium mt-2">${company}</p>
+                                                                <p class="text-gray-600 text-lg mt-1 flex items-center gap-2">${location ? `<img src=\"https://img.icons8.com/color/48/marker--v1.png\" class=\"w-6 h-6\"/> <span>${location}</span>` : ''}</p>
+
+                                                                <div class="flex flex-wrap gap-3 mt-3">${renderTags(skills)}</div>
+                                                            </div>
+                                                        </div>
+
+                                                        <a href="#" class="text-[#15803D] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this hybrid match?</a>
+                                                    </div>
+
+                                                    <p class="text-gray-700 text-xl mt-8 leading-relaxed max-w-4xl">${desc}</p>
+
+                                                    <div class="flex flex-wrap gap-3 mt-6">${renderTags(skills)}</div>
+
+                                                    <div class="flex flex-wrap gap-3 mt-8">
+                                                        <span class="border border-[#15803D] text-[#15803D] text-lg px-5 py-2 rounded-md font-semibold">Hybrid Match</span>
+                                                        <span class="border border-[#2563EB] text-[#2563EB] text-lg px-5 py-2 rounded-md font-semibold">Content ${r.content_score ?? ''}</span>
+                                                        <span class="border border-[#88BF02] text-[#88BF02] text-lg px-5 py-2 rounded-md font-semibold">Collab ${r.collab_score ?? ''}</span>
+                                                    </div>
+
+                                                    <div class="flex justify-end mt-10">
+                                                        <button class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[480px] hover:bg-[#D78203] transition text-center">Apply for Therapist Job Readiness Assessment</button>
+                                                    </div>
+
+                                                    <div class="flex justify-end flex-wrap gap-4 mt-4">
+                                                        <button class="bg-[#55BEBB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#47a4a1] transition">Details</button>
+                                                        <button class="bg-[#2563EB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#1e4fc5] transition">Apply</button>
+                                                        <button class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
+                                                    </div>
+                                                </div>
+                                            `;
+                                        });
+                                    } else {
+                                        // Header for Content-based
+                                        out += `<div class="text-left"><h4 class="text-2xl font-bold mb-3">Content-based (Experts)</h4></div>`;
+                                        if (contentRecs && contentRecs.length > 0) {
                                         contentRecs.slice(0, 50).forEach((r, idx) => {
                                             const jid = String(r.id ?? r.job_id ?? ('c' + idx));
                                             const title = esc(r.title || r.Title || r.job_title || 'Untitled');
@@ -1588,7 +1599,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                     }
 
                                     // Collaborative header
-                                    out += `<div class="text-left mt-4"><h4 class="text-2xl font-bold mb-3">Collaborative</h4></div>`;
+                                        // collaborative section suppressed in favor of hybrid-only listing
                                     if (collabRecs && collabRecs.length > 0) {
                                         collabRecs.slice(0, 50).forEach((r, idx) => {
                                             const jid = String(r.job_id ?? r.id ?? ('p' + idx));
@@ -1630,7 +1641,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                             `;
                                         });
                                     } else {
-                                        out += `<p class="text-sm text-gray-500">No collaborative recommendations available.</p>`;
+                                        // no collaborative block — hybrid-only listing
                                     }
 
                                     if (listEl) listEl.innerHTML = out;
@@ -1842,8 +1853,21 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({})
-                        }).then(r => r.json()).then(j => console.debug('bulk reco all triggered', j)).catch(e =>
-                            console.debug('bulk reco all failed', e));
+                        }).then(async r => {
+                            // Protect client from HTML error pages or redirects which are not JSON.
+                            const ct = r.headers.get('content-type') || '';
+                            const txt = await r.text().catch(() => null);
+                            if (ct.indexOf('application/json') !== -1) {
+                                try {
+                                    const j = JSON.parse(txt);
+                                    console.debug('bulk reco all triggered', j);
+                                } catch (e) {
+                                    console.debug('bulk reco all returned invalid json', e, txt && txt.substring ? txt.substring(0,300) : txt);
+                                }
+                            } else {
+                                console.debug('bulk reco all returned non-json response; skipping', ct, txt && txt.substring ? txt.substring(0,300) : txt);
+                            }
+                        }).catch(e => console.debug('bulk reco all failed', e));
                     } catch (e) {
                         console.debug('bulk reco all start failed', e);
                     }
@@ -1875,13 +1899,14 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     if (!listEl) return;
                     const esc = s => s === null || s === undefined ? '' : String(s)
                         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                    const contentRecs = Array.isArray(data.content) ? data.content : [];
-                    const collabRecs = Array.isArray(data.collab) ? data.collab : [];
+                    // Favor 'hybrid' payload. Fall back to content/collab only if hybrid not present.
+                    const hybridRecs = Array.isArray(data.hybrid) && data.hybrid.length > 0 ? data.hybrid : (Array.isArray(data.content) ? data.content : []);
                     let out = '';
 
-                    out += `<div class="text-left"><h4 class="text-2xl font-bold mb-3">Content-based (Experts)</h4></div>`;
-                    if (contentRecs && contentRecs.length > 0) {
-                        contentRecs.slice(0, 50).forEach((r, idx) => {
+                    // Render only hybrid results — do not render separate content/collab sections
+                    out += `<div class="text-left"><h4 class="text-2xl font-bold mb-3">Hybrid (Blended)</h4></div>`;
+                    if (hybridRecs && hybridRecs.length > 0) {
+                        hybridRecs.slice(0, 50).forEach((r, idx) => {
                             const title = esc(r.title || r.Title || r.job_title || 'Untitled');
                             const company = esc(r.company || r.company_name || r.Company || '');
                             const location = esc(r.location || r.city || r.CITY || '');
@@ -1935,11 +1960,12 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                             `;
                         });
                     } else {
-                        out += `<p class="text-sm text-gray-500 mb-6">No content-based recommendations available.</p>`;
+                        out += `<p class="text-sm text-gray-500 mb-6">No hybrid recommendations available.</p>`;
                     }
 
-                    out += `<div class="text-left mt-4"><h4 class="text-2xl font-bold mb-3">Collaborative</h4></div>`;
-                    if (collabRecs && collabRecs.length > 0) {
+                    // collaborative section suppressed in favor of hybrid-only listing
+                    // (keep this empty; frontend should not render collab separately)
+                    if (false) {
                         collabRecs.slice(0, 50).forEach((r, idx) => {
                             const title = esc(r.title || r.Title || r.job_title || 'Untitled');
                             const company = esc(r.company || r.company_name || r.Company || '');
@@ -1978,7 +2004,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                             `;
                         });
                     } else {
-                        out += `<p class="text-sm text-gray-500">No collaborative recommendations available.</p>`;
+                        // no collaborative block for hybrid-only display
                     }
 
                     listEl.innerHTML = out;
