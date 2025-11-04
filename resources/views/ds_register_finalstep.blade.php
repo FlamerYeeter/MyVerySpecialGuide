@@ -137,7 +137,8 @@
     <div class="bg-green-50 border border-green-400 rounded-lg px-4 sm:px-6 py-4 mt-6 shadow-sm">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <p class="text-sm sm:text-[15px] text-black leading-relaxed flex-1">
-          Upon account creation, a therapist will review your provided information to assess your skills and preferences. You will be notified once your evaluation has been completed and the assessment phase can begin.
+          By creating an account, you confirm that the information entered is true and that you are an authorized 
+          individual to use this platform. Any misuse or false representation may lead to account restriction.
         </p>
         <button type="button"
           class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
@@ -146,8 +147,8 @@
           aria-label="Read info aloud in English then Filipino" title="Play Audio"></button>
       </div>
       <p class="mt-2 italic text-gray-700 text-xs sm:text-[13px] leading-relaxed">
-        (Pagkatapos mong gumawa ng account, susuriin ng therapist ang iyong impormasyon para malaman ang iyong mga kakayahan at gusto. Makakatanggap ka ng abiso kapag tapos na ang iyong ebalwasyon at handa ka nang magpatuloy sa assessment.)
-      </p>
+        (Sa paglikha ng account, pinapatunayan mong totoo at tama ang impormasyong iyong inilagay at na ikaw ay awtorisadong indibidwal na gumamit ng platform na ito. Ang anumang maling paggamit o pagpapahayag ng hindi 
+        totoong impormasyon ay maaaring magresulta sa pagkakabawal o pagkakasuspinde ng iyong account.)
     </div>
 
     <!-- Buttons -->
@@ -157,7 +158,7 @@
     id="createAccountBtn"
     class="w-full sm:w-[530px] bg-[#42A5F5] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-[#1E88E5] transition-all duration-200"
   >
-    Submit for Evaluation
+    Create Account
   </button>
 </div>
 
@@ -173,32 +174,23 @@
     <input type="hidden" id="password" name="password" value="" />
     <input type="hidden" id="confirm_password" name="confirm_password" value="" />
 
-    <!-- Email verification modal (hidden by default) -->
-    <div id="emailVerifyModal" class="hidden fixed inset-0 z-50 flex items-center justify-center">
-      <div class="absolute inset-0 bg-black opacity-40"></div>
-      <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 z-60">
-        <div class="flex items-start justify-between">
-          <h3 class="text-lg font-semibold text-gray-800">Verify Your Email</h3>
-          <button id="emailVerifyClose" type="button" class="text-gray-500 hover:text-gray-700">✕</button>
-        </div>
-        <div class="mt-4">
-          <p class="text-sm text-gray-700">We will send a verification code to:</p>
-          <p id="verificationEmail" class="mt-2 font-medium text-gray-900 break-words"></p>
-        </div>
-        <div class="mt-6 flex justify-end gap-3">
-          <button id="emailVerifyCancel" type="button" class="px-4 py-2 bg-gray-100 rounded-md hover:bg-gray-200">Cancel</button>
-          <button id="emailVerifyProceed" type="button" class="px-4 py-2 bg-[#2E2EFF] text-white rounded-md hover:bg-blue-600">Proceed</button>
-        </div>
-      </div>
-    </div>
-
     <!-- Helper Text -->
     <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
-      Click <span class="text-[#1E40AF] font-medium">“Submit for Evaluation”</span> to complete your registration
+      Click <span class="text-[#1E40AF] font-medium">“Create Account”</span> to complete your registration
     </p>
     <p class="text-gray-600 italic text-[12px] sm:text-[13px] text-center">
-      (Pindutin ang “Submit for Evaluation” upang tapusin ang iyong pagpaparehistro)
+      (Pindutin ang “Create Account” upang tapusin ang iyong pagpaparehistro)
     </p>
+  </div>
+
+  <!-- Created Success Modal (hidden) -->
+  <div id="createdModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-lg p-8 w-11/12 max-w-lg text-center">
+      <div class="mb-4 text-5xl">🎉</div>
+      <h3 class="text-2xl font-bold mb-2">Account<br/>Successfully Created!</h3>
+      <p class="text-gray-700 mb-6">Congratulations! Click OK to proceed to login.</p>
+      <button id="createdModalOk" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md transition-all duration-200">Okay</button>
+    </div>
   </div>
 
   {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
@@ -353,11 +345,57 @@
           [agree1, agree2].forEach(el => { if(el && el.parentElement) el.parentElement.classList.remove('ring','ring-2','ring-red-300'); });
         }
 
+        // Resolve email from multiple local sources as a last-resort fallback
+        function resolveEmailFallback() {
+          try {
+            // 1) prefer the server-hidden field
+            const hidden = (emailField && (emailField.value || '').trim()) || (document.getElementById('email') && (document.getElementById('email').value || '').trim());
+            if (hidden) return hidden;
+
+            // 2) prefer an explicit marker set earlier in the flow
+            const localCurrent = (localStorage.getItem('local_current_email') || sessionStorage.getItem('local_current_email') || '').trim();
+            if (localCurrent) return localCurrent;
+
+            // 3) try the local_accounts store (most recent)
+            try {
+              const accs = JSON.parse(localStorage.getItem('local_accounts') || '[]');
+              if (Array.isArray(accs) && accs.length) {
+                const last = accs[accs.length - 1];
+                if (last && last.email) return (last.email || '').trim();
+              }
+            } catch(e){}
+
+            // 4) try rpi_personal stored draft
+            try {
+              const r = localStorage.getItem('rpi_personal') || sessionStorage.getItem('rpi_personal');
+              if (r) {
+                const parsed = JSON.parse(r);
+                const e = parsed?.personalInfo?.email || parsed?.personal?.email || parsed?.email;
+                if (e) return (e || '').trim();
+              }
+            } catch(e){}
+
+            // 5) common registration draft keys
+            const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','registerDraft','regDraft','reg_data'];
+            for (const k of keys) {
+              try {
+                const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+                if (!v) continue;
+                const parsed = JSON.parse(v);
+                const e = parsed?.personalInfo?.email || parsed?.personal?.email || parsed?.emailAddress || parsed?.email;
+                if (e) return (e || '').trim();
+              } catch(e) { /* ignore parse errors */ }
+            }
+          } catch(e) { console.warn('resolveEmailFallback error', e); }
+          return '';
+        }
+
         createBtn && createBtn.addEventListener('click', function(e){
           e.preventDefault();
           clearErrors();
 
-          const email = (emailField && emailField.value || '').trim();
+          // try hidden/server email first, then multiple fallbacks
+          const email = ( (emailField && (emailField.value || '').trim()) || resolveEmailFallback() ).trim();
           let hasError = false;
 
           if (!agree1 || !agree1.checked || !agree2 || !agree2.checked) {
@@ -367,7 +405,8 @@
           }
 
           if (!email) {
-            finalError.textContent = 'No email available for verification.';
+            // clearer guidance for the user
+            finalError.textContent = 'No email available for verification. Please return to the previous steps or ensure your draft data contains an email.';
             hasError = true;
           }
 
@@ -386,12 +425,73 @@
             }
           };
 
-          // For now, skip verification flow and go straight to home
+          // Build a local account object from drafts in localStorage (temporary local-only account store)
           try {
-            window.location.href = '{{ route('home') }}';
+            const ensureParse = (s) => { try { return s ? JSON.parse(s) : null; } catch(e) { return null; } };
+            const collectDrafts = () => {
+              const out = {};
+              out.personal = ensureParse(localStorage.getItem('rpi_personal')) || ensureParse(sessionStorage.getItem('rpi_personal')) || {};
+              out.jobPreferences = ensureParse(localStorage.getItem('jobPreferences')) || ensureParse(localStorage.getItem('jobpref1')) || [];
+              out.skills = ensureParse(localStorage.getItem('skills_page1')) || ensureParse(localStorage.getItem('skills')) || [];
+              out.experiences = ensureParse(localStorage.getItem('job_experiences')) || [];
+              out.registrationDraft = ensureParse(localStorage.getItem('registrationDraft')) || ensureParse(sessionStorage.getItem('registrationDraft')) || {};
+              out.proof = {
+                name: localStorage.getItem('uploadedProofName1') || localStorage.getItem('uploadedProofName0') || null,
+                dataKey: localStorage.getItem('uploadedProofData1') ? 'uploadedProofData1' : (localStorage.getItem('uploadedProofData0') ? 'uploadedProofData0' : null)
+              };
+              return out;
+            };
+
+            const makePassword = (len=12) => {
+              const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*()-_';
+              let p = ''; for (let i=0;i<len;i++) p += chars[Math.floor(Math.random()*chars.length)];
+              return p;
+            };
+
+            const account = {};
+            account.email = email;
+            account.agreements = window.finalRegistrationData.agreements || {};
+            account.draft = collectDrafts();
+            // prefer any generated password kept on window, otherwise create a random one (local-only)
+            account.password = window.__mvsg_generatedPassword || makePassword(12);
+            account.createdAt = (new Date()).toISOString();
+            account.status = 'pending_local';
+
+            // persist into a local accounts store
+            try {
+              const key = 'local_accounts';
+              let list = [];
+              try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { list = []; }
+              // remove any existing entry for same email
+              list = list.filter(x => String(x.email||'').toLowerCase() !== String(account.email||'').toLowerCase());
+              list.push(account);
+              localStorage.setItem(key, JSON.stringify(list));
+              // also mark current email for quick lookup
+              localStorage.setItem('local_current_email', account.email);
+              console.info('[finalstep] saved local account for', account.email);
+            } catch(e) { console.warn('[finalstep] could not persist local account', e); }
+
+          } catch(e) { console.warn('[finalstep] build local account failed', e); }
+
+          // show success modal (instead of redirecting immediately) and then go to login
+          try {
+            const modal = document.getElementById('createdModal');
+            if (modal) {
+              modal.classList.remove('hidden');
+              const ok = document.getElementById('createdModalOk');
+              if (ok) {
+                ok.focus();
+                ok.addEventListener('click', function(){
+                  try { window.location.href = '{{ route('login') }}'; } catch(e){ window.location.href = '/login'; }
+                });
+              }
+            } else {
+              try { window.location.href = '{{ route('login') }}'; } catch(e){ window.location.href = '/login'; }
+            }
             return;
           } catch (e) {
-            console.warn('redirect to home failed', e);
+            console.warn('show created modal failed', e);
+            try { window.location.href = '{{ route('login') }}'; } catch(err){ window.location.href = '/login'; }
           }
         });
       })();

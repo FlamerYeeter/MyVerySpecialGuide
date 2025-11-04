@@ -37,7 +37,7 @@
   <!-- Back Button -->
   <button
   class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-  onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview2') }}')">
+  onclick="(history.length>1 ? history.back() : window.location.href='<?php echo e(route('registerreview2')); ?>')">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
       class="w-3 h-3 sm:w-6 sm:h-6">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -117,7 +117,7 @@
         class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
           px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
           shadow-md w-full sm:w-64 text-center"
-  onclick="window.location.href='{{ route('registerreview5') }}'">
+  onclick="window.location.href='<?php echo e(route('registerreview5')); ?>'">
         Continue →
       </button>
     </div>
@@ -134,8 +134,8 @@
 
     <!-- removed global floating preview -->
 
-  {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-  <script src="{{ asset('js/register.js') }}"></script>
+  
+  <script src="<?php echo e(asset('js/register.js')); ?>"></script>
     <script>
     document.addEventListener('DOMContentLoaded', async () => {
       try {
@@ -191,116 +191,6 @@
     });
     </script>
     <script>
-      // Defensive fallback: only target explicit skills keys (avoid flattening whole rpi_personal objects)
-      document.addEventListener('DOMContentLoaded', function(){
-        try {
-          const el = document.getElementById('review_skills_list');
-          if (!el) return;
-          const hasContent = el.children && el.children.length && Array.from(el.children).some(c=> (c.textContent||'').trim());
-          if (hasContent) return; // already populated
-
-          const tryParse = s => { try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } };
-          const normalizeArray = v => {
-            if (!v && v !== 0) return [];
-            if (Array.isArray(v)) return v.map(x=> (typeof x==='string'?x.trim():x)).filter(Boolean);
-            if (typeof v === 'string') {
-              const s = v.trim(); if (!s) return [];
-              if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) return normalizeArray(tryParse(s) || []);
-              if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
-              return [s];
-            }
-            return [];
-          };
-
-          // Look for skills only in targeted keys (localStorage, hidden inputs, or rpi_personal.skills)
-          const lsKeys = ['skills_page1','skills_page_1','skills1','skills','selected_skills','selectedSkills','skills_page','skills_page1_value','skills_page1_value'];
-          let found = [];
-
-          // 1) check for a hidden input on the page (skills_page1)
-          try {
-            const hidden = document.getElementById('skills_page1');
-            if (hidden && hidden.value) {
-              const parsed = tryParse(hidden.value) || hidden.value;
-              const norm = normalizeArray(parsed);
-              if (norm && norm.length) found = norm;
-            }
-          } catch(e){}
-
-          // 2) then check localStorage keys if not found
-          if (!found.length) {
-            for (const k of lsKeys) {
-              try {
-                const raw = localStorage.getItem(k);
-                if (!raw) continue;
-                const parsed = tryParse(raw) || raw;
-                const norm = normalizeArray(parsed);
-                if (norm && norm.length) { found = norm; break; }
-              } catch(e){}
-            }
-          }
-
-          // If not found, check rpi_personal but only the skills namespace (do NOT flatten entire object)
-          if (!found.length) {
-            try {
-              const rpRaw = localStorage.getItem('rpi_personal');
-              const rp = tryParse(rpRaw) || rpRaw;
-              if (rp && typeof rp === 'object') {
-                const candidates = [];
-                if (rp.skills) candidates.push(rp.skills);
-                if (rp.selected_skills) candidates.push(rp.selected_skills);
-                if (rp.selectedSkills) candidates.push(rp.selectedSkills);
-                if (rp.skills_page1) candidates.push(rp.skills_page1);
-                for (const c of candidates) {
-                  const norm = normalizeArray(c);
-                  if (norm && norm.length) { found = norm; break; }
-                }
-              }
-            } catch(e){}
-          }
-
-          // Also check a preloaded draft object for skills specifically
-          if (!found.length && window.__mvsg_lastLoadedDraft && typeof window.__mvsg_lastLoadedDraft === 'object') {
-            try {
-              const d = window.__mvsg_lastLoadedDraft;
-              const candidates = [];
-              if (d.skills) candidates.push(d.skills);
-              if (d.selected_skills) candidates.push(d.selected_skills);
-              if (d.selectedSkills) candidates.push(d.selectedSkills);
-              if (d.skills_page1) candidates.push(d.skills_page1);
-              for (const c of candidates) {
-                const norm = normalizeArray(c);
-                if (norm && norm.length) { found = norm; break; }
-              }
-            } catch(e){}
-          }
-
-          if (!found.length) return;
-
-          // render only the found skills
-          el.innerHTML = '';
-          for (const s of found) {
-            const span = document.createElement('span');
-            span.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
-            span.textContent = s;
-            el.appendChild(span);
-          }
-
-          // mark matching cards selected if present (case-sensitive match to card <h3>)
-          try {
-            const cards = document.querySelectorAll('.skills-card, .selectable-card');
-            cards.forEach(card=>{
-              const title = card.querySelector('h3')?.textContent?.trim();
-              if (!title) return card.classList.remove('selected');
-              // match case-insensitive and trimmed
-              const lcTitle = title.toLowerCase();
-              const matched = found.some(f => String(f || '').trim().toLowerCase() === lcTitle);
-              if (matched) card.classList.add('selected'); else card.classList.remove('selected');
-            });
-          } catch(e){}
-        } catch(e){ console.debug('review4 fallback skills render failed', e); }
-      });
-    </script>
-    <script>
       // Save visible skills review to localStorage['rpi_personal'] then navigate to the given url (preserve uid if available)
       function saveDraftAndGotoSkills(url) {
         try {
@@ -349,7 +239,7 @@
       document.addEventListener('DOMContentLoaded', function(){
         try {
           const btn = document.getElementById('rv4_change_skills_btn');
-          if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoSkills('{{ route('registerskills1') }}'); });
+          if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoSkills('<?php echo e(route('registerskills1')); ?>'); });
         } catch(e) { console.debug('[review-4] wiring change button failed', e); }
       });
     </script>
@@ -391,3 +281,4 @@
   </script>
   </body>
 </html>
+<?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\MyVerySpecialGuide\resources\views/ds_register_review-4.blade.php ENDPATH**/ ?>

@@ -63,13 +63,13 @@
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-    onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerreview1') }}')">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
-            class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        Back
+    class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+    onclick="(history.length > 1 ? history.back() : window.location.href='{{ route('registereducation') }}')"
+    >
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white" class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+    </svg>
+    Back
     </button>
 
     <!-- Main Container -->
@@ -193,10 +193,10 @@
                 </div>
                     <p>
                         <span class="font-semibold">Uploaded Certificates / Trainings:</span>
-                        
+                        <span id="review_certfile" class="ml-2 text-sm text-gray-700">No file uploaded</span>
                     </p>
                     <p class="text-sm text-gray-600 mt-1 italic">
-                      <!--   <span id="review_certfile">No file uploaded</span>-->
+                        <small>If you uploaded a certificate, its filename will appear above and you can preview it with the View button.</small>
                     </p>
                 </div>
                 
@@ -314,8 +314,142 @@
                     <div id="review_job_experiences" class="space-y-4">
                         <p class="text-gray-600 italic">No job experiences added.</p>
                     </div>
+                    <script>
+                        // Render saved job experiences from register work page into this review view.
+                        (function(){
+                            function normalizeEntry(e) {
+                                if (!e || typeof e !== 'object') return null;
+                                // Try many common key names used across forms
+                                const title = e.title || e.job_title || e.position || e.role || e.job || '';
+                                const company = e.company || e.company_name || e.employer || e.Company || '';
+                                const year = e.start_year || e.job_start_year || e.year || e.startYear || e.job_work_year || '';
+                                const desc = e.description || e.job_description || e.desc || e.notes || '';
+                                return { title:String(title||''), company:String(company||''), year:String(year||''), desc:String(desc||'') };
+                            }
+
+                            function renderExperiences() {
+                                try {
+                                    const container = document.getElementById('review_job_experiences');
+                                    if (!container) return;
+                                    // Clear existing
+                                    container.innerHTML = '';
+
+                                    const raw = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || localStorage.getItem('jobExperiences');
+                                    if (!raw) {
+                                        container.innerHTML = '<p class="text-gray-600 italic">No job experiences added.</p>';
+                                        return;
+                                    }
+                                    let arr = [];
+                                    try { arr = JSON.parse(raw || '[]'); } catch (e) { arr = []; }
+                                    if (!Array.isArray(arr) || arr.length === 0) {
+                                        container.innerHTML = '<p class="text-gray-600 italic">No job experiences added.</p>';
+                                        return;
+                                    }
+
+                                    arr.forEach(function(it, idx){
+                                        const n = normalizeEntry(it) || {title:'',company:'',year:'',desc:''};
+                                        const wrapper = document.createElement('div');
+                                        wrapper.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm';
+                                        wrapper.innerHTML = `
+                                            <div class="flex justify-between items-start gap-4">
+                                                <div>
+                                                    <h5 class="text-lg font-semibold text-gray-800">${n.title ? escapeHtml(n.title) : '<span class="text-gray-500 italic">(No job title)</span>'}</h5>
+                                                    <p class="text-sm text-gray-600 mt-1">${n.company ? escapeHtml(n.company) : ''} ${n.year ? '&middot; ' + escapeHtml(n.year) : ''}</p>
+                                                    <p class="text-sm text-gray-700 mt-3">${n.desc ? escapeHtml(n.desc) : ''}</p>
+                                                </div>
+                                            </div>
+                                        `;
+                                        container.appendChild(wrapper);
+                                    });
+                                } catch (e) {
+                                    console.debug('renderExperiences error', e);
+                                }
+                            }
+
+                            function escapeHtml(s) {
+                                if (s === null || s === undefined) return '';
+                                return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+                            }
+
+                            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', renderExperiences);
+                            else renderExperiences();
+
+                            // Re-render when storage changes (e.g., user updated on another tab/page)
+                            window.addEventListener('storage', function(e){
+                                if (e.key && (e.key === 'job_experiences' || e.key === 'work_experiences' || e.key === 'jobExperiences')) renderExperiences();
+                            });
+                        })();
+                    </script>
                 </div>
             </div>
+
+            <script>
+                (function(){
+                    function titleCase(s){
+                        if(!s) return '';
+                        return String(s).split(/[\s_\-]+/).map(w=> w.charAt(0).toUpperCase()+w.slice(1).toLowerCase()).join(' ');
+                    }
+
+                    function readPossibleKeys(keys){
+                        for(const k of keys){
+                            const v = localStorage.getItem(k);
+                            if(v !== null && v !== undefined) return v;
+                        }
+                        return null;
+                    }
+
+                    function renderSupport(){
+                        try{
+                            const el = document.getElementById('review_support_list');
+                            const imgEl = document.getElementById('review_support_choice_img');
+                            const imgContainer = document.getElementById('review_support_choice_img_container');
+                            const raw = readPossibleKeys(['support','support_choice','selected_support','supportChoices']);
+                            if(!el) return;
+                            el.innerHTML = '<span class="text-gray-600">—</span>';
+                            if(!raw) {
+                                if(imgContainer) imgContainer.classList.add('hidden');
+                                return;
+                            }
+                            let arr = [];
+                            try{ const parsed = JSON.parse(raw); if(Array.isArray(parsed)) arr = parsed; else if(typeof parsed === 'object') arr = [parsed]; else arr = [String(parsed)]; }catch(e){ arr = String(raw).split(',').map(s=>s.trim()).filter(Boolean); }
+                            if(!arr.length){ el.innerHTML = '<span class="text-gray-600">—</span>'; if(imgContainer) imgContainer.classList.add('hidden'); return; }
+                            // render pills
+                            el.innerHTML = '';
+                            arr.forEach(v=>{
+                                const span = document.createElement('span');
+                                span.className = 'bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm font-medium';
+                                span.textContent = titleCase(String(v));
+                                el.appendChild(span);
+                            });
+                            // optional image: try common keys
+                            const imgSrc = readPossibleKeys(['support_choice_img','support_image','review_support_choice_img_src']);
+                            if(imgSrc && imgEl){ imgEl.src = imgSrc; imgContainer.classList.remove('hidden'); }
+                            else if(imgContainer) imgContainer.classList.add('hidden');
+                        }catch(e){ console.debug('renderSupport error', e); }
+                    }
+
+                    function renderWorkplace(){
+                        try{
+                            const el = document.getElementById('review_workplace_list');
+                            const imgEl = document.getElementById('review_workplace_choice_img');
+                            const imgContainer = document.getElementById('review_workplace_choice_img_container');
+                            const raw = readPossibleKeys(['workplace','preferred_workplace','workplace_choice','workplaceChoice','preferred_workplace_choice']);
+                            if(!el) return;
+                            el.innerHTML = '<span class="text-gray-600">—</span>';
+                            if(!raw) { if(imgContainer) imgContainer.classList.add('hidden'); return; }
+                            let val = raw;
+                            try{ const parsed = JSON.parse(raw); if(Array.isArray(parsed)) val = parsed.join(', '); else if(typeof parsed === 'object') val = Object.values(parsed).join(', '); else val = String(parsed); }catch(e){ val = String(raw); }
+                            el.textContent = titleCase(val.replace(/^\[|\]$/g,''));
+                            const imgSrc = readPossibleKeys(['workplace_choice_img','workplace_image','review_workplace_choice_img_src']);
+                            if(imgSrc && imgEl){ imgEl.src = imgSrc; imgContainer.classList.remove('hidden'); }
+                            else if(imgContainer) imgContainer.classList.add('hidden');
+                        }catch(e){ console.debug('renderWorkplace error', e); }
+                    }
+
+                    document.addEventListener('DOMContentLoaded', function(){ renderSupport(); renderWorkplace(); });
+                    window.addEventListener('storage', function(e){ if(!e.key) { renderSupport(); renderWorkplace(); return;} if(['support','support_choice','selected_support','supportChoices','support_choice_img','support_image'].includes(e.key)) renderSupport(); if(['workplace','preferred_workplace','workplace_choice','workplaceChoice','workplace_choice_img','workplace_image'].includes(e.key)) renderWorkplace(); });
+                })();
+            </script>
 
             <!-- Support I Need -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
@@ -1277,37 +1411,58 @@
             </script>
 
             <script>
-                window.addEventListener("DOMContentLoaded", () => {
-                    const reviewCertEl = document.getElementById("review_certs");
-                    const certRadios = document.querySelectorAll('input[name="certs"]');
-
-                    if (!reviewCertEl || certRadios.length === 0) return;
-
-                    const updateReviewCert = (value) => {
-                        reviewCertEl.textContent = value; // pass value to the element
-                        localStorage.setItem("review_certs", value); // store in localStorage
-                        console.log("review_certs updated to:", value);
-                    };
-
-                    // Restore value from localStorage on page load
-                    const savedCert = localStorage.getItem("review_certs");
-                    if (savedCert) {
-                        reviewCertEl.textContent = savedCert;
-                        const radio = document.getElementById(savedCert === "yes" ? "certYes" : "certNo");
-                        if (radio) radio.checked = true;
-                        console.log("Restored cert from localStorage:", savedCert);
+                // Populate education/certificates/type-of-work fields
+                (function(){
+                    function firstLocal(keys){
+                        for(const k of keys){
+                            try{ const v = localStorage.getItem(k); if(v !== null && v !== undefined) return v; }catch(e){}
+                            const el = document.getElementById(k);
+                            if(el && (el.value || el.textContent)) return el.value || el.textContent;
+                        }
+                        return null;
                     }
 
-                    // Add change listeners to radios
-                    certRadios.forEach(radio => {
-                        radio.addEventListener('change', () => {
-                            if (radio.checked) {
-                                updateReviewCert(radio.value);
-                            }
+                    function renderEducation(){
+                        const edu = firstLocal(['review_edu','edu_level','education_level','eduLevel']);
+                        const school = firstLocal(['review_school','school','school_name','schoolName']);
+                        const other = firstLocal(['review_other','edu_other','edu_other_text']);
+                        if(edu) document.getElementById('review_edu').textContent = String(edu);
+                        if(school) document.getElementById('review_school').textContent = String(school);
+                        if(other) document.getElementById('review_other_label').textContent = String(other);
+                    }
+
+                    function renderCertificates(){
+                        const cert = firstLocal(['review_certs','certs','has_certificates','review_certs_name']);
+                        const certSpan = document.getElementById('review_certs');
+                        if(certSpan) certSpan.textContent = cert ? String(cert) : '';
+                        const fname = firstLocal(['uploadedProofName','review_certs_file','review_certfile','cert_file','proofFilename']);
+                        const fEl = document.getElementById('review_certfile');
+                        if(fEl) fEl.textContent = fname ? String(fname) : 'No file uploaded';
+                    }
+
+                    function renderTypeOfWork(){
+                        const raw = firstLocal(['selected_work_experience','work_type','workType','selectedWorkExperience','review_work','review_work_list']);
+                        const container = document.getElementById('review_work_list');
+                        if(!container) return;
+                        container.innerHTML = '';
+                        if(!raw){ container.innerHTML = '<span class="text-gray-600">N/A</span>'; return; }
+                        let arr = [];
+                        try{ const p = JSON.parse(raw); if(Array.isArray(p)) arr = p; else if(typeof p === 'object') arr = [p]; else arr = String(p).split(',').map(s=>s.trim()).filter(Boolean); }catch(e){ arr = String(raw).split(',').map(s=>s.trim()).filter(Boolean); }
+                        if(!arr.length){ container.innerHTML = '<span class="text-gray-600">N/A</span>'; return; }
+                        arr.forEach(v=>{
+                            const span = document.createElement('span');
+                            span.className = 'bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm font-medium';
+                            span.textContent = String(v);
+                            container.appendChild(span);
                         });
-                    });
-                });
-                </script>
+                    }
+
+                    function doAll(){ renderEducation(); renderCertificates(); renderTypeOfWork(); }
+
+                    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', doAll); else doAll();
+                    window.addEventListener('storage', function(e){ if(!e.key) return doAll(); const keys = ['review_edu','edu_level','review_school','review_other','review_certs','uploadedProofName','selected_work_experience','work_type']; if(keys.includes(e.key)) setTimeout(doAll, 10); });
+                })();
+            </script>
 
                 <script>
                     window.addEventListener("DOMContentLoaded", () => {

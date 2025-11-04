@@ -556,8 +556,60 @@ Route::post('/logout', function (Request $request) {
 // Handle login POST - attempt authentication and redirect to job matches
 Route::post('/login', function (Request $request) {
     $credentials = $request->only(['email', 'password']);
-    // optional redirect (full URL) to return to after successful login
+    // capture optional redirect early so Oracle branch can respect it
     $redirect = $request->input('redirect');
+    // Emergency: try Oracle DB (public/db/oracledb.php) for guardian accounts.
+    // Do not edit public/db/oracledb.php — we require it and call getOracleConnection().
+    try {
+        $oracleFile = public_path('db/oracledb.php');
+        if (file_exists($oracleFile)) {
+            // load the helper that provides getOracleConnection()
+            require_once $oracleFile;
+            if (function_exists('getOracleConnection')) {
+                try {
+                    $conn = getOracleConnection();
+                    // lookup guardian by email (case-insensitive) and fetch stored password
+                    $sql = 'SELECT EMAIL, PASSWORD, FIRST_NAME, LAST_NAME FROM USER_GUARDIAN WHERE LOWER(EMAIL) = :email';
+                    $stid = oci_parse($conn, $sql);
+                    $emailLower = strtolower($credentials['email'] ?? '');
+                    oci_bind_by_name($stid, ':email', $emailLower);
+                    oci_execute($stid);
+                    $row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+                    if ($row) {
+                        $stored = isset($row['PASSWORD']) ? $row['PASSWORD'] : (isset($row['password']) ? $row['password'] : null);
+                        // direct comparison (emergency): compare plaintext password from form to stored value
+                        if (!empty($stored) && isset($credentials['password']) && strval($credentials['password']) === strval($stored)) {
+                            // ensure a local User exists and log them in
+                            $email = $row['EMAIL'] ?? $credentials['email'];
+                            try {
+                                $user = User::where('email', $email)->first();
+                                if (!$user) {
+                                    $user = User::create([
+                                        'name' => trim(($row['FIRST_NAME'] ?? '') . ' ' . ($row['LAST_NAME'] ?? '')) ?: explode('@', $email)[0],
+                                        'email' => $email,
+                                        // random local password; authentication will rely on Oracle for this emergency flow
+                                        'password' => bcrypt(bin2hex(random_bytes(8))),
+                                    ]);
+                                }
+                                Auth::login($user);
+                                $request->session()->regenerate();
+                                logger()->info('Login: authenticated via Oracle USER_GUARDIAN', ['email' => $email]);
+                                // Emergency behavior: always land on navigation-buttons after Oracle auth
+                                return redirect()->route('navigation_buttons');
+                            } catch (\Throwable $__e) {
+                                logger()->warning('Oracle login: failed to create/login local user: ' . $__e->getMessage());
+                            }
+                        }
+                    }
+                } catch (\Throwable $__e) {
+                    logger()->warning('Oracle lookup failed: ' . $__e->getMessage());
+                }
+            }
+        }
+    } catch (\Throwable $__e) {
+        logger()->warning('Oracle auth integration failed: ' . $__e->getMessage());
+    }
+    // optional redirect (full URL) to return to after successful login
     // Use Auth facade if available
     try {
         if (Auth::attempt($credentials)) {
@@ -606,7 +658,7 @@ Route::post('/login', function (Request $request) {
                 // ignore and fall back to job matches
             }
 
-            return redirect()->route('job.matches');
+            return redirect()->route('navigation_buttons');
         }
     } catch (\Throwable $e) {
         // If Auth is not configured, just redirect for now (placeholder)
@@ -623,6 +675,110 @@ Route::post('/login', function (Request $request) {
                 logger()->info('Login: Oracle guardian login succeeded', ['email' => $credentials['email'] ?? null]);
                 // redirect to intended target or job matches
                 return redirect()->route('job.matches');
+    // If local auth failed, and Firebase API key is present, try Firebase REST auth (email/password)
+    $firebaseKey = env('FIREBASE_API_KEY');
+    // current host used to validate redirect targets
+    $currentHost = request()->getHost();
+    if ($firebaseKey && !empty($credentials['email']) && !empty($credentials['password'])) {
+        try {
+            $resp = Http::asForm()->post("https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={$firebaseKey}", [
+                'email' => $credentials['email'],
+                'password' => $credentials['password'],
+                'returnSecureToken' => true,
+            ]);
+            if ($resp->successful()) {
+                $data = $resp->json();
+                $email = $data['email'] ?? $credentials['email'];
+                $firebaseUid = $data['localId'] ?? null;
+                // find or create local user
+                $user = User::where('email', $email)->first();
+                if (!$user) {
+                    $user = User::create([
+                        'name' => explode('@', $email)[0],
+                        'email' => $email,
+                        // random password (won't be used for firebase-authenticated users)
+                        'password' => bcrypt(bin2hex(random_bytes(8))),
+                    ]);
+                }
+                // log the user in via Laravel
+                Auth::login($user);
+                // Persist the Firebase UID in session so server-side pages can fetch Firestore docs
+                try {
+                    if (!empty($firebaseUid)) {
+                        session(['firebase_uid' => $firebaseUid]);
+                        logger()->info('Login: saved firebase_uid to session', ['firebase_uid_hint' => substr($firebaseUid, 0, 6) . '...']);
+                        // Also persist to the users table if not already set (so server-side processes
+                        // that rely on Auth::user()->firebase_uid can work outside of a single request)
+                        try {
+                            if (empty($user->firebase_uid) || $user->firebase_uid !== $firebaseUid) {
+                                $user->firebase_uid = $firebaseUid;
+                                $user->save();
+                                logger()->info('Login: persisted firebase_uid to user record', ['user_id' => $user->id, 'firebase_uid_hint' => substr($firebaseUid, 0, 6) . '...']);
+                            }
+                            // Check Firestore admin assignments and grant local admin flags if present
+                            try {
+                                $fsAdmin = app(\App\Services\FirestoreAdminService::class);
+                                if (!empty($firebaseUid) && $fsAdmin->isAdmin($firebaseUid)) {
+                                    // Simplified: only set the role locally. Approval flags not required.
+                                    $user->role = 'admin';
+                                    $user->save();
+                                    logger()->info('Login: granted admin role from Firestore assignment', ['user_id' => $user->id, 'uid_hint' => substr($firebaseUid, 0, 6) . '...']);
+                                }
+                            } catch (\Throwable $__fs_e) {
+                                logger()->warning('Login: Firestore admin check failed: ' . $__fs_e->getMessage());
+                            }
+                        } catch (\Throwable $__save_e) {
+                            logger()->warning('Login: failed to persist firebase_uid to user record: ' . $__save_e->getMessage());
+                        }
+                    }
+                } catch (\Throwable $__e) {
+                    // ignore session write failures
+                }
+                $request->session()->regenerate();
+                logger()->info('Login: firebase-auth succeeded and local user logged in', ['email' => $email, 'redirect' => $redirect]);
+
+                // Same verification gate as above: require verification before allowing
+                // redirect to the navigation-buttons page.
+                try {
+                    $user = Auth::user();
+                    $isVerified = false;
+                    if ($user) {
+                        if (!empty($user->email_verified_at) || !empty($user->approved)) {
+                            $isVerified = true;
+                        }
+                    }
+                } catch (\Throwable $__e) {
+                    $isVerified = false;
+                }
+
+                if (!empty($redirect) && stripos($redirect, '/navigation-buttons') !== false && !$isVerified) {
+                    logger()->info('Login: user requires verification before navigation-buttons', ['user_id' => $user ? $user->id : null]);
+                    return redirect()->to(route('registerverifycode') . '?redirect=' . urlencode($redirect));
+                }
+
+                if (!empty($redirect)) {
+                    $host = parse_url($redirect, PHP_URL_HOST);
+                    $currentHost = request()->getHost();
+                    if ($host === null || $host === $currentHost) {
+                        logger()->info('Login: performing redirect to requested target', ['target' => $redirect]);
+                        return redirect()->to($redirect);
+                    }
+                    logger()->warning('Login: blocked external redirect target', ['target' => $redirect, 'currentHost' => $currentHost]);
+                }
+
+                // If the authenticated user is an admin, send them to the admin approval area.
+                try {
+                    $user = Auth::user();
+                    if ($user && !empty($user->role) && $user->role === 'admin') {
+                        return redirect()->route('admin.approval');
+                    }
+                } catch (\Throwable $__e) {
+                    // ignore and fall back to job matches
+                }
+
+                return redirect()->route('navigation_buttons');
+            } else {
+                logger()->warning('Firebase login failed: ' . $resp->body());
             }
         }
     } catch (\Throwable $__e) {
@@ -630,6 +786,27 @@ Route::post('/login', function (Request $request) {
     }
 
     // Firebase REST login removed - Oracle login is used instead.
+    // Emergency local fallback: when running in local environment, allow quick login
+    // by creating or finding a local user and redirecting to navigation-buttons.
+    if (app()->environment('local') && !empty($credentials['email'])) {
+        try {
+            $email = (string) $credentials['email'];
+            $user = User::where('email', $email)->first();
+            if (!$user) {
+                $user = User::create([
+                    'name' => explode('@', $email)[0],
+                    'email' => $email,
+                    'password' => bcrypt(bin2hex(random_bytes(8))),
+                ]);
+            }
+            Auth::login($user);
+            $request->session()->regenerate();
+            logger()->warning('Emergency local fallback login used for ' . $email);
+            return redirect()->route('navigation_buttons');
+        } catch (\Throwable $e) {
+            logger()->warning('Emergency local fallback failed: ' . $e->getMessage());
+        }
+    }
 
     return back()->withErrors(['email' => 'Login failed. Please check your credentials.'])->withInput();
 })->name('login.post');
@@ -1259,3 +1436,44 @@ Route::get('/__key_check', function () {
     ]);
     return response('key-checked');
 });
+
+// Dev-only: quick Oracle lookup/login test (LOCAL environment only)
+// POST JSON { email, password } -> { ok, found, match, email }
+Route::post('/__oracle-test-login', function (Request $request) {
+    if (!app()->environment('local')) {
+        return response()->json(['ok' => false, 'error' => 'forbidden - local only'], 403);
+    }
+    $email = strtolower((string) ($request->input('email') ?? ''));
+    $password = $request->input('password');
+    if ($email === '') return response()->json(['ok' => false, 'error' => 'missing email'], 400);
+
+    $oracleFile = public_path('db/oracledb.php');
+    if (!file_exists($oracleFile)) {
+        return response()->json(['ok' => false, 'error' => 'oracledb.php not found'], 500);
+    }
+    require_once $oracleFile;
+    if (!function_exists('getOracleConnection')) {
+        return response()->json(['ok' => false, 'error' => 'getOracleConnection not available'], 500);
+    }
+
+    try {
+        $conn = getOracleConnection();
+        $sql = 'SELECT EMAIL, PASSWORD FROM USER_GUARDIAN WHERE LOWER(EMAIL) = :email';
+        $stid = oci_parse($conn, $sql);
+        oci_bind_by_name($stid, ':email', $email);
+        oci_execute($stid);
+        $row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_NULLS);
+        if (!$row) {
+            return response()->json(['ok' => true, 'found' => false, 'match' => false]);
+        }
+        $stored = $row['PASSWORD'] ?? ($row['password'] ?? null);
+        $match = false;
+        if ($stored !== null && $password !== null) {
+            $match = strval($password) === strval($stored);
+        }
+        return response()->json(['ok' => true, 'found' => true, 'match' => $match, 'email' => ($row['EMAIL'] ?? null)]);
+    } catch (\Throwable $e) {
+        logger()->warning('oracle-test-login failed: ' . $e->getMessage());
+        return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
+    }
+})->name('debug.oracle_test');

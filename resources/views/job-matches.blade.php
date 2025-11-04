@@ -678,9 +678,9 @@
             }
             if ($anyCtx) {
                 // put context-aware first so it's visible
-        array_unshift($perModelMetrics, $ctx);
-    }
-}
+                array_unshift($perModelMetrics, $ctx);
+            }
+        }
 // If counts are provided, compute metrics: accept many variants for keys
 $getCount = function ($keys) use ($eval) {
     foreach ((array) $keys as $k) {

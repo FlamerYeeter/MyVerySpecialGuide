@@ -3,140 +3,148 @@
 @section('content')
 
 <!-- NOTE: THIS IS STILL IN PROGRESS, I'M NOT SURE PANO AANUHIN YAN -->
-    <!-- Filter Form -->
-    <section class="bg-yellow-400 py-7 mt-4">
-        <div class="container mx-auto px-4">
-            <form method="GET" action="{{ route('job.matches') }}">
-                <div class="flex items-center justify-center space-x-4 mb-6">
-                    <img src="{{ asset('image/my-job-app.png') }}" class="w-20 h-20">
-                    <div>
-                        <h2 class="text-3xl font-bold text-blue-800">My Job Applications</h2>
-                        <p class="text-sm text-gray-600">Track your application progress and manage your job applications</p>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </section>
+    <!-- Back Button -->
+<div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
+  <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
+    <a href="/jobmatches"
+      class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
+        stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+      <span>Back to Jobs</span>
+    </a>
+  </div>
+</div>
 
-  <!-- Application Stats -->
-  <div class="max-w-5xl mx-auto mt-10 px-4 flex justify-between text-center">
-    <div class="w-1/3 border rounded-lg py-4 bg-white shadow-sm">
-      <h3 class="text-3xl font-bold text-blue-600">1</h3>
-      <p class="text-sm text-gray-700 font-medium">Pending Review</p>
+<!-- HERO SECTION -->
+<section class="bg-[#D78203] py-10 text-center shadow-md rounded-b-3xl">
+  <div class="flex flex-col items-center justify-center">
+    <img src="{{ asset('image/my-job-app.png') }}" alt="Brain Icon" 
+         class="w-24 h-24 mb-3 animate-bounce-slow">
+    <h2 class="text-4xl font-extrabold text-white tracking-wide drop-shadow-md">
+      My Job Application
+    </h2>
+    <p class="text-lg text-white/90 mt-2 max-w-2xl">
+      Track your application progress and manage your job applications
+    </p>
+  </div>
+</section>
+
+<!-- APPLICATION STATS (Simplified + Color-coded + Larger Font) -->
+<section class="max-w-6xl mx-auto mt-10 px-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+  <div class="bg-[#FFF6E5] border-4 border-[#FFD27F] rounded-3xl shadow-md p-6">
+    <img src="https://img.icons8.com/emoji/48/hourglass-not-done.png" alt="Pending Icon" class="mx-auto mb-2">
+    <h3 class="text-4xl font-extrabold text-[#D78203]">1</h3>
+    <p class="text-lg font-semibold text-gray-800 mt-1">Pending Review</p>
+  </div>
+
+  <div class="bg-[#E9FFE9] border-4 border-[#8BE18B] rounded-3xl shadow-md p-6">
+    <img src="https://img.icons8.com/emoji/48/check-mark-emoji.png" alt="Review Icon" class="mx-auto mb-2">
+    <h3 class="text-4xl font-extrabold text-[#1F8B24]">0</h3>
+    <p class="text-lg font-semibold text-gray-800 mt-1">Under Review</p>
+  </div>
+
+  <div class="bg-[#E8F3FF] border-4 border-[#7FBFFF] rounded-3xl shadow-md p-6">
+    <img src="https://img.icons8.com/emoji/48/file-folder-emoji.png" alt="Applications Icon" class="mx-auto mb-2">
+    <h3 class="text-4xl font-extrabold text-[#007BFF]">2</h3>
+    <p class="text-lg font-semibold text-gray-800 mt-1">Total Applications</p>
+  </div>
+</section>
+
+<!-- SEARCH & FILTER (Simplified + Friendly Icons + Big Inputs) -->
+<section class="max-w-6xl mx-auto mt-10 px-6">
+  <div class="bg-white border-4 border-blue-200 rounded-3xl shadow-md p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <div class="flex items-center border-2 border-gray-300 rounded-full px-4 py-3 w-full sm:max-w-lg bg-gray-50">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.65 6.65a7.5 7.5 0 010 10.6z" />
+      </svg>
+      <input type="text" placeholder="🔍 Search your applications" class="w-full bg-transparent text-lg focus:outline-none text-gray-700 font-medium">
     </div>
-    <div class="w-1/3 border rounded-lg py-4 bg-white shadow-sm">
-      <h3 class="text-3xl font-bold text-green-600">0</h3>
-      <p class="text-sm text-gray-700 font-medium">Under Review</p>
+
+    <div class="flex gap-3">
+      <button class="bg-blue-100 text-blue-800 px-5 py-3 rounded-full text-lg font-semibold shadow-sm hover:bg-blue-200 transition">
+        Status ▾
+      </button>
+      <button class="bg-blue-100 text-blue-800 px-5 py-3 rounded-full text-lg font-semibold shadow-sm hover:bg-blue-200 transition">
+        Date ▾
+      </button>
     </div>
-    <div class="w-1/3 border rounded-lg py-4 bg-white shadow-sm">
-      <h3 class="text-3xl font-bold text-pink-600">2</h3>
-      <p class="text-sm text-gray-700 font-medium">Total Applications</p>
+  </div>
+</section>
+
+<!-- JOB APPLICATION CARD (Simplified Layout + Step Visualization + Color + Icons) -->
+<section class="max-w-6xl mx-auto mt-8 px-6 space-y-8">
+
+  <!-- Example Card 1 -->
+  <div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">
+    <div class="p-6">
+      <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        🐾 Pet Care Assistant
+      </h3>
+      <p class="text-lg text-gray-700">iPet Club • Taguig City</p>
+      <p class="text-base text-gray-700 mt-2 flex items-center">
+        📅 <span class="ml-2">Applied: Aug 25, 2025</span>
+      </p>
+    </div>
+
+    <!-- Progress Section -->
+    <div class="bg-[#E6FFF9] p-6 border-t-2 border-green-200 rounded-b-3xl">
+      <h4 class="text-xl font-semibold text-gray-900 mb-4">Your Application Progress</h4>
+      <div class="flex justify-between text-center text-base font-medium">
+        <div>
+          <div class="text-green-600 text-3xl">✅</div>
+          <p>Submitted</p>
+        </div>
+        <div><div class="text-gray-400 text-3xl">⬜</div><p>Review</p></div>
+        <div><div class="text-gray-400 text-3xl">⬜</div><p>Processing</p></div>
+        <div><div class="text-gray-400 text-3xl">⬜</div><p>Decision</p></div>
+      </div>
+
+      <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <button class="bg-red-100 text-red-700 px-6 py-3 rounded-full font-semibold text-lg hover:bg-red-200 transition">
+          ❌ Withdraw
+        </button>
+        <p class="text-sm text-gray-600">Last update: 2 hours ago</p>
+      </div>
     </div>
   </div>
 
-  <!-- SEARCH & FILTER -->
-  <section class="max-w-6xl mx-auto mt-10 px-6">
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-4 flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center border border-gray-300 rounded-md px-3 py-2 flex-grow max-w-md">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.65 6.65a7.5 7.5 0 010 10.6z" />
-        </svg>
-        <input type="text" placeholder="Search applications by job title or company" class="ml-2 w-full focus:outline-none text-sm">
+  <!-- Example Card 2 -->
+  <div class="bg-white border-4 border-pink-200 rounded-3xl shadow-lg overflow-hidden">
+    <div class="p-6">
+      <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+        🍔 Cashier
+        <span class="bg-red-200 text-red-800 px-3 py-1 rounded-full text-base font-semibold ml-2">
+          Not Selected
+        </span>
+      </h3>
+      <p class="text-lg text-gray-700">McDonald’s • Taguig City</p>
+      <p class="text-base text-gray-700 mt-2 flex items-center">
+        📅 <span class="ml-2">Applied: Aug 15, 2025</span>
+      </p>
+    </div>
+
+    <!-- Progress Section -->
+    <div class="bg-[#FFF5F5] p-6 border-t-2 border-pink-200 rounded-b-3xl">
+      <h4 class="text-xl font-semibold text-gray-900 mb-4">Your Application Progress</h4>
+      <div class="flex justify-between text-center text-base font-medium">
+        <div><div class="text-green-600 text-3xl">✅</div><p>Submitted</p></div>
+        <div><div class="text-green-600 text-3xl">✅</div><p>Review</p></div>
+        <div><div class="text-green-600 text-3xl">✅</div><p>Processing</p></div>
+        <div><div class="text-green-600 text-3xl">✅</div><p>Final</p></div>
+        <div><div class="text-red-600 text-3xl">✖️</div><p>Decision</p></div>
       </div>
 
-      <div class="flex gap-3">
-        <button class="border border-[#007BFF] text-[#007BFF] px-4 py-2 rounded-md flex items-center gap-2">
-          All Status ▾
+      <div class="mt-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <button class="bg-green-100 text-green-800 px-6 py-3 rounded-full font-semibold text-lg hover:bg-green-200 transition">
+          💬 View Feedback
         </button>
-        <button class="border border-[#007BFF] text-[#007BFF] px-4 py-2 rounded-md flex items-center gap-2">
-          All Time ▾
-        </button>
+        <p class="text-sm text-gray-600">Last update: 3 days ago</p>
       </div>
     </div>
-  </section>
-
-
-    <!-- JOB APPLICATION CARD 1 -->
-  <section class="max-w-6xl mx-auto mt-8 px-4">
-    <div class="border border-gray-300 rounded-md shadow-sm mb-8">
-      <div class="p-5">
-        <h3 class="text-lg font-semibold text-gray-800">Pet Care Assistant</h3>
-        <p class="text-gray-600">iPet Club • Taguig City, Metro Manila</p>
-        <p class="flex items-center text-sm text-gray-700 mt-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M8 7V3m8 4V3m-9 8h10m-10 4h10m-6 4h6m-10 0h.01M4 21h16a2 2 0 002-2V7a2 2 0 00-2-2h-1V3m-14 2v16a2 2 0 002 2z" />
-          </svg>
-          Applied: Aug 25, 2025
-        </p>
-      </div>
-
-      <div class="bg-[#C7F9F1] p-6 border-t border-gray-300">
-        <h4 class="text-gray-800 font-medium mb-4">Application Progress</h4>
-        <div class="flex justify-between text-center">
-          <div>
-            <div class="text-green-600 text-2xl"><b>✓</b></div>
-            <p class="text-sm text-gray-700 font-medium mt-1">Application Submitted</p>
-            <p class="text-xs text-gray-600 mt-1">Aug 25</p>
-          </div>
-          <div><div class="text-gray-400 text-2xl"><b>✓</b></div><p class="text-sm text-gray-600 mt-1">Initial Review</p></div>
-          <div><div class="text-gray-400 text-2xl"><b>✓</b></div><p class="text-sm text-gray-600 mt-1">Initial Processing</p></div>
-          <div><div class="text-gray-400 text-2xl"><b>✓</b></div><p class="text-sm text-gray-600 mt-1">Final Review</p></div>
-          <div><div class="text-gray-400 text-2xl"><b>✓</b></div><p class="text-sm text-gray-600 mt-1">Decision</p></div>
-        </div>
-
-        <div class="mt-6 flex justify-between items-center">
-          <button class="bg-[#FFB4B4] text-[#6B0000] px-4 py-2 rounded-md text-sm font-medium">Withdraw Application</button>
-          <p class="text-xs text-gray-500">Last update: 2 hours ago</p>
-        </div>
-      </div>
-    </div>
-
- <div class="border border-gray-300 rounded-md shadow-sm mb-10">
-  <div class="p-5">
-    <!-- HEADER -->
-    <div class="flex justify-between items-start">
-      <div>
-        <!-- Job Title + Status Badge -->
-        <div class="flex items-center gap-3">
-          <h3 class="text-lg font-semibold text-gray-800">Cashier</h3>
-          <span class="bg-[#FDDCDC] text-[#9B1C1C] px-3 py-1 rounded-md text-xs font-medium">
-            Not selected
-          </span>
-        </div>
-            <p class="text-gray-600">McDonald’s • Taguig City, Metro Manila</p>
-            <p class="flex items-center text-sm text-gray-700 mt-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M8 7V3m8 4V3m-9 8h10m-10 4h10m-6 4h6m-10 0h.01M4 21h16a2 2 0 002-2V7a2 2 0 00-2-2h-1V3m-14 2v16a2 2 0 002 2z" />
-              </svg>
-              Applied: Aug 15, 2025
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-[#C7F9F1] p-6 border-t border-gray-300">
-        <h4 class="text-gray-800 font-medium mb-4">Application Progress</h4>
-        <div class="flex justify-between text-center">
-          <div>
-            <div class="text-green-600 text-2xl"><b>✓</b></div>
-            <p class="text-sm text-gray-700 font-medium mt-1">Application Submitted</p>
-            <p class="text-xs text-gray-600 mt-1">Aug 15</p>
-          </div>
-          <div><div class="text-green-600 text-2xl"><b>✓</b></div><p class="text-sm text-gray-600 mt-1">Initial Review</p><p class="text-xs text-gray-600">Aug 18</p></div>
-          <div><div class="text-green-600 text-2xl"><b>✓</b></div><p class="text-sm text-gray-600 mt-1">Initial Processing</p><p class="text-xs text-gray-600">Aug 22</p></div>
-          <div><div class="text-green-600 text-2xl"><b>✓</b></div><p class="text-sm text-gray-600 mt-1">Final Review</p><p class="text-xs text-gray-600">Aug 24</p></div>
-          <div><div class="text-red-500 text-2xl"><b>✓</b></div><p class="text-sm text-red-500 mt-1">Decision</p><p class="text-xs text-gray-600">Aug 25</p></div>
-        </div>
-
-        <div class="mt-6 flex justify-between items-center">
-          <button class="bg-[#B7F3C5] text-[#046C32] px-4 py-2 rounded-md text-sm font-medium">View Feedback</button>
-          <p class="text-xs text-gray-500">Last update: 3 days ago</p>
-        </div>
-      </div>
-    </div>
-  </section>
+  </div>
+</section>
 
 
   <!-- ✖️ -->

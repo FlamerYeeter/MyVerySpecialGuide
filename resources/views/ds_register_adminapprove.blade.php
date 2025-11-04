@@ -134,7 +134,7 @@
                             First Name <span>⭐</span>
                         </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
-                        <input id="first_name" type="text" placeholder="First Name" required
+                        <input id="first_name" type="text" placeholder="First Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
 
@@ -145,7 +145,7 @@
                             Last Name <span>⭐</span>
                         </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
-                        <input id="last_name" type="text" placeholder="Last Name" required
+                        <input id="last_name" type="text" placeholder="Last Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
 
@@ -156,7 +156,7 @@
                             Age <span>⭐</span>
                         </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Edad</p>
-                        <input id="age" type="number" placeholder="Age" required
+                        <input id="age" type="number" placeholder="Age"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
                 </div>
@@ -169,7 +169,7 @@
                             Email <span>⭐</span>
                         </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
-                        <input id="email" type="email" placeholder="Email" required
+                        <input id="email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
 
@@ -182,7 +182,7 @@
                         <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
                         <input   id="phone" 
                                 type="tel" 
-                                placeholder="+63 9XX XXX XXXX" required
+                                placeholder="+63 9XX XXX XXXX"
                                 pattern="^\+63\s?9\d{2}\s?\d{3}\s?\d{4}$"
                                 title="Please enter a valid Philippine number (e.g. +63 912 345 6789)"
                                 class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
@@ -195,7 +195,7 @@
                         Address <span>⭐</span>
                     </label>
                     <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
-                    <input id="address" type="text" placeholder="Complete Address" required
+                    <input id="address" type="text" placeholder="Complete Address"
                         class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                 </div>
             </div>
@@ -226,7 +226,7 @@
 
                 <!-- Dropdown Selector -->
                 <div class="flex-shrink-0 w-full sm:w-auto">
-                    <select id="r_dsType1" name="r_dsType1" required
+                    <select id="dsType" name="dsType"
                         class="w-full sm:w-60 border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
                         <option value="">-- Select Type --</option>
                         <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
@@ -247,23 +247,23 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Guardian First Name -->
                     <div>
-                        <label for="g_first_name"
+                        <label for="guardian_first"
                             class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
                             First Name <span>⭐</span>
                         </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
-                        <input id="g_first_name" type="text" placeholder="First Name" required
+                        <input id="guardian_first" type="text" placeholder="First Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
 
                     <!-- Guardian Last Name -->
                     <div>
-                        <label for="g_last_name"
+                        <label for="guardian_last"
                             class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
                             Last Name <span>⭐</span>
                         </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
-                        <input id="g_last_name" type="text" placeholder="Last Name" required
+                        <input id="guardian_last" type="text" placeholder="Last Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
                 </div>
@@ -271,23 +271,23 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <!-- Guardian Email -->
                     <div>
-                        <label for="g_email"
+                        <label for="guardian_email"
                             class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Email <span>⭐</span> 
+                            Email <span>⭐</span>
                         </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
-                        <input id="g_email" type="email" placeholder="Email" required
+                        <input id="guardian_email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
 
                     <!-- Guardian Contact -->
                     <div>
-                        <label for="g_phone"
+                        <label for="guardian_phone"
                             class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
                             Contact Number <span>⭐</span>
                         </label>
                         <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
-                        <input id="g_phone" type="tel" placeholder="+63 9XX XXX XXXX" required
+                        <input id="guardian_phone" type="tel" placeholder="+63 9XX XXX XXXX"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
                 </div>
@@ -298,14 +298,14 @@
                         Relationship to User <span>⭐</span>
                     </label>
                     <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa Gagamit</p>
-                    <select id="guardian_relationship" required
+                    <select id="guardian_relationship"
                         class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
                         <option value="" disabled selected>Select Relationship</option>
-                        <option value="Parent">Parent</option>
-                        <option value="Guardian">Guardian</option>
-                        <option value="Sibling">Sibling</option>
-                        <option value="Relative">Relative</option>
-                        <option value="Other">Other</option>
+                        <option value="parent">Parent</option>
+                        <option value="guardian">Guardian</option>
+                        <option value="sibling">Sibling</option>
+                        <option value="relative">Relative</option>
+                        <option value="other">Other</option>
                     </select>
                 </div>
             </div>
@@ -321,7 +321,7 @@
                     <div>
                         <label for="username" class="font-semibold flex items-center gap-1">Username
                             <span>⭐</span></label>
-                        <input id="username" name="username" type="text" placeholder="Enter your username" required
+                        <input id="username" name="username" type="text" placeholder="Enter your username"
                             class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
                         <p class="text-gray-500 text-xs mt-1">(example: @juancruz)</p>
                     </div>
@@ -333,7 +333,7 @@
                         <input   id="password" 
                                     name="password" 
                                     type="password" 
-                                    placeholder="Enter your password" required
+                                    placeholder="Enter your password"
                                     pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
                                     title="Password must have at least 1 uppercase letter, 1 lowercase letter, 1 number, and be 8+ characters long."
                                     class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
@@ -486,9 +486,9 @@
                     console.log("✅ File upload script initialized");
 
                     // 🔹 Load file from localStorage (base64)
-                    const savedFileData = localStorage.getItem("uploadedProofData1");
-                    const savedFileType = localStorage.getItem("uploadedProofType1");
-                    const savedFileName = localStorage.getItem("uploadedProofName1");
+                    const savedFileData = localStorage.getItem("uploadedProofData0");
+                    const savedFileType = localStorage.getItem("uploadedProofType0");
+                    const savedFileName = localStorage.getItem("uploadedProofName0");
 
                     if (savedFileData && savedFileType && savedFileName) {
                         showFileInfo(savedFileName, savedFileType);
@@ -634,11 +634,11 @@
                     document.getElementById('email').value = '';
                     document.getElementById('phone').value = '';
                     document.getElementById('address').value = '';
-                    document.getElementById('r_dsType1').selectedIndex = 0;
-                    document.getElementById('g_first_name').value = '';
-                    document.getElementById('g_last_name').value = '';
-                    document.getElementById('g_email').value = '';
-                    document.getElementById('g_phone').value = '';
+                    document.getElementById('dsType').selectedIndex = 0;
+                    document.getElementById('guardian_first').value = '';
+                    document.getElementById('guardian_last').value = '';
+                    document.getElementById('guardian_email').value = '';
+                    document.getElementById('guardian_phone').value = '';
                     document.getElementById('guardian_relationship').selectedIndex = 0;
                 });
 
@@ -658,7 +658,7 @@
                 if (value === '') {
                     passwordMessage.classList.add('hidden');
                     passwordInput.style.borderColor = '';
-                //    disableButton();
+                    disableButton();
                     return;
                 }
 
@@ -690,7 +690,7 @@
                 if (confirmVal === '') {
                     confirmMessage.classList.add('hidden');
                     confirmPasswordInput.style.borderColor = '';
-                  //  disableButton();
+                    disableButton();
                     return;
                 }
 
@@ -701,16 +701,29 @@
                     confirmMessage.textContent = '✅ Passwords match.';
                     confirmMessage.classList.remove('text-red-500');
                     confirmMessage.classList.add('text-green-600');
-                  //  enableButton();
+                    enableButton();
                 } else {
                     confirmPasswordInput.style.borderColor = 'red';
                     confirmMessage.textContent = '❌ Passwords do not match.';
                     confirmMessage.classList.remove('text-green-600');
                     confirmMessage.classList.add('text-red-500');
-                   // disableButton();
+                    disableButton();
                 }
                 }
 
+                // 🔹 Disable button
+                function disableButton() {
+                createAccountBtn.disabled = true;
+                createAccountBtn.classList.remove('bg-[#2E2EFF]', 'hover:bg-blue-600', 'text-white');
+                createAccountBtn.classList.add('bg-gray-400', 'cursor-not-allowed', 'opacity-90', 'text-white');
+                }
+
+                // 🔹 Enable button
+                function enableButton() {
+                createAccountBtn.disabled = false;
+                createAccountBtn.classList.remove('bg-gray-400', 'cursor-not-allowed', 'opacity-90');
+                createAccountBtn.classList.add('bg-[#2E2EFF]', 'hover:bg-blue-600', 'text-white');
+                }
 
                 // 🔹 Toggle password visibility
                 // togglePassword.addEventListener('change', () => {
@@ -799,12 +812,15 @@
                         age: data.age || '',
                         address: data.address || '',
                         username: data.username || '',
-                        g_first_name: data.g_first_name || data.guardianFirst || '',
-                        g_last_name: data.g_last_name || data.guardianLast || '',
-                        g_email: data.g_email || '',
-                        g_phone: data.g_phone || '',
+                        // persist selected Down Syndrome type (if present) under multiple keys for compatibility
+                        dsType: data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                        r_dsType1: data.r_dsType1 || data.r_dsType || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                        r_dsType: data.r_dsType || data.r_dsType1 || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                        guardian_first: data.guardian_first || data.guardianFirst || '',
+                        guardian_last: data.guardian_last || data.guardianLast || '',
+                        guardian_email: data.guardian_email || '',
+                        guardian_phone: data.guardian_phone || '',
                         guardian_relationship: data.guardian_relationship || data.guardianRelationship || '',
-                        r_dsType1: data.r_dsType1 || data.r_dsType1 || '',
                         password: data.password || '',
                     };
 
@@ -923,7 +939,7 @@
                 const ds = d.dsType || d.ds_type || p.dsType || p.ds_type || '';
                 if(ds){
                     try{
-                        const select = document.getElementById('r_dsType1');
+                        const select = document.getElementById('dsType');
                         if(select){
                             let found = false;
                             for(const opt of select.options){ if(String(opt.value||'').toLowerCase()===String(ds).toLowerCase()){ select.value = opt.value; found = true; break; } }
@@ -935,15 +951,15 @@
 
                 // guardian
                 const g = d.guardian || d.guardianInfo || d;
-                const gfirst = g.g_first_name_name || g.g_first_name || g.first || g.first_name || '';
-                const glast = g.g_last_name_name || g.g_last_name || g.last || g.last_name || '';
-                const gemail = g.g_email || g.email || '';
-                const gphone = g.g_phone || g.phone || '';
+                const gfirst = g.guardian_first_name || g.guardian_first || g.first || g.first_name || '';
+                const glast = g.guardian_last_name || g.guardian_last || g.last || g.last_name || '';
+                const gemail = g.guardian_email || g.email || '';
+                const gphone = g.guardian_phone || g.phone || '';
                 const grel = g.guardian_relationship || g.guardian_choice || g.relationship || '';
-                applied = setIf('g_first_name', gfirst) || applied;
-                applied = setIf('g_last_name', glast) || applied;
-                applied = setIf('g_email', gemail) || applied;
-                applied = setIf('g_phone', gphone) || applied;
+                applied = setIf('guardian_first', gfirst) || applied;
+                applied = setIf('guardian_last', glast) || applied;
+                applied = setIf('guardian_email', gemail) || applied;
+                applied = setIf('guardian_phone', gphone) || applied;
                 if(grel) applied = setIf('guardian_relationship', grel) || applied;
 
                 // proof filename preview
@@ -1146,6 +1162,7 @@
             }
         });
     </script>
+
 </body>
 
 </html>

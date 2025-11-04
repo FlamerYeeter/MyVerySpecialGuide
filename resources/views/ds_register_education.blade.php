@@ -932,7 +932,7 @@
                 // Load saved values on page load
                 const savedCert = localStorage.getItem("review_certs");
                 const radio = document.getElementById(savedCert === "yes" ? "certYes" : "certNo");
-                if (radio) radio.checked = true;
+                if (radio) radio.checked = false;
                 console.log("Loaded cert:", savedCert);
                 
                 // Save on button click
