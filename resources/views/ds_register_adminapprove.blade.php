@@ -741,48 +741,15 @@
             <div class="flex flex-col items-center mt-6">
                 <button 
                 id="createAccountBtn" 
-                type="button" 
-                class="text-white text-base sm:text-lg font-semibold px-6 sm:px-12 py-3 
-                        rounded-xl transition-colors duration-300 shadow-md w-full sm:w-auto 
-                        bg-blue-600 opacity-90">
-                Submit for Approval
+                type="button" class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
+                    Next →
                 </button>
                 <p class="text-gray-600 text-sm mt-3 text-center">
-                    Click <span class="text-[#1E40AF] font-medium">“Submit for Approval”</span> to continue<br>
+                    Click <span class="text-[#1E40AF] font-medium">“Next”</span> to continue<br>
                     <span class="italic text-gray-600">(Pindutin upang magpatuloy sa susunod na hakbang)</span>
                 </p>
             </div>
-            <!-- Notes Section -->
-            <div class="mt-8 flex justify-center">
-                <div
-                    class="bg-white shadow-md rounded-2xl px-5 sm:px-6 py-6 max-w-lg w-full text-center border border-gray-100">
-                    <div class="mb-5">
-                        <h3 class="text-gray-800 font-semibold text-sm uppercase tracking-wide">Next Step</h3>
-                        <p class="text-gray-700 text-[13px] mt-2 leading-relaxed">
-                            Check your email inbox for the approval confirmation message to proceed to the next step.
-                        </p>
-                        <p class="text-gray-600 italic text-[12px] mt-1">
-                            (Suriin ang iyong email inbox para sa mensahe ng kumpirmasyon ng pag-apruba upang magpatuloy
-                            sa susunod na hakbang)
-                        </p>
-                    </div>
-
-                    <div class="border-t border-gray-200 my-4"></div>
-
-                    <div>
-                        <p class="text-gray-600 text-sm">
-                            Didn’t receive confirmation?
-                            <a href="#" class="text-[#1E40AF] font-medium hover:underline">Resend</a>
-                        </p>
-                        <p class="text-gray-500 italic text-[12px] mt-1">(Hindi nakatanggap ng kumpirmasyon? I-click
-                            ang “Resend”)</p>
-                    </div>
-                </div>
-            </div>
-
-        </form>
-    </div>
-
+            
     <!-- Save draft script: persist to rpi_personal so register.js autofills personal page -->
     <script>
         (function() {

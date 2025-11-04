@@ -372,13 +372,6 @@
          <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
 
-            <!-- Edit Button -->
-            <button id="editInfo" onclick="saveDraftAndEdit();"
-                class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
-           px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
-           shadow-md w-full sm:w-64 text-center">
-                ✏️ Edit Information
-            </button>
 
             <!-- Continue Button -->
             <button id="review1Continue" type="button"
