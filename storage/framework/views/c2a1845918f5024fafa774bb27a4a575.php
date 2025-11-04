@@ -375,6 +375,7 @@
             uploadedProofType1: localStorage.getItem('uploadedProofType1'),
             workplace: localStorage.getItem('workplace'),
             jobPreferences: localStorage.getItem('jobPreferences'),
+            skills1_selected: localStorage.getItem('skills1_selected')
           };
 
           // Send to PHP backend
@@ -385,7 +386,7 @@
           })
             .then(res => res.text())
             .then(console.log)
-            .catch(console.error);
+            .catch(console.error);  
 
           const email = (emailField && emailField.value || '').trim();
           let hasError = false;

@@ -375,6 +375,7 @@
             uploadedProofType1: localStorage.getItem('uploadedProofType1'),
             workplace: localStorage.getItem('workplace'),
             jobPreferences: localStorage.getItem('jobPreferences'),
+            skills1_selected: localStorage.getItem('skills1_selected')
           };
 
           // Send to PHP backend

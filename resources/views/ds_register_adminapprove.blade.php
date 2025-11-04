@@ -486,9 +486,9 @@
                     console.log("✅ File upload script initialized");
 
                     // 🔹 Load file from localStorage (base64)
-                    const savedFileData = localStorage.getItem("uploadedProofData1");
-                    const savedFileType = localStorage.getItem("uploadedProofType1");
-                    const savedFileName = localStorage.getItem("uploadedProofName1");
+                    const savedFileData = localStorage.getItem("uploadedProofData0");
+                    const savedFileType = localStorage.getItem("uploadedProofType0");
+                    const savedFileName = localStorage.getItem("uploadedProofName0");
 
                     if (savedFileData && savedFileType && savedFileName) {
                         showFileInfo(savedFileName, savedFileType);
@@ -515,9 +515,9 @@
                         const reader = new FileReader();
                         reader.onload = function (e) {
                         const fileData = e.target.result; // base64 content
-                        localStorage.setItem("uploadedProofData1", fileData);
-                        localStorage.setItem("uploadedProofType1", ext);
-                        localStorage.setItem("uploadedProofName1", file.name);
+                        localStorage.setItem("uploadedProofData0", fileData);
+                        localStorage.setItem("uploadedProofType0", ext);
+                        localStorage.setItem("uploadedProofName0", file.name);
 
                         showFileInfo(file.name, ext);
                         makeFileClickable(prevFileEl, file.name, fileData, ext);
@@ -527,17 +527,17 @@
 
                     // 🔹 View button
                     viewBtn.addEventListener("click", () => {
-                        const name = localStorage.getItem("uploadedProofName1");
-                        const data = localStorage.getItem("uploadedProofData1");
-                        const type = localStorage.getItem("uploadedProofType1");
+                        const name = localStorage.getItem("uploadedProofName0");
+                        const data = localStorage.getItem("uploadedProofData0");
+                        const type = localStorage.getItem("uploadedProofType0");
                         if (data && type && name) openModalPreview(name, data, type);
                     });
 
                     // 🔹 Remove file
                     removeBtn.addEventListener("click", () => {
-                        localStorage.removeItem("uploadedProofData1");
-                        localStorage.removeItem("uploadedProofType1");
-                        localStorage.removeItem("uploadedProofName1");
+                        localStorage.removeItem("uploadedProofData0");
+                        localStorage.removeItem("uploadedProofType0");
+                        localStorage.removeItem("uploadedProofName0");
                         fileInput.value = "";
                         hideFileInfo();
                     });

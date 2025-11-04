@@ -34,13 +34,8 @@ $user_info         = json_decode($data['rpi_personal'] ?? '{}', true);
 $education_level   = $data['education'] ?? null;
 $main_course       = $data['school_name'] ?? null;
 $is_graduate       = $data['review_certs'] ?? null;
-$work_type         = json_decode($data['selected_work_experience'] ?? '[]', true);
 $license_type      = $data['selected_work_year'] ?? null;
-$work_method       = json_decode($data['support'] ?? '[]', true);
 $status            = $data['workplace'] ?? null;
-$job_category      = json_decode($data['jobPreferences'] ?? '[]', true);
-$job_experiences = json_decode($data['job_experiences'] ?? '[]', true);
-
 $proof = saveBase64File($data['uploadedProofData0'] ?? '');
 $certs = saveBase64File($data['uploadedProofData1'] ?? '');
 
@@ -114,31 +109,29 @@ if (!oci_execute($stid1)) {
     exit;
 }
 
-$job_category = json_encode($job_category);
-$support        = json_encode($work_method);
-$work_exp       = $job_experiences; // already an array (decoded earlier)
-$status         = $status ?? 'active';
+$work_type        = json_decode($data['selected_work_experience'] ?? '[]', true);
+$skills1_selected = json_decode($data['skills1_selected'] ?? '[]', true);
+$job_category     = json_decode($data['jobPreferences'] ?? '[]', true);
+$support          = json_decode($data['support'] ?? '[]', true);
+$work_exp         = json_decode($data['job_experiences'] ?? '[]', true);
+$status           = $status ?? 'active';
 
 // ——— 2. INSERT user_profile (15 columns) ———
 foreach ($work_exp as $work) {
 
     $sql2 = "
-        INSERT INTO user_profile (
+        INSERT INTO job_experiences (
             guardian_id,
             job_title,
             company_name,
             work_year,
-            job_description,
-            created_at,
-            updated_at
+            job_description
         ) VALUES (
             :v1,
             :v2,
             :v3,
             :v4,
-            :v5,
-            SYSDATE,
-            SYSDATE
+            :v5
         )
     ";
 
@@ -158,6 +151,62 @@ foreach ($work_exp as $work) {
         $e = oci_error($stid2);
         echo "❌ Error inserting work {$work['title']}: " . $e['message'] . "<br>";
     }
+}
+
+$work_type        = json_decode($data['selected_work_experience'] ?? '[]', true);
+$skills1_selected = json_decode($data['skills1_selected'] ?? '[]', true);
+$job_category     = json_decode($data['jobPreferences'] ?? '[]', true);
+$support          = json_decode($data['support'] ?? '[]', true);
+
+// Helper function for inserting rows
+function insertGuardianDetail($conn, $guardian_id, $type, $value) {
+    $sql = "
+        INSERT INTO guardian_job_details (
+            guardian_id,
+            type,
+            value
+        ) VALUES (
+            :guardian_id,
+            :type,
+            :value
+        )
+    ";
+    $stid = oci_parse($conn, $sql);
+
+    oci_bind_by_name($stid, ':guardian_id', $guardian_id);
+    oci_bind_by_name($stid, ':type', $type);
+    oci_bind_by_name($stid, ':value', $value);
+
+    $exec = oci_execute($stid, OCI_COMMIT_ON_SUCCESS);
+
+    if ($exec) {
+        echo "✅ Inserted $type → $value<br>";
+    } else {
+        $e = oci_error($stid);
+        echo "❌ Error inserting $type → $value: " . $e['message'] . "<br>";
+    }
+
+    oci_free_statement($stid);
+}
+
+// Insert Work Types
+foreach ($work_type as $w_type) {
+    insertGuardianDetail($conn, $guardian_id, 'work_experience', $w_type);
+}
+
+// Insert Skills
+foreach ($skills1_selected as $skill) {
+    insertGuardianDetail($conn, $guardian_id, 'skills', $skill);
+}
+
+// Insert Job Categories
+foreach ($job_category as $category) {
+    insertGuardianDetail($conn, $guardian_id, 'job_category', $category);
+}
+
+// Insert Support Options
+foreach ($support as $sup) {
+    insertGuardianDetail($conn, $guardian_id, 'support', $sup);
 }
 
 if (!oci_execute($stid2)) {
