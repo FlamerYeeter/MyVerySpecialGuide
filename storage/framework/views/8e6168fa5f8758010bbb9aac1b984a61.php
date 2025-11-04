@@ -28,9 +28,10 @@
         <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">LOG IN</h2>
 
         <!-- Form -->
-        <form method="POST" action="<?php echo e(route('login.post')); ?>" class="space-y-5">
+        <form id="loginForm" method="POST" action="<?php echo e(route('login.post')); ?>" class="space-y-5">
             <?php echo csrf_field(); ?>
             <input type="hidden" name="redirect" value="/navigation-buttons" />
+            <div id="loginError" class="text-red-600 text-sm"></div>
             <?php if($errors->any()): ?>
                 <div class="text-red-600 text-sm"><?php echo e($errors->first()); ?></div>
             <?php endif; ?>
@@ -77,6 +78,103 @@
 </div>
 
 </body>
+<script>
+    (function(){
+        // safe JSON parse helper
+        function safeParse(s){ try { return JSON.parse(s); } catch(e){ return null; } }
+
+        // Create a local demo account and mark session as authenticated (local-only).
+        // Opt-in only: triggered when URL contains ?demo=1. Demo email/password can be
+        // overridden with ?demo_email=...&demo_password=... if needed.
+        function createDemoAccountAndLogin(demoEmail, demoPassword) {
+            try {
+                const account = {
+                    email: demoEmail,
+                    password: demoPassword,
+                    draft: { demo: true },
+                    createdAt: new Date().toISOString(),
+                    status: 'active_demo'
+                };
+
+                const key = 'local_accounts';
+                let list = [];
+                try { list = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e){ list = []; }
+                list = list.filter(x => String((x.email||'')).toLowerCase() !== String(demoEmail||'').toLowerCase());
+                list.push(account);
+                localStorage.setItem(key, JSON.stringify(list));
+
+                // Mark authenticated state used by client-side flows
+                localStorage.setItem('mvsg_authenticated', '1');
+                localStorage.setItem('mvsg_current_email', demoEmail);
+                localStorage.setItem('mvsg_current_user', JSON.stringify(account));
+                // Also set local_current_email for flows that read this key
+                try { localStorage.setItem('local_current_email', demoEmail); } catch(e) {}
+
+                console.info('[demo-login] created local demo account for', demoEmail);
+            } catch(e) { console.error('[demo-login] failed to create demo account', e); }
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            const form = document.getElementById('loginForm');
+            const errorEl = document.getElementById('loginError');
+            if (!form) return;
+
+            // If the URL contains ?demo=1, create a demo account and auto-login.
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                if (params.get('demo') === '1') {
+                    const demoEmail = params.get('demo_email') || 'thomasadriannaguit@gmail.com';
+                    const demoPassword = params.get('demo_password') || '2703Remalf';
+                    // create account and redirect directly to navigation-buttons for demo
+                    createDemoAccountAndLogin(demoEmail, demoPassword);
+                    try { localStorage.setItem('local_current_email', demoEmail); } catch(e) {}
+                    // Small delay so storage writes settle before redirecting
+                    setTimeout(()=> { window.location.href = '/navigation-buttons'; }, 120);
+                    return;
+                }
+            } catch(e) { console.warn('demo login check failed', e); }
+
+            form.addEventListener('submit', function(evt){
+                // attempt client-side local_storage auth first
+                try {
+                    const email = (form.querySelector('input[name="email"]')?.value || '').trim();
+                    const password = (form.querySelector('input[name="password"]')?.value || '').trim();
+                    errorEl.textContent = '';
+
+                    if (!email || !password) {
+                        errorEl.textContent = 'Please enter both email and password.';
+                        evt.preventDefault();
+                        return;
+                    }
+
+                    const accs = safeParse(localStorage.getItem('local_accounts') || '[]') || [];
+                    const found = accs.find(a => (a.email||'').toLowerCase() === email.toLowerCase() && String(a.password || '') === String(password));
+                    if (found) {
+                        // successful local login: mark as authenticated in local storage and redirect client-side
+                        try {
+                            localStorage.setItem('mvsg_authenticated', '1');
+                            localStorage.setItem('mvsg_current_email', found.email || email);
+                            localStorage.setItem('mvsg_current_user', JSON.stringify(found));
+                        } catch(e) { /* ignore storage errors */ }
+
+                        // redirect to provided redirect input or default
+                        const redirect = form.querySelector('input[name="redirect"]')?.value || '/navigation-buttons';
+                        evt.preventDefault();
+                        window.location.href = redirect;
+                        return;
+                    }
+
+                    // not found locally: allow form to submit to server (if present) but show a brief hint
+                    errorEl.textContent = 'Login failed. Please check your credentials.';
+                    // let server handle the submission; do not preventDefault here
+                } catch(e) {
+                    // fallback: allow normal submit
+                    console.warn('local login check failed', e);
+                }
+            });
+        });
+    })();
+</script>
 </html>
 
 

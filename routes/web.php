@@ -671,10 +671,16 @@ Route::post('/login', function (Request $request) {
         $oracleResp = $oracleController->loginGuardian($request);
         if ($oracleResp instanceof \Illuminate\Http\JsonResponse) {
             $odata = $oracleResp->getData(true);
-            if (!empty($odata['ok'])) {
-                logger()->info('Login: Oracle guardian login succeeded', ['email' => $credentials['email'] ?? null]);
-                // redirect to intended target or job matches
-                return redirect()->route('job.matches');
+            if (!empty($odata['ok'])) { 
+                logger()->info('Login: Oracle guardian login succeeded', ['email' => $credentials['email'] ?? null]); 
+                return redirect()->route('job.matches'); 
+            } 
+        }
+    } catch (\Throwable $__e) {
+        // Log and continue to Firebase/local fallbacks
+        logger()->warning('Oracle login attempt failed: ' . $__e->getMessage());
+    }
+
     // If local auth failed, and Firebase API key is present, try Firebase REST auth (email/password)
     $firebaseKey = env('FIREBASE_API_KEY');
     // current host used to validate redirect targets
@@ -780,9 +786,9 @@ Route::post('/login', function (Request $request) {
             } else {
                 logger()->warning('Firebase login failed: ' . $resp->body());
             }
+        } catch (\Throwable $__e) {
+            logger()->warning('Firebase login attempt failed: ' . $__e->getMessage());
         }
-    } catch (\Throwable $__e) {
-        logger()->warning('Oracle login attempt failed: ' . $__e->getMessage());
     }
 
     // Firebase REST login removed - Oracle login is used instead.
