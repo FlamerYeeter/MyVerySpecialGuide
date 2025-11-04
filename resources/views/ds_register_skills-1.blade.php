@@ -258,65 +258,63 @@
             <script src="{{ asset('js/register.js') }}"></script>
 
             <script>
-                // Early attempt to restore previously-selected skills from local draft (rpi_personal)
-                (function(){
-                    const tryParse = s => {
-                        try { return typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; }
-                    };
-                    const normalizeList = v => {
-                        try {
-                            if (!v) return [];
-                            if (Array.isArray(v)) return v.map(x=>String(x||'').trim()).filter(Boolean);
-                            if (typeof v === 'object') {
-                                if (v.selected && Array.isArray(v.selected)) return v.selected.map(x=>String(x||'').trim()).filter(Boolean);
-                                if (v.skills_page1 && Array.isArray(v.skills_page1)) return v.skills_page1.map(x=>String(x||'').trim()).filter(Boolean);
-                                // object values
-                                return Object.values(v).map(x=>String(x||'').trim()).filter(Boolean);
-                            }
-                            const s = String(v||'').trim();
-                            if (!s) return [];
-                            if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
-                                try { return normalizeList(tryParse(s)); } catch(e){}
-                            }
-                            if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
-                            return [s];
-                        } catch(e){ return []; }
-                    };
-
+                // Simplified restore: prefer the hidden input, then fall back to a few localStorage keys.
+                document.addEventListener('DOMContentLoaded', function() {
                     try {
-                        // prefer window-loaded draft if available
-                        const fromWindow = window.__mvsg_lastLoadedDraft || null;
-                        let draft = null;
-                        if (fromWindow && typeof fromWindow === 'object') draft = fromWindow;
-                        else {
-                            const raw = localStorage.getItem('rpi_personal') || localStorage.getItem('registrationDraft') || localStorage.getItem('registerDraft') || sessionStorage.getItem('rpi_personal');
-                            if (raw) {
-                                draft = tryParse(raw) || null;
+                        const hidden = document.getElementById('skills_page1');
+                        if (!hidden) return;
+
+                        let arr = [];
+                        // 1) try hidden input value
+                        try {
+                            const v = (hidden.value || '').trim();
+                            if (v) {
+                                if ((v.startsWith('[') && v.endsWith(']')) || (v.startsWith('{') && v.endsWith('}'))) {
+                                    arr = JSON.parse(v) || [];
+                                } else if (v.indexOf(',') !== -1) {
+                                    arr = v.split(',').map(s=>s.trim()).filter(Boolean);
+                                } else if (v) {
+                                    arr = [v];
+                                }
+                            }
+                        } catch(e) { arr = []; }
+
+                        // 2) fallback: localStorage keys
+                        if (!arr.length) {
+                            const keys = ['skills_page1','skills','selected_skills','selectedSkills'];
+                            for (const k of keys) {
+                                try {
+                                    const raw = localStorage.getItem(k);
+                                    if (!raw) continue;
+                                    const s = raw.trim();
+                                    if (!s) continue;
+                                    if (s.startsWith('[')) arr = JSON.parse(s) || [];
+                                    else if (s.indexOf(',') !== -1) arr = s.split(',').map(x=>x.trim()).filter(Boolean);
+                                    else arr = [s];
+                                } catch(e) { arr = []; }
+                                if (arr.length) break;
                             }
                         }
-                        let skills = [];
-                        if (draft) {
-                            // try nested paths used elsewhere
-                            skills = skills.concat(normalizeList(draft.skills && draft.skills.selected ? draft.skills.selected : (draft.skills || draft.skills_page1 || draft.skills_page || draft.skills1)));
-                            skills = skills.concat(normalizeList(draft.skills_page1 || draft.skills1 || draft.skills_page || draft.selectedSkills || draft.skillList || draft.skills));
-                        }
-                        // dedupe
-                        skills = Array.from(new Set((skills||[]).map(x=>String(x||'').trim()).filter(Boolean)));
-                        if (skills.length) {
-                            const hidden = document.getElementById('skills_page1');
-                            if (hidden) hidden.value = JSON.stringify(skills);
-                            // mark cards selected immediately so the user sees selection before other init runs
-                            document.querySelectorAll('.skills-card[data-value]').forEach(c => {
-                                try {
-                                    const v = c.getAttribute('data-value')?.trim();
-                                    if (v && skills.indexOf(v) !== -1) c.classList.add('selected');
-                                    else c.classList.remove('selected');
-                                } catch(e){}
-                            });
-                            console.info('[skills1] restored skills from draft:', skills);
-                        }
-                    } catch(e) { console.debug('[skills1] restore draft failed', e); }
-                })();
+
+                        // normalize and dedupe
+                        arr = Array.from(new Set((arr||[]).map(x=>String(x||'').trim()).filter(Boolean)));
+                        if (!arr.length) return;
+
+                        // write back to hidden for other scripts
+                        hidden.value = JSON.stringify(arr);
+
+                        // select matching cards (case-insensitive match against data-value or h3 text)
+                        const lc = arr.map(s => s.toLowerCase());
+                        document.querySelectorAll('.skills-card[data-value]').forEach(card => {
+                            try {
+                                const v = (card.getAttribute('data-value') || '').trim();
+                                const title = (card.querySelector('h3')?.textContent || '').trim();
+                                const matched = lc.includes(String(v||'').toLowerCase()) || lc.includes(String(title||'').toLowerCase());
+                                if (matched) card.classList.add('selected'); else card.classList.remove('selected');
+                            } catch(e){}
+                        });
+                    } catch(e) { console.debug('skills restore failed', e); }
+                });
             </script>
 
             <!-- TTS: Web Speech API handler -->

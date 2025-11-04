@@ -103,252 +103,170 @@
                 </p>
             </div>
         </div>
+                      
 
         <!-- Review Sections -->
         <div id="reviewContainer" class="mt-10 space-y-8">
 
             <!-- Form -->
-        <form id="registrationForm" class="mt-10 space-y-10 text-left">
-            
-        <!-- Personal Information -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3
-                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Personal Information
-                </h3>
+        <form id="registrationForm" class="mt-10 space-y-10 text-left"></form>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                   
-                <!-- First Name -->
-                        <div>
-                        <label for="first_name"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            First Name
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
+            <!-- Personal Information -->
+                    <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+                        <h3
+                            class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                            Personal Information
+                        </h3>
 
-                        <!-- Static text display -->
-                        <p id="first_name" 
-                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                        </p>
-                        </div>
+                        <form id="registerreview1" class="space-y-6">
 
-                    <!-- Last Name -->
-                    <div>
-                        <label for="last_name"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Last Name 
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
-
-                       <!-- Static text display -->
-                        <p id="Last_name" 
-                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                    </div>
-
-                    <!-- Age -->
-                    <div>
-                        <label for="age"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Age 
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Edad</p>
-                        
-                         <!-- Static text display -->
-                        <p id="Age" 
-                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                   
-                <!-- Email -->
-                    <div>
-                        <label for="email"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Email 
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
-
-                         <!-- Static text display -->
-                        <p id="Email" 
-                             class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                    </div>
-
-                    <!-- Contact Number -->
-                    <div>
-                        <label for="phone"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Contact Number 
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
-                        <input   id="phone" 
-                                type="tel" 
-                               
-                                readonly
-                                class="mt-1 w-full border border-gray-300 rounded-md bg-gray-50 text-gray-800 px-3 py-2 focus:ring focus:ring-0 focus:outline-none cursor-default" />
-                    </div>
-                </div>
-
-                <!-- Address -->
-                    <div class="mt-6">
-                    <label for="address" class="font-semibold text-gray-800 text-sm sm:text-base">
-                        Address
-                    </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
-
-                    <input id="address" 
-                            type="text" 
-                           
-                            readonly
-                              class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+        <!-- First Name -->
+            <div>
+            <label for="first_name" class="font-semibold text-gray-800 text-sm sm:text-base">First Name</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
+            <input id="first_name" type="text" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
             </div>
 
-            <!-- DS Type -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3 class="text-lg font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Type of Down Syndrome
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
-                    <!--Static text display -->
-                    <div class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                    <p><span class="font-semibold"></span> <span id="r_dsType"></span></p>
+ <!-- Last Name -->
+            <div>
+            <label for="ast_name" class="font-semibold text-gray-800 text-sm sm:text-base">Last Name</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
+            <input id="last_name" type="text" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            </div>
+ <!-- Age -->
+            <div>
+            <label for="age" class="font-semibold text-gray-800 text-sm sm:text-base">Age</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Edad</p>
+            <input id="age" type="number" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            </div>
+        </div>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Email -->
+            <div>
+            <label for="email" class="font-semibold text-gray-800 text-sm sm:text-base">Email</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
+            <input id="email" type="email" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            </div>
+ <!-- Contact Number -->
+            <div>
+                <label for="phone"
+                    class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                    Contact Number <span></span>
+                </label>
+                <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
+                <input   id="phone" 
+                        type="tel" 
+                        placeholder="+63 9XX XXX XXXX"
+                        pattern="^\+63\s?9\d{2}\s?\d{3}\s?\d{4}$"
+                        title="Please enter a valid Philippine number (e.g. +63 912 345 6789)"
+                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+            </div>
+        </div>
+ <!-- Address -->
+        <div>
+            <label for="address" class="font-semibold text-gray-800 text-sm sm:text-base">Address</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
+            <input id="address" type="text" disabled
+            class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+        </div>
+        <!-- DS Type -->
+        <div>
+            <label for="r_dsType1" class="font-semibold text-gray-800 text-sm sm:text-base">Type of Down Syndrome</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Pumili ng uri</p>
+            <select id="r_dsType1" disabled
+            class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none">
+            <option value="">-- Select Type --</option>
+            <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
+            <option value="Mosaic Down Syndrome">Mosaic Down Syndrome</option>
+            <option value="Translocation Down Syndrome">Translocation Down Syndrome</option>
+            </select>
+        </div>
+ <!-- Guardian Info -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Guardian First Name -->
+            <div>
+            <label for="g_first_name" class="font-semibold text-gray-800 text-sm sm:text-base">Guardian First Name</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
+            <input id="g_first_name" type="text" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            </div>
+  <!-- Guardian Last Name -->
+            <div>
+            <label for="g_last_name" class="font-semibold text-gray-800 text-sm sm:text-base">Guardian Last Name</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
+            <input id="g_last_name" type="text" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            </div>
+  <!-- Guardian Email -->
+            <div>
+            <label for="g_email" class="font-semibold text-gray-800 text-sm sm:text-base">Guardian Email</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
+            <input id="g_email" type="email" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            </div>
 
-                  
-                    </div>
-                </div>
-            </div> 
-
-          <!-- Guardian Information -->
-                <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 mb-10">
-                <h3
-                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Guardian Information
-                </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  
-                <!-- Guardian First Name -->
-                    <div>
-                    <label for="guardian_first"
-                        class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                        First Name
-                    </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
-
-                        <!-- Static text display -->
-                        <p id="g_first_name" 
-                           class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                        </p>
-                    </div>
-
-                    <!-- Guardian Last Name -->
-                    <div>
-                    <label for="guardian_last"
-                        class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                        Last Name
-                    </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
-
-                   
-                        <!-- Static text display -->
-                        <p id="g_last_name" 
-                            class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                        </p>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                  
-                <!-- Guardian Email -->
-                    <div>
-                    <label for="guardian_email"
-                        class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                        Email
-                    </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
-                    
-                        <!-- Static text display -->
-                        <p id="g_email" 
-                            class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                        </p>
-                    </div>
-
-                    <!-- Guardian Contact -->
-                    <div>
-                    <label for="guardian_phone"
-                        class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                        Contact Number
-                    </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
-                        <input   id="g_phone" 
-                                type="tel" 
-                              
-                                readonly
-                                class="mt-1 w-full border border-gray-300 rounded-md bg-gray-50 text-gray-800 px-3 py-2 focus:ring focus:ring-0 focus:outline-none cursor-default" />
-                    </div>
-                </div>
-
-                <!-- Relationship -->
-                <div class="mt-6">
-                    <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">
-                    Relationship to User
-                    </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa Gagamit</p>
-                   
-                     <!-- Static text display -->
-                        <p id="guardian_relationship"
-                        class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                        
-                        </p>
-
-                           
-                        </p>
-                </div>
-                </div>
-
-
-                <!-- Account Details -->
+            <!-- Guardian Phone -->
+            <div>
+            <label for="g_phone" class="font-semibold text-gray-800 text-sm sm:text-base">Guardian Contact Number</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
+            <input id="g_phone" type="tel" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            </div>
+        </div>
+   <!-- Relationship to User -->
+        <div>
+            <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to User</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa Gagamit</p>
+            <select id="guardian_relationship" disabled
+            class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none">
+            <option value="">-- Select Relationship --</option>
+            <option value="Parent">Parent</option>
+            <option value="Guardian">Guardian</option>
+            <option value="Sibling">Sibling</option>
+            <option value="Relative">Relative</option>
+            <option value="Other">Other</option>
+            </select>
+        </div>
+        </div>
+                                <!-- Account Details -->
                 <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3
-                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+  <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
                     Account Details
                 </h3>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Username -->
                     <div>
                     <label for="username" class="font-semibold flex items-center gap-1">Username</label>
-                    <p id="username"
-                          class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                    
+                    <input id="username" type="text" disabled
+                        class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
                     </div>
 
                     <!-- Password -->
-                    <div>
+                    <div class="relative">
                     <label for="password" class="font-semibold flex items-center gap-1">Password</label>
-                    <p id="password"
+                     <input disabled id="password" name="password" type="password"
+                        placeholder=""
                         pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
                         title="Password must have at least 1 uppercase letter, 1 lowercase letter, 1 number, and be 8+ characters long."
-                        class="mt-2 w-full min-h-[42px] border border-gray-300 rounded-md px-3 py-2 
-                                bg-gray-50 text-gray-800 flex items-center shadow-sm select-none">
-                    <p id="passwordMessage" 
-                        class="mt-1 text-sm text-red-500 italic hidden">
-                        Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
+
+                    class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-10 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+
+                    <!-- Eye icon -->
+                    <button type="button" id="togglePassword" class="absolute top-[42px] right-3 text-gray-600 text-lg focus:outline-none">
+                        👁️
+                    </button>
+
+                    <p id="passwordMessage" class="mt-1 text-sm text-red-500 italic hidden">
+                         Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
                     </p>
                     </div>
+
                 </div>
                 </div>
 
@@ -372,7 +290,7 @@
                         </p>
                         <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
                         (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
-                        Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
+                         Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
                         <b>5MB</b><br />
                         </p>
 
@@ -429,8 +347,7 @@
                         type="file"
                         accept=".jpg,.jpeg,.png,.pdf"
                         class="hidden"
-                        required
-                    />
+                          />
                     </div>
 
                     <!-- 🔹 MODAL PREVIEW -->
@@ -452,8 +369,7 @@
 
             </div>
         </div>
-
-        <!-- Action Buttons -->
+         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
 
             <!-- Edit Button -->
@@ -488,62 +404,225 @@
     <script>
         // Save the currently-displayed review draft into localStorage so the adminapprove page
         // (and register.js) can prefill fields. If Firebase user is available, append ?uid= to the URL.
-        function saveDraftAndEdit() {
-            try {
-                // Prefer the merged draft if the preview loader exposed it
-                let draft = window.__mvsg_lastLoadedDraft || null;
-                if (!draft || typeof draft !== 'object') {
-                    // Fallback: build a minimal draft from the visible review DOM
-                    draft = draft || {};
-                    draft.personal = draft.personal || {};
-                    draft.guardian = draft.guardian || {};
-                    const text = id => (document.getElementById(id) && document.getElementById(id).textContent) ? document.getElementById(id).textContent.trim() : '';
-                    draft.personal.first = draft.personal.first || text('r_first_name');
-                    draft.personal.last = draft.personal.last || text('r_last_name');
-                    draft.personal.email = draft.personal.email || text('r_email');
-                    draft.personal.phone = draft.personal.phone || text('r_phone');
-                    draft.personal.age = draft.personal.age || text('r_age');
-                    draft.personal.address = draft.personal.address || text('r_address');
-                    draft.personal.username = draft.personal.username || text('r_username');
-                    // Password in review is a masked placeholder; keep it if present (won't reveal real password)
-                    const pw = text('r_password'); if (pw) draft.personal.password = draft.personal.password || pw;
-                    draft.guardian.guardian_first_name = draft.guardian.guardian_first_name || text('r_guardian_first');
-                    draft.guardian.guardian_last_name = draft.guardian.guardian_last_name || text('r_guardian_last');
-                    draft.guardian.guardian_email = draft.guardian.guardian_email || text('r_guardian_email');
-                    draft.guardian.guardian_phone = draft.guardian.guardian_phone || text('r_guardian_phone');
-                    draft.guardian.relationship = draft.guardian.relationship || text('r_guardian_relationship');
-                    draft.dsType = draft.dsType || text('r_dsType');
-                    // proof filename (may contain 'No file uploaded')
-                    const proof = text('r_proof'); if (proof && proof !== 'No file uploaded') draft.proofFilename = draft.proofFilename || proof;
-                }
-                try {
-                    localStorage.setItem('rpi_personal', JSON.stringify(draft));
-                    // read back and show verified JSON so we can confirm storage succeeded in the browser console
-                    try {
-                        const verified = JSON.parse(localStorage.getItem('rpi_personal'));
-                        console.info('[review] saveDraftAndEdit wrote rpi_personal and verified', verified);
-                    } catch (verErr) {
-                        console.info('[review] saveDraftAndEdit wrote rpi_personal (could not parse on readback)', localStorage.getItem('rpi_personal'));
-                    }
-                } catch (e) { console.warn('saveDraftAndEdit: failed to set localStorage', e); }
-            } catch (e) { console.warn('saveDraftAndEdit build draft failed', e); }
+  function saveDraftAndEdit() {
+                document.getElementById('registrationForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Stop default reload
 
-                // Try to get firebase uid to make adminapprove load the authoritative document when possible
-            try {
-                // Firebase removed: do not attempt client auth; always navigate to route directly.
-                window.location.href = '{{ route('registeradminapprove') }}';
-            } catch (e) {
-                window.location.href = '{{ route('registeradminapprove') }}';
+                // Your logic here
+                console.log('Form submission blocked. Custom handling.');
+            });
+
+                try {
+  // Prefer the merged draft if the preview loader exposed it
+                    let draft = window.__mvsg_lastLoadedDraft || null;
+
+                    if (!draft || typeof draft !== 'object') {
+                        // Fallback: build a minimal draft from the visible review DOM
+                        draft = draft || {};
+                        draft.personal = draft.personal || {};
+                        draft.guardian = draft.guardian || {};
+
+                        const text = id => {
+                            const el = document.getElementById(id);
+                            return el && el.textContent ? el.textContent.trim() : '';
+                        };
+
+                        // Personal fields
+                        draft.personal.first = draft.personal.first || text('r_first_name');
+                        draft.personal.last = draft.personal.last || text('r_last_name');
+                        draft.personal.email = draft.personal.email || text('r_email');
+                        draft.personal.phone = draft.personal.phone || text('r_phone');
+                        draft.personal.age = draft.personal.age || text('r_age');
+                        draft.personal.address = draft.personal.address || text('r_address');
+                        draft.personal.username = draft.personal.username || text('r_username');
+
+                        const pw = text('r_password');
+                        if (pw) draft.personal.password = draft.personal.password || pw;
+
+                        // Guardian fields
+                        draft.guardian.guardian_first_name = draft.guardian.guardian_first_name || text('r_guardian_first');
+                        draft.guardian.guardian_last_name = draft.guardian.guardian_last_name || text('r_guardian_last');
+                        draft.guardian.guardian_email = draft.guardian.guardian_email || text('r_guardian_email');
+                        draft.guardian.guardian_phone = draft.guardian.guardian_phone || text('r_guardian_phone');
+                        draft.guardian.relationship = draft.guardian.relationship || text('r_guardian_relationship');
+
+                        draft.dsType = draft.dsType || text('r_dsType');
+
+                        const proof = text('r_proof');
+                        if (proof && proof !== 'No file uploaded') {
+                            draft.proofFilename = draft.proofFilename || proof;
+                        }
+                    }
+
+                    // Save to localStorage
+                    try {
+localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                        try {
+                            const verified = JSON.parse(localStorage.getItem('rpi_personal'));
+                            console.info('[review] saveDraftAndEdit wrote rpi_personal and verified', verified);
+                        } catch (verErr) {
+                            console.info('[review] saveDraftAndEdit wrote rpi_personal (could not parse on readback)', localStorage.getItem('rpi_personal'));
+                        }
+                    } catch (e) {
+                        console.warn('saveDraftAndEdit: failed to set localStorage', e);
+                    }
+} catch (e) {
+                    console.warn('saveDraftAndEdit build draft failed', e);
+                }
+ // Firebase UID logic
+                try {
+                    let uid = '';
+                    if (window.firebase && firebase.auth) {
+                        const user = firebase.auth().currentUser;
+                        if (user && user.uid) uid = user.uid;
+                    }
+
+                    let url = '{{ route('registeradminapprove') }}';
+                    if (uid) url += '?uid=' + encodeURIComponent(uid);
+
+                    console.log('Test');
+
+                   function enableFields() {
+                    const fieldIds = [
+                        "first_name", "last_name", "age", "email", "phone", "address",
+                        "r_dsType1", "g_last_name", "g_first_name", "g_phone", "g_email",
+                        "guardian_relationship", "username", "password"
+                    ];
+
+                    fieldIds.forEach(id => {
+                        const field = document.getElementById(id);
+                        if (field) {
+                            field.disabled = false;
+                            field.classList.remove("bg-gray-50", "border-gray-300", "text-gray-800", "select-none");
+                            field.classList.add("bg-white", "text-gray-900");
+                            console.log(`${id} enabled and gray removed`);
+                        }
+                    });
+                }
+
+                // Run immediately if DOM is ready, else wait
+                if (document.readyState === "loading") {
+                    document.addEventListener("DOMContentLoaded", enableFields);
+                } else {
+                    enableFields();
+                }
+                } catch (e) {
+                    // fallback navigation
+                    // window.location.href = '{{ route('registeradminapprove') }}';
+                }
+}
+
+     </script>
+        <!-- Simple deterministic fallback: directly apply common draft keys to visible fields -->
+        <script>
+        (function(){
+            function tryParse(s){ try { return s && typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } }
+            function setIf(id, val){ try{ const el=document.getElementById(id); if(!el) return false; const out = val==null? '': String((typeof val === 'object')? (Array.isArray(val)? val.join(', '): JSON.stringify(val)) : val); if(el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = out; else el.textContent = out; return true;}catch(e){return false;} }
+            function setSelectByValueOrText(id, value){
+                try{
+                    if(!value) return false;
+                    const el = document.getElementById(id);
+                    if(!el || el.tagName !== 'SELECT') return false;
+
+                    const normalizeStr = s => String(s||'').toLowerCase().replace(/\(.*?\)/g,'').replace(/[\W_]+/g,' ').trim();
+                    const wantRaw = String(value||'');
+                    const want = normalizeStr(wantRaw);
+
+                    // 1) exact value/text match
+                    for(const opt of Array.from(el.options||[])){
+                        const v = normalizeStr(opt.value||'');
+                        const t = normalizeStr(opt.text||'');
+                        if(v === want || t === want){ el.value = opt.value; try{ el.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} return true; }
+                    }
+
+                    // 2) contains match (option text contains want) or want contains option text
+                    for(const opt of Array.from(el.options||[])){
+                        const v = normalizeStr(opt.value||'');
+                        const t = normalizeStr(opt.text||'');
+                        if(v && want.includes(v) || t && want.includes(t) || v && t && (v.includes(want) || t.includes(want))){ el.value = opt.value; try{ el.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} return true; }
+                    }
+
+                    // 3) startsWith match
+                    for(const opt of Array.from(el.options||[])){
+                        const v = normalizeStr(opt.value||'');
+                        const t = normalizeStr(opt.text||'');
+                        if(v && v.startsWith(want) || t && t.startsWith(want)){ el.value = opt.value; try{ el.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} return true; }
+                    }
+
+                    // not found -> insert a visible selected option at the top (so the user sees the original value)
+                    const newOpt = document.createElement('option'); newOpt.value = wantRaw; newOpt.text = wantRaw; newOpt.selected = true; // insert at top so visible
+                    try { el.insertBefore(newOpt, el.firstChild); el.selectedIndex = 0; el.dispatchEvent(new Event('change',{bubbles:true})); } catch(e) { try { el.appendChild(newOpt); el.value = wantRaw; el.dispatchEvent(new Event('change',{bubbles:true})); } catch(err){} }
+                    return true;
+                }catch(e){
+                    console.warn('[review] setSelectByValueOrText error', e);
+                    return false;
+                }
             }
-        }
-    </script>
+            function mapRelationship(raw){ if(!raw) return ''; const s = raw.toString().toLowerCase(); const mapping = { parent: 'Parent', mother: 'Parent', father: 'Parent', mom: 'Parent', dad: 'Parent', guardian: 'Guardian', sibling: 'Sibling', brother: 'Sibling', sister: 'Sibling', relative: 'Relative', aunty: 'Relative', aunt: 'Relative', other: 'Other' }; for(const k of Object.keys(mapping)){ if(s.includes(k)) return mapping[k]; } return raw; }
+
+            function loadDraft(){
+                // priority: last loaded draft, rpi_personal, registrationDraft, registration_draft
+                let draft = window.__mvsg_lastLoadedDraft || null;
+                if(!draft) draft = tryParse(localStorage.getItem('rpi_personal')) || tryParse(sessionStorage.getItem('rpi_personal')) || tryParse(localStorage.getItem('registrationDraft')) || tryParse(localStorage.getItem('registration_draft')) || tryParse(localStorage.getItem('regDraft')) || null;
+                return draft || null;
+            }
+
+            function applyOnce(){
+                try{
+                    const d = loadDraft(); if(!d) return false;
+                    const p = d.personal || d.personalInfo || d || {};
+                    const g = d.guardian || d.guardianInfo || d || {};
+                    // guardian fields
+                    setIf('g_first_name', g.guardian_first_name || g.first_name || g.first || g.guardian_first || p.guardian_first_name || '');
+                    setIf('g_last_name', g.guardian_last_name || g.last_name || g.last || g.guardian_last || p.guardian_last_name || '');
+                    setIf('g_email', g.guardian_email || g.email || p.guardian_email || p.email || '');
+                    setIf('g_phone', g.guardian_phone || g.phone || p.guardian_phone || p.phone || '');
+                    // relationship
+                    const rawRel = g.guardian_choice || g.relationship || d.guardian_relationship || p.guardian_relationship || '';
+                    const mapped = mapRelationship(rawRel);
+                    if(!setSelectByValueOrText('guardian_relationship', mapped)) setIf('guardian_relationship', mapped || '');
+                    // ds type
+                    // Check many possible locations and key names for DS type (top-level, personal, and legacy keys)
+                    const ds = d.dsType || d.ds_type || d.r_dsType1 || d.r_dsType || p.dsType || p.ds_type || p.r_dsType1 || p.r_dsType || p.type || '';
+                    if (ds) setSelectByValueOrText('r_dsType1', ds);
+                    return true;
+                }catch(e){ console.warn('[review-fallback] applyOnce failed', e); return false; }
+            }
+
+            // run on DOM ready
+            function boot(){
+                let applied = applyOnce();
+                if(!applied){ // retry a couple times in case register.js writes later
+                    let attempts = 0; const max = 6; const iv = setInterval(()=>{ attempts++; if(applyOnce() || attempts>=max) clearInterval(iv); }, 250);
+                }
+            }
+
+            if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
+
+            // re-apply when storage or custom populate event occurs
+            window.addEventListener('storage', function(e){ if(e && (e.key==='rpi_personal' || e.key==='registrationDraft' || e.key==='regDraft')) setTimeout(applyOnce, 80); });
+            window.addEventListener('mvsg:populateDone', function(){ setTimeout(applyOnce, 80); });
+            window.addEventListener('mvsg:adminSaved', function(){ setTimeout(applyOnce, 80); });
+        })();
+        </script>
     <script>
         // Try to sync client Firebase ID token to the server before navigating to review-2.
         // This helps populate Laravel session('firebase_uid') so the next page can fetch server-profile.
         (function(){
             async function trySyncClientIdTokenToServer() {
-                // Firebase client removed: nothing to sync from client-side auth
-                return null;
+                try {
+                    if (!window.firebase || !firebase.auth) return null;
+                    try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){}
+                    let user = firebase.auth().currentUser;
+                    if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                    if (!user) return null;
+                    const idToken = await user.getIdToken().catch(()=>null);
+                    if (!idToken) return null;
+                    const headers = { 'Content-Type': 'application/json' };
+                    try { const csrfMeta = document.querySelector && document.querySelector('meta[name="csrf-token"]'); if (csrfMeta && csrfMeta.getAttribute) headers['X-CSRF-TOKEN'] = csrfMeta.getAttribute('content'); } catch(e){}
+                    const resp = await fetch('{{ url('/session/firebase-signin') }}', { method: 'POST', credentials: 'same-origin', headers, body: JSON.stringify({ idToken }) });
+                    try { const j = await resp.json().catch(()=>null); return j || (resp.ok?{ok:true}:null); } catch(e){ return resp.ok?{ok:true}:null; }
+                } catch (e) { return null; }
             }
             const btn = document.getElementById('review1Continue');
             if (btn) {
@@ -556,11 +635,11 @@
                         p && p.then && p.then(function(r){ console.debug('[review1] client->server sync result', r); }).catch(function(err){ console.debug('[review1] client->server sync error', err); });
                         await Promise.race([p, new Promise(res=>setTimeout(()=>res(null), 2000))]);
                     } catch(e){}
-                    window.location.href = '{{ route('registerreview2') }}';
+    window.location.href = '{{ route('registerreview2') }}';
                 });
             }
         })();
-    </script>
+  </script>
     <script>
         // unified robust preview loader (tries local/session, registrationDraft globals, then Firestore)
         document.addEventListener('DOMContentLoaded', async () => {
@@ -571,9 +650,54 @@
                     return null;
                 }
             };
-            const initFirebase = () => { /* Firebase client removed — noop */ };
+            const initFirebase = () => {
+                try {
+                    if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps
+                            .length)) {
+                        firebase.initializeApp(window.FIREBASE_CONFIG);
+                    }
+                } catch (e) {
+                    console.warn('initFirebase', e);
+                }
+            };
             const fetchFirestoreDraft = async () => {
-                // Client Firestore removed from this build — always return null
+                if (!window.firebase || !firebase.firestore) return null;
+                initFirebase();
+                try {
+                    const db = firebase.firestore();
+
+                    // Allow an override via URL query param for admin/review pages.
+                    // Example: /registerreview1?uid=n71qnTkNT9WUQhP4NAjOjA95lmK2
+                    const params = new URLSearchParams(window.location.search || '');
+                    const overrideUid = params.get('uid') || params.get('user') || params.get('id');
+                    if (overrideUid) {
+                        try {
+                            const snap = await db.collection('users').doc(overrideUid).get().catch(() => null);
+                            if (snap && snap.exists) return snap.data();
+                        } catch (e) {
+                            console.warn('fetchFirestoreDraft override read failed', e);
+                        }
+                    }
+
+                    // Fallback: try to use currently signed-in user (if any)
+                    if (window.firebase && firebase.auth) {
+                        const auth = firebase.auth();
+                        let user = auth.currentUser;
+                        if (!user) user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                        if (!user) return null;
+                        // try common collections where drafts may be stored
+                        const cols = ['registrations', 'users', 'registrationDrafts', 'profiles'];
+                        for (const c of cols) {
+                            try {
+                                const snap = await db.collection(c).doc(user.uid).get().catch(() => null);
+                                if (snap && snap.exists) return snap.data();
+                            } catch (e) {
+                                /* ignore per-collection errors */ }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('fetchFirestoreDraft', e);
+                }
                 return null;
             };
             const readStored = async () => {
@@ -794,16 +918,88 @@
                 try { console.debug('[review] personalInfo (p):', p); } catch(e){}
                 const dsType = resolveDsType(data, p);
                 try { console.debug('[review] resolved dsType:', dsType); } catch(e){}
-                // ensure Down Syndrome info is shown in review (fallback to a placeholder if missing)
-                safeSet('r_dsType', dsType || 'Not provided');
+                // ensure Down Syndrome info is shown in review (set the SELECT with id r_dsType1)
+                try {
+                    // prefer using the page's select-setter if available so we get fuzzy matching and change events
+                    if (dsType) {
+                        // normalize and attempt mapped display values for common synonyms
+                        const normalize = s => (s||'').toString().replace(/\(.*?\)/g,'').replace(/[\W_]+/g,' ').trim();
+                        const raw = String(dsType||'').trim();
+                        const norm = normalize(raw);
+                        const syn = (function(v){
+                            const m = v.toLowerCase();
+                            if (m.includes('trisomy') || m.includes('trisomy 21') || m.includes('non') || m.includes('nondisjunction')) return 'Trisomy 21 (Nondisjunction)';
+                            if (m.includes('mosaic')) return 'Mosaic Down Syndrome';
+                            if (m.includes('translocation')) return 'Translocation Down Syndrome';
+                            return null;
+                        })(norm);
+
+                        if (typeof setSelectByValueOrText === 'function') {
+                            // try mapped canonical value first, then original, then normalized
+                            if (syn) setSelectByValueOrText('r_dsType1', syn) || setSelectByValueOrText('r_dsType1', raw) || setSelectByValueOrText('r_dsType1', norm);
+                            else setSelectByValueOrText('r_dsType1', raw) || setSelectByValueOrText('r_dsType1', norm);
+                        } else {
+                            // helper not available yet: directly set the select value (best-effort) and dispatch change
+                            const sel = document.getElementById('r_dsType1');
+                            if (sel) {
+                                try {
+                                    // try to set exact match first
+                                    let matched = false;
+                                    for (const o of Array.from(sel.options||[])) {
+                                        const ov = (o.value||'').toString().trim().toLowerCase();
+                                        const ot = (o.text||'').toString().trim().toLowerCase();
+                                        if (ov === raw.toLowerCase() || ot === raw.toLowerCase() || ov === norm.toLowerCase() || ot === norm.toLowerCase()) { sel.value = o.value; matched = true; break; }
+                                    }
+                                    if (!matched) {
+                                        // append a selected option at top
+                                        const opt = document.createElement('option'); opt.value = raw; opt.text = raw; opt.selected = true;
+                                        try { sel.insertBefore(opt, sel.firstChild); sel.selectedIndex = 0; } catch(e){ sel.appendChild(opt); sel.value = raw; }
+                                    }
+                                    try { sel.dispatchEvent(new Event('change',{bubbles:true})); } catch(e){}
+                                } catch(e) { console.warn('[review] set r_dsType1 direct failed', e); }
+                            }
+                        }
+                    } else {
+                        // nothing found, leave default -- do not overwrite empty select
+                    }
+                } catch(e) { console.warn('[review] dsType apply error', e); }
 
                 // If dsType wasn't found in the merged/local draft, attempt an authoritative read
                 // from Firestore (this will respect ?uid= override or the current firebase auth user).
                 if (!dsType) {
                     try {
-                        // Client Firestore lookups removed; keep server-local draft merge only.
+                        // Ensure Firebase SDKs are loaded (in case register.js didn't initialize Firebase yet)
+                        const ensureFirebaseSdk = async () => {
+                            if (window.firebase && firebase.firestore) return;
+                            const load = (src) => new Promise((res, rej) => {
+                                const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s);
+                            });
+                            try {
+                                await load('https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js');
+                                await load('https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js');
+                                await load('https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js');
+                                // call initFirebase if it's available in this scope (defined above)
+                                if (typeof initFirebase === 'function') {
+                                    try { initFirebase(); } catch(e) { console.warn('initFirebase failed', e); }
+                                }
+                            } catch (e) {
+                                console.warn('[review] failed to load Firebase SDKs', e);
+                            }
+                        };
+
+                        await ensureFirebaseSdk();
+                        const remoteDoc = await fetchFirestoreDraft();
+                        const remote = (remoteDoc && typeof remoteDoc === 'object' && remoteDoc.data && typeof remoteDoc.data === 'object') ? remoteDoc.data : remoteDoc;
+                        if (remote) {
+                            const remoteP = remote.personalInfo || remote.personal || remote;
+                            const remoteDs = resolveDsType(remote, remoteP || {});
+                            if (remoteDs) {
+                                try { console.debug('[review] firestore dsType found:', remoteDs); } catch(e){}
+                                safeSet('r_dsType', remoteDs);
+                            }
+                        }
                     } catch (e) {
-                        console.warn('[review] skipped client Firestore lookup (removed)');
+                        console.warn('[review] failed to fetch dsType from Firestore', e);
                     }
                 }
                 
@@ -843,6 +1039,61 @@
                 console.error('preview loader failed', e);
             }
         });
+    </script>
+    <!-- Final safety re-apply for DS type: run after all other scripts to beat race conditions -->
+    <script>
+    (function(){
+        function tryParse(s){ try{ return s? JSON.parse(s): null; }catch(e){ return null; } }
+        function normalize(s){ return String(s||'').toLowerCase().replace(/\(.*?\)/g,'').replace(/[\W_]+/g,' ').trim(); }
+        function mapSynonym(raw){ if(!raw) return null; const m = normalize(raw); if(m.includes('trisomy')) return 'Trisomy 21 (Nondisjunction)'; if(m.includes('mosaic')) return 'Mosaic Down Syndrome'; if(m.includes('transloc')) return 'Translocation Down Syndrome'; return null; }
+
+        function findDsInStorage(){
+            // direct small keys
+            const direct = localStorage.getItem('dsType') || sessionStorage.getItem('dsType') || localStorage.getItem('r_dsType') || sessionStorage.getItem('r_dsType');
+            if(direct) return direct;
+            // try rpi_personal or registrationDraft shapes
+            const candidates = ['rpi_personal','registrationDraft','registration_draft','regDraft','reg_data'];
+            for(const k of candidates){
+                const raw = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k));
+                if(raw){
+                    // common shapes
+                    if(raw.dsType) return raw.dsType;
+                    if(raw.ds_type) return raw.ds_type;
+                    if(raw.personal && (raw.personal.dsType || raw.personal.ds_type)) return raw.personal.dsType||raw.personal.ds_type;
+                    // sometimes stored under simple key name mapping
+                    if(raw.r_dsType) return raw.r_dsType;
+                    if(raw.r_dsType1) return raw.r_dsType1;
+                }
+            }
+            // try window-exposed merged draft
+            try{ const w = window.__mvsg_lastLoadedDraft; if(w){ if(w.dsType) return w.dsType; if(w.personal && (w.personal.dsType||w.personal.ds_type)) return w.personal.dsType||w.personal.ds_type; } }catch(e){}
+            return null;
+        }
+
+        function applyNow(){
+            try{
+                const raw = findDsInStorage();
+                if(!raw) return false;
+                const syn = mapSynonym(raw);
+                if(typeof setSelectByValueOrText === 'function'){
+                    if(syn) setSelectByValueOrText('r_dsType1', syn) || setSelectByValueOrText('r_dsType1', raw);
+                    else setSelectByValueOrText('r_dsType1', raw);
+                } else {
+                    // fallback to direct DOM set
+                    const sel = document.getElementById('r_dsType1'); if(!sel) return false;
+                    const want = String(raw||'');
+                    try{ for(const o of sel.options){ if(String(o.value||'').toLowerCase()===want.toLowerCase()||String(o.text||'').toLowerCase()===want.toLowerCase()){ sel.value = o.value; sel.dispatchEvent(new Event('change',{bubbles:true})); return true; } }
+                        const mapped = syn || want; const opt = document.createElement('option'); opt.value = mapped; opt.text = mapped; opt.selected = true; sel.insertBefore(opt, sel.firstChild); sel.selectedIndex = 0; sel.dispatchEvent(new Event('change',{bubbles:true})); return true; }catch(e){ return false; }
+                }
+                return true;
+            }catch(e){ console.warn('[review-final-reapply] error', e); return false; }
+        }
+
+        // run a few times with short backoff to beat timing issues
+        let attempts = 0; const max = 8; const iv = setInterval(()=>{ attempts++; if(applyNow() || attempts>=max) clearInterval(iv); }, 180);
+        // also run once after DOM ready
+        if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyNow); else setTimeout(applyNow, 40);
+    })();
     </script>
     <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
     <script>
@@ -961,8 +1212,35 @@
                         attempts++;
                         if (attempts < 8) setTimeout(applyWithRetry, 300);
                         else {
-                            // Final fallback removed: do not attempt client Firestore reads in this build.
-                            console.debug('[review] final Firestore fallback skipped (firebase client removed)');
+                            // Final fallback: try to fetch authoritative document from Firestore (best-effort)
+                            try {
+                                (async function fetchProofFromFirestore(){
+                                    try {
+                                        if (!window.firebase || !firebase.firestore) return;
+                                        // initialize if necessary
+                                        try { if (window.FIREBASE_CONFIG && window.firebase && !(firebase.apps && firebase.apps.length)) firebase.initializeApp(window.FIREBASE_CONFIG); } catch(e){}
+                                        const params = new URLSearchParams(window.location.search || '');
+                                        const overrideUid = params.get('uid') || params.get('user') || params.get('id');
+                                        let docUid = overrideUid || (firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.uid) || null;
+                                        // attempt to wait for auth if not ready
+                                        if (!docUid && firebase.auth) {
+                                            const user = await new Promise(res => firebase.auth().onAuthStateChanged(res));
+                                            if (user && user.uid) docUid = user.uid;
+                                        }
+                                        if (!docUid) return;
+                                        const db = firebase.firestore();
+                                        const snap = await db.collection('users').doc(docUid).get().catch(()=>null);
+                                        const doc = snap && snap.exists ? snap.data() : null;
+                                        if (!doc) return;
+                                        const proofRaw = doc.proofFilename || doc.proof_filename || doc.proofFile || (doc.personalInfo && (doc.personalInfo.proofFilename || doc.personalInfo.proof)) || (doc.personal && (doc.personal.proofFilename || doc.personal.proof)) || doc.cert_file || '';
+                                        const proof = normalizeFilename(proofRaw || '');
+                                        if (proof && document.getElementById('r_proof')) {
+                                            document.getElementById('r_proof').textContent = proof;
+                                            console.info('[review] fetched proofFilename from Firestore and applied to r_proof:', proof);
+                                        }
+                                    } catch(e) { /* ignore final fallback errors */ }
+                                })();
+                            } catch(e){}
                         }
                     } catch(e){}
                 };
@@ -1106,7 +1384,182 @@
                 modal.classList.remove("hidden");
             }
             })();
+
+
+             const phoneInput = document.getElementById('phone');
+
+                    phoneInput.addEventListener('input', () => {
+                        let value = phoneInput.value;
+
+                        // 1️⃣ Alisin lahat ng hindi digits or '+' sign
+                        value = value.replace(/[^\d+]/g, '');
+
+                        // 2️⃣ Kung nagsimula sa '0', palitan ng '+63'
+                        if (value.startsWith('0')) {
+                            value = '+63' + value.substring(1);
+                        }
+
+                        // 3️⃣ Kung hindi pa nagsisimula sa '+63', pilitin itong maging '+63'
+                        if (!value.startsWith('+63')) {
+                            value = '+63';
+                        }
+
+                        // 4️⃣ Limitahan ang haba: +63 (3 chars) + 10 digits = total 13
+                        if (value.length > 13) {
+                            value = value.slice(0, 13);
+                        }
+
+                        // 5️⃣ Optional: kung gusto mo lagyan ng space after +63 para readability
+                        // value = value.replace(/(\+63)(\d)/, '$1 $2'); // uncomment if you want "+63 9..."
+
+                        // 6️⃣ Update input value
+                        phoneInput.value = value;
+                    });
+                   
+
+                    const passwordInput = document.getElementById('password');
+                const passwordMessage = document.getElementById('passwordMessage');
+                const confirmPasswordInput = document.getElementById('confirmPassword');
+                const confirmMessage = document.getElementById('confirmMessage');
+                const createAccountBtn = document.getElementById('createAccountBtn');
+                // const togglePassword = document.getElementById('togglePassword');
+
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+                // 🔹 Password validation
+                passwordInput.addEventListener('input', () => {
+                const value = passwordInput.value.trim();
+
+                if (value === '') {
+                    passwordMessage.classList.add('hidden');
+                    passwordInput.style.borderColor = '';
+                    return;
+                }
+
+                passwordMessage.classList.remove('hidden');
+
+                if (passwordRegex.test(value)) {
+                    passwordInput.style.borderColor = 'green';
+                    passwordMessage.textContent = '✅ Strong password. Ready to go!';
+                    passwordMessage.classList.remove('text-red-500');
+                    passwordMessage.classList.add('text-green-600');
+                } else {
+                    passwordInput.style.borderColor = 'red';
+                    passwordMessage.textContent =
+                    '❌ Must contain 1 uppercase, 1 lowercase, 1 number, and 8+ characters.';
+                    passwordMessage.classList.remove('text-green-600');
+                    passwordMessage.classList.add('text-red-500');
+                }
+                });
+                document.getElementById("togglePassword").addEventListener("click", function () {
+                const passwordField = document.getElementById("password");
+                const isHidden = passwordField.type === "password";
+                passwordField.type = isHidden ? "text" : "password";
+                });
+
             </script>
+            <script>
+            const saved = localStorage.getItem("rpi_personal");
+            if (!saved) {
+            console.warn("No draft found in localStorage.");
+         //   return;
+            }
+
+            try {
+            const draft = JSON.parse(saved);
+
+            const fieldIds = [
+                "first_name", "last_name", "age", "email", "phone", "address",
+                "r_dsType1", "g_last_name", "g_first_name", "g_phone", "g_email",
+                "guardian_relationship", "username", "password"
+            ];
+
+            console.log("📦 Retrieved Draft from localStorage:");
+            fieldIds.forEach(id => {
+                const field = document.getElementById(id);
+                if (!field) return;
+
+                const value = draft[id] || draft[toCamelCase(id)] || "";
+                field.value = value;
+
+                console.log(`${id}:`, value);
+            });
+
+            console.log("✅ Draft loaded into form.");
+            } catch (err) {
+            console.warn("❌ Failed to parse or apply rpi_personal draft", err);
+            }
+
+            function toCamelCase(str) {
+            return str
+                .replace(/[-_](.)/g, (_, group1) => group1.toUpperCase())
+                .replace(/^[A-Z]/, c => c.toLowerCase());
+            }
+        </script>
+         <script>
+        (function() {
+            // Save-only helper: persist draft so the central register.js can pick it up and create the account.
+            const btn = document.getElementById('review1Continue');
+            if (!btn) return;
+
+            btn.addEventListener('click', function() {
+                try {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-60');
+                    const data = {};
+                    // collect all inputs/selects/textareas that have an id
+                    document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+                        const id = el.id;
+                        if (!id) return;
+                        if (el.type === 'checkbox') data[id] = !!el.checked;
+                        else data[id] = el.value || '';
+                    });
+
+                    // normalize common fields to expected keys
+                    const draft = {
+                        firstName: data.first_name || data.firstName || data.first || '',
+                        lastName: data.last_name || data.lastName || data.last || '',
+                        email: data.email || '',
+                        phone: data.phone || '',
+                        age: data.age || '',
+                        address: data.address || '',
+                        username: data.username || '',
+                        g_first_name: data.g_first_name || data.guardianFirst || '',
+                        g_last_name: data.g_last_name || data.guardianLast || '',
+                        g_email: data.g_email || '',
+                        g_phone: data.g_phone || '',
+                        guardian_relationship: data.guardian_relationship || data.guardianRelationship || '',
+                        r_dsType1: data.r_dsType1 || data.r_dsType1 || '',
+                        password: data.password || '',
+                    };
+
+                    try {
+                        localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                    } catch (err) {
+                        console.warn('Could not save rpi_personal', err);
+                    }
+
+                    console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
+                    // dispatch event for other scripts to pick up
+                    try {
+                        window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
+                            detail: {
+                                key: 'rpi_personal',
+                                data: draft
+                            }
+                        }));
+                    } catch (e) {}
+
+                    window.location.href = '{{ route("registerreview2") }}';
+
+                } catch (err) {
+                    console.error('[adminapprove] submit failed', err);
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-60');
+                }
+            });
+        })();
+    </script>
 </body>
 
 </html>

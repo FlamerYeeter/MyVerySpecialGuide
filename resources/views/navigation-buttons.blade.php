@@ -166,7 +166,7 @@
             // If we have a Laravel session, request a server-issued Firebase custom token
             // and sign the client in. This will make auth.currentUser non-null.
             try {
-                await mod.signInWithServerToken("{{ route('firebase.token') }}");
+                <!-- firebase.token removed -->
             } catch (e) {
                 console.debug('nav signInWithServerToken failed', e);
                 try {
