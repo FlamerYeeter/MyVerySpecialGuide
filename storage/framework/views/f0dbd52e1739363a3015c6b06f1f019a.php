@@ -191,54 +191,41 @@
                 <!-- Auto-fetch Oracle-backed recommendations (debug route uid=7).
                      Server-side attempt first for faster first paint / SEO; if that fails, fall back to client-side fetch. -->
                 <?php
+                    // Obtain hybrid recommendations server-side for faster first paint.
                     $oracleRecs = null;
+                    // Resolve a uid: prefer explicit query param, then auth, else default to 2 for local testing
+                    $uid = request()->get('uid') ?: (auth()->check() ? auth()->id() : null);
+                    if (!$uid) $uid = 2;
+
+                    // 1) Try the internal debug HTTP route first
                     try {
-                        // Try a server-side internal HTTP request to the debug route. This keeps logic out of the client
-                        // and improves first-paint. If this environment disallows HTTP requests, the client-side
-                        // fallback below will run.
-                        $resp = \Illuminate\Support\Facades\Http::timeout(5)->get(url('/debug/oracle-recs') . '?uid=7');
+                        $resp = \Illuminate\Support\Facades\Http::timeout(5)->get(url('/debug/oracle-recs') . '?uid=' . urlencode($uid) . '&top_n=12');
                         if ($resp->successful()) {
                             $oracleRecs = $resp->json();
                         }
                     } catch (\Throwable $e) {
-                        // swallow and let client fallback handle it
                         $oracleRecs = null;
                     }
-                    // Prefer hybrid results only. Force the page to treat recommendations
-                    // as a single blended list. Clear legacy content/collab arrays so
-                    // UI always renders hybrid-only.
+
+                    // 2) If that failed, try executing the runner script server-side to produce the same JSON
+                    if (empty($oracleRecs)) {
+                        try {
+                            $runner = base_path('tools/run_oracle_recommender.php');
+                            $cmd = PHP_BINARY . ' ' . escapeshellarg($runner) . ' uid=' . escapeshellarg($uid) . ' top_n=12';
+                            $out = @shell_exec($cmd);
+                            if ($out) {
+                                $j = @json_decode($out, true);
+                                if (is_array($j)) $oracleRecs = $j;
+                            }
+                        } catch (\Throwable $e) {
+                            $oracleRecs = null;
+                        }
+                    }
+
+                    // Prefer hybrid results only. Force the page to treat recommendations as a single blended list.
                     $hybridRecs = is_array($oracleRecs) ? ($oracleRecs['hybrid'] ?? []) : [];
                     $contentRecs = [];
                     $collabRecs = [];
-
-                    // If no oracle response, try to load a per-user cached recommendations file
-                    if (empty($oracleRecs)) {
-                        // prefer explicit uid query param, else try authenticated user id
-                        $uid = request()->get('uid') ?: (auth()->check() ? auth()->id() : null);
-                        if ($uid) {
-                            $safeUid = preg_replace('/[^0-9a-zA-Z_\-]/', '', (string) $uid);
-                            $cachePath = storage_path('app/reco_user_' . $safeUid . '.json');
-                            if (file_exists($cachePath)) {
-                                try {
-                                    $file = @file_get_contents($cachePath);
-                                    $parsed = $file ? json_decode($file, true) : null;
-                                    if (is_array($parsed)) {
-                                        // try to accept several shapes
-                                        if (isset($parsed['content']) || isset($parsed['collab'])) {
-                                            $oracleRecs = $parsed;
-                                        } else {
-                                            // older shape: assume entire file is an array of recs -> treat as collab
-                                            $oracleRecs = ['collab' => $parsed, 'content' => []];
-                                        }
-                                        $contentRecs = $oracleRecs['content'] ?? [];
-                                        $collabRecs = $oracleRecs['collab'] ?? [];
-                                    }
-                                } catch (\Throwable $e) {
-                                    // ignore parse errors
-                                }
-                            }
-                        }
-                    }
 
                     // helper to resolve logo from multiple possible fields
                     $resolveLogo = function ($r) {
@@ -276,7 +263,6 @@
                 ?>
 
                 <div id="client-job-list" class="mt-6 space-y-4">
-                    <div class="text-left"><h4 class="text-2xl font-bold mb-3">Hybrid (Blended)</h4></div>
                     <?php if(!empty($hybridRecs) && is_array($hybridRecs) && count($hybridRecs) > 0): ?>
                         <?php $__currentLoopData = $hybridRecs; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $idx => $r): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                             <?php
@@ -1477,7 +1463,6 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
                                     // If hybrid results are returned prefer rendering them first
                                     if (hybridRecs && hybridRecs.length > 0) {
-                                        out += `<div class="text-left"><h4 class="text-2xl font-bold mb-3">Hybrid (Blended)</h4></div>`;
                                         hybridRecs.slice(0, 50).forEach((r, idx) => {
                                             const jid = String(r.id ?? r.job_id ?? ('h' + idx));
                                             const title = esc(r.title || r.Title || r.job_title || 'Untitled');
@@ -1902,7 +1887,6 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     let out = '';
 
                     // Render only hybrid results — do not render separate content/collab sections
-                    out += `<div class="text-left"><h4 class="text-2xl font-bold mb-3">Hybrid (Blended)</h4></div>`;
                     if (hybridRecs && hybridRecs.length > 0) {
                         hybridRecs.slice(0, 50).forEach((r, idx) => {
                             const title = esc(r.title || r.Title || r.job_title || 'Untitled');
