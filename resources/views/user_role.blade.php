@@ -66,14 +66,15 @@
     </div>
 
     <!-- Company -->
-    <div class="border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
+    <a href="{{ route('company.login') }}" 
+        class="border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
       <img src="image/role3.png" alt="Company" class="mx-auto mb-4 w-20 sm:w-24 md:w-28">
       <h3 class="text-blue-700 font-semibold text-lg mb-2">Company</h3>
       <p class="text-gray-600 text-sm md:text-base leading-relaxed">
         Post available job opportunities, manage job listings, review candidate applications, 
         and connect with potential employees for career opportunities.
       </p>
-    </div>
+    </a>
 
     <!-- Admin -->
   <a href="http://103.38.251.55/_/r/mvsg/adminhub"

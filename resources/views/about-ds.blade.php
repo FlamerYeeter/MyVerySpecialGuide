@@ -34,46 +34,6 @@
                     </div>
                 </div>
 
-                <!-- Personalities Section -->
-                <div class="mt-12 sm:mt-16 md:mt-20">
-
-                    <!-- Heading -->
-                    <h3 class="text-lg sm:text-xl md:text-2xl font-semibold mb-6 sm:mb-8 text-blue-800">
-                        Personalities
-                    </h3>
-
-                    <!-- Card Container -->
-                    <div class="flex flex-wrap justify-center md:justify-start gap-6">
-
-                        <!-- Card 1 -->
-                        <div
-                            class="bg-white/80 backdrop-blur-sm shadow rounded-2xl w-56 sm:w-60 md:w-64 flex-shrink-0 transition-transform hover:scale-105">
-                            <img src="/image/img3.png" alt="Affectionate"
-                                class="rounded-t-2xl w-full h-36 sm:h-40 object-cover">
-                            <p class="py-3 font-medium text-gray-800 text-center">Affectionate</p>
-                        </div>
-
-                        <!-- Card 2 -->
-                        <div
-                            class="bg-white/80 backdrop-blur-sm shadow rounded-2xl w-56 sm:w-60 md:w-64 flex-shrink-0 transition-transform hover:scale-105">
-                            <img src="/image/img4.png" alt="Outgoing"
-                                class="rounded-t-2xl w-full h-36 sm:h-40 object-cover">
-                            <p class="py-3 font-medium text-gray-800 text-center">Outgoing</p>
-                        </div>
-
-                        <!-- Card 3 -->
-                        <div
-                            class="bg-white/80 backdrop-blur-sm shadow rounded-2xl w-56 sm:w-60 md:w-64 flex-shrink-0 transition-transform hover:scale-105">
-                            <img src="/image/img5.png" alt="Sociable"
-                                class="rounded-t-2xl w-full h-36 sm:h-40 object-cover">
-                            <p class="py-3 font-medium text-gray-800 text-center">Sociable</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </section>
-
         <!-- Just Like You Section -->
         <section
             class="relative bg-cover bg-center bg-no-repeat text-white py-20 sm:py-24 md:py-28 lg:py-32 px-4 sm:px-8 md:px-12 overflow-hidden"

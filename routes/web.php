@@ -543,6 +543,16 @@ Route::get('/login', function () {
     return view('user_login');
 })->name('login');
 
+// Minimal login page route (user_login.blade.php exists in views)
+Route::get('/forgotpassword', function () {
+    return view('ds_forgot_password');
+})->name('forgotpassword');
+
+// Minimal login page route (company_login.blade.php exists in views)
+Route::get('/company.login', function () {
+    return view('company-login');
+})->name('company.login');
+
 // Logout route used by header sign-out forms
 Route::post('/logout', function (Request $request) {
     try {
