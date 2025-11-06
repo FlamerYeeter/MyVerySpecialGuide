@@ -224,8 +224,8 @@
   const createBtn = document.getElementById('createAccountBtn');
   const agree1 = document.getElementById('agree1');
   const agree2 = document.getElementById('agree2');
-  const successModal = document.getElementById('createdModal'); // ✅ Correct modal ID
-  const successOk = document.getElementById('createdModalOk');  // ✅ Correct OK button
+  const successModal = document.getElementById('createdModal'); // 
+  const successOk = document.getElementById('createdModalOk');  // 
 
   // ✅ Enable button only if both checkboxes are checked
   function toggleCreateButton() {
@@ -275,7 +275,7 @@
       skills1_selected: localStorage.getItem('skills1_selected')
     };
 
-    fetch('/db/registration-data.php', {
+    fetch('public/db/registration-data.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
