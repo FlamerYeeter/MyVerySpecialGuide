@@ -194,6 +194,7 @@
   </div>
 
   {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
+    <!-- Check please -->
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
       (function(){
