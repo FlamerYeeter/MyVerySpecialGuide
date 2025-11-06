@@ -552,7 +552,7 @@
 
             </div>
             
-    <!-- Save draft script: persist to rpi_personal so register.js autofills personal page -->
+    <!-- Save draft script: persist to rpi_personal1 so register.js autofills personal page -->
     <script>
         (function() {
             // Save-only helper: persist draft so the central register.js can pick it up and create the account.
@@ -595,23 +595,24 @@
                     };
 
                     try {
-                        localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                        localStorage.setItem('rpi_personal1', JSON.stringify(draft));
                     } catch (err) {
-                        console.warn('Could not save rpi_personal', err);
+                        console.warn('Could not save rpi_personal1', err);
                     }
 
-                    console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
+                    console.info('[adminapprove] saved rpi_personal1 draft', Object.keys(draft));
                     // dispatch event for other scripts to pick up
                     try {
                         window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
                             detail: {
-                                key: 'rpi_personal',
+                                key: 'rpi_personal1',
                                 data: draft
                             }
                         }));
                     } catch (e) {}
 
-                    window.location.href = '{{ route("registereducation") }}';
+                   window.location.href = '{{ route("registereducation") }}';
+                  //  window.location.href = '{{ route("registerreview1") }}';
 
                 } catch (err) {
                     console.error('[adminapprove] submit failed', err);
@@ -652,7 +653,7 @@
     <!-- Include Firebase config -->
     {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
 
-    <!-- LocalStorage-first autofill: read rpi_personal early and apply to form -->
+    <!-- LocalStorage-first autofill: read rpi_personal1 early and apply to form -->
     <script>
     (function(){
         function normalizeFilename(s){
@@ -746,7 +747,7 @@
 
         function tryLoadAndApplyOnce(){
             try{
-                const raw = localStorage.getItem('rpi_personal') || sessionStorage.getItem('rpi_personal');
+                const raw = localStorage.getItem('rpi_personal1') || sessionStorage.getItem('rpi_personal1');
                 if(!raw) return null;
                 return parseStored(raw);
             }catch(e){ console.warn('tryLoadAndApplyOnce failed', e); return null; }
@@ -755,7 +756,7 @@
         // Boot: attempt application with retry
         const parsed = tryLoadAndApplyOnce();
         if(parsed){
-            try{ console.info('[adminapprove-autofill] rpi_personal found, attempting to apply', Object.keys(parsed || {})); }catch(_){}
+            try{ console.info('[adminapprove-autofill] rpi_personal1 found, attempting to apply', Object.keys(parsed || {})); }catch(_){}
             let attempts = 0;
             const maxAttempts = 12;
             const interval = 120;
@@ -766,7 +767,7 @@
                     if(ok){
                         try{ console.info('[adminapprove-autofill] applied local draft to form'); }catch(_){}
                         window.__mvsg_local_applied = true;
-                        window.dispatchEvent(new CustomEvent('mvsg:localApplied',{detail:{key:'rpi_personal'}}));
+                        window.dispatchEvent(new CustomEvent('mvsg:localApplied',{detail:{key:'rpi_personal1'}}));
                         return;
                     }
                 }catch(e){}
@@ -777,7 +778,7 @@
 
         // Listen for storage changes and custom events
         window.addEventListener('storage', function(e){
-            try{ if((e.key === 'rpi_personal' || e.key === null) && e.newValue){ const parsed = parseStored(e.newValue); if(parsed) applyDraftToDom(parsed); } }catch(_){}
+            try{ if((e.key === 'rpi_personal1' || e.key === null) && e.newValue){ const parsed = parseStored(e.newValue); if(parsed) applyDraftToDom(parsed); } }catch(_){}
         });
 
         window.addEventListener('mvsg:adminSaved', function(ev){
