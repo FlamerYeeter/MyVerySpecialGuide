@@ -389,5 +389,41 @@
       if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
     })();
   </script>
+
+ <script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const savedSkills = localStorage.getItem("skills1_selected");
+    const container = document.getElementById("review_skills_list");
+
+    if (!container) {
+      console.warn("❌ review_skills_list not found.");
+      return;
+    }
+
+    if (!savedSkills) {
+      container.innerHTML = `<span class="text-gray-500 italic">No skills selected.</span>`;
+      console.warn("⚠️ No skills1_selected found in localStorage.");
+      return;
+    }
+
+    try {
+      const skills = JSON.parse(savedSkills);
+      if (Array.isArray(skills) && skills.length > 0) {
+        container.innerHTML = skills.map(skill => `
+          <span class="bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm">
+            ${skill}
+          </span>
+        `).join("");
+      } else {
+        container.innerHTML = `<span class="text-gray-500 italic">No skills selected.</span>`;
+      }
+    } catch (err) {
+      console.error("❌ Failed to parse skills1_selected", err);
+      container.innerHTML = `<span class="text-red-500 italic">Error loading skills.</span>`;
+    }
+  });
+</script>
+
+
   </body>
 </html>
