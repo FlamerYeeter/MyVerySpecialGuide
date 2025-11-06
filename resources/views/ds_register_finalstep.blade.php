@@ -246,6 +246,92 @@
         if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
       })();
     </script>
+      <script>
+        // Try to extract email from Firestore (or drafts) and populate hidden email fields
+        (async function(){
+          try {
+            // helpers from register.js: ensureFirebase, getDraft, readStored, findFirstMatching
+            const waitMs = (ms)=>new Promise(res=>setTimeout(res, ms));
+            // prefer URL override param `uid` for admin review
+            const params = new URLSearchParams(window.location.search || '');
+            const overrideUid = params.get('uid') || params.get('user') || params.get('id');
+
+            // ensure register.js loaded
+            if (typeof ensureFirebase === 'function') await ensureFirebase();
+            // small delay to let firebase auth initialize if present
+            await waitMs(150);
+
+            let email = '';
+
+            // 1) if overrideUid provided: client Firestore reads removed. No-op.
+            if (false) {
+              try {
+                // Firestore client removed — no client read here.
+                const db = null;
+                const snap = null;
+                if (snap && snap.exists) {
+                  const d = snap.data() || {};
+                  email = d.personalInfo?.email || d.email || d.personal?.email || '';
+                }
+              } catch(e) { console.warn('override uid read skipped (firebase removed)', e); }
+            }
+
+            // 2) Try currently signed-in user doc — client Firebase disabled; no-op block retained for history.
+            if (false) {
+              try {
+                // Firestore client removed — skip client-side auth and reads.
+                let user = null;
+                if (user) {
+                  const snap = null;
+                  if (snap && snap.exists) {
+                    const d = snap.data() || {};
+                    email = d.personalInfo?.email || d.email || d.personal?.email || '';
+                  }
+                }
+              } catch(e) { console.warn('signed-in user read skipped (firebase removed)', e); }
+            }
+
+            // 3) fallback: use register.js getDraft() which checks local/session and Firestore
+            if (!email && typeof getDraft === 'function') {
+              try {
+                const draftRes = await getDraft();
+                const draft = draftRes && (draftRes.data || draftRes) || {};
+                // try common locations
+                email = draft.personalInfo?.email || draft.personal?.email || draft.email || draft.emailAddress || '';
+              } catch(e) { console.warn('getDraft failed', e); }
+            }
+
+            // 4) last attempt: read common storage keys directly
+            if (!email) {
+              try {
+                const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','registerDraft','regDraft','reg_data'];
+                for (const k of keys) {
+                  try {
+                    const v = localStorage.getItem(k) || sessionStorage.getItem(k);
+                    if (!v) continue;
+                    let parsed = null;
+                    try { parsed = JSON.parse(v); } catch(e){ parsed = v; }
+                    if (parsed && typeof parsed === 'object') {
+                      email = parsed.personalInfo?.email || parsed.personal?.email || parsed.email || parsed.emailAddress || '';
+                      if (email) break;
+                    }
+                  } catch(e){}
+                }
+              } catch(e){}
+            }
+
+            // set fields if found
+            if (email) {
+              try { const el = document.getElementById('email'); if (el) el.value = email; } catch(e){}
+              try { const s = document.getElementById('emailFromServer'); if (s && !s.value) s.value = email; } catch(e){}
+              try { const v = document.getElementById('verificationEmail'); if (v) v.textContent = email; } catch(e){}
+              console.info('Final step: populated email from Firestore/draft:', email);
+            } else {
+              console.info('Final step: no email found in Firestore/drafts');
+            }
+          } catch(e) { console.error('finalstep autofill email failed', e); }
+        })();
+      </script>
     <script>
       (function(){
         const createBtn = document.getElementById('createAccountBtn');
@@ -339,6 +425,8 @@
             .then(console.log)
             .catch(console.error);  
 
+          const email = (emailField && emailField.value || '').trim();
+          // try hidden/server email first, then multiple fallbacks
           const email = ( (emailField && (emailField.value || '').trim()) || resolveEmailFallback() ).trim();
           let hasError = false;
 
@@ -347,9 +435,8 @@
             [agree1, agree2].forEach(el => { if(el && el.parentElement) el.parentElement.classList.add('ring','ring-2','ring-red-300'); });
             hasError = true;
           }
-
-          if (!email) {
-            // clearer guidance for the user
+            if (!email) {
+                // clearer guidance for the user
             finalError.textContent = 'No email available for verification. Please return to the previous steps or ensure your draft data contains an email.';
             hasError = true;
           }
@@ -374,4 +461,3 @@
       })();
     </script>
 </body>
-</html>
