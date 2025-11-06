@@ -13,7 +13,7 @@
 
     <!-- Back Button -->
     <div class="absolute top-6 left-6">
-        <a href="{{ route('home') }}" class="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-bold text-xl py-2 px-5 rounded-lg shadow transition-all">
+        <a href="{{ route('user.role') }}" class="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-bold text-xl py-2 px-5 rounded-lg shadow transition-all">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
                 stroke="currentColor" class="w-8 h-8 mr-3">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -58,7 +58,7 @@
     <div class="mt-4 bg-yellow-100 bg-opacity-90 rounded-2xl shadow-md p-6 w-11/12 max-w-md text-center">
         <p class="text-gray-800 text-base">
             Don’t have an account?
-            <a href="{{ route('user.role') }}" class="text-blue-600 font-semibold hover:underline">Create Account</a>
+            <a href="{{ route('register') }}" class="text-blue-600 font-semibold hover:underline">Create Account</a>
         </p>
     </div>
 <!-- Modal (hidden by default) -->

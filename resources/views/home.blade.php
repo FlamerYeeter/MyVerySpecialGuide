@@ -23,7 +23,7 @@
                       WELCOME to<br>
                       <span class="text-blue-600">MyVerySpecialGuide</span>
                   </h1>
-                  <a href="{{ route('login') }}"
+                  <a href="{{ route('user.role') }}"
                      class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
                      Get Started
                  </a>
