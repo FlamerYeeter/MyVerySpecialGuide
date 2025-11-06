@@ -352,12 +352,12 @@
 
                     // Save to localStorage
                     try {
-localStorage.setItem('rpi_personal', JSON.stringify(draft));
+localStorage.setItem('rpi_personal1', JSON.stringify(draft));
                         try {
-                            const verified = JSON.parse(localStorage.getItem('rpi_personal'));
-                            console.info('[review] saveDraftAndEdit wrote rpi_personal and verified', verified);
+                            const verified = JSON.parse(localStorage.getItem('rpi_personal1'));
+                            console.info('[review] saveDraftAndEdit wrote rpi_personal1 and verified', verified);
                         } catch (verErr) {
-                            console.info('[review] saveDraftAndEdit wrote rpi_personal (could not parse on readback)', localStorage.getItem('rpi_personal'));
+                            console.info('[review] saveDraftAndEdit wrote rpi_personal1 (could not parse on readback)', localStorage.getItem('rpi_personal1'));
                         }
                     } catch (e) {
                         console.warn('saveDraftAndEdit: failed to set localStorage', e);
@@ -457,9 +457,9 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
             function mapRelationship(raw){ if(!raw) return ''; const s = raw.toString().toLowerCase(); const mapping = { parent: 'Parent', mother: 'Parent', father: 'Parent', mom: 'Parent', dad: 'Parent', guardian: 'Guardian', sibling: 'Sibling', brother: 'Sibling', sister: 'Sibling', relative: 'Relative', aunty: 'Relative', aunt: 'Relative', other: 'Other' }; for(const k of Object.keys(mapping)){ if(s.includes(k)) return mapping[k]; } return raw; }
 
             function loadDraft(){
-                // priority: last loaded draft, rpi_personal, registrationDraft, registration_draft
+                // priority: last loaded draft, rpi_personal1, registrationDraft, registration_draft
                 let draft = window.__mvsg_lastLoadedDraft || null;
-                if(!draft) draft = tryParse(localStorage.getItem('rpi_personal')) || tryParse(sessionStorage.getItem('rpi_personal')) || tryParse(localStorage.getItem('registrationDraft')) || tryParse(localStorage.getItem('registration_draft')) || tryParse(localStorage.getItem('regDraft')) || null;
+                if(!draft) draft = tryParse(localStorage.getItem('rpi_personal1')) || tryParse(sessionStorage.getItem('rpi_personal1')) || tryParse(localStorage.getItem('registrationDraft')) || tryParse(localStorage.getItem('registration_draft')) || tryParse(localStorage.getItem('regDraft')) || null;
                 return draft || null;
             }
 
@@ -496,7 +496,7 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
             if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot); else boot();
 
             // re-apply when storage or custom populate event occurs
-            window.addEventListener('storage', function(e){ if(e && (e.key==='rpi_personal' || e.key==='registrationDraft' || e.key==='regDraft')) setTimeout(applyOnce, 80); });
+            window.addEventListener('storage', function(e){ if(e && (e.key==='rpi_personal1' || e.key==='registrationDraft' || e.key==='regDraft')) setTimeout(applyOnce, 80); });
             window.addEventListener('mvsg:populateDone', function(){ setTimeout(applyOnce, 80); });
             window.addEventListener('mvsg:adminSaved', function(){ setTimeout(applyOnce, 80); });
         })();
@@ -599,7 +599,7 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
             const readStored = async () => {
                 // prefer registrationDraft aliases in storage/globals, otherwise try Firestore
                 const keys = ['registrationDraft', 'registration_draft', 'dsRegistrationDraft',
-                    'ds_registration', 'registerDraft', 'regDraft', 'reg_data', 'rpi_personal'
+                    'ds_registration', 'registerDraft', 'regDraft', 'reg_data', 'rpi_personal1'
                 ];
                 for (const k of keys) {
                     const s = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k));
@@ -947,8 +947,8 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
             // direct small keys
             const direct = localStorage.getItem('dsType') || sessionStorage.getItem('dsType') || localStorage.getItem('r_dsType') || sessionStorage.getItem('r_dsType');
             if(direct) return direct;
-            // try rpi_personal or registrationDraft shapes
-            const candidates = ['rpi_personal','registrationDraft','registration_draft','regDraft','reg_data'];
+            // try rpi_personal1 or registrationDraft shapes
+            const candidates = ['rpi_personal1','registrationDraft','registration_draft','regDraft','reg_data'];
             for(const k of candidates){
                 const raw = tryParse(localStorage.getItem(k)) || tryParse(sessionStorage.getItem(k));
                 if(raw){
@@ -1086,7 +1086,7 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
                         let draft = null;
                         try { draft = window.__mvsg_lastLoadedDraft || null; } catch(e){}
                         if (!draft) {
-                            try { draft = JSON.parse(localStorage.getItem('rpi_personal') || localStorage.getItem('registrationDraft') || 'null'); } catch(e){ draft = null; }
+                            try { draft = JSON.parse(localStorage.getItem('rpi_personal1') || localStorage.getItem('registrationDraft') || 'null'); } catch(e){ draft = null; }
                         }
                         const proofRaw = tryGetProof(draft) || '';
                         const proof = normalizeFilename(proofRaw || '');
@@ -1148,8 +1148,8 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
                 // when register.js finishes populate it dispatches mvsg:populateDone — re-run apply
                 try { window.addEventListener('mvsg:populateDone', applyWithRetry); } catch(e){}
 
-                // if another window/tab writes rpi_personal or register writes it, catch storage events
-                try { window.addEventListener('storage', function(e){ if (e && (e.key === 'rpi_personal' || e.key === 'registrationDraft')) setTimeout(applyWithRetry, 80); }); } catch(e){}
+                // if another window/tab writes rpi_personal1 or register writes it, catch storage events
+                try { window.addEventListener('storage', function(e){ if (e && (e.key === 'rpi_personal1' || e.key === 'registrationDraft')) setTimeout(applyWithRetry, 80); }); } catch(e){}
             })();
         </script>
 
@@ -1343,7 +1343,7 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
 
             </script>
             <script>
-            const saved = localStorage.getItem("rpi_personal");
+            const saved = localStorage.getItem("rpi_personal1");
             if (!saved) {
             console.warn("No draft found in localStorage.");
          //   return;
@@ -1371,7 +1371,7 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
 
             console.log("✅ Draft loaded into form.");
             } catch (err) {
-            console.warn("❌ Failed to parse or apply rpi_personal draft", err);
+            console.warn("❌ Failed to parse or apply rpi_personal1 draft", err);
             }
 
             function toCamelCase(str) {
@@ -1418,17 +1418,17 @@ localStorage.setItem('rpi_personal', JSON.stringify(draft));
                     };
 
                     try {
-                        localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                        localStorage.setItem('rpi_personal1', JSON.stringify(draft));
                     } catch (err) {
-                        console.warn('Could not save rpi_personal', err);
+                        console.warn('Could not save rpi_personal1', err);
                     }
 
-                    console.info('[adminapprove] saved rpi_personal draft', Object.keys(draft));
+                    console.info('[adminapprove] saved rpi_personal1 draft', Object.keys(draft));
                     // dispatch event for other scripts to pick up
                     try {
                         window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
                             detail: {
-                                key: 'rpi_personal',
+                                key: 'rpi_personal1',
                                 data: draft
                             }
                         }));
