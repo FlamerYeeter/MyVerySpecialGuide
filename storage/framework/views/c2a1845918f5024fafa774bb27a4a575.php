@@ -156,9 +156,9 @@
   <button
     type="button"
     id="createAccountBtn"
-    class="w-full sm:w-[530px] bg-[#42A5F5] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-[#1E88E5] transition-all duration-200"
+    class="w-full sm:w-[530px] bg-[#1E40AF] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-[#1E88E5] transition-all duration-200"
   >
-    Create Account
+    Submit Evaluation
   </button>
 </div>
 
@@ -176,10 +176,10 @@
 
     <!-- Helper Text -->
     <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
-      Click <span class="text-[#1E40AF] font-medium">“Create Account”</span> to complete your registration
+      Click <span class="text-[#1E40AF] font-medium">“Submit Evaluation”</span> to complete your registration
     </p>
     <p class="text-gray-600 italic text-[12px] sm:text-[13px] text-center">
-      (Pindutin ang “Create Account” upang tapusin ang iyong pagpaparehistro)
+      (Pindutin ang “Submit Evaluation” upang tapusin ang iyong pagpaparehistro)
     </p>
   </div>
 

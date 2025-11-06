@@ -67,12 +67,10 @@
                         aria-label="Play audio for admin instruction">🔊</button>
                 </h2>
                 <p class="text-gray-800 text-sm sm:text-base mt-2">
-                    Please type your information inside the box. The text with a ⭐ star must be filled in and attach a
-                    valid proof of membership.
+                    Please type your information inside the box. The text with a ⭐ star must be filled in.
                 </p>
                 <p class="text-gray-600 italic text-sm sm:text-base mt-4 border-b-2 border-blue-400 pb-2">
-                    (Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may ⭐ bituin ay dapat sagutan at
-                    mag-upload ng patunay na miyembro ka ng organisasyon.)
+                    (Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may ⭐ bituin ay dapat sagutan.)
                 </p>
             </div>
         </div>
@@ -399,204 +397,21 @@
                     Passwords do not match.
                 </p>
             </div>
+            
+            <!-- Submit Button -->
+            <div class="flex flex-col items-center mt-6">
+                <button 
+                id="createAccountBtn" 
+                type="button" class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
+                    Next →
+                </button>
+                <p class="text-gray-600 text-sm mt-3 text-center">
+                    Click <span class="text-[#1E40AF] font-medium">“Next”</span> to continue<br>
+                    <span class="italic text-gray-600">(Pindutin upang magpatuloy sa susunod na hakbang)</span>
+                </p>
+            </div>
 
-            <!-- Proof of Membership -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3
-                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Proof of Membership <span class="text-gray-500 text-m">(optional)</span>
-                </h3>
-                
-
-                <!-- File Upload Box -->
-                <div
-                    class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                    <div class="flex-1">
-                        <p class="font-medium text-gray-800 text-sm sm:text-base">
-                            <span id="proofLabel" class="flex items-center gap-2">
-                                <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
-                            </span>
-                        </p>
-                        <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-                            (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br><br>
-                            Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br>
-                        </p>
-
-                        <!-- File preview details -->
-                        <div id="proofFileInfo"
-                            class="hidden mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm">
-                            <div class="flex items-center gap-2">
-                                <span id="proofFileIcon" class="text-2xl"></span>
-                                <span id="proofFileName"
-                                    class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"></span>
-                            </div>
-                            <div class="flex gap-2">
-                                <button id="proofViewBtn" type="button"
-                                    class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">View
-                                    / Tingnan</button>
-                                <button id="proofRemoveBtn" type="button"
-                                    class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">Remove
-                                    / Alisin</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <label for="proof"
-                        class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
-                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
-                        📁 Choose File / Pumili ng File
-                    </label>
-
-                    <input id="proof" name="proof" type="file" accept=".jpg,.jpeg,.png,.pdf"
-                        class="hidden" required>
-                </div>
-
-                <!-- Modal for File Preview -->
-                <div id="fileModal"
-                    class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 hidden">
-                    <div
-                        class="bg-white rounded-lg shadow-lg max-w-3xl w-[90%] max-h-[85vh] flex flex-col overflow-hidden">
-                        <div class="flex justify-between items-center bg-[#2E2EFF] text-white px-4 py-2">
-                            <h2 class="font-semibold text-base">File Preview / Pagtingin ng File</h2>
-                            <button id="closeModalBtn" type="button"
-                            class="text-white font-bold text-lg hover:text-gray-300">✕</button>
-                        </div>
-                        <div id="modalContent"
-                            class="flex-1 bg-gray-100 overflow-auto flex items-center justify-center p-4">
-                            <!-- File content will appear here -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Script -->
-                <script>
-                    (function() {
-                    const fileInput = document.getElementById("proof");
-                    const fileInfo = document.getElementById("proofFileInfo");
-                    const fileName = document.getElementById("proofFileName");
-                    const fileIcon = document.getElementById("proofFileIcon");
-                    const viewBtn = document.getElementById("proofViewBtn");
-                    const removeBtn = document.getElementById("proofRemoveBtn");
-                    const modal = document.getElementById("fileModal");
-                    const modalContent = document.getElementById("modalContent");
-                    const closeModal = document.getElementById("closeModalBtn");
-                    const hintEl = document.getElementById("proofHint");
-                    const prevFileEl = document.getElementById("r_proof");
-
-                    console.log("✅ File upload script initialized");
-
-                    // 🔹 Load file from localStorage (base64)
-                    const savedFileData = localStorage.getItem("uploadedProofData0");
-                    const savedFileType = localStorage.getItem("uploadedProofType0");
-                    const savedFileName = localStorage.getItem("uploadedProofName0");
-
-                    if (savedFileData && savedFileType && savedFileName) {
-                        showFileInfo(savedFileName, savedFileType);
-                        makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
-                    } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
-                        // If coming from previous form
-                        const prevFileName = prevFileEl.textContent.trim();
-                        showFileInfo(prevFileName, getFileType(prevFileName));
-                        makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
-                    }
-
-                    // 🔹 When a new file is selected
-                    fileInput.addEventListener("change", function () {
-                        const file = this.files[0];
-                        if (!file) return;
-
-                        const ext = getFileType(file.name);
-                        if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
-                        alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
-                        fileInput.value = "";
-                        return;
-                        }
-
-                        const reader = new FileReader();
-                        reader.onload = function (e) {
-                        const fileData = e.target.result; // base64 content
-                        localStorage.setItem("uploadedProofData0", fileData);
-                        localStorage.setItem("uploadedProofType0", ext);
-                        localStorage.setItem("uploadedProofName0", file.name);
-
-                        showFileInfo(file.name, ext);
-                        makeFileClickable(prevFileEl, file.name, fileData, ext);
-                        };
-                        reader.readAsDataURL(file);
-                    });
-
-                    // 🔹 View button
-                    viewBtn.addEventListener("click", () => {
-                        const name = localStorage.getItem("uploadedProofName0");
-                        const data = localStorage.getItem("uploadedProofData0");
-                        const type = localStorage.getItem("uploadedProofType0");
-                        if (data && type && name) openModalPreview(name, data, type);
-                    });
-
-                    // 🔹 Remove file
-                    removeBtn.addEventListener("click", () => {
-                        localStorage.removeItem("uploadedProofData0");
-                        localStorage.removeItem("uploadedProofType0");
-                        localStorage.removeItem("uploadedProofName0");
-                        fileInput.value = "";
-                        hideFileInfo();
-                    });
-
-                    // 🔹 Close modal
-                    closeModal.addEventListener("click", closeModalFn);
-                    modal.addEventListener("click", (e) => {
-                        if (e.target === modal) closeModalFn();
-                    });
-
-                    // ===============================
-                    // 🔹 Helper Functions
-                    // ===============================
-
-                    function showFileInfo(name, type) {
-                        fileInfo.classList.remove("hidden");
-                        if (hintEl) hintEl.style.display = "none";
-                        fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
-                        fileName.textContent = name;
-                    }
-
-                    function hideFileInfo() {
-                        fileInfo.classList.add("hidden");
-                        fileName.textContent = "";
-                        fileIcon.textContent = "";
-                        if (hintEl) hintEl.style.display = "";
-                    }
-
-                    function closeModalFn() {
-                        modal.classList.add("hidden");
-                        modalContent.innerHTML = "";
-                    }
-
-                    function getFileType(filename) {
-                        return filename.split(".").pop().toLowerCase();
-                    }
-
-                    // 🔹 Make filename clickable
-                    function makeFileClickable(el, name, data, type) {
-                        if (!el) return;
-                        el.classList.add("text-blue-600", "underline", "cursor-pointer");
-                        el.title = "Click to view uploaded file";
-                        el.onclick = () => openModalPreview(name, data, type);
-                    }
-
-                    // 🔹 Open modal preview
-                    function openModalPreview(name, data, type) {
-                        modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
-                        if (["jpg", "jpeg", "png"].includes(type)) {
-                        modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
-                        } else if (type === "pdf") {
-                        modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
-                        } else {
-                        modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
-                        }
-                        modal.classList.remove("hidden");
-                    }
-                    })();
-
+           <script>
                     const phoneInput = document.getElementById('phone');
 
                     phoneInput.addEventListener('input', () => {
@@ -736,53 +551,7 @@
                 </script>
 
             </div>
-
-            <!-- Submit Button -->
-            <div class="flex flex-col items-center mt-6">
-                <button 
-                id="createAccountBtn" 
-                type="button" 
-                class="text-white text-base sm:text-lg font-semibold px-6 sm:px-12 py-3 
-                        rounded-xl transition-colors duration-300 shadow-md w-full sm:w-auto 
-                        bg-blue-600 opacity-90">
-                Submit for Approval
-                </button>
-                <p class="text-gray-600 text-sm mt-3 text-center">
-                    Click <span class="text-[#1E40AF] font-medium">“Submit for Approval”</span> to continue<br>
-                    <span class="italic text-gray-600">(Pindutin upang magpatuloy sa susunod na hakbang)</span>
-                </p>
-            </div>
-            <!-- Notes Section -->
-            <div class="mt-8 flex justify-center">
-                <div
-                    class="bg-white shadow-md rounded-2xl px-5 sm:px-6 py-6 max-w-lg w-full text-center border border-gray-100">
-                    <div class="mb-5">
-                        <h3 class="text-gray-800 font-semibold text-sm uppercase tracking-wide">Next Step</h3>
-                        <p class="text-gray-700 text-[13px] mt-2 leading-relaxed">
-                            Check your email inbox for the approval confirmation message to proceed to the next step.
-                        </p>
-                        <p class="text-gray-600 italic text-[12px] mt-1">
-                            (Suriin ang iyong email inbox para sa mensahe ng kumpirmasyon ng pag-apruba upang magpatuloy
-                            sa susunod na hakbang)
-                        </p>
-                    </div>
-
-                    <div class="border-t border-gray-200 my-4"></div>
-
-                    <div>
-                        <p class="text-gray-600 text-sm">
-                            Didn’t receive confirmation?
-                            <a href="#" class="text-[#1E40AF] font-medium hover:underline">Resend</a>
-                        </p>
-                        <p class="text-gray-500 italic text-[12px] mt-1">(Hindi nakatanggap ng kumpirmasyon? I-click
-                            ang “Resend”)</p>
-                    </div>
-                </div>
-            </div>
-
-        </form>
-    </div>
-
+            
     <!-- Save draft script: persist to rpi_personal so register.js autofills personal page -->
     <script>
         (function() {

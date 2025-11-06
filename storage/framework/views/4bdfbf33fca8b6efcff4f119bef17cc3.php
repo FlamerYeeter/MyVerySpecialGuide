@@ -985,7 +985,7 @@
                     const selected = document.querySelector('input[name="certs"]:checked');
                     if (selected) {
                         if (selected.value === "no") {
-                            fileInput.disabled = true;
+                            fileInput.disabled = false;
                             fileInput.classList.remove("bg-blue-600", "hover:bg-blue-700");
                             fileInput.classList.add("bg-gray-400", "cursor-not-allowed");
                             console.log("Selected cert is 'no' → file input disabled and gray");
