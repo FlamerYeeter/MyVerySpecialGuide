@@ -116,7 +116,9 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
                 <p class="flex items-center space-x-2">
                     <span class="font-semibold">Education Level:</span>
-                    <span id="review_edu"></span>
+        
+                    <input id="educationLevel" style="display:block;"></input>
+
                     <select id="edit_edu_select" class="hidden border rounded px-2 py-1">
                     <option value="College">College</option>
                     <option value="Vocational/Training">Vocational/Training</option>
@@ -125,15 +127,11 @@
                     </select>
                 </p>
 
-                 <p class="flex items-center space-x-2">
-                    <span class="font-semibold">Other:</span>
-                    <span id="review_other_label"></span>
-                    <input type="text" id="review_other" class="hidden border rounded px-2 py-1" />
-                </p>
+             
 
             <p class="col-span-2">
             <span class="font-semibold">School Name:</span>
-            <span id="review_school"></span>
+            <span id="schoolName"></span>
             <input type="text" id="edit_school_input" class="hidden border rounded px-2 py-1" />
             </p>
         </div>
@@ -146,7 +144,7 @@
                 <div class="mt-4 text-gray-800 mb-3" id="certificateReview">
                     <p>
                         <span class="font-semibold">Certificates / Trainings:</span>
-                        <span id="review_certs" class="ml-1"></span>
+                        <input id="reviewCerts" />
                     </p>
                 </div>
                        <!-- Certificates -->
@@ -549,9 +547,9 @@
            <script>
                 
                 const editBtn = document.getElementById('editSchoolBtn') || document.getElementById('review_certfile');
-                const schoolLabel = document.getElementById('review_school');
+                const schoolLabel = document.getElementById('schoolName');
                 const schoolInput = document.getElementById('edit_school_input');
-                const eduLabel = document.getElementById('review_edu');
+                const eduLabel = document.getElementById('educationLevel');
                 const eduSelect = document.getElementById('edit_edu_select');
                 const otherLabel = document.getElementById('review_other_label');
                 const otherInput = document.getElementById('review_other');
@@ -573,6 +571,9 @@
                  //   fileuploadSection.classList.remove('hidden');
                     eduSelect.value = eduLabel.textContent.trim();
                     eduLabel.classList.add('hidden');
+                    eduLabel.style.display = "none";
+                    const newEduVal1 = eduSelect.value;
+                    eduLabel.textContent = newEduVal1;
                     eduSelect.classList.remove('hidden');
                     otherInput.value = otherLabel.textContent.trim() || '';
                     otherLabel.classList.add('hidden');
@@ -585,19 +586,19 @@
                     // 🔸 Switch back to label mode (save)
                     const newSchoolVal = schoolInput.value.trim();
                     schoolLabel.textContent = newSchoolVal;
-                    localStorage.setItem('review_school', newSchoolVal);
+                  //  localStorage.setItem('schoolName', newSchoolVal);
                     schoolInput.classList.add('hidden');
                     schoolLabel.classList.remove('hidden');
-
+                     eduLabel.style.display = "block";      
                     const newEduVal = eduSelect.value;
                     eduLabel.textContent = newEduVal;
-                    localStorage.setItem('review_edu', newEduVal);
+                  //  localStorage.setItem('educationLevel', newEduVal);
                     eduSelect.classList.add('hidden');
                     eduLabel.classList.remove('hidden');
 
                     const newOtherVal = otherInput.value.trim() || '';
                     otherLabel.textContent = newOtherVal;
-                    localStorage.setItem('review_other', newOtherVal);
+                 //   localStorage.setItem('review_other', newOtherVal);
                     otherInput.classList.add('hidden');
                     otherLabel.classList.remove('hidden');
                     reviewCertEl3.classList.remove('hidden');
@@ -607,10 +608,10 @@
                 });
 
                 // 🔹 Load saved values from localStorage (optional)
-                const savedSchool = localStorage.getItem('review_school');
+                const savedSchool = localStorage.getItem('schoolName');
                 if (savedSchool) schoolLabel.textContent = savedSchool;
 
-                const savedEdu = localStorage.getItem('review_edu');
+                const savedEdu = localStorage.getItem('educationLevel');
                 if (savedEdu) eduLabel.textContent = savedEdu;
 
                 const savedOther = localStorage.getItem('review_other');
@@ -705,7 +706,7 @@
             </script>
             <script>
                 // Save the visible review-2 section draft to localStorage then navigate to the given route.
-                // Mirrors the behavior used on review-1 so destination pages can autofill from `rpi_personal`.
+                // Mirrors the behavior used on review-1 so destination pages can autofill from `rpi_personal2`.
                 function saveDraftAndGoto(url) {
                     try {
                         let draft = window.__mvsg_lastLoadedDraft || {};
@@ -720,8 +721,8 @@
                         const text = id => (document.getElementById(id) && (document.getElementById(id).textContent || document.getElementById(id).value)) ? (document.getElementById(id).textContent || document.getElementById(id).value).toString().trim() : '';
 
                         // Education
-                        draft.schoolWorkInfo.school = draft.schoolWorkInfo.school || text('review_school') || text('review_school_name');
-                        draft.schoolWorkInfo.edu_level = draft.schoolWorkInfo.edu_level || text('review_edu');
+                        draft.schoolWorkInfo.school = draft.schoolWorkInfo.school || text('schoolName') || text('schoolName_name');
+                        draft.schoolWorkInfo.edu_level = draft.schoolWorkInfo.edu_level || text('educationLevel');
                         draft.schoolWorkInfo.certs = draft.schoolWorkInfo.certs || text('review_certs_name');
                         // cert filename (if present)
                         const certfn = text('review_certs_file') || text('review_certfile');
@@ -746,12 +747,12 @@
                         draft.workplace.workplace_choice = draft.workplace.workplace_choice || text('review_workplace_list') || text('review_workplace_choice');
 
                         try {
-                            localStorage.setItem('rpi_personal', JSON.stringify(draft));
+                            localStorage.setItem('rpi_personal2', JSON.stringify(draft));
                             try {
-                                const verified = JSON.parse(localStorage.getItem('rpi_personal'));
-                                console.info('[review-2] saveDraftAndGoto wrote rpi_personal and verified', verified);
+                                const verified = JSON.parse(localStorage.getItem('rpi_personal2'));
+                                console.info('[review-2] saveDraftAndGoto wrote rpi_personal2 and verified', verified);
                             } catch (verErr) {
-                                console.info('[review-2] saveDraftAndGoto wrote rpi_personal (could not parse on readback)', localStorage.getItem('rpi_personal'));
+                                console.info('[review-2] saveDraftAndGoto wrote rpi_personal2 (could not parse on readback)', localStorage.getItem('rpi_personal2'));
                             }
                         } catch (e) {
                             console.warn('[review-2] saveDraftAndGoto: failed to set localStorage', e);
@@ -1137,7 +1138,7 @@
                         const sw = data.schoolWorkInfo || data.school || {};
                         // fallback to several key variants and a fuzzy search for 'school' if present
                         const schoolVal = sw.school_name || sw.schoolName || data.school_name || data.school || findFirstMatching(data, ['school', 'school_name', 'schoolName']);
-                       safeSet('review_school', schoolVal || '');
+                       safeSet('schoolName', schoolVal || '');
 
                         safeSet('review_certs_name', sw.certs || sw.certificates || data.certs || '');
                         const certFileRaw = sw.cert_file || sw.certFile || data.cert_file || data.proofFilename || '';
@@ -1424,10 +1425,10 @@
 
                     function renderEducation(){
                         const edu = firstLocal(['review_edu','edu_level','education_level','eduLevel']);
-                        const school = firstLocal(['review_school','school','school_name','schoolName']);
+                        const school = firstLocal(['schoolName','school','school_name','schoolName']);
                         const other = firstLocal(['review_other','edu_other','edu_other_text']);
-                        if(edu) document.getElementById('review_edu').textContent = String(edu);
-                        if(school) document.getElementById('review_school').textContent = String(school);
+                    //    if(edu) document.getElementById('review_edu').textContent = String(edu);
+                        if(school) document.getElementById('schoolName').textContent = String(school);
                         if(other) document.getElementById('review_other_label').textContent = String(other);
                     }
 
@@ -1460,7 +1461,7 @@
                     function doAll(){ renderEducation(); renderCertificates(); renderTypeOfWork(); }
 
                     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', doAll); else doAll();
-                    window.addEventListener('storage', function(e){ if(!e.key) return doAll(); const keys = ['review_edu','edu_level','review_school','review_other','review_certs','uploadedProofName','selected_work_experience','work_type']; if(keys.includes(e.key)) setTimeout(doAll, 10); });
+                    window.addEventListener('storage', function(e){ if(!e.key) return doAll(); const keys = ['educationLevel', 'review_edu','edu_level','schoolName','review_other','review_certs','uploadedProofName','selected_work_experience','work_type']; if(keys.includes(e.key)) setTimeout(doAll, 10); });
                 })();
             </script>
 
@@ -1507,9 +1508,42 @@
                         }
                     });
                     </script>
+           
+                  <script>
+                    // Helper function to convert snake_case or PascalCase to camelCase
+                    function toCamelCase(str) {
+                        return str
+                        .replace(/[-_](.)/g, (_, group1) => group1.toUpperCase())
+                        .replace(/^[A-Z]/, c => c.toLowerCase());
+                    }
 
+                    const saved = localStorage.getItem("rpi_personal2");
+                 
 
+                    try {
+                        const draft = JSON.parse(saved);
+                        const fieldIds = ["educationLevel", "schoolName","reviewCerts"];
 
+                        console.log("📦 Retrieved Draft from localStorage:");
+                        fieldIds.forEach(id => {
+                        const field = document.getElementById(id);
+                        if (!field) {
+                            console.warn(`Field not found: ${id}`);
+                            return;
+                        }
+
+                        const value = draft[id] || draft[toCamelCase(id)] || "";
+                        field.value = value;
+
+                        console.log(`${id}: ${value}`);
+                      //  alert(`${id}: ${value}`);
+                        });
+
+                        console.log("✅ Draft loaded into form.");
+                    } catch (err) {
+                        console.warn("❌ Failed to parse or apply rpi_personal2 draft", err);
+                    }
+                    </script>
 
 </body>
 
