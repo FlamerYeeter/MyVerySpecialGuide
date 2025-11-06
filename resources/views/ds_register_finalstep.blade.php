@@ -193,24 +193,6 @@
     </div>
   </div>
 
-  {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-    <!-- Check please -->
-    <script src="{{ asset('js/register.js') }}"></script>
-    <script>
-      (function(){
-        const modal = document.getElementById('emailVerifyModal');
-        const close = document.getElementById('emailVerifyClose');
-        const cancel = document.getElementById('emailVerifyCancel');
-        const proceed = document.getElementById('emailVerifyProceed');
-        function hide(){ if(modal) modal.classList.add('hidden'); }
-        function show(email){ if(!modal) return; document.getElementById('verificationEmail').textContent = email || ''; modal.classList.remove('hidden'); }
-        if (close) close.addEventListener('click', hide);
-        if (cancel) cancel.addEventListener('click', hide);
-        if (proceed) proceed.addEventListener('click', function(){ window.location.href = '{{ route('registerverifycode') }}'; });
-        // expose for register.js to call
-        window.mvsgShowEmailVerificationModal = show;
-      })();
-    </script>
     <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
     <script>
       (function(){
