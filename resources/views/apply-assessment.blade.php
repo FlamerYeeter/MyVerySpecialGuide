@@ -130,6 +130,7 @@
       </div>
 
       <!-- Close Button Bottom -->
+        <a href="{{ route('applyassessment') }}" class="block h-full"></a>
       <div class="mt-8 text-right">
         <button id="okModalBtn"
                 class="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-6 py-3 rounded-lg text-lg transition-all">
