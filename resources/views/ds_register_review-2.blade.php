@@ -396,36 +396,6 @@
                         return null;
                     }
 
-                    function renderSupport(){
-                        try{
-                            const el = document.getElementById('review_support_list');
-                            const imgEl = document.getElementById('review_support_choice_img');
-                            const imgContainer = document.getElementById('review_support_choice_img_container');
-                            const raw = readPossibleKeys(['support','support_choice','selected_support','supportChoices']);
-                            if(!el) return;
-                            el.innerHTML = '<span class="text-gray-600">—</span>';
-                            if(!raw) {
-                                if(imgContainer) imgContainer.classList.add('hidden');
-                                return;
-                            }
-                            let arr = [];
-                            try{ const parsed = JSON.parse(raw); if(Array.isArray(parsed)) arr = parsed; else if(typeof parsed === 'object') arr = [parsed]; else arr = [String(parsed)]; }catch(e){ arr = String(raw).split(',').map(s=>s.trim()).filter(Boolean); }
-                            if(!arr.length){ el.innerHTML = '<span class="text-gray-600">—</span>'; if(imgContainer) imgContainer.classList.add('hidden'); return; }
-                            // render pills
-                            el.innerHTML = '';
-                            arr.forEach(v=>{
-                                const span = document.createElement('span');
-                                span.className = 'bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm font-medium';
-                                span.textContent = titleCase(String(v));
-                                el.appendChild(span);
-                            });
-                            // optional image: try common keys
-                            const imgSrc = readPossibleKeys(['support_choice_img','support_image','review_support_choice_img_src']);
-                            if(imgSrc && imgEl){ imgEl.src = imgSrc; imgContainer.classList.remove('hidden'); }
-                            else if(imgContainer) imgContainer.classList.add('hidden');
-                        }catch(e){ console.debug('renderSupport error', e); }
-                    }
-
                     function renderWorkplace(){
                         try{
                             const el = document.getElementById('review_workplace_list');
@@ -444,35 +414,10 @@
                         }catch(e){ console.debug('renderWorkplace error', e); }
                     }
 
-                    document.addEventListener('DOMContentLoaded', function(){ renderSupport(); renderWorkplace(); });
-                    window.addEventListener('storage', function(e){ if(!e.key) { renderSupport(); renderWorkplace(); return;} if(['support','support_choice','selected_support','supportChoices','support_choice_img','support_image'].includes(e.key)) renderSupport(); if(['workplace','preferred_workplace','workplace_choice','workplaceChoice','workplace_choice_img','workplace_image'].includes(e.key)) renderWorkplace(); });
+                    document.addEventListener('DOMContentLoaded', function(){ renderWorkplace(); });
+                    window.addEventListener('storage', function(e){ if(!e.key) { renderWorkplace(); return;} if(['workplace','preferred_workplace','workplace_choice','workplaceChoice','workplace_choice_img','workplace_image'].includes(e.key)) renderWorkplace(); });
                 })();
             </script>
-
-            <!-- Support I Need -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
-                <div class="flex justify-between items-center mb-4 border-b border-blue-300 pb-2">
-                    <h3 class="text-lg font-semibold text-blue-600">Support I Need</h3>
-                    <button type="button"
-                        class="text-blue-600 hover:text-blue-800 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition edit-btn"
-                        data-section="support">✏️ Edit</button>
-                </div>
-
-                <div class="text-gray-800">
-                    <p class="flex items-start gap-2"><span class="font-semibold">Selected Support:</span>
-                        <span id="review_support_list" class="flex flex-wrap gap-2 items-center">
-                            <span class="text-gray-600">—</span>
-                        </span>
-                    </p>
-                </div>
-                <div id="review_support_choice_img_container" class="mt-4 text-center hidden">
-                    <div
-                        class="inline-flex items-center justify-center w-40 h-40 bg-white rounded-xl shadow-md p-2 mx-auto">
-                        <img id="review_support_choice_img" src="" alt="Support image"
-                            class="w-full h-full object-contain rounded-md" />
-                    </div>
-                </div>
-            </div>
 
             <!-- Work Environment -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
@@ -715,7 +660,6 @@
                         // Ensure some namespaces exist
                         draft.schoolWorkInfo = draft.schoolWorkInfo || {};
                         draft.workExperience = draft.workExperience || {};
-                        draft.supportNeed = draft.supportNeed || {};
                         draft.workplace = draft.workplace || {};
 
                         const text = id => (document.getElementById(id) && (document.getElementById(id).textContent || document.getElementById(id).value)) ? (document.getElementById(id).textContent || document.getElementById(id).value).toString().trim() : '';
@@ -739,9 +683,6 @@
                                 if (items.length) draft.workExperience.work_experiences = items;
                             }
                         } catch(e){}
-
-                        // Support I Need
-                        draft.supportNeed.support_choice = draft.supportNeed.support_choice || text('review_support_list') || text('review_support_choice');
 
                         // Workplace
                         draft.workplace.workplace_choice = draft.workplace.workplace_choice || text('review_workplace_list') || text('review_workplace_choice');
@@ -773,7 +714,6 @@
                         const routeMap = {
                             'education': '{{ route('registereducation') }}',
                             'work': '{{ route('registerworkexpinfo') }}',
-                            'support': '{{ route('registersupportneed') }}',
                             'environment': '{{ route('registerworkplace') }}'
                         };
                         document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -1161,11 +1101,6 @@
                         }
                         renderWorkExperiences(weArr);
 
-                        const support = (data.supportNeed && (data.supportNeed.support_choice || data.supportNeed
-                            .supportChoice)) || data.support_choice || '';
-                        safeSet('review_support_choice', support || '');
-                        setChoiceImage('review_support_choice_img', support, ['.support-card', '.selectable-card']);
-
                         const workplace = (data.workplace && (data.workplace.workplace_choice || data.workplace
                             .workplaceChoice)) || data.workplace_choice || '';
                         safeSet('review_workplace_choice', workplace || '');
@@ -1234,7 +1169,7 @@
                     const runAll = () => {
                         try {
                             // common review lists that contain pills
-                            ['#review_support_list', '#review_workplace_list', '#review_work_list', '#review_job_experiences', '#review_certs_name', '#review_certs_file'].forEach(sel => fixPillsIn(sel));
+                            ['#review_workplace_list', '#review_work_list', '#review_job_experiences', '#review_certs_name', '#review_certs_file'].forEach(sel => fixPillsIn(sel));
                         } catch(e){}
                     };
 
@@ -1246,7 +1181,7 @@
                     window.addEventListener('mvsg:populateDone', function(){ setTimeout(runAll, 20); });
                     // also observe mutations in review lists (works if something replaces innerHTML)
                     try {
-                        const obsTargets = ['review_support_list','review_workplace_list','review_work_list','review_job_experiences'];
+                        const obsTargets = ['review_workplace_list','review_work_list','review_job_experiences'];
                         const obs = new MutationObserver(function(){ setTimeout(runAll, 10); });
                         obsTargets.forEach(id => { const el = document.getElementById(id); if (el) obs.observe(el, { childList: true, subtree: true, characterData: true }); });
                     } catch(e){}

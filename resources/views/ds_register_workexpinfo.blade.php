@@ -619,14 +619,14 @@
                 localStorage.setItem('job_experiences', JSON.stringify(jobExperiences));
                 console.log('✅ Job experiences saved:', jobExperiences);
 
-                window.location.href = '{{ route("registersupportneed") }}';
+                window.location.href = '{{ route("registerworkplace") }}';
                 });
             }
         });
     </script>
     <script>
-        document.getElementById('workExpNext').addEventListener('click', function() {
-            window.location.href = '{{ route("registersupportneed") }}';
+        document.getElementById('workplaceNext').addEventListener('click', function() {
+            window.location.href = '{{ route("registerworkplace") }}';
         });
     </script>
     <script>

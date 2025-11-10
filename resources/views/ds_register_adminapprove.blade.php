@@ -397,6 +397,192 @@
                     Passwords do not match.
                 </p>
             </div>
+<!-- Proof of Membership -->
+<div class="mt-8 text-left px-2 sm:px-4">
+  <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
+    Proof of Membership 
+    <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Optional)</p>
+    <button 
+      type="button" 
+      class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+      data-tts-en="Proof of Membership"
+      data-tts-tl="Patunay ng pagiging miyembro"
+    >🔊</button>
+  </label>
+
+  <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Patunay ng pagiging miyembro)</p>
+
+  <!-- Upload Section -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex-1">
+      <p class="font-medium text-gray-800 text-sm sm:text-base">
+        <span id="proofLabel" class="flex items-center gap-2">
+          <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+        </span>
+      </p>
+      <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+        (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
+        Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
+      </p>
+
+      <!-- File Info Display -->
+      <div id="proofDisplay"></div>
+    </div>
+
+    <!-- Upload Button -->
+    <label
+      for="proofFile"
+      class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
+    >
+      📁 Choose File / Pumili ng File
+    </label>
+    <input id="proofFile" name="proof" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
+  </div>
+</div>
+
+<!-- Medical Certificate -->
+<div class="mt-8 text-left px-2 sm:px-4">
+  <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
+    Please upload your medical certificate.
+    <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Optional)</p>
+    <button 
+      type="button" 
+      class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+      data-tts-en="Please upload your medical certificate."
+      data-tts-tl="Paki-upload ang iyong medical certificate."
+    >🔊</button>
+  </label>
+
+  <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Paki-upload ang iyong medical certificate.)</p>
+
+  <!-- Upload Section -->
+  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div class="flex-1">
+      <p class="font-medium text-gray-800 text-sm sm:text-base">
+        <span id="medLabel" class="flex items-center gap-2">
+          <span>Upload File (Image or PDF)</span> <span>⭐</span>
+        </span>
+      </p>
+      <p id="medHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+        (Mag-upload ng larawan o PDF ng iyong medical certificate.)<br /><br />
+        Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
+      </p>
+
+      <!-- File Info Display -->
+      <div id="medDisplay"></div>
+    </div>
+
+    <!-- Upload Button -->
+    <label
+      for="medFile"
+      class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
+    >
+      📁 Choose File / Pumili ng File
+    </label>
+    <input id="medFile" name="medical_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
+  </div>
+</div>
+
+<!-- 🔹 Modal (Shared for both uploads) -->
+<div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+  <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+    <button id="closeModalBtn" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
+    <div id="modalContent" class="p-2 text-center"></div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
+  setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
+});
+
+function setupUpload(inputId, displayId, labelId, hintId) {
+  const fileInput = document.getElementById(inputId);
+  const display = document.getElementById(displayId);
+  const labelEl = document.getElementById(labelId);
+  const hintEl = document.getElementById(hintId);
+  const modal = document.getElementById('fileModal');
+  const modalContent = document.getElementById('modalContent');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+
+  let fileURL = null;
+
+  if (!fileInput) return;
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) {
+      resetDisplay();
+      return;
+    }
+
+    if (fileURL) URL.revokeObjectURL(fileURL);
+    fileURL = URL.createObjectURL(file);
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️' : ext === 'pdf' ? '📄' : '📁';
+
+    display.innerHTML = `
+      <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">${icon}</span>
+          <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
+        </div>
+        <div class="flex gap-2">
+          <button class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+          <button class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
+        </div>
+      </div>
+    `;
+
+    display.querySelector('.viewBtn').addEventListener('click', () => {
+      openModal(fileURL, ext);
+    });
+
+    display.querySelector('.removeBtn').addEventListener('click', () => {
+      resetDisplay();
+      fileInput.value = '';
+      if (fileURL) URL.revokeObjectURL(fileURL);
+      fileURL = null;
+    });
+
+    labelEl.textContent = 'File Uploaded:';
+    hintEl.style.display = 'none';
+  });
+
+  function openModal(url, ext) {
+    modal.classList.remove('hidden');
+    modalContent.innerHTML = '';
+    if (['jpg', 'jpeg', 'png'].includes(ext)) {
+      modalContent.innerHTML = `<img src="${url}" class="max-h-[80vh] mx-auto rounded-lg">`;
+    } else if (ext === 'pdf') {
+      modalContent.innerHTML = `<iframe src="${url}" class="w-full h-[80vh] rounded-lg border-0"></iframe>`;
+    } else {
+      modalContent.innerHTML = `<p class="text-gray-700 text-center">This file type cannot be previewed.<br>(Hindi maaaring i-preview ang file na ito.)</p>`;
+    }
+  }
+
+  closeModalBtn.addEventListener('click', () => {
+    modal.classList.add('hidden');
+    modalContent.innerHTML = '';
+  });
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+      modalContent.innerHTML = '';
+    }
+  });
+
+  function resetDisplay() {
+    display.innerHTML = '';
+    labelEl.textContent = labelEl.dataset.original || 'Upload File';
+    hintEl.style.display = '';
+  }
+}
+</script>
+
             
             <!-- Submit Button -->
             <div class="flex flex-col items-center mt-6">
@@ -410,6 +596,8 @@
                     <span class="italic text-gray-600">(Pindutin upang magpatuloy sa susunod na hakbang)</span>
                 </p>
             </div>
+
+            
 
            <script>
                     const phoneInput = document.getElementById('phone');
