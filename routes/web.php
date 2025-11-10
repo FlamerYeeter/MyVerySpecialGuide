@@ -27,10 +27,14 @@ Route::get('/register', function () {
     return view('ds_register_1');
 })->name('register');
 
+Route::get('/applyassessment', function () {
+    return view('apply-assessment');
+})->name('applyassessment');
+
 // Navigation buttons page (used by login/back links)
-Route::get('/navigation-buttons', function () {
+Route::get('/navigationbuttons', function () {
     return view('navigation-buttons');
-})->name('navigation_buttons');
+})->name('navigationbuttons');
 
 // Endpoint for client-side logs (lightweight, accepts JSON {level, message, meta})
 Route::post('/client-log', function (\Illuminate\Http\Request $req) {
