@@ -1327,7 +1327,7 @@ localStorage.setItem('rpi_personal1', JSON.stringify(draft));
                 const confirmPasswordInput = document.getElementById('confirmPassword');
                 const confirmMessage = document.getElementById('confirmMessage');
                 const createAccountBtn = document.getElementById('createAccountBtn');
-                // const togglePassword = document.getElementById('togglePassword');
+                const togglePassword = document.getElementById('togglePassword');
 
                 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
@@ -1465,6 +1465,75 @@ localStorage.setItem('rpi_personal1', JSON.stringify(draft));
             });
         })();
     </script>
+    <script>
+/*
+  Robust password reveal toggle:
+  - If the visible value is masked, try to load the real password from localStorage.rpi_personal1
+    (checks common key locations).
+  - Toggle input.type between "password" and "text" and swap displayed value accordingly.
+  - Keeps a simple icon/text swap on the button.
+*/
+(function () {
+    const btn = document.getElementById('togglePassword');
+    const input = document.getElementById('password');
+    if (!btn || !input) return;
+
+    let revealed = false;
+    let realValue = null;
+
+    function tryLoadFromDraft() {
+        try {
+            const raw = localStorage.getItem('rpi_personal1') || localStorage.getItem('registrationDraft') || sessionStorage.getItem('rpi_personal1');
+            if (!raw) return null;
+            const obj = JSON.parse(raw);
+            // check common places
+            const tryKeys = (o) => {
+                if (!o || typeof o !== 'object') return null;
+                const keys = ['password','pass','pwd','p','userPassword'];
+                for (const k of keys) if (o[k]) return o[k];
+                // nested personal
+                if (o.personal && o.personal.password) return o.personal.password;
+                if (o.personal && o.personal.pass) return o.personal.pass;
+                if (o.personalInfo && o.personalInfo.password) return o.personalInfo.password;
+                return null;
+            };
+            return tryKeys(obj) || tryKeys(obj.data) || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    function maskFor(val) {
+        try { return val && val.length ? '*'.repeat(val.length) : '********'; } catch (e) { return '********'; }
+    }
+
+    // initialize a dataset backup (in case a previous script placed real value in dataset)
+    if (input.dataset && input.dataset.realPassword) realValue = input.dataset.realPassword;
+
+    btn.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        // load real password lazily if needed
+        if (!realValue) realValue = tryLoadFromDraft();
+
+        if (!revealed) {
+            // reveal
+            // if we still don't have a real value, try to use current input.value (in case it's already the real password)
+            const showVal = realValue || input.value || '';
+            input.type = 'text';
+            input.value = showVal;
+            btn.textContent = '🙈'; // toggled icon
+            revealed = true;
+        } else {
+            // hide
+            input.type = 'password';
+            // if we have the real value, show masked stars; otherwise keep current value masked
+            input.value = realValue ? maskFor(realValue) : maskFor(input.value);
+            btn.textContent = '👁️';
+            revealed = false;
+        }
+    });
+})();
+</script>
 </body>
 
 </html>

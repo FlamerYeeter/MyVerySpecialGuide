@@ -728,7 +728,30 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 // passwordInput.type = type;
                 // confirmPasswordInput.type = type;
                 // });
-
+                // Persist raw password ephemeral (sessionStorage) so review page can reveal it if needed.
+                // This is intentionally ephemeral (sessionStorage) — it will be cleared when the tab closes.
+                (function() {
+                    try {
+                        if (passwordInput) {
+                            passwordInput.addEventListener('input', function () {
+                                try {
+                                    if (this.value && this.value.trim() !== '') sessionStorage.setItem('mvsg_password', this.value);
+                                    else sessionStorage.removeItem('mvsg_password');
+                                } catch (e) { /* ignore */ }
+                            });
+                        }
+                        // also save when the user clicks Next (createAccountBtn)
+                        if (createAccountBtn) {
+                            createAccountBtn.addEventListener('click', function () {
+                                try {
+                                    if (passwordInput && passwordInput.value && passwordInput.value.trim() !== '') {
+                                        sessionStorage.setItem('mvsg_password', passwordInput.value);
+                                    }
+                                } catch (e) { /* ignore */ }
+                            });
+                        }
+                    } catch(e){}
+                })();
 
                 </script>
 
