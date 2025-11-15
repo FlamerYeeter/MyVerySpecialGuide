@@ -884,95 +884,83 @@
             }
             })();
             </script>
-            <script>
-            // List of button IDs
-            document.addEventListener("DOMContentLoaded", () => {
-                const audioButtons = [
-                    "VocationalAudioBtn",
-                    "ElementaryAudioBtn",
-                    "HighSchoolAudioBtn",
-                    "CollegeAudioBtn",
-                    "otherEducation"
-                ];
+          
+        <script>
+            (function () {
+            const btn = document.getElementById('educNext');
+            if (!btn) return;
 
-                audioButtons.forEach(btnId => {
-                    const btn = document.getElementById(btnId);
-                    if (btn) {
-                        btn.addEventListener("click", () => {
-                            const onclickAttr = btn.getAttribute("onclick");
-                            let educationValue = "";
-                            if (onclickAttr) {
-                                const match = onclickAttr.match(/selectEducationChoice\(this,\s*'([^']+)'\)/);
-                                if (match && match[1]) {
-                                    educationValue = match[1];
-                                    const otherField = document.getElementById("review_other");
-                                    if (educationValue != 'other'){
-                                         otherField.value = "";
-                                    }
-                                }
-                            }
-                        });
-                    }
+            btn.addEventListener('click', function () {
+                try {
+                btn.classList.add('opacity-60');
+
+                // Collect all inputs/selects/textareas with an ID
+                const data = {};
+                document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+                    const id = el.id;
+                    if (!id) return;
+                    data[id] = el.type === 'checkbox' ? !!el.checked : el.value || '';
                 });
 
+                // Get selected cert radio button
+                const selectedReviewCerts = document.querySelector('input[name="certs"]:checked');
+                const reviewCertsValue = selectedReviewCerts ? selectedReviewCerts.value : '';
+
+                // Get selected education card value
+                let educationValuex = '';
+                const selectedCard = document.querySelector('.education-card.selected');
+                if (selectedCard) {
+                    const onclickAttr = selectedCard.getAttribute('onclick');
+                    const match = onclickAttr?.match(/selectEducationChoice\(this,\s*'([^']+)'\)/);
+                    if (match && match[1]) {
+                    educationValuex = match[1];
+                    if (educationValuex === 'other') {
+                        const otherField = document.getElementById('review_other');
+                        educationValuex = otherField?.value || educationValuex;
+                    }
+                    }
+                }
+
+                // Build draft object
+                const draft = {
+                    schoolName: data.school_name || '',
+                    reviewCerts: reviewCertsValue,
+                    educationLevel: educationValuex,
+                    otherFields: data.review_other || ''
+                };
+
+                // Save to localStorage
+                try {
+                    localStorage.setItem('rpi_personal2', JSON.stringify(draft));
+              //      alert("Saved draft:\n" + JSON.stringify(draft, null, 2));
+                } catch (err) {
+                    console.warn('Could not save rpi_personal2', err);
+                //    alert('Could not save rpi_personal2');
+                }
+
+                console.info('[adminapprove] saved rpi_personal2 draft', draft);
+
+                // Dispatch event for other scripts
+                try {
+                    window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
+                    detail: {
+                        key: 'rpi_personal2',
+                        data: draft
+                    }
+                    }));
+                } catch (e) {}
+
+                // Optional redirect
+                 window.location.href = '<?php echo e(route("registerworkexpinfo")); ?>';
+
+                } catch (err) {
+                console.error('[adminapprove] submit failed', err);
+                btn.classList.remove('opacity-60');
+                }
             });
+            })();
             </script>
-            <script>
-            document.addEventListener("DOMContentLoaded", () => {
-                const nextBtn = document.getElementById("educNext");
 
-                const audioButtons = [
-                    "VocationalAudioBtn",
-                    "ElementaryAudioBtn",
-                    "HighSchoolAudioBtn",
-                    "CollegeAudioBtn",
-                    "otherEducation"
-                ];
-
-                // Load saved values on page load
-                const savedCert = localStorage.getItem("review_certs");
-                const radio = document.getElementById(savedCert === "yes" ? "certYes" : "certNo");
-                if (radio) radio.checked = false;
-                console.log("Loaded cert:", savedCert);
-                
-                // Save on button click
-                if (nextBtn) {
-                nextBtn.addEventListener("click", () => {
-  
-                    let educationValuex = "";
-
-                    const selectedBtn = document.querySelector(".education-card.selected");
-                    if (selectedBtn) {
-                        const onclickAttr = selectedBtn.getAttribute("onclick");
-                        if (onclickAttr) {
-                            const match = onclickAttr.match(/selectEducationChoice\(this,\s*'([^']+)'\)/);
-                            if (match && match[1]) {
-                                educationValuex = match[1];
-
-                                const otherField = document.getElementById("review_other");
-                                if (educationValuex === "other" && otherField) {
-                                    educationValuex = otherField.value;
-                                }
-                            }
-                        }
-                    }
-
-                    const selectedReviewCerts = document.querySelector('input[name="certs"]:checked');
-                    const selected = document.querySelector('input[name="certs"]:checked');
-                    if (selected) {
-                        localStorage.setItem("review_certs", selected.value);
-                        console.log("Saved cert:", selected.value);
-                    }
-                    localStorage.setItem("education", educationValuex);
-                    console.log(`stored: ${educationValuex}`);
-                    let schoolName = document.getElementById("school_name").value;
-                    localStorage.setItem("school_name", schoolName);
-
-                    window.location.href = '<?php echo e(route("registerworkexpinfo")); ?>';
-                });
-            }
-        });
-        </script>
      
        <script>
             window.addEventListener("DOMContentLoaded", () => {

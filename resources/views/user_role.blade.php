@@ -42,7 +42,7 @@
   </div>
 
   <!-- Role Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 max-w-6xl w-full px-4 sm:px-8">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl w-full px-4 sm:px-8">
     
     <!-- User / Guardian -->
     <a href="{{ route('login') }}" 
@@ -56,14 +56,14 @@
     </a>
 
     <!-- Expert (Therapist) -->
-    <div class="border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
+    {{-- <div class="border border-gray-300 rounded-xl p-6 sm:p-8 text-center shadow-sm hover:shadow-lg hover:border-blue-500 hover:bg-blue-50 transition duration-300">
       <img src="image/role2.png" alt="Expert" class="mx-auto mb-4 w-20 sm:w-24 md:w-28">
       <h3 class="text-blue-700 font-semibold text-lg mb-2">Expert (Therapist)</h3>
       <p class="text-gray-600 text-sm md:text-base leading-relaxed">
         Evaluate career assessments, provide guidance, manage career resources, 
         and create progress reports for children and guardians.
       </p>
-    </div>
+    </div> --}}
 
     <!-- Company -->
     <a href="{{ route('company.login') }}" 

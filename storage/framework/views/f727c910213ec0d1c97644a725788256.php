@@ -526,12 +526,13 @@
                             selected.push(value);
                         }
                     });
-
+  // alert(selected);
                     // Save all selected skills to localStorage at once
                     localStorage.setItem('skills1_selected', JSON.stringify(selected));
-
+                  
                     // Navigate to next page
                     window.location.href = '<?php echo e(route("registerjobpreference1")); ?>';
+                       //window.location.href = '<?php echo e(route("registerreview4")); ?>';
                 });
             </script>
     </div>

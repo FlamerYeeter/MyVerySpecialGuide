@@ -158,28 +158,17 @@
     id="createAccountBtn"
     class="w-full sm:w-[530px] bg-[#1E40AF] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-[#1E88E5] transition-all duration-200"
   >
-    Submit Evaluation
+    Create Account
   </button>
 </div>
 
 
-    <!-- Error / Hidden fields used by scripts -->
-    <div class="text-center mt-3">
-      <p id="finalError" class="text-red-600 text-sm"></p>
-    </div>
-
-    <!-- Hidden inputs for autofill/verification (used by inline scripts) -->
-    <input type="hidden" id="emailFromServer" name="emailFromServer" value="<?php echo e($serverEmail ?? ''); ?>" />
-    <input type="hidden" id="email" name="email" value="" />
-    <input type="hidden" id="password" name="password" value="" />
-    <input type="hidden" id="confirm_password" name="confirm_password" value="" />
-
     <!-- Helper Text -->
     <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
-      Click <span class="text-[#1E40AF] font-medium">“Submit Evaluation”</span> to complete your registration
+      Click <span class="text-[#1E40AF] font-medium">“Create Account”</span> to complete your registration
     </p>
     <p class="text-gray-600 italic text-[12px] sm:text-[13px] text-center">
-      (Pindutin ang “Submit Evaluation” upang tapusin ang iyong pagpaparehistro)
+      (Pindutin ang “Create Account” upang tapusin ang iyong pagpaparehistro)
     </p>
   </div>
 
@@ -193,23 +182,6 @@
     </div>
   </div>
 
-  
-    <script src="<?php echo e(asset('js/register.js')); ?>"></script>
-    <script>
-      (function(){
-        const modal = document.getElementById('emailVerifyModal');
-        const close = document.getElementById('emailVerifyClose');
-        const cancel = document.getElementById('emailVerifyCancel');
-        const proceed = document.getElementById('emailVerifyProceed');
-        function hide(){ if(modal) modal.classList.add('hidden'); }
-        function show(email){ if(!modal) return; document.getElementById('verificationEmail').textContent = email || ''; modal.classList.remove('hidden'); }
-        if (close) close.addEventListener('click', hide);
-        if (cancel) cancel.addEventListener('click', hide);
-        if (proceed) proceed.addEventListener('click', function(){ window.location.href = '<?php echo e(route('registerverifycode')); ?>'; });
-        // expose for register.js to call
-        window.mvsgShowEmailVerificationModal = show;
-      })();
-    </script>
     <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
     <script>
       (function(){
@@ -246,132 +218,82 @@
         if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
       })();
     </script>
-    <script>
-      (function(){
-        const createBtn = document.getElementById('createAccountBtn');
-        const agree1 = document.getElementById('agree1');
-        const agree2 = document.getElementById('agree2');
-        const finalError = document.getElementById('finalError');
-        const emailField = document.getElementById('emailFromServer');
+    <script src="<?php echo e(asset('js/register.js')); ?>"></script>
+<script>
+(function(){
+  const createBtn = document.getElementById('createAccountBtn');
+  const agree1 = document.getElementById('agree1');
+  const agree2 = document.getElementById('agree2');
+  const successModal = document.getElementById('createdModal'); // 
+  const successOk = document.getElementById('createdModalOk');  // 
 
-        function clearErrors(){
-          finalError.textContent = '';
-          [agree1, agree2].forEach(el => { if(el && el.parentElement) el.parentElement.classList.remove('ring','ring-2','ring-red-300'); });
-        }
+  // ✅ Enable button only if both checkboxes are checked
+  function toggleCreateButton() {
+    if (agree1.checked && agree2.checked) {
+      createBtn.disabled = false;
+      createBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
+      createBtn.classList.add('bg-[#1E40AF]', 'hover:bg-[#1E88E5]');
+    } else {
+      createBtn.disabled = true;
+      createBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
+      createBtn.classList.remove('bg-[#1E40AF]', 'hover:bg-[#1E88E5]');
+    }
+  }
 
-        // Resolve email from multiple local sources as a last-resort fallback
-        function resolveEmailFallback() {
-          try {
-            // 1) prefer the server-hidden field
-            const hidden = (emailField && (emailField.value || '').trim()) || (document.getElementById('email') && (document.getElementById('email').value || '').trim());
-            if (hidden) return hidden;
+  agree1?.addEventListener('change', toggleCreateButton);
+  agree2?.addEventListener('change', toggleCreateButton);
 
-            // 2) prefer an explicit marker set earlier in the flow
-            const localCurrent = (localStorage.getItem('local_current_email') || sessionStorage.getItem('local_current_email') || '').trim();
-            if (localCurrent) return localCurrent;
+  // ✅ Handle create account
+  createBtn?.addEventListener('click', function(e){
+    e.preventDefault();
 
-            // 3) try the local_accounts store (most recent)
-            try {
-              const accs = JSON.parse(localStorage.getItem('local_accounts') || '[]');
-              if (Array.isArray(accs) && accs.length) {
-                const last = accs[accs.length - 1];
-                if (last && last.email) return (last.email || '').trim();
-              }
-            } catch(e){}
+    // Check both checkboxes
+    if (!agree1.checked || !agree2.checked) {
+      createBtn.classList.add('animate-pulse');
+      setTimeout(()=> createBtn.classList.remove('animate-pulse'), 400);
+      return;
+    }
 
-            // 4) try rpi_personal stored draft
-            try {
-              const r = localStorage.getItem('rpi_personal') || sessionStorage.getItem('rpi_personal');
-              if (r) {
-                const parsed = JSON.parse(r);
-                const e = parsed?.personalInfo?.email || parsed?.personal?.email || parsed?.email;
-                if (e) return (e || '').trim();
-              }
-            } catch(e){}
+    // ✅ Save data to backend 
+    const data = {
+      education: localStorage.getItem('education'),
+      job_experiences: localStorage.getItem('job_experiences'),
+      review_certs: localStorage.getItem('review_certs'),
+      rpi_personal: localStorage.getItem('rpi_personal'),
+      school_name: localStorage.getItem('school_name'),
+      selected_work_experience: localStorage.getItem('selected_work_experience'),
+      selected_work_year: localStorage.getItem('selected_work_year'),
+      support: localStorage.getItem('support'),
+      uploadedProofData0: localStorage.getItem('uploadedProofData0'),
+      uploadedProofData1: localStorage.getItem('uploadedProofData1'),
+      uploadedProofName0: localStorage.getItem('uploadedProofName0'),
+      uploadedProofName1: localStorage.getItem('uploadedProofName1'),
+      uploadedProofType0: localStorage.getItem('uploadedProofType0'),
+      uploadedProofType1: localStorage.getItem('uploadedProofType1'),
+      workplace: localStorage.getItem('workplace'),
+      jobPreferences: localStorage.getItem('jobPreferences'),
+      skills1_selected: localStorage.getItem('skills1_selected')
+    };
 
-            // 5) common registration draft keys
-            const keys = ['registrationDraft','registration_draft','dsRegistrationDraft','registerDraft','regDraft','reg_data'];
-            for (const k of keys) {
-              try {
-                const v = localStorage.getItem(k) || sessionStorage.getItem(k);
-                if (!v) continue;
-                const parsed = JSON.parse(v);
-                const e = parsed?.personalInfo?.email || parsed?.personal?.email || parsed?.emailAddress || parsed?.email;
-                if (e) return (e || '').trim();
-              } catch(e) { /* ignore parse errors */ }
-            }
-          } catch(e) { console.warn('resolveEmailFallback error', e); }
-          return '';
-        }
+    fetch('public/db/registration-data.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    }).catch(console.error);
 
-        createBtn && createBtn.addEventListener('click', function(e){
-          e.preventDefault();
-          clearErrors();
+    // ✅ Show success modal
+    successModal.classList.remove('hidden');
+  });
 
-          // Collect all data from localStorage
-          const data = {
-            education: localStorage.getItem('education'),
-            job_experiences: localStorage.getItem('job_experiences'),
-            review_certs: localStorage.getItem('review_certs'),
-            rpi_personal: localStorage.getItem('rpi_personal'),
-            school_name: localStorage.getItem('school_name'),
-            selected_work_experience: localStorage.getItem('selected_work_experience'),
-            selected_work_year: localStorage.getItem('selected_work_year'),
-            support: localStorage.getItem('support'),
-            uploadedProofData0: localStorage.getItem('uploadedProofData0'),
-            uploadedProofData1: localStorage.getItem('uploadedProofData1'),
-            uploadedProofName0: localStorage.getItem('uploadedProofName0'),
-            uploadedProofName1: localStorage.getItem('uploadedProofName1'),
-            uploadedProofType0: localStorage.getItem('uploadedProofType0'),
-            uploadedProofType1: localStorage.getItem('uploadedProofType1'),
-            workplace: localStorage.getItem('workplace'),
-            jobPreferences: localStorage.getItem('jobPreferences'),
-            skills1_selected: localStorage.getItem('skills1_selected')
-          };
+  // ✅ Redirect to login after clicking OK
+  successOk?.addEventListener('click', () => {
+    successModal.classList.add('hidden');
+    window.location.href = '<?php echo e(route("login")); ?>'; // ✅ Redirect to login
+  });
 
-          // Send to PHP backend
-          fetch('/db/registration-data.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          })
-            .then(res => res.text())
-            .then(console.log)
-            .catch(console.error);  
+  // Initially disable the button until checkboxes are checked
+  toggleCreateButton();
 
-          const email = ( (emailField && (emailField.value || '').trim()) || resolveEmailFallback() ).trim();
-          let hasError = false;
-
-          if (!agree1 || !agree1.checked || !agree2 || !agree2.checked) {
-            finalError.textContent = 'Please accept the required agreements.';
-            [agree1, agree2].forEach(el => { if(el && el.parentElement) el.parentElement.classList.add('ring','ring-2','ring-red-300'); });
-            hasError = true;
-          }
-
-          if (!email) {
-            // clearer guidance for the user
-            finalError.textContent = 'No email available for verification. Please return to the previous steps or ensure your draft data contains an email.';
-            hasError = true;
-          }
-
-          if (hasError) {
-            createBtn.classList.add('animate-pulse');
-            setTimeout(()=> createBtn.classList.remove('animate-pulse'), 350);
-            return;
-          }
-
-          // store email and agreement state for later use; no password collected here
-          window.finalRegistrationData = {
-            email: email,
-            agreements: {
-              agree1: !!(agree1 && agree1.checked),
-              agree2: !!(agree2 && agree2.checked)
-            }
-          };
-            
-        });
-
-      })();
-    </script>
-</body>
-</html><?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\resources\views/ds_register_finalstep.blade.php ENDPATH**/ ?>
+})();
+</script>
+<?php /**PATH C:\xampp\htdocs\MyVerySpecialGuide\resources\views/ds_register_finalstep.blade.php ENDPATH**/ ?>

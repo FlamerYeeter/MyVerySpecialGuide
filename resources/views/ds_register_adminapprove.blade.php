@@ -483,14 +483,6 @@
   </div>
 </div>
 
-<!-- 🔹 Modal (Shared for both uploads) -->
-<div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-  <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
-    <button id="closeModalBtn" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
-    <div id="modalContent" class="p-2 text-center"></div>
-  </div>
-</div>
-
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
@@ -530,17 +522,19 @@ function setupUpload(inputId, displayId, labelId, hintId) {
           <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
         </div>
         <div class="flex gap-2">
-          <button class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
-          <button class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
+          <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+          <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
         </div>
       </div>
     `;
 
-    display.querySelector('.viewBtn').addEventListener('click', () => {
+    display.querySelector('.viewBtn').addEventListener('click', (e) => {
+      e.preventDefault();
       openModal(fileURL, ext);
     });
 
-    display.querySelector('.removeBtn').addEventListener('click', () => {
+    display.querySelector('.removeBtn').addEventListener('click', (e) => {
+      e.preventDefault();
       resetDisplay();
       fileInput.value = '';
       if (fileURL) URL.revokeObjectURL(fileURL);
@@ -838,10 +832,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         })();
     </script>
 
-    <!-- Include Firebase config -->
-    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
+    <!-- 🔹 Modal (Shared for both uploads) -->
+    <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+        <button id="closeModalBtn" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
+        <div id="modalContent" class="p-2 text-center"></div>
+    </div>
+    </div>
 
-    <!-- LocalStorage-first autofill: read rpi_personal1 early and apply to form -->
     <script>
     (function(){
         function normalizeFilename(s){

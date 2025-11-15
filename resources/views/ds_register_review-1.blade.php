@@ -413,7 +413,28 @@ localStorage.setItem('rpi_personal1', JSON.stringify(draft));
         <script>
         (function(){
             function tryParse(s){ try { return s && typeof s === 'string' ? JSON.parse(s) : s; } catch(e){ return null; } }
-            function setIf(id, val){ try{ const el=document.getElementById(id); if(!el) return false; const out = val==null? '': String((typeof val === 'object')? (Array.isArray(val)? val.join(', '): JSON.stringify(val)) : val); if(el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = out; else el.textContent = out; return true;}catch(e){return false;} }
+            function setIf(id, val){ 
+                try{ 
+                    const el=document.getElementById(id); 
+                    if(!el) return false; 
+
+                    // Do not overwrite with empty/null/whitespace values — only apply meaningful data
+                    if (val === undefined || val === null) return false;
+                    let out;
+                    if (typeof val === 'object') {
+                        out = Array.isArray(val) ? val.join(', ') : JSON.stringify(val);
+                    } else {
+                        out = String(val);
+                    }
+                    if (out.trim() === '') return false;
+
+                    if(el.tagName === 'SELECT' || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = out; 
+                    else el.textContent = out; 
+                    return true;
+                }catch(e){
+                    return false;
+                } 
+            }
             function setSelectByValueOrText(id, value){
                 try{
                     if(!value) return false;
