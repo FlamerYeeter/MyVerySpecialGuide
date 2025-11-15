@@ -27,9 +27,12 @@ Route::get('/register', function () {
     return view('ds_register_1');
 })->name('register');
 
+
+/*
 Route::get('/applyassessment', function () {
     return view('apply-assessment');
 })->name('applyassessment');
+*/
 
 // Navigation buttons page (used by login/back links)
 Route::get('/navigationbuttons', function () {

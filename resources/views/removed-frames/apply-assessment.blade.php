@@ -16,7 +16,6 @@
   </style>
 </head>
 <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
-
   <!-- Floating Mascots -->
   <img src="image/obj4.png" alt="Yellow Mascot"
        class="hidden sm:block fixed left-6 top-1/3 w-28 lg:w-36 opacity-90 animate-float-slow z-0">
@@ -30,7 +29,7 @@
   <!-- Back Button -->
   <button
     class="fixed left-3 top-3 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-    onclick="window.location.href='{{ route('login') }}'">
+    onclick="window.location.href='{{ route('') }}'">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
       class="w-4 h-4 sm:w-6 sm:h-6">
       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -130,7 +129,7 @@
       </div>
 
       <!-- Close Button Bottom -->
-        <a href="{{ route('applyassessment') }}" class="block h-full"></a>
+        <a href="{{ route('') }}" class="block h-full"></a>
       <div class="mt-8 text-right">
         <button id="okModalBtn"
                 class="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-6 py-3 rounded-lg text-lg transition-all">
@@ -164,3 +163,4 @@
 
 </body>
 </html>
+  
