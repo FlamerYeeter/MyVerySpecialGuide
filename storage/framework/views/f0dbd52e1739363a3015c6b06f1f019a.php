@@ -394,7 +394,7 @@
             </div>
         </form>
 
-        <!-- Instruction -->
+        <!-- Instruction 
         <div class="mt-12 bg-blue-50 border-l-8 border-blue-500 rounded-2xl p-6 text-center shadow-md">
             <p class="text-xl font-bold text-[#1E3A8A] mb-2 flex items-center justify-center gap-2">
                 <img src="https://img.icons8.com/color/48/compass--v1.png" alt="Compass Icon" class="w-7 h-7">
@@ -406,7 +406,7 @@
             <p class="text-base text-gray-600 italic mt-1">
                 (Piliin ang mga opsyon sa itaas. Ipapakita ng system ang mga trabahong akma sa iyong pinili.)
             </p>
-        </div>
+        </div> -->
 
         <!-- location filter removed per request -->
         <!-- Filter is automatic now: selects will submit the form on change -->
@@ -739,111 +739,135 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             </div>
     </section>
 
-    <!-- Job Card -->
-    <section class="bg-[#F0F9FF] py-12 px-6 sm:px-12 lg:px-20">
+    <!-- Recommended Job Section -->
+            <section class="bg-[#E8F3FF] px-14 sm:px-12 lg:px-20 py-12 rounded-none">
+                <h2 class="text-3xl font-bold text-[#1E3A8A] mb-2">Recommended Job</h2>
+                <p class="text-gray-600 mb-6 text-lg">
+                    Recommended companies based on application history, preferences, and recent platform activity.
+              </p>
+       <!--Job Card -->
         <div
-            class="relative bg-white border-2 border-blue-200 rounded-3xl shadow-lg p-10 mb-10 transition-transform hover:scale-[1.02]">
+            class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
 
             <!-- Top Section -->
-            <div class="flex flex-col lg:flex-row justify-between items-start gap-8">
-                <!-- Company Info -->
-                <div class="flex items-start gap-6">
-                    <!-- Company Logo + Flag -->
-                    <div class="flex items-center gap-4">
-                        <!-- Flag beside Logo -->
-                        <button
-                            class="flag-btn text-gray-400 text-5xl focus:outline-none hover:text-red-500 transition-all duration-300">
-                            <i class="ri-flag-line"></i>
-                        </button>
+            <div class="flex flex-col lg:flex-row justify-between items-start gap-10">
 
-                        <!-- Company Logo -->
-                        <div class="flex-shrink-0">
-                            <?php if(!empty($company->logo)): ?>
-                                <img src="<?php echo e(asset('storage/' . $company->logo)); ?>" alt="Company Logo"
-                                    class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover">
-                            <?php else: ?>
-                                <div
-                                    class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
-                                    <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
-                                </div>
-                            <?php endif; ?>
-                        </div>
+                <!-- Left: Company Info -->
+                <div class="flex items-start gap-6">
+                    <!-- Flag Button -->
+                    <button class="text-gray-400 text-5xl focus:outline-none hover:text-red-500 transition-all"
+                        aria-label="Flag this job">
+                        <i class="ri-flag-2-fill"></i>
+                    </button>
+
+                    <!-- Company Logo -->
+                    <div
+                        class="w-36 h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center">
+                        <i class="ri-building-4-fill text-[#1E40AF] text-7xl"></i>
                     </div>
 
-                    <!-- Job Info -->
+                    <!-- Company Details -->
                     <div>
-                        <h3 class="font-bold text-3xl text-gray-900">Pet Care Assistant</h3>
-                        <p class="text-gray-700 text-2xl font-medium mt-2">iPet Club</p>
-                        <p class="text-gray-600 text-lg mt-1 flex items-center gap-2">
-                            <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location Icon"
-                                class="w-6 h-6">
-                            <span>Taguig City, Metro Manila</span>
+                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2">Pet Care Assistant</h2>
+                        <p class="text-2xl text-gray-800 font-semibold mb-2">iPet Club</p>
+                        <p class="flex items-center text-xl text-gray-700 gap-2">
+                            <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
+                            Taguig City, Metro Manila
                         </p>
 
-                        <!-- Job Tags -->
+                        <!-- Tags -->
                         <div class="flex flex-wrap gap-3 mt-3">
                             <span
-                                class="bg-green-100 text-green-700 text-lg px-5 py-2 rounded-md font-semibold">Healthcare</span>
+                                class="bg-green-200 text-green-900 text-lg px-5 py-2 rounded-md font-semibold">Healthcare</span>
                             <span
-                                class="bg-yellow-100 text-yellow-700 text-lg px-5 py-2 rounded-md font-semibold">Quiet</span>
+                                class="bg-yellow-200 text-yellow-900 text-lg px-5 py-2 rounded-md font-semibold">Quiet</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Right: Match Info -->
+                <!-- Right: Why It Matches -->
                 <a href="#"
-                    class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">
-                    Why this job match you?
+                    class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center whitespace-nowrap">
+                    Why this job matches you?
                 </a>
             </div>
 
+            <!-- Separator -->
+            <hr class="my-8 border-gray-300">
+
             <!-- Description -->
-            <p class="text-gray-700 text-xl mt-8 leading-relaxed max-w-4xl">
-                Help feed animals, clean spaces, and provide companionship.
-            </p>
-
-            <!-- Skills -->
-            <div class="flex flex-wrap gap-3 mt-6">
-                <span class="bg-blue-100 text-blue-700 text-lg font-semibold px-5 py-2 rounded-md">Organization</span>
-                <span class="bg-blue-100 text-blue-700 text-lg font-semibold px-5 py-2 rounded-md">Cleaning</span>
-                <span class="bg-blue-100 text-blue-700 text-lg font-semibold px-5 py-2 rounded-md">Following
-                    Instructions</span>
+            <div>
+                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Description</h3>
+                <p class="text-gray-800 text-2xl leading-relaxed max-w-6xl">
+                    Help feed animals, clean their spaces, and provide love and care. You’ll be part of a kind, friendly
+                    team who loves pets and teamwork.
+                </p>
             </div>
 
-            <!-- Job Type -->
-            <div class="flex flex-wrap gap-3 mt-8">
-                <span
-                    class="border border-[#2563EB] text-[#2563EB] text-lg px-5 py-2 rounded-md font-semibold">Full-Time</span>
-                <span class="border border-[#88BF02] text-[#88BF02] text-lg px-5 py-2 rounded-md font-semibold">Full
-                    Support</span>
-                <span class="border border-[#F89596] text-[#F89596] text-lg px-5 py-2 rounded-md font-semibold">Excellent
-                    Fit</span>
+            <!-- Skills Section -->
+            <div class="mt-8">
+                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Skills You Will Use</h3>
+                <div class="flex flex-wrap gap-4">
+                    <span
+                        class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">Organization</span>
+                    <span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">Cleaning</span>
+                    <span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">Following
+                        Instructions</span>
+                </div>
             </div>
 
-            <!-- Assessment Button -->
-            <div class="flex justify-end mt-10">
+            <!-- Job Type Section -->
+            <div class="mt-8">
+                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Type and Fit</h3>
+                <div class="flex flex-wrap gap-4">
+                    <span
+                        class="border-2 border-[#2563EB] text-[#2563EB] text-lg px-6 py-2 rounded-md font-bold bg-blue-50">Full-Time</span>
+                    <span
+                        class="border-2 border-[#88BF02] text-[#88BF02] text-lg px-6 py-2 rounded-md font-bold bg-green-50">Full
+                        Support</span>
+                    <span
+                        class="border-2 border-[#F89596] text-[#F89596] text-lg px-6 py-2 rounded-md font-bold bg-pink-50">Excellent
+                        Fit</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="mt-10 w-full">
+                <p class="text-xl font-semibold text-gray-800 mb-2 text-center">Application Progress</p>
+                <div class="h-5 bg-gray-200 rounded-md overflow-hidden">
+                    <div class="h-full bg-[#88BF02]" style="width: 50%;"></div>
+                </div>
+                <p class="text-lg text-gray-700 mt-2 text-center">
+                    <strong>5 applied</strong> out of 10 openings
+                </p>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap justify-center gap-6 mt-10">
                 <button
-                    class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[480px] hover:bg-[#D78203] transition text-center">
+                    class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
+                    📝 See Details
+                </button>
+                <button
+                    class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
+                    🚀 Apply Now
+                </button>
+                <button
+                    class="bg-[#008000] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition">
+                    💾 Save for Later
+                </button>
+            </div>
+
+            <!-- Assessment CTA -->
+            <div class="flex justify-center mt-10">
+                <button
+                    class="bg-[#FFAC1D] text-white text-2xl font-extrabold rounded-md px-12 py-6 w-full sm:w-[700px] hover:bg-[#D78203] transition">
                     Apply for Therapist Job Readiness Assessment
                 </button>
             </div>
 
-            <!-- Action Buttons -->
-            <div class="flex justify-end flex-wrap gap-4 mt-4">
-                <button
-                    class="bg-[#55BEBB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#47a4a1] transition">
-                    Details
-                </button>
-                <button
-                    class="bg-[#2563EB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#1e4fc5] transition">
-                    Apply
-                </button>
-                <button
-                    class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">
-                    Save
-                </button>
-            </div>
         </div>
+
 
         <!-- Instruction Section Wrapper -->
         <div class="space-y-8">
@@ -921,164 +945,6 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     </div>
                 </div>
             </div>
-
-            <!-- Recommended Job Section -->
-            <section class="bg-[#E8F3FF] px-14 sm:px-12 lg:px-20 py-12 rounded-none">
-                <h2 class="text-3xl font-bold text-[#1E3A8A] mb-2">Recommended Job</h2>
-                <p class="text-gray-600 mb-6 text-lg">
-                    Recommended companies based on application history, preferences, and recent platform activity.
-                </p>
-
-                <!-- Job Card -->
-                <div
-                    class="bg-white border-2 border-blue-100 rounded-none shadow-lg p-8 flex flex-col lg:flex-row justify-between items-start gap-8 hover:scale-[1.01] transition-all">
-
-                    <!-- Left Side: Logo + Info -->
-                    <div class="flex items-center gap-5 w-full lg:w-2/3">
-
-                        <!-- Flag Button -->
-                        <button
-                            class="flag-btn text-gray-400 text-5xl font-bold focus:outline-none hover:text-red-500 transition-all duration-300">
-                            <i class="ri-flag-line"></i>
-                        </button>
-
-                        <!-- Company Logo -->
-                        <div class="flex-shrink-0">
-                            <?php if(!empty($company->logo)): ?>
-                                <img src="<?php echo e(asset('storage/' . $company->logo)); ?>" alt="Company Logo"
-                                    class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover">
-                            <?php else: ?>
-                                <div
-                                    class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
-                                    <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
-                                </div>
-                            <?php endif; ?>
-                        </div>
-
-                        <!-- Job Info -->
-                        <div>
-                            <h3 class="font-bold text-2xl text-gray-800">Shakey’s Service Crew</h3>
-                            <p class="text-lg text-gray-600 mt-2 flex items-center gap-2">
-                                <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location Icon"
-                                    class="w-6 h-6">
-                                Eastwood • Taguig City, PH
-                            </p>
-
-                            <!-- Tags -->
-                            <div class="flex flex-wrap gap-2 mt-2">
-                                <span
-                                    class="border border-[#2563EB] text-[#2563EB] text-md px-4 py-2 rounded-md font-semibold">Full-Time</span>
-                                <span
-                                    class="border border-[#88BF02] text-[#88BF02] text-md px-4 py-2 rounded-md font-semibold">Full
-                                    Support</span>
-                                <span
-                                    class="border border-[#F89596] text-[#F89596] text-md px-4 py-2 rounded-md font-semibold">Excellent
-                                    Fit</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Side: Buttons + Progress -->
-                    <div class="flex flex-col items-center lg:items-end w-full lg:w-1/3 mt-4 lg:mt-0">
-
-                        <!-- Assessment Button -->
-                        <button
-                            class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[365px] mb-4 hover:bg-[#D78203] transition text-center">
-                            Apply for Therapist Job Readiness Assessment
-                        </button>
-
-                        <!-- Action Buttons -->
-                        <div class="flex gap-4 mb-4">
-                            <button
-                                class="bg-[#55BEBB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#399f96] transition-all w-[110px]">
-                                Details
-                            </button>
-                            <button
-                                class="bg-[#2563EB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#1b3999] transition-all w-[110px]">
-                                Apply
-                            </button>
-                            <button
-                                class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 hover:bg-[#006400] transition w-[110px]">
-                                Save
-                            </button>
-                        </div>
-
-                        <!-- Progress Bar -->
-                        <div class="w-full sm:w-[360px]">
-                            <div class="h-3 bg-gray-200 rounded-none overflow-hidden">
-                                <div class="h-full bg-[#88BF02] w-1/2 rounded-none"></div>
-                            </div>
-                            <p class="text-sm text-gray-500 font-semibold mt-2 text-center lg:text-right">
-                                <span class="font-semibold text-black">5 applied</span> of 10 capacity
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ================= THERAPIST ASSESSMENT MODAL ================= -->
-            <div id="assessmentModal"
-                class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 transition-opacity duration-300">
-                <div class="bg-white rounded-2xl shadow-2xl p-10 max-w-2xl w-full mx-4 relative animate-fadeIn">
-
-                    <!-- Close Button -->
-                    <button id="closeModalBtn"
-                        class="absolute top-4 right-4 text-gray-500 hover:text-red-500 text-3xl font-bold">&times;</button>
-
-                    <!-- Modal Header -->
-                    <div class="flex items-center gap-3 mb-6">
-                        <i class="ri-file-text-line text-[#2563EB] text-4xl"></i>
-                        <h2 class="text-2xl font-bold text-[#1E3A8A]">Notice: Assessment Scheduling</h2>
-                    </div>
-
-                    <!-- Modal Content -->
-                    <p class="text-lg text-gray-800 font-semibold mb-4">
-                        Thank you for applying for a job readiness assessment!
-                    </p>
-
-                    <p class="text-gray-700 text-base mb-4 leading-relaxed">
-                        A <span class="font-semibold text-[#1E3A8A]">licensed therapist</span> will review your request and
-                        <span class="font-semibold text-[#1E3A8A]">contact you shortly to schedule your assessment.</span>
-                    </p>
-
-                    <p class="text-gray-800 font-semibold mt-6 mb-2">Please note:</p>
-                    <ul class="list-disc pl-6 text-gray-700 space-y-2 text-base">
-                        <li>
-                            The <span class="font-semibold">assessment must be completed</span> before you can proceed with
-                            your
-                            <span class="font-semibold">job application</span>.
-                        </li>
-                        <li>
-                            You will receive a <span class="font-semibold">notification or email</span> with the date and
-                            time of your
-                            assessment once it is confirmed.
-                        </li>
-                    </ul>
-
-                    <!-- Assessment progress page -->
-                    <div class="mt-5 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-                        <i class="ri-progress-line text-[#2563EB] text-2xl mt-1"></i>
-                        <p class="text-gray-700 text-base leading-relaxed">
-                            You can view the status of your applied assessment anytime on the
-                            <span class="font-semibold text-[#1E3A8A]">Assessment Progress</span> page.
-                        </p>
-                    </div>
-
-                    <div class="mt-6 flex items-center gap-2 text-[#2563EB] italic">
-                        <i class="ri-calendar-event-line text-xl"></i>
-                        <span class="text-base">Please keep an eye on your messages or email for further updates.</span>
-                    </div>
-
-                    <!-- Close Button at Bottom -->
-                    <div class="mt-8 text-right">
-                        <button id="okModalBtn"
-                            class="bg-[#2563EB] hover:bg-[#1E40AF] text-white font-bold px-6 py-3 rounded-lg text-lg transition-all">
-                            Okay, Got It
-                        </button>
-                    </div>
-                </div>
-            </div>
-
 
 
             <!-- BACK TO TOP BUTTON -->

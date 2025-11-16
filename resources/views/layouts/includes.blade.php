@@ -42,15 +42,15 @@
             class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
             Jobs
           </a>
-          <a href="#"
+          <a href="{{ route('saved') }}"
             class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
             Saved Jobs
           </a>
-          <a href="{{ route('career.goals.progress') }}"
+          <a href="{{ route('assessment') }}"
             class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
             Assessment Progress
           </a>
-          <a href="{{ route('why.this.job.1') }}"
+          <a href="{{ route('whythisjob') }}"
             class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
             Why this Job 
           </a>
@@ -71,17 +71,16 @@
           <!-- Dropdown -->
           <div id="dropdownMenu"
             class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-md text-gray-700 z-20">
-            <a href="{{ route('user.role') }}"
-              class="block px-4 py-3 text-base hover:bg-blue-50 rounded-t-xl">View Profile</a>
-            {{-- Logout via POST to avoid CSRF issues; falls back to JS submit when link clicked --}}
+            <a href="#"
+              class="w-full text-left block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">View Profile</a>
+
+            <a href="{{ route('my.job.applications') }}"
+              class="w-full text-left block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">My Job Applications</a>
+
             <form method="POST" action="{{ route('logout') }}">
               @csrf
-             {{-- Use same look as other dropdown links so color/position match --}}
-             <button type="submit"
-                class="w-full block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">My Job Applications</button>
-            </form>
               <button type="submit"
-                class="w-full block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">Logout</button>
+                class="w-full text-left block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">Logout</button>
             </form>
           </div>
         </div>
