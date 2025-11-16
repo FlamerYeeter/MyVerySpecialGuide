@@ -107,7 +107,10 @@
                             {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Part-Time
                         </option>
                         <option value="Medium Potential"
-                            {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Internship
+                            {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Contract
+                        </option>
+                         <option value="Medium Potential"
+                            {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Program
                         </option>
                     </select>
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -820,7 +823,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
             <!-- Skills Section -->
             <div class="mt-8">
-                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Skills You Will Use</h3>
+                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills you will Use</h3>
                 <div class="flex flex-wrap gap-4">
                     <span
                         class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">Organization</span>
@@ -862,7 +865,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 </button>
                 <button
                     class="bg-[#008000] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition">
-                    💾 Save for Later
+                    💾 Save
                 </button>
             </div>
 

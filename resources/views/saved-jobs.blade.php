@@ -48,13 +48,13 @@
                         class="flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white text-xl font-bold px-10 py-4 rounded-2xl shadow-lg transition-all duration-200 focus:ring-4 focus:ring-green-400 focus:outline-none">
                         <img src="https://img.icons8.com/fluency/48/bookmark-ribbon.png" alt="Saved Jobs Icon"
                             class="h-8 w-8">
-                        2 Saved Jobs
+                        No Saved Jobs Yet
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- Job List Container -->
+       {{--<!-- Job List Container -->
         <div class="mt-10 space-y-8">
 
             <!-- Job Card -->
@@ -72,7 +72,7 @@
                     </button> --}}
 
                     <!-- Company Logo -->
-                    <div class="flex-shrink-0">
+                   {{-- <div class="flex-shrink-0">
                         @if (!empty($company->logo))
                             <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
                                 class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl border-2 border-gray-300 object-cover shadow-sm">
@@ -85,7 +85,7 @@
                     </div>
 
                     <!-- Job Info -->
-                    <div class="flex flex-col justify-center flex-1">
+                    {{-- <div class="flex flex-col justify-center flex-1">
                         <h3 class="font-bold text-2xl text-gray-800 leading-tight">Shakey’s Service Crew</h3>
 
                         <p class="text-base sm:text-lg text-gray-600 mt-2 flex items-center gap-2">
@@ -112,7 +112,7 @@
                     </button> --}}
 
                     <!-- Action Buttons -->
-                    <div class="flex flex-wrap justify-center lg:justify-end gap-4 mb-4">
+                    {{--  <div class="flex flex-wrap justify-center lg:justify-end gap-4 mb-4">
                         <button
                             class="bg-[#55BEBB] text-white font-semibold px-8 py-3 text-base rounded-lg hover:bg-[#399f96] transition-all w-[110px] shadow-md">
                             Details
@@ -136,7 +136,7 @@
             </div>
 
         </div>
-    </section>
+    </section> --}}
 
 
 
