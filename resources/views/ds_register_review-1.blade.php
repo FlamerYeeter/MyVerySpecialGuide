@@ -285,14 +285,16 @@
                      <div id="r_proof" class="mt-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">No file uploaded</div>
 
                      <!-- detailed file info / actions (hidden until a file exists) -->
-                     <div id="proofFileInfo" class="mt-3 hidden items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-                       <span id="proofFileIcon" class="text-2xl">📁</span>
-                       <span id="proofFileName" class="truncate max-w-[240px] text-sm text-gray-700"></span>
-                       <div class="ml-auto flex gap-2">
-                         <button id="proofViewBtn" type="button" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
-                         <button id="proofRemoveBtn" type="button" class="bg-red-500 text-white text-xs px-3 py-1 rounded-md">Remove</button>
-                       </div>
-                     </div>
+                    <div id="proofFileInfo" class="mt-3 hidden flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+                      <span id="proofFileIcon" class="text-2xl">📁</span>
+                      <div class="flex-1 min-w-0">
+                        <span id="proofFileName" class="block truncate text-sm text-gray-700"></span>
+                      </div>
+                      <div class="flex gap-2">
+                        <button id="proofViewBtn" type="button" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md" aria-label="View proof">View</button>
+                        <button id="proofRemoveBtn" type="button" class="bg-red-500 text-white text-xs px-3 py-1 rounded-md" aria-label="Remove proof">Remove</button>
+                      </div>
+                    </div>
                    </div>
 
                    <!-- Medical preview -->
@@ -302,25 +304,21 @@
 
                      <div id="r_medical" class="mt-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">No file uploaded</div>
 
-                     <div id="medFileInfo" class="mt-3 hidden items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-                       <span id="medFileIcon" class="text-2xl">📁</span>
-                       <span id="medFileName" class="truncate max-w-[240px] text-sm text-gray-700"></span>
-                       <div class="ml-auto flex gap-2">
-                         <button id="medViewBtn" type="button" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
-                         <button id="medRemoveBtn" type="button" class="bg-red-500 text-white text-xs px-3 py-1 rounded-md">Remove</button>
-                       </div>
-                     </div>
+                    <div id="medFileInfo" class="mt-3 hidden flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+                      <span id="medFileIcon" class="text-2xl">📁</span>
+                      <div class="flex-1 min-w-0">
+                        <span id="medFileName" class="block truncate text-sm text-gray-700"></span>
+                      </div>
+                      <div class="flex gap-2">
+                        <button id="medViewBtn" type="button" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md" aria-label="View medical">View</button>
+                        <button id="medRemoveBtn" type="button" class="bg-red-500 text-white text-xs px-3 py-1 rounded-md" aria-label="Remove medical">Remove</button>
+                      </div>
+                    </div>
                    </div>
+
                  </div>
                </div>
                
-               <!-- Modal for file preview -->
-               <div id="filePreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100000]">
-                 <div class="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-[92%] relative">
-                   <button id="filePreviewClose" class="absolute top-2 right-3 text-gray-600 hover:text-gray-900 text-2xl">×</button>
-                   <div id="filePreviewContent" class="p-2"></div>
-                 </div>
-               </div>
 
          <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
@@ -1632,7 +1630,13 @@ function wireBlock(prefix, storageIndex) {
   wireBlock('medical', 0);
 });
 </script>
-
+               <!-- Modal for file preview -->
+               <div id="filePreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100000]">
+                 <div class="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-[92%] relative">
+                   <button id="filePreviewClose" type="button" class="absolute top-2 right-3 text-gray-600 hover:text-gray-900 text-2xl">×</button>
+                   <div id="filePreviewContent" class="p-2"></div>
+                 </div>
+               </div>
 </body>
 
 </html>
