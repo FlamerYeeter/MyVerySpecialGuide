@@ -306,11 +306,11 @@
             <!-- Text Content -->
             <div class="flex flex-col justify-center leading-snug">
                 <p class="text-2xl sm:text-2xl text-black font-semibold">
-                    Click the <span class="text-blue-600 font-bold">“Apply”</span> button to go to the application form for
+                    Click the <span class="text-blue-600 font-bold">“Back to Jobs”</span> button to go to the application form for
                     this job.
                 </p>
                 <p class="mt-2 italic text-gray-700 text-xl">
-                    (Pindutin ang Apply button upang mapunta sa application form para sa trabahong ito.)
+                    (Pindutin ang Back to Jobs button upang mapunta sa application form para sa trabahong ito.)
                 </p>
             </div>
         </div>
@@ -339,20 +339,11 @@
             <!-- Job Information -->
             <div class="flex flex-col items-center sm:items-start text-center sm:text-left flex-grow">
                 <h3 class="text-2xl sm:text-3xl font-bold text-black">Pet Care Assistant</h3>
-                <p class="text-gray-700 text-lg sm:text-xl mt-2">BGC · Taguig City, PH</p>
-                <span
-                    class="text-[#88BF02] border border-[#88BF02] text-base font-semibold px-4 py-1 rounded-md mt-3 inline-block">
-                    Full Support
-                </span>
-            </div>
-
-            <!-- Apply Button -->
-            <div class="flex justify-center sm:justify-end w-full sm:w-auto">
-                <button
-                    class="bg-[#1E40AF] text-white text-lg sm:text-xl px-14 py-3 rounded-none font-semibold hover:bg-blue-900 transition duration-300 shadow-md">
-                    Apply
-                </button>
-            </div>
+               <p class="flex items-center text-xl text-gray-700 gap-2">
+                            <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
+                            BGC, Taguig City, Metro Manila
+                        </p>
+                        </div>
         </div>
 
         <!-- JOB INFO GRID -->
@@ -365,21 +356,27 @@
                 </div>
 
                 <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Responsibilities</h4>
+                    <h4 class="text-xl font-bold text-black mb-2">Why Join Us?</h4>
                 </div>
 
                 <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Requirements</h4>
+                    <h4 class="text-xl font-bold text-black mb-2">Key Responsibilities</h4>
                 </div>
 
                 <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Preferred Candidates</h4>
+                    <h4 class="text-xl font-bold text-black mb-2">Who we are Looking for</h4>
                 </div>
 
                 <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Purpose</h4>
+                    <h4 class="text-xl font-bold text-black mb-2">Working Environment</h4>
+                </div>
+
+                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                    <h4 class="text-xl font-bold text-black mb-2">Qualifications</h4>
                 </div>
             </div>
+
+            
 
             <!-- RIGHT COLUMN -->
             <div class="space-y-6">
@@ -419,6 +416,12 @@
                         <span
                             class="text-[#2563EB] border border-[#2563EB] text-sm font-semibold px-3 py-1 rounded-md">Empathy</span>
                     </div>
+                </div>
+
+                <!-- Job Positions -->
+                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                    <h4 class="text-lg  font-bold text-black mb-3">Job Positions</h4>
+                    <p class="text-left text-gray-800 font-semibold">No Job Position Input</p>
                 </div>
 
                 <!-- Job Program -->
@@ -656,12 +659,7 @@
             </div>
         </section>
     @else
-        <div class="max-w-5xl mx-auto mt-10 px-4">
-            <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded">
-                No job details found. Please select a job from <a href="{{ route('job.matches') }}"
-                    class="underline text-blue-600">Job Matches</a>.
-            </div>
-        </div>
+        
     @endif
 
     <!-- Ensure global Firebase config is present and require login for actions on this page -->
