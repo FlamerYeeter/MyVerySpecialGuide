@@ -604,7 +604,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
   }
 
   // Modal close logic
-  closeModalBtn.addEventListener('click', () => {
+  closeModalBtn.addEventListener('click', (e) => {
+    e.preventDefault();
     modal.classList.add('hidden');
     modalContent.innerHTML = '';
   });
@@ -882,7 +883,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     <!-- 🔹 Modal (Shared for both uploads) -->
     <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
     <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
-        <button id="closeModalBtn" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
+        <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
         <div id="modalContent" class="p-2 text-center"></div>
     </div>
     </div>
