@@ -403,11 +403,39 @@
                             const imgContainer = document.getElementById('review_workplace_choice_img_container');
                             const raw = readPossibleKeys(['workplace','preferred_workplace','workplace_choice','workplaceChoice','preferred_workplace_choice']);
                             if(!el) return;
-                            el.innerHTML = '<span class="text-gray-600">—</span>';
-                            if(!raw) { if(imgContainer) imgContainer.classList.add('hidden'); return; }
-                            let val = raw;
-                            try{ const parsed = JSON.parse(raw); if(Array.isArray(parsed)) val = parsed.join(', '); else if(typeof parsed === 'object') val = Object.values(parsed).join(', '); else val = String(parsed); }catch(e){ val = String(raw); }
-                            el.textContent = titleCase(val.replace(/^\[|\]$/g,''));
+                            el.innerHTML = '';
+                            if(!raw) {
+                                el.innerHTML = '<span class="text-gray-600">—</span>';
+                                if(imgContainer) imgContainer.classList.add('hidden');
+                                return;
+                            }
+
+                            // Normalize value to an array of labels
+                            let vals = [];
+                            try{
+                                const parsed = JSON.parse(raw);
+                                if (Array.isArray(parsed)) vals = parsed.map(v => String(v || '').trim()).filter(Boolean);
+                                else if (typeof parsed === 'object') vals = Object.values(parsed).map(v=>String(v||'').trim()).filter(Boolean);
+                                else vals = String(parsed || '').split(',').map(s=>s.trim()).filter(Boolean);
+                            }catch(e){
+                                // not JSON — treat as comma-separated or single string
+                                vals = String(raw || '').split(',').map(s=>s.trim()).filter(Boolean);
+                            }
+
+                            // If still empty, show dash
+                            if(!vals.length){
+                                el.innerHTML = '<span class="text-gray-600">—</span>';
+                            } else {
+                                // Create pill badges matching Type of Work style
+                                vals.forEach(v => {
+                                    const span = document.createElement('span');
+                                    span.className = 'bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm font-medium';
+                                    span.textContent = (String(v) || '').replace(/^\[|\]$/g,'');
+                                    el.appendChild(span);
+                                });
+                            }
+
+                            // image handling stays the same
                             const imgSrc = readPossibleKeys(['workplace_choice_img','workplace_image','review_workplace_choice_img_src']);
                             if(imgSrc && imgEl){ imgEl.src = imgSrc; imgContainer.classList.remove('hidden'); }
                             else if(imgContainer) imgContainer.classList.add('hidden');
