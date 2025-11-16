@@ -57,10 +57,11 @@
   </div>
 
   <!-- Stats Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+ <!-- Stats Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-6 justify-center place-items-center">
     
     <!-- Card 1 - IN PROGRESS -->
-    <div class="bg-white rounded-2xl shadow-lg p-6 text-center relative border-4 border-yellow-200 hover:scale-105 transition-transform duration-300">
+   {{--<div class="bg-white rounded-2xl shadow-lg p-6 text-center relative border-4 border-yellow-200 hover:scale-105 transition-transform duration-300">
       <button class="absolute top-3 right-3 text-yellow-500 hover:scale-110" title="Play narration">
         <img src="https://img.icons8.com/color/48/speaker.png" class="w-7 h-7" alt="Speaker Icon">
       </button>
@@ -70,36 +71,36 @@
       <h3 class="text-4xl font-extrabold text-yellow-500">-</h3>
       <p class="text-gray-700 font-semibold mt-1 text-lg">In Progress</p>
       <p class="text-sm text-gray-500 italic">(Kasalukuyang Ginagawa)</p>
-    </div>
+    </div>--}}
 
-    <!-- Card 2 - COMPLETED -->
-    <div class="bg-white rounded-2xl shadow-lg p-6 text-center relative border-4 border-green-200 hover:scale-105 transition-transform duration-300">
-      <button class="absolute top-3 right-3 text-green-500 hover:scale-110" title="Play narration">
-        <img src="https://img.icons8.com/color/48/speaker.png" class="w-7 h-7" alt="Speaker Icon">
-      </button>
-      <div class="flex justify-center mb-3">
-        <img src="{{ asset('image/completed.png') }}" alt="" class="h-12">
-      </div>
-      <h3 class="text-4xl font-extrabold text-green-600">-</h3>
-      <p class="text-gray-700 font-semibold mt-1 text-lg">Completed</p>
-      <p class="text-sm text-gray-500 italic">(Mga Natapos)</p>
+     <!-- Card 2 - COMPLETED -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 text-center relative border-4 border-green-200 hover:scale-105 transition-transform duration-300 w-full max-w-sm">
+    <button class="absolute top-3 right-3 text-green-500 hover:scale-110" title="Play narration">
+      <img src="https://img.icons8.com/color/48/speaker.png" class="w-7 h-7" alt="Speaker Icon">
+    </button>
+    <div class="flex justify-center mb-3">
+      <img src="{{ asset('image/completed.png') }}" alt="" class="h-12">
     </div>
+    <h3 class="text-4xl font-extrabold text-green-600">-</h3>
+    <p class="text-gray-700 font-semibold mt-1 text-lg">Completed</p>
+    <p class="text-sm text-gray-500 italic">(Mga Natapos)</p>
+  </div>
 
-    <!-- Card 3 - OVERALL PROGRESS -->
-    <div class="bg-white rounded-2xl shadow-lg p-6 text-center relative border-4 border-blue-200 hover:scale-105 transition-transform duration-300">
-      <button class="absolute top-3 right-3 text-blue-500 hover:scale-110" title="Play narration">
-        <img src="https://img.icons8.com/color/48/speaker.png" class="w-7 h-7" alt="Speaker Icon">
-      </button>
-      <div class="flex justify-center mb-3">
-        <img src="{{ asset('image/overall.png') }}" alt="" class="h-12">
-      </div>
-      <h3 class="text-4xl font-extrabold text-blue-600">-%</h3>
-      <p class="text-gray-700 font-semibold mt-1 text-lg">Overall Progress</p>
-      <p class="text-sm text-gray-500 italic">(Kabuuang Progreso)</p>
+  <!-- Card 3 - OVERALL PROGRESS -->
+  <div class="bg-white rounded-2xl shadow-lg p-6 text-center relative border-4 border-blue-200 hover:scale-105 transition-transform duration-300 w-full max-w-sm">
+    <button class="absolute top-3 right-3 text-blue-500 hover:scale-110" title="Play narration">
+      <img src="https://img.icons8.com/color/48/speaker.png" class="w-7 h-7" alt="Speaker Icon">
+    </button>
+    <div class="flex justify-center mb-3">
+      <img src="{{ asset('image/overall.png') }}" alt="" class="h-12">
     </div>
+    <h3 class="text-4xl font-extrabold text-blue-600">-%</h3>
+    <p class="text-gray-700 font-semibold mt-1 text-lg">Overall Progress</p>
+    <p class="text-sm text-gray-500 italic">(Kabuuang Progreso)</p>
+  </div>
+
 </div>
 </section>
-
 <!-- PENDING ASSESSMENT SECTION -->
 <section class="bg-[#F0F9FF] py-12 px-6 sm:px-12 lg:px-20 mt-16">
   <!-- Header -->
@@ -107,20 +108,80 @@
     <img src="https://img.icons8.com/color/96/test-passed.png" alt="Pending Icon" class="w-20 h-20 animate-bounce-slow">
     <div>
       <h2 class="text-4xl font-extrabold text-[#1E40AF] drop-shadow-md">
-        Pending Job Readiness Assessment
+        Pending Job Training Assessment
       </h2>
       <p class="text-lg text-gray-700 mt-2 font-medium">
-        A licensed therapist will review your request and contact you shortly to schedule your assessment.
-      </p>
+        A company will process your assessment.
     </div>
   </div>
 
   <!-- Job Card -->
   <div
       class="relative bg-white border-2 border-blue-200 rounded-3xl shadow-lg p-10 mb-10 transition-transform hover:scale-[1.02]">
+     <h2 class="text-lg font-semibold mb-10">Assessment Progress</h2>
 
+    <div class="flex items-center justify-around w-full">
+        <!-- In Progress -->
+        <div class="flex flex-col items-center">
+            <div class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-green-500">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                     class="h-6 w-6 text-green-500" fill="none" 
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <p class="mt-2 text-green-600 font-medium">In Progress</p>
+            <p class="text-sm text-gray-600">Aug 25</p>
+        </div>
+
+        <!-- Under Review -->
+        <div class="flex flex-col items-center opacity-50">
+            <div class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                     class="h-6 w-6 text-gray-400" fill="none" 
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <p class="mt-2 text-gray-600">Under-review</p>
+        </div>
+
+        <!-- Job Ready -->
+        <div class="flex flex-col items-center opacity-50">
+            <div class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                     class="h-6 w-6 text-gray-400" fill="none" 
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <p class="mt-2 text-gray-600">Job Ready</p>
+        </div>
+
+        <!-- Decision -->
+        <div class="flex flex-col items-center opacity-50">
+            <div class="w-10 h-10 flex items-center justify-center rounded-full border-2 border-gray-300">
+                <svg xmlns="http://www.w3.org/2000/svg" 
+                     class="h-6 w-6 text-gray-400" fill="none" 
+                     viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <p class="mt-2 text-gray-600">Decision</p>
+        </div>
+    </div>
+
+    <!-- Status + Time -->
+    <div class="flex items-center justify-between mt-10">
+        <p class="text-gray-600 text-sm">Last update: 2 hours ago</p>
+    </div>
+</div>
       <!-- Top Section -->
-      <div class="flex flex-col lg:flex-row justify-between items-start gap-8">
+      {{--<div class="flex flex-col lg:flex-row justify-between items-start gap-8">
           <!-- Company Info -->
           <div class="flex items-start gap-6">
               <!-- Company Logo + Flag -->
@@ -216,7 +277,7 @@
           </button>
       </div>
   </div>
-</section>
+</section>--}}
 
 
 
