@@ -228,7 +228,7 @@
 
 <!-- Require sign-in on My Job Applications page -->
 {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-<script type="module">
+{{-- <script type="module">
   (async function(){
     try {
       const mod = await import("{{ asset('js/job-application-firebase.js') }}");
@@ -246,4 +246,4 @@
       console.error('Auth guard failed on my-job-applications', err);
     }
   })();
-</script>
+</script> --}}
