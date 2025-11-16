@@ -141,7 +141,7 @@
     </div>
 
   {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-    <script type="module">
+    {{-- <script type="module">
   import { signInWithServerToken } from "{{ asset('js/job-application-firebase.js') }}";
   (function(){
     // Guard + init for review2: require signed-in user
@@ -215,7 +215,7 @@
     }
     guardAndInit();
   })();
-</script>
+</script> --}}
   </section>
 
 </div>

@@ -1275,12 +1275,12 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
             <div class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
                 <!-- Simplified client-side recommendation container -->
-                <div id="jobs-container" class="bg-white p-6 rounded-xl text-center text-gray-600">
+                {{-- <div id="jobs-container" class="bg-white p-6 rounded-xl text-center text-gray-600">
                     <p id="reco-info" class="mb-3">Personalized job recommendations will appear here.</p>
                     <p class="text-sm mb-4">This page is now simplified to render recommendations client-side.</p>
                     <button id="btn-generate-recs" class="bg-blue-500 text-white px-4 py-2 rounded">Generate recommendations now</button>
                     <p id="btn-generate-status" class="text-xs text-gray-600 mt-2"></p>
-                </div>
+                </div> --}}
 
                 <!-- Auto-fetch Oracle-backed recommendations (debug route uid=7) -->
                 <script>
@@ -1517,223 +1517,222 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 </script>
             </div>
         </div>
-        <!-- Ensure user is signed-in before taking actions like Apply or Save -->
-    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-        <script>
-            // Development convenience: disable login requirement so auto-trigger runs for all visitors.
-            // WARNING: This treats every visitor as authenticated for recommendation generation on this page.
-            // Revert to the @@auth directive for production.
-            window.__SERVER_AUTH = true;
-        </script>
-        <script>
-            // Firebase removed: provide a minimal stub so legacy client code still runs without errors.
-            // The project now uses the Oracle-backed server endpoints for recommendation generation.
-            async function importFirebaseModuleStub() {
-                return {
-                    signInWithServerToken: async function() { /* no-op */ },
-                    isSignedIn: async function(timeout) { return !!window.__SERVER_AUTH; },
-                    debugAuthLogging: function() { return function() {}; },
-                    ensureInit: async function() { /* no-op */ },
-                    getUserProfile: async function() { return null; }
-                };
-            }
-        </script>
-        <script type="module">
-            (async function() {
-                try {
-                    // Firebase removed: use stub instead of importing the old module.
-                    const mod = await importFirebaseModuleStub();
-                    // client-logger is optional; avoid importing to keep page lightweight in Oracle-only mode
-                    const logger = {
-                        sendClientLog: function() {}
-                    };
-                    // Attempt server-backed sign-in (makes Firebase ID token available to the page)
-                    try {
-                        // firebase.token removed
-                    } catch (e) {
-                        console.debug('job-matches signInWithServerToken failed', e);
-                        try {
-                            logger.sendClientLog('debug', 'job-matches signInWithServerToken failed', {
-                                error: String(e)
-                            });
-                        } catch (_) {}
-                    }
-                    const signed = await mod.isSignedIn(7000);
-                    console.debug('job-matches auth guard: isSignedIn ->', signed);
-                    if (!signed) {
-                        if (window.__SERVER_AUTH) {
-                            console.info('job-matches: server session present, not redirecting');
-                            try {
-                                logger.sendClientLog('info', 'job-matches auth guard: server session present', {});
-                            } catch (_) {}
-                            return;
-                        }
-                        const current = window.location.pathname + window.location.search;
-                        try {
-                            logger.sendClientLog('info', 'job-matches auth guard: redirecting to login', {
-                                redirect: current
-                            });
-                        } catch (_) {}
-                        window.location.href = 'login?redirect=' + encodeURIComponent(current);
-                        return;
-                    }
-                } catch (err) {
-                    console.error('job-matches auth guard failed', err);
-                    try {
-                        (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error',
-                            'job-matches auth guard failed', {
-                                error: String(err)
-                            });
-                    } catch (_) {}
-                }
-            })();
+        // <!-- Ensure user is signed-in before taking actions like Apply or Save -->
+        // <script>
+        //     // Development convenience: disable login requirement so auto-trigger runs for all visitors.
+        //     // WARNING: This treats every visitor as authenticated for recommendation generation on this page.
+        //     // Revert to the @@auth directive for production.
+        //     window.__SERVER_AUTH = true;
+        // </script>
+        // <script>
+        //     // Firebase removed: provide a minimal stub so legacy client code still runs without errors.
+        //     // The project now uses the Oracle-backed server endpoints for recommendation generation.
+        //     async function importFirebaseModuleStub() {
+        //         return {
+        //             signInWithServerToken: async function() { /* no-op */ },
+        //             isSignedIn: async function(timeout) { return !!window.__SERVER_AUTH; },
+        //             debugAuthLogging: function() { return function() {}; },
+        //             ensureInit: async function() { /* no-op */ },
+        //             getUserProfile: async function() { return null; }
+        //         };
+        //     }
+        // </script>
+        // <script type="module">
+        //     (async function() {
+        //         try {
+        //             // Firebase removed: use stub instead of importing the old module.
+        //             const mod = await importFirebaseModuleStub();
+        //             // client-logger is optional; avoid importing to keep page lightweight in Oracle-only mode
+        //             const logger = {
+        //                 sendClientLog: function() {}
+        //             };
+        //             // Attempt server-backed sign-in (makes Firebase ID token available to the page)
+        //             try {
+        //                 // firebase.token removed
+        //             } catch (e) {
+        //                 console.debug('job-matches signInWithServerToken failed', e);
+        //                 try {
+        //                     logger.sendClientLog('debug', 'job-matches signInWithServerToken failed', {
+        //                         error: String(e)
+        //                     });
+        //                 } catch (_) {}
+        //             }
+        //             const signed = await mod.isSignedIn(7000);
+        //             console.debug('job-matches auth guard: isSignedIn ->', signed);
+        //             if (!signed) {
+        //                 if (window.__SERVER_AUTH) {
+        //                     console.info('job-matches: server session present, not redirecting');
+        //                     try {
+        //                         logger.sendClientLog('info', 'job-matches auth guard: server session present', {});
+        //                     } catch (_) {}
+        //                     return;
+        //                 }
+        //                 const current = window.location.pathname + window.location.search;
+        //                 try {
+        //                     logger.sendClientLog('info', 'job-matches auth guard: redirecting to login', {
+        //                         redirect: current
+        //                     });
+        //                 } catch (_) {}
+        //                 window.location.href = 'login?redirect=' + encodeURIComponent(current);
+        //                 return;
+        //             }
+        //         } catch (err) {
+        //             console.error('job-matches auth guard failed', err);
+        //             try {
+        //                 (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error',
+        //                     'job-matches auth guard failed', {
+        //                         error: String(err)
+        //                     });
+        //             } catch (_) {}
+        //         }
+        //     })();
 
-            // If server-side session exists but client Firebase profile is not present,
-            // trigger the recommendations generator on the server so users who are
-            // authenticated via backend still get per-user recs on page load.
-            (async function() {
-                try {
-                    if (!window.__SERVER_AUTH) return; // only when server session present
-                    // don't spam: set a short guard in sessionStorage per-page-load
-                    const key = 'reco_auto_trigger_' + window.location.pathname;
-                    if (sessionStorage.getItem(key)) return;
-                    sessionStorage.setItem(key, '1');
-                    window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {
-                        events: []
-                    };
-                    window.__HYBRID_RECO_DEBUG.events.push({
-                        when: Date.now(),
-                        ev: 'auto_trigger_via_server_session'
-                    });
-                    const resp = await fetch('{{ url('/api/recommendations/user') }}', {
-                        method: 'POST',
-                        credentials: 'same-origin',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                        },
-                        // request a forced synchronous generation when possible (dev-friendly)
-                        body: JSON.stringify({
-                            force: true
-                        })
-                    });
-                    window.__HYBRID_RECO_DEBUG.events.push({
-                        when: Date.now(),
-                        ev: 'auto_trigger_response',
-                        status: resp.status
-                    });
+        //     // If server-side session exists but client Firebase profile is not present,
+        //     // trigger the recommendations generator on the server so users who are
+        //     // authenticated via backend still get per-user recs on page load.
+        //     (async function() {
+        //         try {
+        //             if (!window.__SERVER_AUTH) return; // only when server session present
+        //             // don't spam: set a short guard in sessionStorage per-page-load
+        //             const key = 'reco_auto_trigger_' + window.location.pathname;
+        //             if (sessionStorage.getItem(key)) return;
+        //             sessionStorage.setItem(key, '1');
+        //             window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {
+        //                 events: []
+        //             };
+        //             window.__HYBRID_RECO_DEBUG.events.push({
+        //                 when: Date.now(),
+        //                 ev: 'auto_trigger_via_server_session'
+        //             });
+        //             const resp = await fetch('{{ url('/api/recommendations/user') }}', {
+        //                 method: 'POST',
+        //                 credentials: 'same-origin',
+        //                 headers: {
+        //                     'Content-Type': 'application/json',
+        //                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        //                 },
+        //                 // request a forced synchronous generation when possible (dev-friendly)
+        //                 body: JSON.stringify({
+        //                     force: true
+        //                 })
+        //             });
+        //             window.__HYBRID_RECO_DEBUG.events.push({
+        //                 when: Date.now(),
+        //                 ev: 'auto_trigger_response',
+        //                 status: resp.status
+        //             });
 
-                    // If a synchronous result was returned, try to render it in-place
-                    if (resp.ok) {
-                        const data = await resp.json().catch(() => null);
-                        const normalize = (d) => {
-                            if (!d) return [];
-                            if (Array.isArray(d)) return d;
-                            if (typeof d === 'object') {
-                                const vals = Object.values(d);
-                                const arrVal = vals.find(v => Array.isArray(v));
-                                if (arrVal) return arrVal;
-                                const keys = Object.keys(d || {});
-                                if (keys.length > 0 && Array.isArray(d[keys[0]])) return d[keys[0]];
-                            }
-                            return [];
-                        };
-                        const recs = normalize(data);
-                        if (recs && recs.length > 0) {
-                            // reuse the same rendering logic as the manual generator
-                            const esc = s => {
-                                if (s === null || s === undefined) return '';
-                                return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-                            };
-                            const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
-                            if (container) {
-                                let out = '';
-                                recs.slice(0, 50).forEach((r2, idx) => {
-                                    const jid = String(r2.job_id ?? ('p' + idx));
-                                    const title = esc(r2.Title || r2.title || r2.job_title || (r2.job_description || '').substring(0, 80) || 'Untitled Job');
-                                    const company = esc(r2.Company || r2.company || r2.company_name || '');
-                                    let rawMatchVal = Number(r2.hybrid_score ?? r2.content_score ?? r2.match_score ?? 0) || 0;
-                                    let matchPercent = 0;
-                                    if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math.round(rawMatchVal * 100);
-                                    else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent = Math.round(rawMatchVal * 20);
-                                    else matchPercent = Math.round(rawMatchVal);
-                                    const why = esc((r2.job_description || r2.description || '').substring(0, 400));
-                                    const industry = esc(r2.industry || '');
-                                    const workEnv = esc(r2.work_environment || '');
-                                    const fit = esc(r2.fit_level || '');
-                                    const growth = esc(r2.growth_potential || '');
-                                    const salary = esc(r2.salary ?? '-');
-                                    const deadline = esc(r2.deadline ?? '');
-                                    out += `
-                                        <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${esc(r2.location || '')}" data-fit-level="${fit}" data-content-score="${esc(String(r2.content_score ?? r2.computed_score ?? 0))}" data-raw-match="${esc(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
-                                            <div class="flex-1 pr-6">
-                                                <h3 class="text-lg font-bold">${title}</h3>
-                                                <div class="mt-2"><span class="js-match-badge bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${matchPercent}% Match <small class="text-xs text-gray-500">(raw: ${esc(String(rawMatchVal))})</small></span></div>
-                                                ${ company ? `<p class="text-sm text-gray-700 font-medium">${company}</p>` : '' }
-                                                <p class="text-gray-600 mt-2 text-sm">${why}</p>
-                                                <div class="flex gap-2 text-xs mt-2">
-                                                    ${ industry ? `<span class="bg-gray-100 px-2 py-1 rounded">${industry}</span>` : '' }
-                                                    ${ workEnv ? `<span class="bg-gray-100 px-2 py-1 rounded">${workEnv}</span>` : '' }
-                                                </div>
-                                                <div class="flex gap-2 mt-2">
-                                                    ${ fit ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">${fit}</span>` : '' }
-                                                    ${ growth ? `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">${growth}</span>` : '' }
-                                                </div>
-                                                <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: ${jid}</span>
-                                                <p class="text-xs text-gray-400 mt-1">Salary: ${salary} ${ deadline ? '• Deadline: ' + deadline : '' }</p>
-                                            </div>
-                                            <div class="flex items-center gap-3 mt-4 md:mt-0">
-                                                <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
-                                                <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
-                                                    <input type="hidden" name="job_id" value="${jid}">
-                                                    <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    `;
-                                });
-                                container.innerHTML = out;
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.debug('auto server-side reco trigger failed', e);
-                }
-            })();
-            @if (app()->environment('local') || request()->getHost() === 'localhost')
-                // In local environment, also trigger a bulk generation for all users so per-UID caches are created.
-                (async function() {
-                    try {
-                        // Run bulk generation (restricted to local by server route). Do not block UI.
-                        fetch('{{ url('/api/recommendations/all') }}', {
-                            method: 'POST',
-                            credentials: 'same-origin',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({})
-                        }).then(async r => {
-                            // Protect client from HTML error pages or redirects which are not JSON.
-                            const ct = r.headers.get('content-type') || '';
-                            const txt = await r.text().catch(() => null);
-                            if (ct.indexOf('application/json') !== -1) {
-                                try {
-                                    const j = JSON.parse(txt);
-                                    console.debug('bulk reco all triggered', j);
-                                } catch (e) {
-                                    console.debug('bulk reco all returned invalid json', e, txt && txt.substring ? txt.substring(0,300) : txt);
-                                }
-                            } else {
-                                console.debug('bulk reco all returned non-json response; skipping', ct, txt && txt.substring ? txt.substring(0,300) : txt);
-                            }
-                        }).catch(e => console.debug('bulk reco all failed', e));
-                    } catch (e) {
-                        console.debug('bulk reco all start failed', e);
-                    }
-                })();
-            @endif
-        </script>
+        //             // If a synchronous result was returned, try to render it in-place
+        //             if (resp.ok) {
+        //                 const data = await resp.json().catch(() => null);
+        //                 const normalize = (d) => {
+        //                     if (!d) return [];
+        //                     if (Array.isArray(d)) return d;
+        //                     if (typeof d === 'object') {
+        //                         const vals = Object.values(d);
+        //                         const arrVal = vals.find(v => Array.isArray(v));
+        //                         if (arrVal) return arrVal;
+        //                         const keys = Object.keys(d || {});
+        //                         if (keys.length > 0 && Array.isArray(d[keys[0]])) return d[keys[0]];
+        //                     }
+        //                     return [];
+        //                 };
+        //                 const recs = normalize(data);
+        //                 if (recs && recs.length > 0) {
+        //                     // reuse the same rendering logic as the manual generator
+        //                     const esc = s => {
+        //                         if (s === null || s === undefined) return '';
+        //                         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        //                     };
+        //                     const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
+        //                     if (container) {
+        //                         let out = '';
+        //                         recs.slice(0, 50).forEach((r2, idx) => {
+        //                             const jid = String(r2.job_id ?? ('p' + idx));
+        //                             const title = esc(r2.Title || r2.title || r2.job_title || (r2.job_description || '').substring(0, 80) || 'Untitled Job');
+        //                             const company = esc(r2.Company || r2.company || r2.company_name || '');
+        //                             let rawMatchVal = Number(r2.hybrid_score ?? r2.content_score ?? r2.match_score ?? 0) || 0;
+        //                             let matchPercent = 0;
+        //                             if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math.round(rawMatchVal * 100);
+        //                             else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent = Math.round(rawMatchVal * 20);
+        //                             else matchPercent = Math.round(rawMatchVal);
+        //                             const why = esc((r2.job_description || r2.description || '').substring(0, 400));
+        //                             const industry = esc(r2.industry || '');
+        //                             const workEnv = esc(r2.work_environment || '');
+        //                             const fit = esc(r2.fit_level || '');
+        //                             const growth = esc(r2.growth_potential || '');
+        //                             const salary = esc(r2.salary ?? '-');
+        //                             const deadline = esc(r2.deadline ?? '');
+        //                             out += `
+        //                                 <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${esc(r2.location || '')}" data-fit-level="${fit}" data-content-score="${esc(String(r2.content_score ?? r2.computed_score ?? 0))}" data-raw-match="${esc(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
+        //                                     <div class="flex-1 pr-6">
+        //                                         <h3 class="text-lg font-bold">${title}</h3>
+        //                                         <div class="mt-2"><span class="js-match-badge bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${matchPercent}% Match <small class="text-xs text-gray-500">(raw: ${esc(String(rawMatchVal))})</small></span></div>
+        //                                         ${ company ? `<p class="text-sm text-gray-700 font-medium">${company}</p>` : '' }
+        //                                         <p class="text-gray-600 mt-2 text-sm">${why}</p>
+        //                                         <div class="flex gap-2 text-xs mt-2">
+        //                                             ${ industry ? `<span class="bg-gray-100 px-2 py-1 rounded">${industry}</span>` : '' }
+        //                                             ${ workEnv ? `<span class="bg-gray-100 px-2 py-1 rounded">${workEnv}</span>` : '' }
+        //                                         </div>
+        //                                         <div class="flex gap-2 mt-2">
+        //                                             ${ fit ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">${fit}</span>` : '' }
+        //                                             ${ growth ? `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">${growth}</span>` : '' }
+        //                                         </div>
+        //                                         <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: ${jid}</span>
+        //                                         <p class="text-xs text-gray-400 mt-1">Salary: ${salary} ${ deadline ? '• Deadline: ' + deadline : '' }</p>
+        //                                     </div>
+        //                                     <div class="flex items-center gap-3 mt-4 md:mt-0">
+        //                                         <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
+        //                                         <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
+        //                                             <input type="hidden" name="_token" value="{{ csrf_token() }}">
+        //                                             <input type="hidden" name="job_id" value="${jid}">
+        //                                             <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
+        //                                         </form>
+        //                                     </div>
+        //                                 </div>
+        //                             `;
+        //                         });
+        //                         container.innerHTML = out;
+        //                     }
+        //                 }
+        //             }
+        //         } catch (e) {
+        //             console.debug('auto server-side reco trigger failed', e);
+        //         }
+        //     })();
+        //     @if (app()->environment('local') || request()->getHost() === 'localhost')
+        //         // In local environment, also trigger a bulk generation for all users so per-UID caches are created.
+        //         (async function() {
+        //             try {
+        //                 // Run bulk generation (restricted to local by server route). Do not block UI.
+        //                 fetch('{{ url('/api/recommendations/all') }}', {
+        //                     method: 'POST',
+        //                     credentials: 'same-origin',
+        //                     headers: {
+        //                         'Content-Type': 'application/json'
+        //                     },
+        //                     body: JSON.stringify({})
+        //                 }).then(async r => {
+        //                     // Protect client from HTML error pages or redirects which are not JSON.
+        //                     const ct = r.headers.get('content-type') || '';
+        //                     const txt = await r.text().catch(() => null);
+        //                     if (ct.indexOf('application/json') !== -1) {
+        //                         try {
+        //                             const j = JSON.parse(txt);
+        //                             console.debug('bulk reco all triggered', j);
+        //                         } catch (e) {
+        //                             console.debug('bulk reco all returned invalid json', e, txt && txt.substring ? txt.substring(0,300) : txt);
+        //                         }
+        //                     } else {
+        //                         console.debug('bulk reco all returned non-json response; skipping', ct, txt && txt.substring ? txt.substring(0,300) : txt);
+        //                     }
+        //                 }).catch(e => console.debug('bulk reco all failed', e));
+        //             } catch (e) {
+        //                 console.debug('bulk reco all start failed', e);
+        //             }
+        //         })();
+        //     @endif
+        // </script>
         // <script>
         //     // Hook up the "Generate recommendations now" button to call the debug/oracle-recs endpoint
         //     // and render results immediately (synchronous fetch + in-place rendering).

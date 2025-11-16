@@ -200,7 +200,7 @@ document.getElementById('jobApplicationForm2').addEventListener('submit', functi
 
 <!-- Autofill education/skills from Firestore user profile -->
 {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-<script type="module">
+{{-- <script type="module">
 import { getUserProfile, isSignedIn, signInWithServerToken } from "{{ asset('js/job-application-firebase.js') }}";
 
 @auth
@@ -253,4 +253,4 @@ async function autofillEducation() {
     document.addEventListener('DOMContentLoaded', autofillEducation);
   }
 })();
-</script>
+</script> --}}

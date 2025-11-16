@@ -150,7 +150,7 @@
 
 <!-- Ensure Firebase config + auth guard for navigation page -->
 {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-<script>
+{{-- <script>
     @auth
     window.__SERVER_AUTH = true;
     @else
@@ -216,4 +216,4 @@
             } catch (_) {}
         }
     })();
-</script>
+</script> --}}

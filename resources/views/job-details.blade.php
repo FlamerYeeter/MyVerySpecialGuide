@@ -673,7 +673,7 @@
             window.__SERVER_AUTH = false;
         @endauth
     </script>
-    <script type="module">
+    {{-- <script type="module">
         (async function() {
             try {
                 const mod = await import("{{ asset('js/job-application-firebase.js') }}");
@@ -695,5 +695,5 @@
                 console.error('Auth guard failed on job details', err);
             }
         })();
-    </script>
+    </script> --}}
 @endsection

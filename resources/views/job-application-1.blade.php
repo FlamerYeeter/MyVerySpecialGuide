@@ -578,7 +578,7 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
 
         <!-- Ensure global Firebase config is present and autofill profile for signed-in users -->
   {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-        <script type="module">
+        {{-- <script type="module">
             import {
                 getUserProfile,
                 isSignedIn
@@ -607,11 +607,11 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
                     console.warn('autofill/profile init failed', err);
                 }
             })();
-        </script>
+        </script> --}}
 
         <!-- Ensure global Firebase config is present and autofill profile for logged-in users -->
   {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-        <script type="module">
+        {{-- <script type="module">
             import {
                 getUserProfile,
                 isSignedIn
@@ -660,5 +660,5 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
                     document.addEventListener('DOMContentLoaded', autofillProfile);
                 }
             })();
-        </script>
+        </script> --}}
     @endsection

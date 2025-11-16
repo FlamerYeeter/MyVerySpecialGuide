@@ -200,7 +200,7 @@
 
 
     {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-        <script type="module">
+        {{-- <script type="module">
             import {
                 signInWithServerToken
             } from "{{ asset('js/job-application-firebase.js') }}";
@@ -283,7 +283,7 @@
                 }
                 guardAndInit();
             })();
-        </script>
+        </script> --}}
     </section>
 
     </div>
