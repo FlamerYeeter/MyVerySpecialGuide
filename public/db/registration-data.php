@@ -37,7 +37,8 @@ $is_graduate       = $data['review_certs'] ?? null;
 $license_type      = $data['selected_work_year'] ?? null;
 $status            = $data['workplace'] ?? null;
 $proof = saveBase64File($data['uploadedProofData0'] ?? '');
-$certs = saveBase64File($data['uploadedProofData1'] ?? '');
+$medcerts = saveBase64File($data['uploadedProofData1'] ?? '');
+$certs = saveBase64File($data['uploadedProofData2'] ?? '');
 
 // Personal
 $firstName   = $user_info['firstName'] ?? null;
@@ -155,12 +156,10 @@ if ($allGood) {
     $work_type        = json_decode($data['selected_work_experience'] ?? '[]', true);
     $skills1_selected = json_decode($data['skills1_selected'] ?? '[]', true);
     $job_category     = json_decode($data['jobPreferences'] ?? '[]', true);
-    $support          = json_decode($data['support'] ?? '[]', true);
 
     foreach ($work_type as $v) insertGuardianDetail($conn, $user_guardian_id, 'work_experience', $v);
     foreach ($skills1_selected as $v) insertGuardianDetail($conn, $user_guardian_id, 'skills', $v);
     foreach ($job_category as $v) insertGuardianDetail($conn, $user_guardian_id, 'job_category', $v);
-    foreach ($support as $v) insertGuardianDetail($conn, $user_guardian_id, 'support', $v);
 }
 
 // ——— FINAL COMMIT OR ROLLBACK ———
