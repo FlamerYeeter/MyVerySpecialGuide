@@ -58,14 +58,14 @@
 
             <!-- Instruction Box -->
             <div class="bg-white rounded-3xl p-5 sm:p-7 md:p-8 border-4 border-blue-300 shadow-lg text-left">
-                <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex flex-wrap items-center gap-x-3">
+             <!--    <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex flex-wrap items-center gap-x-3">
                     For Admin Approval
-                    <span class="text-gray-600 italic text-sm sm:text-base">(Pahintulot sa Admin)</span>
+                    <span class="text-gray-600 italic text-sm sm:text-base">(Pahintulot sa Admin)</span> 
                     <button type="button" class="text-xl hover:scale-110 transition-transform tts-btn"
                         data-tts-en="For Admin Approval. Please type your information inside the box. The fields marked with a star must be filled in and attach a valid proof of membership."
                         data-tts-tl="Pahintulot sa Admin. Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may bituin ay dapat sagutan at mag-upload ng patunay na miyembro."
                         aria-label="Play audio for admin instruction">🔊</button>
-                </h2>
+                </h2> -->
                 <p class="text-gray-800 text-sm sm:text-base mt-2">
                     Please type your information inside the box. The text with a ⭐ star must be filled in.
                 </p>
@@ -99,15 +99,15 @@
                 <!-- Text Content -->
                 <div class="flex-1">
                     <p class="font-semibold text-sm sm:text-base leading-relaxed text-blue-800">
-                        Please fill out all the required information below accurately. The details you provide help our
-                        administrators verify your account, confirm your eligibility, and ensure proper communication
-                        during the approval process.
+                     Please fill out all the required information below completely and accurately.
+                     The details you provide will help us create your account, confirm your identity, 
+                     and ensure we can contact you if we need additional information. Providing correct information 
+                     will help you finish your registration smoothly and avoid delays.
                     </p>
                     <p class="italic text-gray-600 text-xs sm:text-sm mt-2 leading-relaxed">
-                        (Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng
-                        iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account,
-                        kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso
-                        ng pag-apruba.)
+                        (Pakisagutan nang kumpleto at tama ang impormasyon sa ibaba. Kailangan namin ito para magawa ang iyong
+                         account, makilala ka, at makontak ka kung kailangan pa namin ng ibang detalye. Ang tamang impormasyon 
+                         ay makakatulong para maging mabilis at maayos ang inyong registration at maiwasan ang anumang delay.)
                     </p>
                 </div>
             </div>
@@ -401,7 +401,7 @@
 <div class="mt-8 text-left px-2 sm:px-4">
   <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
     Proof of Membership 
-    <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Optional)</p>
+    <p class="text-gray-600 italic text-sm sm:text-base">(Optional)</p>
     <button 
       type="button" 
       class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
@@ -444,7 +444,7 @@
 <div class="mt-8 text-left px-2 sm:px-4">
   <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
     Please upload your medical certificate.
-    <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Optional)</p>
+    <p class="text-gray-600 italic text-sm sm:text-base">(Optional)</p>
     <button 
       type="button" 
       class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
@@ -453,10 +453,16 @@
     >🔊</button>
   </label>
 
-  <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Paki-upload ang iyong medical certificate.)</p>
+   <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
+    If you already have a medical certificate from a previous job fit or readiness assessment, you may upload it. If you do not have one, that is okay—this is optional.
+  </p>
+
+   <p class="text-gray-600 italic text-sm sm:text-base mb-2">
+    (Kung mayroon ka nang medical certificate mula sa nakaraang assessment para sa job fit o readiness, puwede mo itong i-upload. Kung wala ka pa, ayos lang, optional lamang ito.)
+  </p>
 
   <!-- Upload Section -->
-  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
     <div class="flex-1">
       <p class="font-medium text-gray-800 text-sm sm:text-base">
         <span id="medLabel" class="flex items-center gap-2">

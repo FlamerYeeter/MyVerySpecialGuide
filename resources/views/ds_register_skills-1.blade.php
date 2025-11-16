@@ -141,83 +141,97 @@
 
                 <!-- Card 1 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
-                    data-value="Good at talking to people"
-                    onclick="toggleSkills1Choice(this,'Good at talking to people')">
+                    data-value="Following Instructions"
+                    onclick="toggleSkills1Choice(this,'Following Instructions')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Good at talking to people" data-tts-tl="Magaling makipag-usap sa tao" aria-label="Play audio for Good at talking to people">🔊</button>
-                    <img src="image/skill1.png" alt="talking to people" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Good at talking to people</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center">(Magaling makipag-usap sa tao)</p>
+                        data-tts-en="Following Instructions:I can follow easy steps one at a time." 
+                        data-tts-tl="Kaya kong sundin ang simple, step-by-step na utos" aria-label="Play audio for Good at talking to people">🔊</button>
+                    <img src="image/skill1.png" alt="following instructions" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Following Instructions</h3>
+                    <p class="text-[13px] text-black-600 text-center mt-2">I can follow easy steps one at a time.</p>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong sundin ang simple, step-by-step na utos)</p>
                 </div>
 
                 <!-- Card 2 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
-                    data-value="Using Computer" onclick="toggleSkills1Choice(this,'Using Computer')">
+                    data-value="Communication Skills" onclick="toggleSkills1Choice(this,'Communication Skills')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Using Computer" data-tts-tl="Paggamit ng computer" aria-label="Play audio for Using Computer">🔊</button>
-                    <img src="image/skill2.png" alt="using computer" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Using Computer</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center">(Paggamit ng computer)</p>
+                        data-tts-en="Communication Skills: I can greet people, talk in a simple way, and answer Yes or No." 
+                        data-tts-tl="Kaya kong bumati (“Hello/Good morning”), makipag-usap nang simple, at sumagot ng Yes/No" aria-label="Play audio for Using Computer">🔊</button>
+                    <img src="image/skill2.png" alt="communication skills" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Communication Skills</h3>
+                    <p class="text-[13px] text-black-600 text-center mt-2">I can greet people, talk in a simple way, and answer Yes or No.</p>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong bumati (“Hello/Good morning”), makipag-usap nang simple, at sumagot ng Yes/No)</p>
                 </div>
 
                 <!-- Card 3 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
-                    data-value="Organizing things" onclick="toggleSkills1Choice(this,'Organizing things')">
+                    data-value="Social Interaction" onclick="toggleSkills1Choice(this,'Social Interaction')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Organizing things" data-tts-tl="Pag-ayos ng mga bagay" aria-label="Play audio for Organizing things">🔊</button>
-                    <img src="image/skill3.png" alt="organize" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Organizing things</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center">(Pag-ayos ng mga bagay)</p>
+                        data-tts-en="Social Interaction: I can be polite, friendly, and talk nicely to other people." 
+                        data-tts-tl="Ako ay magalang, friendly, at kaya kong makipag-usap sa ibang tao o customers" aria-label="Play audio for Organizing things">🔊</button>
+                    <img src="image/skill3.png" alt="social interaction" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Social Interaction</h3>
+                    <p class="text-[13px] text-black-600 text-center mt-2">I can be polite, friendly, and talk nicely to other people.</p>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Ako ay magalang, friendly, at kaya kong makipag-usap sa ibang tao o customers)</p>
                 </div>
 
                 <!-- Card 4 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
-                    data-value="Working with others" onclick="toggleSkills1Choice(this,'Working with others')">
+                    data-value="Physical Ability" onclick="toggleSkills1Choice(this,'Physical Ability')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Working with others" data-tts-tl="Pakikipagtulungan sa iba" aria-label="Play audio for Working with others">🔊</button>
-                    <img src="image/skill4.png" alt="work with others" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Working with others</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center">(Pakikipagtulungan sa iba)</p>
+                        data-tts-en="Physical Ability: I can stand, walk, and carry light things." 
+                        data-tts-tl="Kaya kong tumayo, maglakad, at magbuhat ng magagaan na gamit" aria-label="Play audio for Working with others">🔊</button>
+                    <img src="image/skill4.png" alt="physical ability" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Physical Ability</h3>
+                    <p class="text-[13px] text-black-600 text-center mt-2">I can stand, walk, and carry light things.</p>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong tumayo, maglakad, at magbuhat ng magagaan na gamit)</p>
                 </div>
 
                 <!-- Card 5 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
-                    data-value="Art and creativity" onclick="toggleSkills1Choice(this,'Art and creativity')">
+                    data-value="Attention to Task" onclick="toggleSkills1Choice(this,'Attention to Task')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Art and creativity" data-tts-tl="Sining at pagiging malikhain" aria-label="Play audio for Art and creativity">🔊</button>
-                    <img src="image/skill5.png" alt="creativity" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Art and creativity</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center">(Sining at pagiging malikhain)</p>
+                        data-tts-en="Attention to Task: I can stay focused and finish my task." 
+                        data-tts-tl="Kaya kong mag-focus at tapusin ang trabaho nang tuloy-tuloy" aria-label="Play audio for Art and creativity">🔊</button>
+                    <img src="image/skill5.png" alt="attention to task" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Attention to Task</h3>
+                    <p class="text-[13px] text-black-600 text-center mt-2">I can stay focused and finish my task.</p>
+                    <p class="text-[13px] text-gray-600 italic text-center">(Kaya kong mag-focus at tapusin ang trabaho nang tuloy-tuloy)</p>
                 </div>
 
                 <!-- Card 6 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
-                    data-value="Helping people" onclick="toggleSkills1Choice(this,'Helping people')">
+                    data-value="Task Repetition" onclick="toggleSkills1Choice(this,'Task Repetition')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Helping people" data-tts-tl="Pagtulong sa kapwa" aria-label="Play audio for Helping people">🔊</button>
-                    <img src="image/skill6.png" alt="help people" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Helping people</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center">(Pagtulong sa kapwa)</p>
+                        data-tts-en="Task Repetition: I can repeat the same task many times, like arranging items." 
+                        data-tts-tl="Kaya kong ulit-ulitin ang gawain tulad ng pag-aayos ng products" aria-label="Play audio for Helping people">🔊</button>
+                    <img src="image/skill6.png" alt="task repetition" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Task Repetition</h3>
+                    <p class="text-[13px] text-black-600 text-center mt-2">I can repeat the same task many times, like arranging items.</p>
+                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong ulit-ulitin ang gawain tulad ng pag-aayos ng products)</p>
                 </div>
 
                 <!-- Card 7 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
-                    data-value="Attention to details" onclick="toggleSkills1Choice(this,'Attention to details')">
+                    data-value="Trainable" onclick="toggleSkills1Choice(this,'Trainable')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Attention to details" data-tts-tl="Pagbibigay pansin sa mga detalye" aria-label="Play audio for Attention to details">🔊</button>
+                        data-tts-en="Trainable: I can learn new tasks when someone teaches me step by step." 
+                        data-tts-tl="Kaya ko matuto kapag may nagtuturo sa akin nang simple" aria-label="Play audio for Attention to details">🔊</button>
                     <img src="image/skill7.png" alt="attention to details" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Attention to details</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center">(Pagbibigay pansin sa mga detalye)</p>
+                    <h3 class="text-blue-600 font-semibold text-center">Trainable</h3>
+                     <p class="text-[13px] text-black-600 text-center mt-2">I can learn new tasks when someone teaches me step by step.</p>
+                    <p class="text-[13px] text-gray-600 italic text-center">(Kaya ko matuto kapag may nagtuturo sa akin nang simple)</p>
                 </div>
 
-                <!-- Other -->
+                <!-- Other 
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="other" onclick="toggleSkills1Choice(this,'other')">
                     <button type="button"
@@ -235,7 +249,7 @@
                     <input id="skills1_other_text" name="skills1_other_text" type="text"
                         aria-labelledby="skills1_other_label" placeholder="Type your answer here"
                         class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>
+                </div>-->
             </div>
 
             <input id="skills_page1" type="hidden" value="[]" />

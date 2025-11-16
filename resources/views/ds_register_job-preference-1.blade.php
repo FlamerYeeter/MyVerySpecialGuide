@@ -158,161 +158,139 @@
         <!-- Job Options Cards Grid -->
         <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
 
-            <!-- Office Work -->
+            <!-- Job 1 -->
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
-                data-value="Office Work" onclick="toggleJobPref1Choice(this,'Office Work')">
+                data-value="Store Greeter / Customer Assistant" onclick="toggleJobPref1Choice(this,'Store Greeter / Customer Assistant')">
                 <button type="button"
                     class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Office Work: use the computer for simple tasks, answer the phone politely, and keep papers organized in folders." data-tts-tl="Office Work: gagamit ka ng computer para sa simpleng gawain, sasagot ng telepono nang magalang, at aayusin ang mga papeles sa mga folder." aria-label="Play audio for Office Work">🔊</button>
-                <img src="image/officework.png" alt="Office Work" class="w-full rounded-md mb-4" />
-                <h3 class="text-blue-600 font-semibold text-center">Office Work</h3>
+                    data-tts-en="Store Greeter/Customer Assistant: You stay in your assigned place with a warm smile, welcoming customers as they arrive. You kindly
+                     assist them by guiding them to the areas they’re looking for and helping them find what they need."
+                    data-tts-tl="Mananatili ka sa iyong assigned place upang mag-welcome ng mga dumarating na customer. Magiliw mo 
+                    silang gagabayan sa mga lugar na hinahanap nila at tutulungan mahanap ang kanilang mga kailangan" aria-label="Play audio for Store Greeter/Customer Assistant">🔊</button>
+                <img src="image/job1.jpg" alt="store greeter" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Store Greeter / Customer Assistant</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
-                    In this job, you will use the computer for simple tasks, answer the phone politely, and keep
-                    papers organized in folders.
+                    You stay in your assigned place with a warm smile, welcoming customers as they arrive. You kindly
+                     assist them by guiding them to the areas they’re looking for and helping them find what they need.
                 </p>
                 <p class="text-[13px] text-[#4D515C] italic mt-2 text-center">
-                    (Sa trabahong ito, gagamit ka ng computer para sa simpleng gawain, sasagot ng telepono nang
-                    magalang,
-                    at aayusin ang mga papeles sa mga folder.)
+                    (Mananatili ka sa iyong assigned place upang mag-welcome ng mga dumarating na customer. Magiliw mo 
+                    silang gagabayan sa mga lugar na hinahanap nila at tutulungan mahanap ang kanilang mga kailangan)
                 </p>
             </div>
 
-            <!-- Store Work -->
+            <!-- Job 2 -->
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
-                data-value="Store Work" onclick="toggleJobPref1Choice(this,'Store Work')">
+                data-value="Merchandising Assistant" onclick="toggleJobPref1Choice(this,'Merchandising Assistant')">
                 <button type="button"
                     class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Store Work: help customers find what they need, place items neatly on shelves, and work at the cashier to take payments." data-tts-tl="Store Work: tutulungan mo ang mga customer na hanapin ang kanilang kailangan, maayos na ilalagay ang mga paninda sa mga lagayan, at magtatrabaho sa cashier para tumanggap ng bayad." aria-label="Play audio for Store Work">🔊</button>
-                <img src="image/storework.png" alt="Store Work" class="w-full rounded-md mb-4" />
-                <h3 class="text-blue-600 font-semibold text-center">Store Work</h3>
+                    data-tts-en="Merchandising Assistant:You will help keep the store looking nice. You arrange products on the shelves and make sure everything looks neat 
+                    and in the right place." 
+                    data-tts-tl="Tutulong ka upang maging maganda at maayos tingnan ang store. Aayuisn mo ang mga products sa lalagyanan at tinitiyak mong 
+                    maayos at nasa tamang pwesto ang mga ito." aria-label="Play audio for Store Work">🔊</button>
+                <img src="image/job2.jpg" alt="merchandising assistant" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Merchandising Assistant</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
-                    You will help customers find what they need, place items neatly on shelves, and work at the
-                    cashier to take payments.
+                  You will help keep the store looking nice. You arrange products on the shelves and make sure everything looks neat 
+                  and in the right place.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Tutulungan mo ang mga customer na hanapin ang kanilang kailangan, maayos na ilalagay ang mga
-                    paninda sa mga lagayan, at magtatrabaho sa cashier para tumanggap ng bayad.)
+                    (Tutulong ka upang maging maganda at maayos tingnan ang store. Aayuisn mo ang mga products sa lalagyanan at tinitiyak mong 
+                    maayos at nasa tamang pwesto ang mga ito)
                 </p>
             </div>
 
-            <!-- Cleaning Work -->
+            <!-- Job 3 -->
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
-                data-value="Cleaning Work" onclick="toggleJobPref1Choice(this,'Cleaning Work')">
+                data-value="Stockroom Helper" onclick="toggleJobPref1Choice(this,'Stockroom Helper')">
                 <button type="button"
                     class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Cleaning Work: sweep or mop the floor, wipe tables and windows, and make sure rooms stay neat and tidy." data-tts-tl="Cleaning Work: magwawalis o mag-mop ka ng sahig, magpupunas ng mga mesa at bintana, at sisiguraduhin na malinis at maayos ang mga silid." aria-label="Play audio for Cleaning Work">🔊</button>
-                <img src="image/cleaningwork.png" alt="Cleaning Work" class="w-full rounded-md mb-4" />
-                <h3 class="text-blue-600 font-semibold text-center">Cleaning Work</h3>
+                    data-tts-en="Stockroom Helper: You work in the stockroom where you sort items and fix boxes. You help prepare products before they go out to the store." 
+                    data-tts-tl="Magtatrabaho ka sa stockroom kung saan inaayos mo ang mga gamit at mga kahon. Tinutulungan mong ihanda ang mga products bago ilagay sa store" aria-label="Play audio for Cleaning Work">🔊</button>
+                <img src="image/job3.jpg" alt="stockroom helper" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Stockroom Helper</h3>
                 <p class="text-sm mt-2 text-justify" style="text-align: justify; text-align-last: center;">
-                    You will sweep or mop the floor, wipe tables and windows, and make sure rooms stay neat and
-                    tidy.
+                    You work in the stockroom where you sort items and fix boxes. You help prepare products before they go out to the store.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Magwawalis o mag-mop ka ng sahig, magpupunas ng mga mesa at bintana, at sisiguraduhin na
-                    malinis at maayos ang mga silid.)
+                    (Magtatrabaho ka sa stockroom kung saan inaayos mo ang mga gamit at mga kahon. Tinutulungan mong ihanda ang mga products bago ilagay sa store)
                 </p>
             </div>
 
-            <!-- Hospitality Work -->
+            <!-- Job 4 -->
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
-                data-value="Hospitality Work" onclick="toggleJobPref1Choice(this,'Hospitality Work')">
+                data-value="Basket & Cart Organizer" onclick="toggleJobPref1Choice(this,'Basket & Cart Organizer')">
                 <button type="button"
                     class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Hospitality Work: greet guests with a smile, help clean and prepare rooms, and carry small items like towels." data-tts-tl="Hospitality Work: sasalubungin mo ang mga bisita nang may ngiti, tutulong sa paglilinis at paghahanda ng mga kuwarto, at magdadala ng maliliit na gamit tulad ng tuwalya." aria-label="Play audio for Hospitality Work">🔊</button>
-                <img src="image/hospitalitywork.png" alt="Hospitality Work" class="w-full rounded-md mb-4" />
-                <h3 class="text-blue-600 font-semibold text-center">Hospitality Work</h3>
+                    data-tts-en="Basket & Cart Organizer: You carefully collect the used baskets and carts and bring them back to their proper place. You arrange them neatly at the entrance 
+                    so customers can easily use them." 
+                    data-tts-tl="Maingat mong kinokolekta ang mga nagamit na basket at cart at ibinabalik ang mga ito sa tamang lugar. Inaayos mo rin ang mga ito nang maayos sa entrance para madaling magamit ng mga customer" aria-label="Play audio for Hospitality Work">🔊</button>
+                <img src="image/job4.jpg" alt="basket organizer" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Basket & Cart Organizer</h3>
                 <p class="text-sm mt-2 text-justify" style="text-align: justify; text-align-last: center;">
-                    You will greet guests with a smile, help clean and prepare rooms, and carry small items like
-                    towels.
+                    You carefully collect the used baskets and carts and bring them back to their proper place. You arrange them neatly at the entrance 
+                    so customers can easily use them.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Sasalubungin mo ang mga bisita nang may ngiti, tutulong sa paglilinis at paghahanda ng mga kuwarto,
-                    at magdadala
-                    ng maliliit na gamit tulad ng tuwalya.)
+                    (Maingat mong kinokolekta ang mga nagamit na basket at cart at ibinabalik ang mga ito sa tamang lugar. Inaayos mo rin ang mga ito nang maayos sa entrance para madaling magamit ng mga customer)
             </div>
 
-            <!-- Food Service Work -->
+            <!-- Job 5 -->
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
-                data-value="Food Service Work" onclick="toggleJobPref1Choice(this,'Food Service Work')">
+                data-value="Store Utility / Cleaner" onclick="toggleJobPref1Choice(this,'Store Utility / Cleaner')">
                 <button type="button"
                     class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Food Service Work: serving food and drinks, helping prepare simple meals, and keeping the tables and kitchen clean." data-tts-tl="Food Service Work: pagsisilbi ng pagkain at inumin, pagtulong sa paghahanda ng simpleng pagkain, at pagpapanatiling malinis ng mga mesa at kusina." aria-label="Play audio for Food Service Work">🔊</button>
-                <img src="image/foodservice.png" alt="food service work" class="w-full rounded-md mb-4" />
-                <h3 class="text-blue-600 font-semibold text-center">Food Service Work</h3>
+                    data-tts-en="Store Utility / Cleaner: You help keep the store clean. You wipe tables, organize small areas, and make sure paths are clear and safe for customers." 
+                    data-tts-tl="Tumutulong kang panatilihing malinis ang store. Pinupunasan mo ang mga mesa at tinitiyak na malinis at ligtas ang daanan para sa mga customer" aria-label="Play audio for Food Service Work">🔊</button>
+                <img src="image/job5.jpg" alt="store cleaner" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Store Utility / Cleaner</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
-                    This job includes serving food and drinks, helping prepare simple meals, and keeping the tables and
-                    kitchen clean.
+                    You help keep the store clean. You wipe tables, organize small areas, and make sure paths are clear and safe for customers.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Kasama sa trabahong ito ang pagsisilbi ng pagkain at inumin, pagtulong sa paghahanda ng simpleng
-                    pagkain,
-                    at pagpapanatiling malinis ng mga mesa at kusina.)
+                    (Tumutulong kang panatilihing malinis ang store. Pinupunasan mo ang mga mesa at tinitiyak na malinis at ligtas ang daanan para sa mga customer)
                 </p>
             </div>
 
-            <!-- Packing Work -->
+            <!-- Job 6 -->
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
-                data-value="Packing Packages Work" onclick="toggleJobPref1Choice(this,'Packing Packages Work')">
+                data-value="Packaging Support / Bagging Assistant" onclick="toggleJobPref1Choice(this,'Packaging Support / Bagging Assistant')">
                 <button type="button"
                     class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Packing Packages Work: putting items in boxes or bags, carrying light packages, and organizing items on shelves." data-tts-tl="Packing Packages Work: paglalagay ng mga gamit sa kahon o bag, pagdadala ng magagaan na packages, at pag-aayos ng mga gamit sa mga lagayan." aria-label="Play audio for Packing Packages Work">🔊</button>
-                <img src="image/packingwork.png" alt="Packing Work" class="w-full rounded-md mb-4" />
-                <h3 class="text-blue-600 font-semibold text-center">Packing Packages Work</h3>
+                    data-tts-en="Packaging Support / Bagging Assistant:You help customers by placing their items gently and neatly into bags at the cashier area." 
+                    data-tts-tl="Tutuulungan mo ang customer sa cashier sa paglalagay ng kanilang mga binili sa bag nang maingat at maayos" aria-label="Play audio for Packing Packages Work">🔊</button>
+                <img src="image/job6.jpg" alt="packing support" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Packaging Support / Bagging Assistant</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
-                    This job includes putting items in boxes or bags, carrying light packages, and organizing items on
-                    shelves.
+                    You help customers by placing their items gently and neatly into bags at the cashier area.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Kasama sa trabahong ito ang paglalagay ng mga gamit sa kahon o bag, pagdadala ng magagaan na
-                    packages,
-                    at pag-aayos ng mga gamit sa mga lagayan.)
+                    (Tutuulungan mo ang customer sa cashier sa paglalagay ng kanilang mga binili sa bag nang maingat at maayos)
                 </p>
             </div>
 
-            <!-- Creative Work -->
+            <!-- Job 7 -->
             <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
-                data-value="Creative Work" onclick="toggleJobPref1Choice(this,'Creative Work')">
+                data-value="Alteration/Tailoring Assistant (for a clothing line)" onclick="toggleJobPref1Choice(this,'Alteration/Tailoring Assistant (for a clothing line)')">
                 <button type="button"
                     class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Creative Work: make simple art or crafts, decorate for events, and use safe tools with guidance." data-tts-tl="Creative Work: gumawa ng simpleng sining o likha, magde-dekorasyon para sa mga okasyon, at gagamit ng ligtas na kagamitan sa tulong ng gabay." aria-label="Play audio for Creative Work">🔊</button>
-                <img src="image/creativework.png" alt="Creative Work" class="w-full rounded-md mb-4" />
-                <h3 class="text-blue-600 font-semibold text-center">Creative Work</h3>
+                    data-tts-en="Alteration/Tailoring Assistant (for a clothing line):You help fix clothes by doing simple sewing tasks, like shortening pants or repairing small parts. You use basic
+                    sewing tools and make sure the clothes are ready for customers." 
+                    data-tts-tl="Tutulong ka sa pag-aayos ng damit gamit ang simpleng pananahi, tulad ng pagpapaikli ng pantalon o pag-ayos ng maliliit na bahagi. Gumagamit ka ng simpleng gamit pangtahi 
+                    at tinitiyak na handa ang damit para sa mga customer" aria-label="Play audio for Creative Work">🔊</button>
+                <img src="image/job7.jpg" alt="tailoring assistant" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Alteration/Tailoring Assistant (for a clothing line)</h3>
                 <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
-                    This job lets you make simple art or crafts, decorate for events, and use safe tools with guidance.
+                   You help fix clothes by doing simple sewing tasks, like shortening pants or repairing small parts. You use basic
+                    sewing tools and make sure the clothes are ready for customers.
                 </p>
                 <p class="text-[13px] text-gray-500 italic mt-2 text-center">
-                    (Sa trabahong ito, gagawa ka ng simpleng sining o likha, magde-dekorasyon para sa mga okasyon,
-                    at gagamit ng ligtas na kagamitan sa tulong ng gabay.)
+                    (Tutulong ka sa pag-aayos ng damit gamit ang simpleng pananahi, tulad ng pagpapaikli ng pantalon o pag-ayos ng maliliit na bahagi. Gumagamit ka ng simpleng gamit pangtahi 
+                    at tinitiyak na handa ang damit para sa mga customer)
                 </p>
             </div>
 
-            <!-- Other -->
-            <div class="bg-white p-4 sm:p-5 rounded-2xl min-h-[340px] flex flex-col justify-between
-              transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 
-              cursor-pointer relative text-center jobpref-card"
-                data-value="other" onclick="toggleJobPref1Choice(this,'other')">
-                <button type="button"
-                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                    data-tts-en="Other, Type your answer inside the box if not in the choices" 
-                    data-tts-tl="Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian" aria-label="Play audio for Other option">🔊</button>
-
-                <div class="flex flex-col flex-grow justify-center">
-                    <h3 id="support_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
-                    <p class="mt-3 text-sm text-justify">
-                        Type your answer inside the box if not in the choices
-                    </p>
-                    <p class="text-[13px] text-gray-600 italic mt-1 mb-3 text-justify">
-                        (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
-                    </p>
-
-                    <label for="jobpref_other_text" class="sr-only">Type your other answer here</label>
-                    <input id="jobpref_other_text" name="jobpref_other_text" type="text"
-                        aria-labelledby="jobpref_other_label" placeholder="Type your answer here"
-                        class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>
-            </div>
         </div>
-
 
         <!-- Hidden input for job preference (JSON array) -->
         <input id="jobpref1" type="hidden" value="[]" />
