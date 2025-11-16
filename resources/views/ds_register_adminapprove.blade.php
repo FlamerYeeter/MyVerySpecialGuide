@@ -508,78 +508,92 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
   if (!fileInput) return;
 
-fileInput.addEventListener('change', () => {
-      const file = fileInput.files[0];
-      if (!file) {
-        resetDisplay();
-        return;
-      }
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    if (!file) {
+      resetDisplay();
+      return;
+    }
 
-      if (fileURL) URL.revokeObjectURL(fileURL);
-      fileURL = URL.createObjectURL(file);
+    if (fileURL) URL.revokeObjectURL(fileURL);
+    fileURL = URL.createObjectURL(file);
 
-      const ext = file.name.split('.').pop().toLowerCase();
-      const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️' : ext === 'pdf' ? '📄' : '📁';
+    const ext = file.name.split('.').pop().toLowerCase();
+    const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️'
+               : ext === 'pdf' ? '📄'
+               : '📁';
 
-      display.innerHTML = `
-        <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
-          <div class="flex items-center gap-2">
-            <span class="text-2xl">${icon}</span>
-            <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
-          </div>
-          <div class="flex gap-2">
-            <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
-            <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
-          </div>
+    display.innerHTML = `
+      <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">${icon}</span>
+          <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
         </div>
-      `;
+        <div class="flex gap-2">
+          <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+          <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
+        </div>
+      </div>
+    `;
 
-      // Save to localStorage as DataURL so review page can preview
-      const storageIndex = inputId === 'proofFile' ? 1 : 0; // proof -> 1, med -> 0
-      const nameKey = storageIndex === 1 ? 'uploadedProofName1' : 'uploadedProofName0';
-      const dataKey = storageIndex === 1 ? 'uploadedProofData1' : 'uploadedProofData0';
-      const typeKey = storageIndex === 1 ? 'uploadedProofType1' : 'uploadedProofType0';
+    // --- Unique admin keys ---
+    let nameKey, dataKey, typeKey;
+    if (inputId === 'proofFile') {
+      nameKey = 'admin_uploaded_proof_name';
+      dataKey = 'admin_uploaded_proof_data';
+      typeKey = 'admin_uploaded_proof_type';
+    } else {
+      nameKey = 'admin_uploaded_med_name';
+      dataKey = 'admin_uploaded_med_data';
+      typeKey = 'admin_uploaded_med_type';
+    }
 
-      const reader = new FileReader();
-      reader.addEventListener('load', () => {
-        try {
-          localStorage.setItem(nameKey, file.name);
-          localStorage.setItem(dataKey, reader.result); // base64 data URL
-          localStorage.setItem(typeKey, ext);
-          console.info('[adminapprove] saved upload to localStorage', nameKey, dataKey, typeKey);
-        } catch (err) {
-          console.warn('Failed to persist uploaded file to localStorage', err);
-        }
-      });
-      reader.readAsDataURL(file);
+    // Save file to storage
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        localStorage.setItem(nameKey, file.name);
+        localStorage.setItem(dataKey, reader.result);
+        localStorage.setItem(typeKey, ext);
+        console.info('[adminapprove] saved upload to localStorage', nameKey);
+      } catch (err) {
+        console.warn('Failed to save upload in localStorage', err);
+      }
+    };
+    reader.readAsDataURL(file);
 
-      display.querySelector('.viewBtn').addEventListener('click', (e) => {
-        e.preventDefault();
-        openModal(fileURL, ext);
-      });
-
-      display.querySelector('.removeBtn').addEventListener('click', (e) => {
-        e.preventDefault();
-        resetDisplay();
-        fileInput.value = '';
-        if (fileURL) URL.revokeObjectURL(fileURL);
-        fileURL = null;
-        // remove from localStorage
-        try {
-          localStorage.removeItem(nameKey);
-          localStorage.removeItem(dataKey);
-          localStorage.removeItem(typeKey);
-          console.info('[adminapprove] removed upload from localStorage', nameKey);
-        } catch (err) { console.warn('Failed to remove upload keys', err); }
-      });
-
-      labelEl.textContent = 'File Uploaded:';
-      hintEl.style.display = 'none';
+    // View button
+    display.querySelector('.viewBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      openModal(fileURL, ext);
     });
 
+    // Remove button
+    display.querySelector('.removeBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      resetDisplay();
+      fileInput.value = '';
+
+      if (fileURL) URL.revokeObjectURL(fileURL);
+      fileURL = null;
+
+      // Remove storage entries
+      localStorage.removeItem(nameKey);
+      localStorage.removeItem(dataKey);
+      localStorage.removeItem(typeKey);
+
+      console.info('[adminapprove] removed upload', nameKey);
+    });
+
+    labelEl.textContent = 'File Uploaded:';
+    hintEl.style.display = 'none';
+  });
+
+  // Modal preview
   function openModal(url, ext) {
     modal.classList.remove('hidden');
     modalContent.innerHTML = '';
+
     if (['jpg', 'jpeg', 'png'].includes(ext)) {
       modalContent.innerHTML = `<img src="${url}" class="max-h-[80vh] mx-auto rounded-lg">`;
     } else if (ext === 'pdf') {
@@ -589,6 +603,7 @@ fileInput.addEventListener('change', () => {
     }
   }
 
+  // Modal close logic
   closeModalBtn.addEventListener('click', () => {
     modal.classList.add('hidden');
     modalContent.innerHTML = '';
@@ -601,6 +616,7 @@ fileInput.addEventListener('change', () => {
     }
   });
 
+  // Reset UI
   function resetDisplay() {
     display.innerHTML = '';
     labelEl.textContent = labelEl.dataset.original || 'Upload File';
@@ -608,7 +624,6 @@ fileInput.addEventListener('change', () => {
   }
 }
 </script>
-
             
             <!-- Submit Button -->
             <div class="flex flex-col items-center mt-6">

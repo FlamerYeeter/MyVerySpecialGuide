@@ -386,6 +386,159 @@
       }
     });
   </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Comprehensive client-side clear for registerreview2 keys
+  const explicitKeys = [
+    // registration drafts
+    'registrationDraft','registration_draft','dsRegistrationDraft','ds_registration','registerDraft','regDraft','reg_data',
+    'rpi_personal','rpi_personal1','rpi_personal2','__mvsg_lastLoadedDraft','__mvsg_lastDraftSource',
+    // certificate / proof keys (many variants)
+    'uploadedProofData','uploadedProofType','uploadedProofName',
+    'uploadedProofData1','uploadedProofType1','uploadedProofName1',
+    'uploadedProofData0','uploadedProofType0','uploadedProofName0',
+    'uploaded_proof_data','uploaded_proof_type','uploaded_proof_name',
+    'uploadedProofUrl','uploaded_proof_url','uploadedProofPath','uploaded_proof_path',
+    'uploadedProofDataUrl','uploaded_proof_data_url',
+    'proofData','proofType','proofName','proofFilename','cert_file',
+    // review fields & UI keys used by review-2
+    'review_certs','review_certfile','review_certfile_name','review_certs_name','review_certs_file',
+    'review_certfile','review_certs_file','review_certs_name','review_certs_file',
+    'review_edu','edu_level','educationLevel','education_level','schoolName','school','school_name','schoolName_name',
+    'review_other','edu_other','edu_other_text','review_certs_file','review_certs_name',
+    // work / job keys
+    'job_experiences','work_experiences','jobExperiences','jobExperience','job_experience',
+    'selected_work_experience','work_type','workType','review_work','review_work_list',
+    'workplace','preferred_workplace','workplace_choice','workplaceChoice','workplace_choice_img','workplace_image',
+    'review_workplace_choice_img','review_workplace_choice_img_src','review_job_experiences',
+    // skills / prefs
+    'jobPreferences','jobpref1','jobpref','jobprefs','job_preferences','skills1_selected','skills_page1','skills','selected_skills'
+  ];
 
+  // substrings to remove broadly
+  const substrings = ['uploaded','upload','proof','cert','file','rpi_personal','registration','jobpref','job','work','review_','school','skill','experience','mvsg','__mvsg'];
+
+  // cookie names to expire (client side best-effort)
+  const cookieCandidates = ['laravel_session','XSRF-TOKEN','session','session_id','firebase_uid','session_firebase_uid'];
+
+  function expireCookie(name) {
+    try {
+      document.cookie = name + "=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;";
+      const parts = location.hostname.split('.');
+      if (parts.length > 1) {
+        const domain = '.' + parts.slice(-2).join('.');
+        document.cookie = name + "=; Path=/; Domain=" + domain + "; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax;";
+      }
+    } catch(e){}
+  }
+
+  function clearStorages() {
+    try {
+      // explicit keys first
+      explicitKeys.forEach(k => { try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch(e){} });
+
+      // remove by substring (localStorage)
+      try {
+        for (let i = localStorage.length - 1; i >= 0; i--) {
+          const key = localStorage.key(i);
+          if (!key) continue;
+          const low = key.toLowerCase();
+          for (const sub of substrings) {
+            if (low.includes(sub.toLowerCase())) {
+              try { localStorage.removeItem(key); } catch(e){}
+              break;
+            }
+          }
+        }
+      } catch (e) {}
+
+      // remove by substring (sessionStorage)
+      try {
+        for (let i = sessionStorage.length - 1; i >= 0; i--) {
+          const key = sessionStorage.key(i);
+          if (!key) continue;
+          const low = key.toLowerCase();
+          for (const sub of substrings) {
+            if (low.includes(sub.toLowerCase())) {
+              try { sessionStorage.removeItem(key); } catch(e){}
+              break;
+            }
+          }
+        }
+      } catch (e) {}
+
+    } catch (e) { console.warn('[mvsg] clearStorages error', e); }
+  }
+
+  function clearCookies() {
+    try {
+      cookieCandidates.forEach(expireCookie);
+      // expire cookies that look related
+      const all = document.cookie ? document.cookie.split(';') : [];
+      all.forEach(c => {
+        const name = c.split('=')[0].trim();
+        if (!name) return;
+        const low = name.toLowerCase();
+        for (const sub of substrings.concat(['session','auth','firebase'])) {
+          if (low.includes(sub)) { expireCookie(name); break; }
+        }
+      });
+    } catch(e){ console.warn('[mvsg] clearCookies error', e); }
+  }
+
+  function clearUIAndGlobals() {
+    try {
+      // clear known globals
+      try { window.__mvsg_serverProfile = null; } catch(e){}
+      try { window.__mvsg_serverProfileUid = null; } catch(e){}
+      try { window.__mvsg_lastLoadedDraft = null; } catch(e){}
+      try { window.__mvsg_lastDraftSource = null; } catch(e){}
+
+      // set file UI text to "No file uploaded"
+      const fileUiIds = ['review_certfile','review_certfile_name','proofFileName','review_certs','proofFileInfo','proofFileIcon','proof'];
+      fileUiIds.forEach(id => {
+        try {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = '';
+          else el.textContent = (id === 'review_certfile' || id === 'review_certfile_name' || id === 'proofFileName') ? 'No file uploaded' : '';
+          if (id === 'proofFileInfo' && el.classList) el.classList.add('hidden');
+        } catch(e){}
+      });
+    } catch(e){ console.warn('[mvsg] clearUIAndGlobals error', e); }
+  }
+
+  function notifyOthers() {
+    try {
+      localStorage.setItem('mvsg:cleared', Date.now().toString());
+      setTimeout(()=> { try { localStorage.removeItem('mvsg:cleared'); } catch(e){} }, 600);
+      try { window.dispatchEvent(new CustomEvent('mvsg:cleared', { detail: { ts: Date.now() } })); } catch(e){}
+    } catch(e){}
+  }
+
+  // Run clears
+  try {
+    clearStorages();
+    clearCookies();
+    clearUIAndGlobals();
+    notifyOthers();
+    console.info('[mvsg] client-side draft/ uploaded-file keys cleared (data-privacy)');
+  } catch (err) {
+    console.warn('[mvsg] data-privacy clear failed', err);
+  }
+
+  // OPTIONAL: notify server to clear server-side session keys
+  // Create a POST route /clear-draft that calls session()->forget([...]) if you want server-side clearing.
+  (function tryServerClear() {
+    try {
+      fetch('/clear-draft', { method: 'POST', credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' }, body: JSON.stringify({ clear: true }) })
+        .then(r => r.json().catch(()=>null))
+        .then(j => { if (j && j.ok) console.info('[mvsg] server-side draft cleared'); else console.debug('[mvsg] server clear returned', j); })
+        .catch(e => console.debug('[mvsg] server clear request failed', e));
+    } catch(e){}
+  })();
+
+});
+</script>
 </body>
 </html>

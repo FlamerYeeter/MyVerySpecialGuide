@@ -415,7 +415,7 @@
                     }
 
                     document.addEventListener('DOMContentLoaded', function(){ renderWorkplace(); });
-                    window.addEventListener('storage', function(e){ if(!e.key) { renderWorkplace(); return;} if(['workplace','preferred_workplace','workplace_choice','workplaceChoice','workplace_choice_img','workplace_image'].includes(e.key)) renderWorkplace(); });
+                    window.addEventListener('storage', function(e){ if(!e.key) { renderWorkplace(); return;} if(['workplace','preferred_workplace','workplace_choices','workplaceChoice','workplace_choice_img','workplace_image'].includes(e.key)) renderWorkplace(); });
                 })();
             </script>
 
@@ -1101,8 +1101,8 @@
                         }
                         renderWorkExperiences(weArr);
 
-                        const workplace = (data.workplace && (data.workplace.workplace_choice || data.workplace
-                            .workplaceChoice)) || data.workplace_choice || '';
+                        const workplace = (data.workplace && (data.workplace.workplace_choices || data.workplace
+                            .workplaceChoice)) || data.workplace_choices || '';
                         safeSet('review_workplace_choice', workplace || '');
                         setChoiceImage('review_workplace_choice_img', workplace, ['.workplace-card',
                             '.selectable-card'

@@ -1500,57 +1500,133 @@ document.addEventListener('DOMContentLoaded', function () {
   modal?.addEventListener('click', function(e){ if (e.target === modal) closePreview(); });
 
   // helper to wire a preview block
-  function wireBlock(prefix, storageIndex) {
-    const nameKey = storageIndex === 1 ? 'uploadedProofName1' : 'uploadedProofName0';
-    const dataKey = storageIndex === 1 ? 'uploadedProofData1' : 'uploadedProofData0';
-    const typeKey = storageIndex === 1 ? 'uploadedProofType1' : 'uploadedProofType0';
+// ------------------------------------------------------------
+// Unified, safe wireBlock()
+// Prefers admin keys → fallback to legacy keys → ignores generic collisions
+// ------------------------------------------------------------
+function wireBlock(prefix, storageIndex) {
 
-    const textEl = document.getElementById(prefix === 'proof' ? 'r_proof' : 'r_medical');
-    const infoEl = document.getElementById(prefix === 'proof' ? 'proofFileInfo' : 'medFileInfo');
-    const iconEl = document.getElementById(prefix === 'proof' ? 'proofFileIcon' : 'medFileIcon');
-    const nameEl = document.getElementById(prefix === 'proof' ? 'proofFileName' : 'medFileName');
-    const viewBtn = document.getElementById(prefix === 'proof' ? 'proofViewBtn' : 'medViewBtn');
-    const removeBtn = document.getElementById(prefix === 'proof' ? 'proofRemoveBtn' : 'medRemoveBtn');
-
-    function render() {
-      const name = localStorage.getItem(nameKey);
-      const data = localStorage.getItem(dataKey);
-      const type = (localStorage.getItem(typeKey) || '').toLowerCase();
-
-      if (name && data) {
-        textEl.classList.add('hidden');
-        if (infoEl) infoEl.classList.remove('hidden');
-        if (nameEl) nameEl.textContent = name;
-        if (iconEl) iconEl.textContent = type === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(type) ? '🖼️' : '📁');
-        // attach view handler
-        if (viewBtn) {
-          viewBtn.disabled = false;
-          viewBtn.onclick = () => openPreview(name, data, type);
-        }
-        if (removeBtn) {
-          removeBtn.disabled = false;
-          removeBtn.onclick = () => {
-            localStorage.removeItem(nameKey);
-            localStorage.removeItem(dataKey);
-            localStorage.removeItem(typeKey);
-            render();
-          };
-        }
-      } else {
-        // show fallback text placeholder
-        if (textEl) { textEl.classList.remove('hidden'); textEl.textContent = 'No file uploaded'; }
-        if (infoEl) infoEl.classList.add('hidden');
-        if (viewBtn) { viewBtn.disabled = true; viewBtn.onclick = null; }
-        if (removeBtn) { removeBtn.disabled = true; removeBtn.onclick = null; }
-      }
+  // NEW admin-specific keys (preferred)
+  const adminMap = {
+    proof: {
+      name: 'admin_uploaded_proof_name',
+      data: 'admin_uploaded_proof_data',
+      type: 'admin_uploaded_proof_type'
+    },
+    medical: {
+      name: 'admin_uploaded_med_name',
+      data: 'admin_uploaded_med_data',
+      type: 'admin_uploaded_med_type'
     }
+  };
 
-    // initial render + listen for storage changes (other tab)
-    render();
-    window.addEventListener('storage', (e) => {
-      if (!e.key || [nameKey, dataKey, typeKey].includes(e.key)) setTimeout(render, 20);
-    });
+  // OLD legacy keys used by older pages
+  const legacy = {
+    proof: {
+      name: 'uploadedProofName1',
+      data: 'uploadedProofData1',
+      type: 'uploadedProofType1'
+    },
+    medical: {
+      name: 'uploadedProofName0',
+      data: 'uploadedProofData0',
+      type: 'uploadedProofType0'
+    }
+  };
+
+  // UI references
+  const textEl   = document.getElementById(prefix === 'proof' ? 'r_proof' : 'r_medical');
+  const infoEl   = document.getElementById(prefix === 'proof' ? 'proofFileInfo' : 'medFileInfo');
+  const iconEl   = document.getElementById(prefix === 'proof' ? 'proofFileIcon' : 'medFileIcon');
+  const nameEl   = document.getElementById(prefix === 'proof' ? 'proofFileName' : 'medFileName');
+  const viewBtn  = document.getElementById(prefix === 'proof' ? 'proofViewBtn' : 'medViewBtn');
+  const removeBtn= document.getElementById(prefix === 'proof' ? 'proofRemoveBtn' : 'medRemoveBtn');
+
+  // Try admin first → legacy second
+  function getStored(keys) {
+    for (const k of keys) {
+      const v = localStorage.getItem(k);
+      if (v) return { key: k, val: v };
+    }
+    return { key: null, val: null };
   }
+
+  function render() {
+    // Which keys to try, in order
+    const tryNames = [
+      adminMap[prefix].name,
+      legacy[prefix].name
+    ];
+    const tryData = [
+      adminMap[prefix].data,
+      legacy[prefix].data
+    ];
+    const tryType = [
+      adminMap[prefix].type,
+      legacy[prefix].type
+    ];
+
+    const nameResult = getStored(tryNames);
+    const dataResult = getStored(tryData);
+    const typeResult = getStored(tryType);
+
+    const name = nameResult.val;
+    const data = dataResult.val;
+    const type = (typeResult.val || '').toLowerCase();
+
+    if (name && data) {
+      // Show UI
+      textEl.classList.add('hidden');
+      infoEl.classList.remove('hidden');
+
+      nameEl.textContent = name;
+      iconEl.textContent = (
+        type === 'pdf' ? '📄' :
+        ['jpg','jpeg','png'].includes(type) ? '🖼️' : '📁'
+      );
+
+      viewBtn.disabled = false;
+      viewBtn.onclick = () => openPreview(name, data, type);
+
+      removeBtn.disabled = false;
+      removeBtn.onclick = () => {
+        // Remove ALL related keys to keep everything clean
+        [
+          adminMap[prefix].name, adminMap[prefix].data, adminMap[prefix].type,
+          legacy[prefix].name, legacy[prefix].data, legacy[prefix].type
+        ].forEach(k => localStorage.removeItem(k));
+
+        render();
+      };
+    } else {
+      // No file
+      textEl.classList.remove('hidden');
+      textEl.textContent = 'No file uploaded';
+
+      infoEl.classList.add('hidden');
+
+      viewBtn.disabled = true;
+      viewBtn.onclick = null;
+
+      removeBtn.disabled = true;
+      removeBtn.onclick = null;
+    }
+  }
+
+  // Initial load
+  render();
+
+  // Storage sync (other tabs)
+  window.addEventListener('storage', (e) => {
+    const relatedKeys = [
+      adminMap[prefix].name, adminMap[prefix].data, adminMap[prefix].type,
+      legacy[prefix].name, legacy[prefix].data, legacy[prefix].type
+    ];
+    if (!e.key || relatedKeys.includes(e.key)) {
+      setTimeout(render, 20);
+    }
+  });
+}
 
   wireBlock('proof', 1);
   wireBlock('medical', 0);

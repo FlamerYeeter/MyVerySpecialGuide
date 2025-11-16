@@ -234,37 +234,36 @@
             </div>
 
             <!-- Hidden Input for Workplace Choice -->
-            <input id="workplace_choice" type="hidden" value="" />
+            <input id="workplace_choices" type="hidden" value="[]" />
 
             <script>
                 document.addEventListener("DOMContentLoaded", () => {
-                const workplaceNextbtn = document.getElementById('workplaceNext');
+                    const workplaceNextbtn = document.getElementById('workplaceNext');
+                    workplaceNextbtn.addEventListener('click', function() {
+                        const selected = [];
 
-                workplaceNextbtn.addEventListener('click', function() {
-                    // Find the card that currently has the "selected" class
-                    const selectedCard = document.querySelector('.workplace-card.selected');
+                        document.querySelectorAll('.workplace-card.selected').forEach(card => {
+                           // attempt to read the value passed in the onclick (fallback to h3 text)
+                            const onclickAttr = card.getAttribute('onclick') || '';
+                            const match = onclickAttr.match(/'([^']+)'/);
+                            let value = match ? match[1] : (card.getAttribute('data-value') || (card.querySelector('h3')?.textContent || '').trim());
 
-                    if (!selectedCard) return; // do nothing if none selected
+                            if (!value) return;
+                            if (value === 'other') {
+                                const otherInput = document.getElementById('selectworkplace_other_text');
+                                if (otherInput && otherInput.value.trim()) selected.push(otherInput.value.trim());
+                            } else {
+                                selected.push(value);
+                            }
+                        });
 
-                    // Extract the value from onclick attribute
-                    const onclickAttr = selectedCard.getAttribute('onclick');
-                    const match = onclickAttr.match(/'([^']+)'/); // value inside single quotes
-                    const selectedValue = match ? match[1] : null;
+                        // Save array to hidden input and localStorage
+                        const hidden = document.getElementById('workplace_choices');
+                        if (hidden) hidden.value = JSON.stringify(selected);
+                        localStorage.setItem('workplace', JSON.stringify(selected));
 
-                    if (!selectedValue) return;
-
-                    // If "other", use input text; otherwise save the value
-                    if (selectedValue === 'other') {
-                        const otherInput = document.getElementById('selectworkplace_other_text');
-                        const otherValue = otherInput.value.trim();
-                        localStorage.setItem('workplace', otherValue || 'other');
-                    } else {
-                        localStorage.setItem('workplace', selectedValue);
-                    }
-
-                    console.log("Saved to localStorage:", localStorage.getItem('workplace'));
-                    // Navigate to the Skills page next (was mistakenly pointing to job preference)
-                    window.location.href = '{{ route("registerskills1") }}';
+                        // Navigate to skills page
+                        window.location.href = '{{ route("registerskills1") }}';
                     });
                 });
             </script>
@@ -273,14 +272,21 @@
                 // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workplace.blade.php
                 function selectWorkplaceChoice(el, value) {
                     try {
-                        document.querySelectorAll('.workplace-card').forEach(c => c.classList.remove('selected'));
-                        if (el && el.classList) el.classList.add('selected');
-                        const hidden = document.getElementById('workplace_choice');
-                        if (hidden) hidden.value = value || '';
-                        /*if (value === 'other') {
-                            const other = document.getElementById('workplace_other_text');
-                            if (other) other.focus();
-                        }*/
+                        const hidden = document.getElementById('workplace_choices');
+                        if (!hidden) return;
+                        let arr = [];
+                        try { arr = JSON.parse(hidden.value || '[]'); } catch(e){ arr = []; }
+
+                        const idx = arr.indexOf(value);
+                        if (idx === -1) {
+                            arr.push(value);
+                            if (el && el.classList) el.classList.add('selected');
+                        } else {
+                            arr.splice(idx, 1);
+                            if (el && el.classList) el.classList.remove('selected');
+                        }
+
+                        hidden.value = JSON.stringify(arr);
                         const err = document.getElementById('workplaceError');
                         if (err) err.textContent = '';
                     } catch (e) {
