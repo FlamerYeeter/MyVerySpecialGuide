@@ -65,11 +65,11 @@
                 <div class="flex items-start gap-6 w-full lg:w-2/3">
 
                     <!-- Flag -->
-                    <button
+                    {{-- <button
                         class="flag-btn text-gray-400 text-4xl font-bold focus:outline-none hover:text-red-500 transition-all duration-300 self-start mt-2"
                         title="Report or Flag Job">
                         <i class="ri-flag-line"></i>
-                    </button>
+                    </button> --}}
 
                     <!-- Company Logo -->
                     <div class="flex-shrink-0">
@@ -98,12 +98,6 @@
                         <div class="flex flex-wrap gap-2 mt-3">
                             <span
                                 class="border border-[#2563EB] text-[#2563EB] text-sm sm:text-base px-4 py-2 rounded-md font-semibold">Full-Time</span>
-                            <span
-                                class="border border-[#88BF02] text-[#88BF02] text-sm sm:text-base px-4 py-2 rounded-md font-semibold">Full
-                                Support</span>
-                            <span
-                                class="border border-[#F89596] text-[#F89596] text-sm sm:text-base px-4 py-2 rounded-md font-semibold">Excellent
-                                Fit</span>
                         </div>
                     </div>
                 </div>
@@ -112,10 +106,10 @@
                 <div class="flex flex-col items-center lg:items-end w-full lg:w-1/3 mt-4 lg:mt-0">
 
                     <!-- Assessment Button -->
-                    <button
+                    {{-- <button
                         class="bg-[#FFAC1D] text-white text-base sm:text-lg font-bold rounded-lg px-8 py-3 w-full sm:w-[360px] mb-4 hover:bg-[#D78203] transition-all duration-200 text-center shadow-md">
                         Apply for Therapist Job Readiness Assessment
-                    </button>
+                    </button> --}}
 
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap justify-center lg:justify-end gap-4 mb-4">
