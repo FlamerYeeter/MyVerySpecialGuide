@@ -1225,12 +1225,14 @@ Route::post('/api/recommendations/all', [RecommendationController::class, 'gener
 
 // (Firebase token endpoint removed - registration/login now Oracle-backed)
 
-Route::get('/my-job-applications', [SavedJobController::class, 'index'])->name('my.job.applications');
-Route::post('/my-job-applications', [SavedJobController::class, 'store'])->name('my.job.applications');
-// Convenience GET route that saves a job and redirects to the saved-jobs page.
-// This is useful for simple anchor-based saves from the job-listing UI.
-Route::get('/my-job-applications/add/{jobId}', [SavedJobController::class, 'add'])->name('my.job.applications.add');
-Route::post('/my-job-applications/remove', [SavedJobController::class, 'destroy'])->name('my.job.applications.remove');
+Route::get('/my-job-applications', function () {
+    return view('my-job-applications');
+})->name('my.job.applications');
+
+// Route::get('/my-job-applications', [SavedJobController::class, 'index'])->name('my.job.applications');
+// Route::post('/my-job-applications', [SavedJobController::class, 'store'])->name('my.job.applications');
+// Route::get('/my-job-applications/add/{jobId}', [SavedJobController::class, 'add'])->name('my.job.applications.add');
+// Route::post('/my-job-applications/remove', [SavedJobController::class, 'destroy'])->name('my.job.applications.remove');
 
 // Additional registration routes
 Route::get('/register2', function () {
