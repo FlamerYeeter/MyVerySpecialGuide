@@ -323,7 +323,7 @@
             <div class="flex justify-center mt-6">
                 <button type="button"
                     class="bg-[#1E40AF] text-white text-3xl font-bold px-16 py-6 rounded-2xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition">
-                    Review & Submit
+                    Submit Application
                 </button>
             </div>
         </form>
