@@ -856,11 +856,20 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             <!-- Action Buttons -->
             <div class="flex flex-wrap justify-center gap-6 mt-10">
                 <button
-                    class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
+                    type="button"
+                    onclick="window.location.href='{{ route('job.details') }}'"
+                    class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition"
+                    aria-label="See job details"
+                >
                     📝 See Details
                 </button>
+
                 <button
-                    class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
+                    type="button"
+                    onclick="window.location.href='{{ route('job.application.1') }}'"
+                    class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition"
+                    aria-label="Apply now"
+                >
                     🚀 Apply Now
                 </button>
                 <button
