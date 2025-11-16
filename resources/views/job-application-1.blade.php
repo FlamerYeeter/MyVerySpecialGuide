@@ -158,7 +158,7 @@
 </div>
 
 <!-- ================= EDUCATION ================= -->
-<div class="border-2 border-blue-200 bg-white shadow-lg rounded-3xl p-10 mb-10">
+{{--<div class="border-2 border-blue-200 bg-white shadow-lg rounded-3xl p-10 mb-10">
   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 border-b-4 border-blue-200 pb-3">
     <h3 class="text-3xl font-bold text-[#1E40AF] mb-4 sm:mb-0">Education</h3>
     <button type="button" id="autofillEducation"
@@ -252,28 +252,62 @@
     <input id="skillInput" type="text" placeholder="Type a skill and press Enter"
       class="w-full text-lg px-4 py-3 border rounded-xl focus:ring-4 focus:ring-blue-300 outline-none" />
   </div>
-</div>
+</div>--}}
 
-<!-- ================= REQUIRED DOCUMENTS (RESUME / CV) ================= -->
+<!-- ================= REQUIRED DOCUMENTS ================= -->
 <div class="border-2 border-blue-200 bg-white shadow-lg rounded-3xl p-10 mb-10">
+  
+  <!-- HEADER -->
   <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 border-b-4 border-blue-200 pb-3">
-    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4 sm:mb-0">Required Documents (Resume or CV)</h3>
+    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4 sm:mb-0">
+      Required Documents
+    </h3>
   </div>
 
   <p class="text-gray-700 text-xl mb-6">
-    Please upload your Resume or CV in PDF, DOC, or DOCX format. Make sure your file is complete and readable.
+    Please upload all required documents in PDF, DOC, DOCX, JPG, or PNG format
   </p>
 
-  <div class="border-2 border-dashed border-[#1E40AF] rounded-2xl p-8 text-center bg-[#F0F9FF] hover:bg-blue-50 transition cursor-pointer"
-    onclick="document.getElementById('resumeUpload').click()">
-    <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#1E40AF] mx-auto mb-4" fill="none"
-      viewBox="0 0 24 24" stroke="currentColor">
+  <!-- CHECKLIST -->
+  <div class="space-y-4 mb-10">
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="w-5 h-5 text-blue-600 rounded">
+      <span class="text-xl text-gray-800 font-semibold">Medical Certificate</span>
+    </label>
+
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="w-5 h-5 text-blue-600 rounded">
+      <span class="text-xl text-gray-800 font-semibold">Resume / CV</span>
+    </label>
+
+    <label class="flex items-center gap-3 cursor-pointer">
+      <input type="checkbox" class="w-5 h-5 text-blue-600 rounded">
+      <span class="text-xl text-gray-800 font-semibold">PWD ID</span>
+    </label>
+  </div>
+
+  <!-- SINGLE UPLOAD BOX -->
+  <div class="border-2 border-dashed border-[#1E40AF] rounded-2xl p-8 text-center 
+              bg-[#F0F9FF] hover:bg-blue-50 transition cursor-pointer"
+      onclick="document.getElementById('allDocuments').click()">
+
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#1E40AF] mx-auto mb-4" 
+         fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M7 16V4a2 2 0 012-2h6a2 2 0 012 2v12m-6 4l-4-4m4 4l4-4m-4 4V10" />
     </svg>
-    <p class="text-2xl font-semibold text-[#1E40AF]">Click here to upload your Resume or CV</p>
-    <p class="text-gray-600 text-lg mt-2">(Accepted formats: PDF, DOC, DOCX — Max size: 5MB)</p>
+
+    <p class="text-2xl font-semibold text-[#1E40AF]">Click here to upload all documents</p>
+    <p class="text-gray-600 text-lg mt-2">
+      (PDF, DOC, DOCX, JPG, PNG — Max size: 15MB each)
+    </p>
+    <p class="text-gray-600 text-lg font-semibold mt-2">You may upload up to 3 files</p>
   </div>
+
+  <!-- HIDDEN FILE INPUT -->
+  <input type="file" id="allDocuments" class="hidden" 
+         accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+
 </div>
 
 
