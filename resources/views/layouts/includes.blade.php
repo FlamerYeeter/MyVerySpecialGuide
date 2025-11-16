@@ -105,10 +105,12 @@
     </div>
 
     <!-- Help Text -->
-    <div class="mt-8 text-center sm:text-left">
+    <div class="mt-8 text-center">
       <p class="text-base sm:text-lg font-semibold">
-        <a href="#" class="underline text-blue-800 hover:text-blue-600">Click to know about the navigation bar</a>
-        <span class="text-gray-600 italic ml-1">(pindutin upang malaman ang tungkol sa navigation bar)</span>
+        <a href="{{ route('navigationbuttons') }}" class="underline text-blue-800 hover:text-blue-600 inline-block">
+          Click to know about the navigation bar
+        </a>
+        <span class="text-gray-600 italic ml-2">(pindutin upang malaman ang tungkol sa navigation bar)</span>
       </p>
     </div>
   </header>

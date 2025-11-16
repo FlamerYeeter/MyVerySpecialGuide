@@ -10,7 +10,7 @@
         <!-- Back Button -->
         <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
             <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
-                <a href="/jobmatches"
+                <a href="/job-matches"
                     class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
                         stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
