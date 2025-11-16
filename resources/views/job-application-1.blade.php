@@ -269,62 +269,53 @@
   </p>
 
   <!-- CHECKLIST -->
-  <div class="space-y-4 mb-10">
+  <div class="space-y-4 mb-6">
     <label class="flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" class="w-5 h-5 text-blue-600 rounded">
+      <input id="chk_medical" type="checkbox" class="w-5 h-5 text-blue-600 rounded">
       <span class="text-xl text-gray-800 font-semibold">Medical Certificate</span>
     </label>
 
     <label class="flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" class="w-5 h-5 text-blue-600 rounded">
+      <input id="chk_resume" type="checkbox" class="w-5 h-5 text-blue-600 rounded">
       <span class="text-xl text-gray-800 font-semibold">Resume / CV</span>
     </label>
 
     <label class="flex items-center gap-3 cursor-pointer">
-      <input type="checkbox" class="w-5 h-5 text-blue-600 rounded">
+      <input id="chk_pwd" type="checkbox" class="w-5 h-5 text-blue-600 rounded">
       <span class="text-xl text-gray-800 font-semibold">PWD ID</span>
     </label>
   </div>
 
   <!-- SINGLE UPLOAD BOX -->
   <div class="border-2 border-dashed border-[#1E40AF] rounded-2xl p-8 text-center 
-              bg-[#F0F9FF] hover:bg-blue-50 transition cursor-pointer"
-      onclick="document.getElementById('allDocuments').click()">
-
+              bg-[#F0F9FF] hover:bg-blue-50 transition" onclick="document.getElementById('allDocuments').click()">
+    
+    <div id="bigUploadContent" class="cursor-pointer">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#1E40AF] mx-auto mb-4" 
          fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
         d="M7 16V4a2 2 0 012-2h6a2 2 0 012 2v12m-6 4l-4-4m4 4l4-4m-4 4V10" />
     </svg>
 
-    <p class="text-2xl font-semibold text-[#1E40AF]">Click here to upload all documents</p>
-    <p class="text-gray-600 text-lg mt-2">
-      (PDF, DOC, DOCX, JPG, PNG — Max size: 15MB each)
-    </p>
-    <p class="text-gray-600 text-lg font-semibold mt-2">You may upload up to 3 files</p>
+    <!-- the inner clickable content — hide/show independently from the dashed box -->
+      <p class="text-2xl font-semibold text-[#1E40AF]">Click here to upload all documents</p>
+      <p class="text-gray-600 text-lg mt-2">
+        (PDF, DOC, DOCX, JPG, PNG — Max size: 15MB each)
+      </p>
+      <p class="text-gray-600 text-lg font-semibold mt-2">You may upload up to 3 files</p>
+    </div>
+    <div id="requiredFilesSlots" class="mt-6 grid grid-cols-1 gap-4 max-w-3xl mx-auto"></div>
   </div>
-
   <!-- HIDDEN FILE INPUT -->
   <input type="file" id="allDocuments" class="hidden" 
          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
-
 </div>
-
-
-                <!-- Hidden File Input -->
-                <input id="resumeUpload" type="file" accept=".pdf,.doc,.docx" class="hidden"
-                    onchange="handleResumeUpload(event)" />
-
-                <!-- File Preview List -->
-                <div id="resumePreview" class="mt-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"></div>
-            </div>
-
             <!-- ================= SUBMIT BUTTON ================= -->
             <div class="flex justify-center mt-6">
-                <button type="button"
-                    class="bg-[#1E40AF] text-white text-3xl font-bold px-16 py-6 rounded-2xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition">
+                <a href="/job-application-review1"
+                   class="bg-[#1E40AF] text-white text-3xl font-bold px-16 py-6 rounded-2xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition inline-block text-center">
                     Click to Review Application
-                </button>
+                </a>
             </div>
         </form>
 
@@ -360,7 +351,7 @@
             </div>
         </div>
 
-        <script>
+        {{-- <script>
             // =============== SKILLS ===============
             const skillInput = document.getElementById('skillInput');
             const skillsContainer = document.getElementById('skillsContainer');
@@ -609,90 +600,357 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
                 });
             })();
         </script>
+<script>
+  (function () {
+    const defs = [
+      { checkboxId: 'chk_medical', key: 'medical', label: 'Medical Certificate' },
+      { checkboxId: 'chk_resume', key: 'resume', label: 'Resume / CV' },
+      { checkboxId: 'chk_pwd', key: 'pwd', label: 'PWD ID' }
+    ];
 
-        <!-- Ensure global Firebase config is present and autofill profile for signed-in users -->
-  {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-        {{-- <script type="module">
-            import {
-                getUserProfile,
-                isSignedIn
-            } from "{{ asset('js/job-application-firebase.js') }}";
+    const LS_PREFIX = 'jobreq_';
+    const stored = {};     // key -> { name, url (dataURL), type, rawFile }
+    const pendingFiles = [];
 
-            (async function() {
-                try {
-                    console.debug('job-application-1: waiting for auth resolution (7s)');
-                    const signed = await isSignedIn(7000);
-                    console.debug('job-application-1: isSignedIn ->', signed);
-                    if (!signed) {
-                        // Not signed in — redirect to login preserving return URL
-                        const current = window.location.pathname + window.location.search;
-                        window.location.href = 'login?redirect=' + encodeURIComponent(current);
-                        return;
-                    }
-                    const profile = await getUserProfile();
-                    if (profile) {
-                        if (profile.first_name) document.getElementById('first_name').value = profile.first_name;
-                        if (profile.last_name) document.getElementById('last_name').value = profile.last_name;
-                        if (profile.email) document.getElementById('email').value = profile.email;
-                        if (profile.phone) document.getElementById('phone_number').value = profile.phone;
-                        if (profile.address) document.getElementById('address').value = profile.address;
-                    }
-                } catch (err) {
-                    console.warn('autofill/profile init failed', err);
-                }
-            })();
-        </script> --}}
+    function guessTypeFromFilename(name) {
+      const ext = (name || '').split('.').pop().toLowerCase();
+      if (!ext) return '';
+      if (['jpg','jpeg','png','gif','webp','bmp'].includes(ext)) return ext;
+      if (ext === 'pdf') return 'pdf';
+      return ext;
+    }
 
-        <!-- Ensure global Firebase config is present and autofill profile for logged-in users -->
-  {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-        {{-- <script type="module">
-            import {
-                getUserProfile,
-                isSignedIn
-            } from "{{ asset('js/job-application-firebase.js') }}";
+    function loadPersisted() {
+      defs.forEach(def => {
+        try {
+          const name = localStorage.getItem(LS_PREFIX + def.key + '_name');
+          const data = localStorage.getItem(LS_PREFIX + def.key + '_data');
+          const type = localStorage.getItem(LS_PREFIX + def.key + '_type');
+          if (name && data) {
+            stored[def.key] = { name: name, url: data, type: type || guessTypeFromFilename(name) };
+          }
+        } catch (e) { /* ignore */ }
+      });
+    }
 
-            async function autofillProfile() {
-                try {
-                    const profile = await getUserProfile();
-                    if (!profile) return;
-                    const personal = profile.personalInfo || {};
-                    const school = profile.schoolWorkInfo || {};
-                    const guardian = profile.guardianInfo || {};
-                    const skills = profile.skills || {};
-                    const work = profile.workExperience || {};
+    function persistEntry(key) {
+      try {
+        if (stored[key] && stored[key].url) {
+          localStorage.setItem(LS_PREFIX + key + '_name', stored[key].name);
+          localStorage.setItem(LS_PREFIX + key + '_data', stored[key].url);
+          localStorage.setItem(LS_PREFIX + key + '_type', stored[key].type || '');
+        } else {
+          localStorage.removeItem(LS_PREFIX + key + '_name');
+          localStorage.removeItem(LS_PREFIX + key + '_data');
+          localStorage.removeItem(LS_PREFIX + key + '_type');
+        }
+      } catch (e) { console.warn('persistEntry failed', e); }
+    }
 
-                    if (personal.first) document.getElementById('first_name').value = personal.first;
-                    if (personal.last) document.getElementById('last_name').value = personal.last;
-                    if (personal.email) document.getElementById('email').value = personal.email;
-                    if (guardian.guardian_phone) document.getElementById('phone_number').value = guardian.guardian_phone;
-                    if (school.school_name) document.getElementById('address').value = school.school_name;
-                    try {
-                        const we = JSON.parse(work.work_experiences || '[]');
-                        if (we && we.length) {
-                            const first = we[0];
-                            if (first.title) document.getElementById('job_title').value = first.title;
-                            if (first.company) document.getElementById('company_employer').value = first.company;
-                            if (first.description) document.getElementById('job_description').value = first.description;
-                        }
-                    } catch (e) {}
-                } catch (err) {
-                    console.warn('Autofill failed', err);
-                }
-            }
+        function createSlot(def) {
+      const wrap = document.createElement('div');
+      wrap.className = 'required-slot flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm';
 
-            (async function() {
-                try {
-                    const signed = await isSignedIn(3000);
-                    if (!signed) {
-                        const current = window.location.pathname + window.location.search;
-                        window.location.href = 'login?redirect=' + encodeURIComponent(current);
-                        return;
-                    }
-                    document.addEventListener('DOMContentLoaded', autofillProfile);
-                } catch (err) {
-                    console.error('Auth check failed', err);
-                    document.addEventListener('DOMContentLoaded', autofillProfile);
-                }
-            })();
-        </script> --}}
+      const left = document.createElement('div');
+      left.className = 'flex-1 min-w-0 text-center';
+
+      const title = document.createElement('div');
+      title.className = 'text-sm font-semibold text-gray-800';
+      title.textContent = def.label;
+
+      const name = document.createElement('div');
+      name.className = 'text-sm text-gray-600 truncate';
+      name.id = def.key + '_name';
+      name.textContent = 'No file selected';
+
+      left.appendChild(title);
+      left.appendChild(name);
+
+      const actions = document.createElement('div');
+      actions.className = 'flex gap-2 items-center flex-none';
+
+      // --- CHOOSE ---
+      const choose = document.createElement('button');
+      choose.type = 'button';
+      choose.className = 'bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md';
+      choose.textContent = 'Choose file';
+      choose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        getOrCreateInput(def.key).click();
+      });
+
+      // --- VIEW ---
+      const view = document.createElement('button');
+      view.type = 'button';
+      view.className = 'bg-gray-700 text-white text-xs px-3 py-1 rounded-md';
+      view.textContent = 'View';
+      view.disabled = true;
+
+      // --- REMOVE ---
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'bg-red-500 text-white text-xs px-3 py-1 rounded-md';
+      remove.textContent = 'Remove';
+      remove.disabled = true;
+
+      // helper: get extension (prefer mime -> fallback to filename)
+      function getExt(type, name) {
+        if (type) {
+          const t = String(type).toLowerCase();
+          if (t.includes('pdf')) return 'pdf';
+          if (t.startsWith('image/')) return t.split('/')[1] || 'image';
+        }
+        if (name) return (name.split('.').pop() || '').toLowerCase();
+        return '';
+      }
+
+      // view opens shared fileModal
+      view.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const s = stored[def.key];
+        if (!s || !s.url) return;
+        const ext = getExt(s.type, s.name);
+        openModal(s.url, ext);
+      });
+
+      remove.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        removeFile(def.key);
+      });
+
+      actions.appendChild(choose);
+      actions.appendChild(view);
+      actions.appendChild(remove);
+
+      wrap.appendChild(left);
+      wrap.appendChild(actions);
+
+      return { wrap, nameEl: name, viewBtn: view, removeBtn: remove };
+    }
+
+    // --- CLICK ANYWHERE ON THE BIG BOX ---
+    const bigBox = document.getElementById('bigUploadBox');
+    const bigPicker = document.getElementById('allDocuments');
+
+    if (bigBox && bigPicker) {
+      bigBox.addEventListener('click', (e) => {
+        // Only trigger if the click was on the box and NOT on a slot button
+        if (!e.defaultPrevented) {
+          bigPicker.click();
+        }
+      });
+    }
+
+    function getOrCreateInput(key) {
+      let inp = document.getElementById('input_' + key);
+      if (!inp) {
+        inp = document.createElement('input');
+        inp.type = 'file';
+        inp.accept = '.pdf,.doc,.docx,.jpg,.jpeg,.png';
+        inp.id = 'input_' + key;
+        inp.className = 'hidden';
+        inp.addEventListener('change', (ev) => {
+          const f = ev.target.files[0];
+          if (!f) return;
+          const reader = new FileReader();
+          reader.onload = (r) => {
+            stored[key] = { name: f.name, url: r.target.result, type: f.type || guessTypeFromFilename(f.name), rawFile: f };
+            persistEntry(key);
+            renderSlots();
+            updateBigUploadContentVisibility();
+          };
+          reader.readAsDataURL(f);
+          ev.target.value = '';
+        });
+        document.body.appendChild(inp);
+      }
+      return inp;
+    }
+
+    function assignFileToKey(key, file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        stored[key] = { name: file.name, url: e.target.result, type: file.type || guessTypeFromFilename(file.name), rawFile: file };
+        persistEntry(key);
+        renderSlots();
+        updateBigUploadContentVisibility();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function removeFile(key) {
+      if (stored[key]) {
+        delete stored[key];
+        persistEntry(key);
+      }
+      renderSlots();
+      updateBigUploadContentVisibility();
+    }
+
+    function renderSlots() {
+      const container = document.getElementById('requiredFilesSlots');
+      if (!container) return;
+      container.innerHTML = '';
+      // Show a slot only if there is an uploaded/persisted file for that requirement
+      defs.forEach(def => {
+        const entry = stored[def.key];
+        if (!entry || !entry.name) return; // do not show empty slots
+        const { wrap, nameEl, viewBtn, removeBtn } = createSlot(def);
+        nameEl.textContent = entry.name;
+        viewBtn.disabled = false;
+        removeBtn.disabled = false;
+        container.appendChild(wrap);
+      });
+    }
+
+    function assignPendingToChecked() {
+      if (!pendingFiles.length) return;
+      const checkedDefs = defs.filter(d => document.getElementById(d.checkboxId) && document.getElementById(d.checkboxId).checked);
+      for (let i = 0; i < checkedDefs.length && pendingFiles.length; i++) {
+        const def = checkedDefs[i];
+        if (!stored[def.key]) {
+          const file = pendingFiles.shift();
+          if (file) assignFileToKey(def.key, file);
+        }
+      }
+    }
+
+    // NEW: update inner prompt visibility (hide prompt when any uploaded slot exists)
+    function updateBigUploadContentVisibility() {
+      const content = document.getElementById('bigUploadContent');
+      if (!content) return;
+      const anyStored = defs.some(d => stored[d.key] && stored[d.key].name);
+      if (anyStored) content.classList.add('hidden');
+      else content.classList.remove('hidden');
+    }
+
+    const bigInput = document.getElementById('allDocuments');
+    if (bigInput) {
+      bigInput.addEventListener('change', (e) => {
+        const files = Array.from(e.target.files || []).slice(0, 3);
+        if (!files.length) return;
+        // For each file, find first checked requirement that currently has no stored file
+        files.forEach(file => {
+          const targetDef = defs.find(d => {
+            const chk = document.getElementById(d.checkboxId);
+            return chk && chk.checked && !(stored[d.key] && stored[d.key].name);
+          });
+          if (targetDef) {
+            assignFileToKey(targetDef.key, file);
+          } else {
+            // if no checked empty slot exists, queue as pending
+            if (pendingFiles.length < 3) pendingFiles.push(file);
+          }
+        });
+        e.target.value = '';
+        renderSlots();
+        updateBigUploadContentVisibility();
+      });
+    }
+
+    defs.forEach(def => {
+      const chk = document.getElementById(def.checkboxId);
+      if (!chk) return;
+      chk.addEventListener('change', () => {
+        const checked = defs.filter(d => document.getElementById(d.checkboxId) && document.getElementById(d.checkboxId).checked);
+        if (checked.length > 3) {
+          chk.checked = false;
+          alert('You can upload up to 3 required documents.');
+          return;
+        }
+        // when a box is checked try to assign any pending files to newly available checked slots
+        assignPendingToChecked();
+        // do not render empty slots — only render when files exist
+        renderSlots();
+        updateBigUploadContentVisibility();
+      });
+    });
+
+    // init
+    loadPersisted();
+    // do NOT auto-check checkboxes — keep them as user left them
+    // show persisted slots if any
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSlots();
+      assignPendingToChecked();
+      updateBigUploadContentVisibility();
+    });
+
+    // expose helper for form submit
+    window.getRequiredUploads = function () {
+      const out = {};
+      defs.forEach(d => { out[d.key] = stored[d.key] ? stored[d.key].rawFile || stored[d.key] : undefined; });
+      out._pending = pendingFiles.slice();
+      return out;
+    };
+  })();
+</script>
+
+<script>
+// Add modal open/close helpers (uses your existing #fileModal / #modalContent / #closeModalBtn)
+document.addEventListener('DOMContentLoaded', function () {
+  const modal = document.getElementById('fileModal');
+  const modalContent = document.getElementById('modalContent');
+  const closeBtn = document.getElementById('closeModalBtn');
+
+  window.openModal = function (url, ext) {
+    if (!modal || !modalContent) return;
+    modal.classList.remove('hidden');
+    modalContent.innerHTML = '';
+
+    const imageExts = ['jpg','jpeg','png','gif','webp','bmp'];
+    if (imageExts.includes(ext)) {
+      modalContent.innerHTML = `<img src="${url}" class="max-h-[80vh] mx-auto rounded-lg">`;
+    } else if (ext === 'pdf') {
+      modalContent.innerHTML = `<iframe src="${url}" class="w-full h-[80vh] rounded-lg border-0"></iframe>`;
+    } else {
+      modalContent.innerHTML = `<p class="text-gray-700 text-center">This file type cannot be previewed.<br>(Hindi maaaring i-preview ang file na ito.)</p>`;
+    }
+  };
+
+  function closeModalLocal() {
+    if (!modal || !modalContent) return;
+    modal.classList.add('hidden');
+    modalContent.innerHTML = '';
+  }
+
+  if (closeBtn) closeBtn.addEventListener('click', (e) => { e.preventDefault(); closeModalLocal(); });
+  if (modal) modal.addEventListener('click', (e) => { if (e.target === modal) closeModalLocal(); });
+});
+</script>
+
+    <!-- 🔹 Modal (Shared for both uploads) -->
+    <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+        <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
+        <div id="modalContent" class="p-2 text-center"></div>
+    </div>
+    </div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // Ensure modals are direct children of <body> and forced to full-viewport fixed
+  ['fileModal','imageModal','pdfModal'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    // Escape any transformed/stacked parent by moving to body
+    if (el.parentElement !== document.body) document.body.appendChild(el);
+    // Force full-screen fixed placement and very high z-index
+    el.style.position = 'fixed';
+    el.style.top = '0';
+    el.style.left = '0';
+    el.style.width = '100%';
+    el.style.height = '100%';
+    el.style.inset = '0';
+    el.style.zIndex = '100000';
+  });
+
+  // optional: lock body scroll when any modal is visible
+  function lockBodyLock(visible) { document.body.style.overflow = visible ? 'hidden' : ''; }
+  // hook your modal open/close if needed (example when using openModal/closeModalLocal)
+  // e.g. wrap openModal to call lockBodyLock(true) and close handlers to call lockBodyLock(false)
+});
+</script>
     @endsection
