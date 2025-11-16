@@ -142,28 +142,77 @@
 
                 <!-- Card 1 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
-                    onclick="selectWorkplaceChoice(this,'quiet')">
+                    onclick="selectWorkplaceChoice(this,'Friendly Team')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="The place is quiet and calm" data-tts-tl="Tahimik at kalmado ang lugar" aria-label="Play audio for Quiet place option">🔊</button>
-                    <img src="image/workplc1.png" alt="quietplace" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">The place is quiet and calm</h3>
-                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Tahimik at kalmado ang lugar)</p>
+                        data-tts-en="Friendly Team: You will work with a kind and helpful team." 
+                        data-tts-tl="Makikipagtrabaho ka sa mabait at matulunging team" 
+                        aria-label="Play audio for Quiet place option">🔊</button>
+                    <img src="image/workplc1.jpg" alt="friendly" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Friendly Team</h3>
+                    <p class="mt-2 text-[13px] text-black-600 text-center">You will work with a kind and helpful team.</p>
+                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Makikipagtrabaho ka sa mabait at matulunging team)</p>
                 </div>
 
                 <!-- Card 2 -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
-                    onclick="selectWorkplaceChoice(this,'busy')">
+                    onclick="selectWorkplaceChoice(this,'Buddy Helper')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="There are many people and many things happening" data-tts-tl="Maraming tao at maraming ginagawa" aria-label="Play audio for Busy place option">🔊</button>
-                    <img src="image/workplc2.png" alt="busyplace" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">There are many people and many things happening
+                        data-tts-en="Buddy Helper: You will have a buddy (a coworker) who will guide you and help you when you need support." 
+                        data-tts-tl="Magkakaroon ka ng buddy (katrabaho) na gagabay at tutulong sa’yo kapag kailangan mo" 
+                        aria-label="Play audio for Busy place option">🔊</button>
+                    <img src="image/workplc2.jpg" alt="buddy" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Buddy Helper
                     </h3>
-                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Maraming tao at maraming ginagawa)</p>
+                    <p class="mt-2 text-[13px] text-black-600 text-center">You will have a buddy (a coworker) who will guide you and help you when you need support.</p>
+                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Magkakaroon ka ng buddy (katrabaho) na gagabay at tutulong sa’yo kapag kailangan mo)</p>
                 </div>
 
-                <!-- Other -->
+                  <!-- Card 3 -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
+                    onclick="selectWorkplaceChoice(this,'Simple Instructions')">
+                    <button type="button"
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Simple Instructions: You will receive instructions that are easy to understand. These may include pictures, signs, or step-by-step directions."
+                        data-tts-tl="Makakatanggap ka ng malinaw at madaling sundan na instructions. Maaaring may kasama itong larawan o sunod-sunod na steps" 
+                        aria-label="Play audio for Busy place option">🔊</button>
+                    <img src="image/workplc3.jpg" alt="simpleinstructions" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Simple Instructions 
+                    </h3>
+                    <p class="mt-2 text-[13px] text-black-600 text-center">You will receive instructions that are easy to understand. These may include pictures, signs, or step-by-step directions.</p>
+                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Makakatanggap ka ng malinaw at madaling sundan na instructions. Maaaring may kasama itong larawan o sunod-sunod na steps)</p>
+                </div>
+
+                  <!-- Card 4 -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
+                    onclick="selectWorkplaceChoice(this,'Safe and Light Work')">
+                    <button type="button"
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="Safe and Light Work: Your tasks will be safe and not too heavy." 
+                        data-tts-tl="Ang mga gagawin mo ay ligtas at hindi mabigat na gawain" aria-label="Play audio for Busy place option">🔊</button>
+                    <img src="image/workplc4.jpg" alt="safe&light" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">Safe and Light Work
+                    </h3>
+                    <p class="mt-2 text-[13px] text-black-600 text-center">Your tasks will be safe and not too heavy.</p>
+                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Ang mga gagawin mo ay ligtas at hindi mabigat na gawain)</p>
+                </div>
+
+                  <!-- Card 5 -->
+                <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
+                    onclick="selectWorkplaceChoice(this,'No Heavy Lifting / No Pharmacy Tasks')">
+                    <button type="button"
+                        class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                        data-tts-en="No Heavy Lifting / No Pharmacy Tasks:You will not carry heavy items and you will not do pharmacy-related tasks." 
+                        data-tts-tl="Hindi ka magbubuhat ng mabibigat na gamit at hindi ka gagawa ng anumang pharmacy-related na trabaho" aria-label="Play audio for Busy place option">🔊</button>
+                    <img src="image/workplc5.jpg" alt="heavy&pharmacytask" class="w-full rounded-md mb-4">
+                    <h3 class="text-blue-600 font-semibold text-center">No Heavy Lifting / No Pharmacy Tasks
+                    </h3>
+                    <p class="mt-2 text-[13px] text-black-600 text-center">You will not carry heavy items and you will not do pharmacy-related tasks.</p>
+                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Hindi ka magbubuhat ng mabibigat na gamit at hindi ka gagawa ng anumang pharmacy-related na trabaho)</p>
+                </div>
+
+                <!-- Other 
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
                     data-value="other" onclick="selectWorkplaceChoice(this,'other')">
                     <button type="button"
@@ -181,7 +230,7 @@
                     <input id="selectworkplace_other_text" name="workplace_other_text" type="text"
                         aria-labelledby="workplace_other_label" placeholder="Type your answer here"
                         class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>
+                </div> -->
             </div>
 
             <!-- Hidden Input for Workplace Choice -->

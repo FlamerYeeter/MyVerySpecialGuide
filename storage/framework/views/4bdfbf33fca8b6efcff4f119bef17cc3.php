@@ -437,15 +437,15 @@
 
                             // Display file info and buttons
                             fileDisplay.innerHTML = `
-      <div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-        <span class="text-2xl">${icon}</span>
-        <span class="truncate max-w-[160px] sm:max-w-[240px]">${displayName}</span>
-        <div class="flex gap-2">
-          <button id="viewFileBtn" type="button" class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">View / Tingnan</button>
-          <button id="removeFileBtn" type="button" class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">Remove / Alisin</button>
-        </div>
-      </div>
-    `;
+                            <div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+                                <span class="text-2xl">${icon}</span>
+                                <span class="truncate max-w-[160px] sm:max-w-[240px]">${displayName}</span>
+                                <div class="flex gap-2">
+                                <button id="viewFileBtn" type="button" class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">View / Tingnan</button>
+                                <button id="removeFileBtn" type="button" class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition">Remove / Alisin</button>
+                                </div>
+                            </div>
+                            `;
 
                             // View button — opens preview modal
                             document.getElementById('viewFileBtn').addEventListener('click', () => {

@@ -270,7 +270,57 @@
                 </div>
                 </div>
 
+               <!-- Uploaded files preview (Proof + Medical) -->
+               <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 mt-6">
+                 <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                   Uploaded Files Preview
+                 </h3>
+                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                   <!-- Proof preview -->
+                   <div>
+                     <label class="font-semibold text-gray-800 text-sm sm:text-base">Proof of Membership</label>
+                     <p class="text-gray-600 italic text-xs sm:text-sm mb-2">Uploaded file (if any)</p>
 
+                     <!-- visible placeholder for simple fallback text -->
+                     <div id="r_proof" class="mt-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">No file uploaded</div>
+
+                     <!-- detailed file info / actions (hidden until a file exists) -->
+                     <div id="proofFileInfo" class="mt-3 hidden items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+                       <span id="proofFileIcon" class="text-2xl">📁</span>
+                       <span id="proofFileName" class="truncate max-w-[240px] text-sm text-gray-700"></span>
+                       <div class="ml-auto flex gap-2">
+                         <button id="proofViewBtn" type="button" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
+                         <button id="proofRemoveBtn" type="button" class="bg-red-500 text-white text-xs px-3 py-1 rounded-md">Remove</button>
+                       </div>
+                     </div>
+                   </div>
+
+                   <!-- Medical preview -->
+                   <div>
+                     <label class="font-semibold text-gray-800 text-sm sm:text-base">Medical Certificate</label>
+                     <p class="text-gray-600 italic text-xs sm:text-sm mb-2">Uploaded file (if any)</p>
+
+                     <div id="r_medical" class="mt-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">No file uploaded</div>
+
+                     <div id="medFileInfo" class="mt-3 hidden items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+                       <span id="medFileIcon" class="text-2xl">📁</span>
+                       <span id="medFileName" class="truncate max-w-[240px] text-sm text-gray-700"></span>
+                       <div class="ml-auto flex gap-2">
+                         <button id="medViewBtn" type="button" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
+                         <button id="medRemoveBtn" type="button" class="bg-red-500 text-white text-xs px-3 py-1 rounded-md">Remove</button>
+                       </div>
+                     </div>
+                   </div>
+                 </div>
+               </div>
+               
+               <!-- Modal for file preview -->
+               <div id="filePreviewModal" class="hidden fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100000]">
+                 <div class="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-[92%] relative">
+                   <button id="filePreviewClose" class="absolute top-2 right-3 text-gray-600 hover:text-gray-900 text-2xl">×</button>
+                   <div id="filePreviewContent" class="p-2"></div>
+                 </div>
+               </div>
 
          <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
@@ -1175,121 +1225,6 @@ localStorage.setItem('rpi_personal1', JSON.stringify(draft));
         </script>
 
          <script>
-            (function () {
-            const fileInput = document.getElementById("proof");
-            const fileInfo = document.getElementById("proofFileInfo");
-            const fileName = document.getElementById("proofFileName");
-            const fileIcon = document.getElementById("proofFileIcon");
-            const viewBtn = document.getElementById("proofViewBtn");
-            const removeBtn = document.getElementById("proofRemoveBtn");
-            const modal = document.getElementById("fileModal");
-            const modalContent = document.getElementById("modalContent");
-            const closeModal = document.getElementById("closeModalBtn");
-            const hintEl = document.getElementById("proofHint");
-            const prevFileEl = document.getElementById("r_proof");
-
-            console.log("✅ File upload script initialized");
-
-            // 🔹 Load file from localStorage (base64)
-            const savedFileData = localStorage.getItem("uploadedProofData1");
-            const savedFileType = localStorage.getItem("uploadedProofType1");
-            const savedFileName = localStorage.getItem("uploadedProofName1");
-
-            if (savedFileData && savedFileType && savedFileName) {
-                showFileInfo(savedFileName, savedFileType);
-                makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
-            } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
-                // If coming from previous form test
-                const prevFileName = prevFileEl.textContent.trim();
-                showFileInfo(prevFileName, getFileType(prevFileName));
-                makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
-            }
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                const fileData = e.target.result; // base64 content
-                localStorage.setItem("uploadedProofData1", fileData);
-                localStorage.setItem("uploadedProofType1", ext);
-                localStorage.setItem("uploadedProofName1", file.name);
-
-                showFileInfo(file.name, ext);
-                makeFileClickable(prevFileEl, file.name, fileData, ext);
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // 🔹 View button
-            viewBtn.addEventListener("click", () => {
-                const name = localStorage.getItem("uploadedProofName1");
-                const data = localStorage.getItem("uploadedProofData1");
-                const type = localStorage.getItem("uploadedProofType1");
-                if (data && type && name) openModalPreview(name, data, type);
-            });
-
-            // 🔹 Remove file
-            removeBtn.addEventListener("click", () => {
-                localStorage.removeItem("uploadedProofData1");
-                localStorage.removeItem("uploadedProofType1");
-                localStorage.removeItem("uploadedProofName1");
-                fileInput.value = "";
-                hideFileInfo();
-            });
-
-            // 🔹 Close modal
-            closeModal.addEventListener("click", closeModalFn);
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) closeModalFn();
-            });
-
-            // ===============================
-            // 🔹 Helper Functions
-            // ===============================
-
-            function showFileInfo(name, type) {
-                fileInfo.classList.remove("hidden");
-                if (hintEl) hintEl.style.display = "none";
-                fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
-                fileName.textContent = name;
-            }
-
-            function hideFileInfo() {
-                fileInfo.classList.add("hidden");
-                fileName.textContent = "";
-                fileIcon.textContent = "";
-                if (hintEl) hintEl.style.display = "";
-            }
-
-            function closeModalFn() {
-                modal.classList.add("hidden");
-                modalContent.innerHTML = "";
-            }
-
-            function getFileType(filename) {
-                return filename.split(".").pop().toLowerCase();
-            }
-
-            // 🔹 Make filename clickable
-            function makeFileClickable(el, name, data, type) {
-                if (!el) return;
-                el.classList.add("text-blue-600", "underline", "cursor-pointer");
-                el.title = "Click to view uploaded file";
-                el.onclick = () => openModalPreview(name, data, type);
-            }
-
-            // 🔹 Open modal preview
-            function openModalPreview(name, data, type) {
-                modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
-                if (["jpg", "jpeg", "png"].includes(type)) {
-                modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
-                } else if (type === "pdf") {
-                modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
-                } else {
-                modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
-                }
-                modal.classList.remove("hidden");
-            }
-            })();
-
 
              const phoneInput = document.getElementById('phone');
 
@@ -1534,6 +1469,94 @@ localStorage.setItem('rpi_personal1', JSON.stringify(draft));
     });
 })();
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const modal = document.getElementById('filePreviewModal');
+  const modalContent = document.getElementById('filePreviewContent');
+  const modalClose = document.getElementById('filePreviewClose');
+
+  function openPreview(name, dataUrl, type) {
+    modal.classList.remove('hidden');
+    modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
+    if (!dataUrl) {
+      modalContent.innerHTML += '<p class="text-gray-600">No preview available.</p>';
+      return;
+    }
+    if (['jpg','jpeg','png'].includes(type)) {
+      modalContent.innerHTML += `<img src="${dataUrl}" class="max-h-[70vh] rounded shadow" alt="${name}">`;
+    } else if (type === 'pdf') {
+      modalContent.innerHTML += `<iframe src="${dataUrl}" class="w-full h-[70vh] rounded border"></iframe>`;
+    } else {
+      modalContent.innerHTML += `<a href="${dataUrl}" target="_blank" rel="noopener" class="text-blue-600 underline">Open ${name}</a>`;
+    }
+  }
+
+  function closePreview() {
+    modal.classList.add('hidden');
+    modalContent.innerHTML = '';
+  }
+
+  modalClose?.addEventListener('click', closePreview);
+  modal?.addEventListener('click', function(e){ if (e.target === modal) closePreview(); });
+
+  // helper to wire a preview block
+  function wireBlock(prefix, storageIndex) {
+    const nameKey = storageIndex === 1 ? 'uploadedProofName1' : 'uploadedProofName0';
+    const dataKey = storageIndex === 1 ? 'uploadedProofData1' : 'uploadedProofData0';
+    const typeKey = storageIndex === 1 ? 'uploadedProofType1' : 'uploadedProofType0';
+
+    const textEl = document.getElementById(prefix === 'proof' ? 'r_proof' : 'r_medical');
+    const infoEl = document.getElementById(prefix === 'proof' ? 'proofFileInfo' : 'medFileInfo');
+    const iconEl = document.getElementById(prefix === 'proof' ? 'proofFileIcon' : 'medFileIcon');
+    const nameEl = document.getElementById(prefix === 'proof' ? 'proofFileName' : 'medFileName');
+    const viewBtn = document.getElementById(prefix === 'proof' ? 'proofViewBtn' : 'medViewBtn');
+    const removeBtn = document.getElementById(prefix === 'proof' ? 'proofRemoveBtn' : 'medRemoveBtn');
+
+    function render() {
+      const name = localStorage.getItem(nameKey);
+      const data = localStorage.getItem(dataKey);
+      const type = (localStorage.getItem(typeKey) || '').toLowerCase();
+
+      if (name && data) {
+        textEl.classList.add('hidden');
+        if (infoEl) infoEl.classList.remove('hidden');
+        if (nameEl) nameEl.textContent = name;
+        if (iconEl) iconEl.textContent = type === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(type) ? '🖼️' : '📁');
+        // attach view handler
+        if (viewBtn) {
+          viewBtn.disabled = false;
+          viewBtn.onclick = () => openPreview(name, data, type);
+        }
+        if (removeBtn) {
+          removeBtn.disabled = false;
+          removeBtn.onclick = () => {
+            localStorage.removeItem(nameKey);
+            localStorage.removeItem(dataKey);
+            localStorage.removeItem(typeKey);
+            render();
+          };
+        }
+      } else {
+        // show fallback text placeholder
+        if (textEl) { textEl.classList.remove('hidden'); textEl.textContent = 'No file uploaded'; }
+        if (infoEl) infoEl.classList.add('hidden');
+        if (viewBtn) { viewBtn.disabled = true; viewBtn.onclick = null; }
+        if (removeBtn) { removeBtn.disabled = true; removeBtn.onclick = null; }
+      }
+    }
+
+    // initial render + listen for storage changes (other tab)
+    render();
+    window.addEventListener('storage', (e) => {
+      if (!e.key || [nameKey, dataKey, typeKey].includes(e.key)) setTimeout(render, 20);
+    });
+  }
+
+  wireBlock('proof', 1);
+  wireBlock('medical', 0);
+});
+</script>
+
 </body>
 
 </html>

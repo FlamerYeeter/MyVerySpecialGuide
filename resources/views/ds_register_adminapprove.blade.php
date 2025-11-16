@@ -508,48 +508,74 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
   if (!fileInput) return;
 
-  fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
-    if (!file) {
-      resetDisplay();
-      return;
-    }
+fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        resetDisplay();
+        return;
+      }
 
-    if (fileURL) URL.revokeObjectURL(fileURL);
-    fileURL = URL.createObjectURL(file);
-
-    const ext = file.name.split('.').pop().toLowerCase();
-    const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️' : ext === 'pdf' ? '📄' : '📁';
-
-    display.innerHTML = `
-      <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl">${icon}</span>
-          <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
-        </div>
-        <div class="flex gap-2">
-          <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
-          <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
-        </div>
-      </div>
-    `;
-
-    display.querySelector('.viewBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      openModal(fileURL, ext);
-    });
-
-    display.querySelector('.removeBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      resetDisplay();
-      fileInput.value = '';
       if (fileURL) URL.revokeObjectURL(fileURL);
-      fileURL = null;
-    });
+      fileURL = URL.createObjectURL(file);
 
-    labelEl.textContent = 'File Uploaded:';
-    hintEl.style.display = 'none';
-  });
+      const ext = file.name.split('.').pop().toLowerCase();
+      const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️' : ext === 'pdf' ? '📄' : '📁';
+
+      display.innerHTML = `
+        <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
+          <div class="flex items-center gap-2">
+            <span class="text-2xl">${icon}</span>
+            <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+            <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
+          </div>
+        </div>
+      `;
+
+      // Save to localStorage as DataURL so review page can preview
+      const storageIndex = inputId === 'proofFile' ? 1 : 0; // proof -> 1, med -> 0
+      const nameKey = storageIndex === 1 ? 'uploadedProofName1' : 'uploadedProofName0';
+      const dataKey = storageIndex === 1 ? 'uploadedProofData1' : 'uploadedProofData0';
+      const typeKey = storageIndex === 1 ? 'uploadedProofType1' : 'uploadedProofType0';
+
+      const reader = new FileReader();
+      reader.addEventListener('load', () => {
+        try {
+          localStorage.setItem(nameKey, file.name);
+          localStorage.setItem(dataKey, reader.result); // base64 data URL
+          localStorage.setItem(typeKey, ext);
+          console.info('[adminapprove] saved upload to localStorage', nameKey, dataKey, typeKey);
+        } catch (err) {
+          console.warn('Failed to persist uploaded file to localStorage', err);
+        }
+      });
+      reader.readAsDataURL(file);
+
+      display.querySelector('.viewBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        openModal(fileURL, ext);
+      });
+
+      display.querySelector('.removeBtn').addEventListener('click', (e) => {
+        e.preventDefault();
+        resetDisplay();
+        fileInput.value = '';
+        if (fileURL) URL.revokeObjectURL(fileURL);
+        fileURL = null;
+        // remove from localStorage
+        try {
+          localStorage.removeItem(nameKey);
+          localStorage.removeItem(dataKey);
+          localStorage.removeItem(typeKey);
+          console.info('[adminapprove] removed upload from localStorage', nameKey);
+        } catch (err) { console.warn('Failed to remove upload keys', err); }
+      });
+
+      labelEl.textContent = 'File Uploaded:';
+      hintEl.style.display = 'none';
+    });
 
   function openModal(url, ext) {
     modal.classList.remove('hidden');
