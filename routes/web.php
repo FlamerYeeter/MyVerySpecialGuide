@@ -1517,3 +1517,15 @@ Route::post('/__oracle-test-login', function (Request $request) {
         return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
     }
 })->name('debug.oracle_test');
+
+Route::get('/viewprofile1', function () {
+    return view('ds_viewprofile1');
+})->name('viewprofile1');
+
+Route::get('/viewprofile2', function () {
+    return view('ds_viewprofile2');
+})->name('viewprofile2');
+
+Route::get('/viewprofile3', function () {
+    return view('ds_viewprofile3');
+})->name('viewprofile3');

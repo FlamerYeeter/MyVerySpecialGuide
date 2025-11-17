@@ -7,7 +7,7 @@
         <!-- Back Button -->
         <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
             <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
-                <a href="/"
+                <a href="/viewprofile1"
                     class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
                         stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
@@ -194,10 +194,10 @@
 
         <!-- Next Button -->
         <div class="text-center space-y-3">
-            <button
-                class="bg-blue-800 text-white font-medium px-32 py-4 rounded-lg hover:bg-blue-900 flex items-center justify-center gap-2 mx-auto text-lg">
+            <a href="/viewprofile3"
+                class="inline-flex bg-blue-800 text-white font-medium px-32 py-4 rounded-lg hover:bg-blue-900 flex items-center justify-center gap-2 mx-auto text-lg">
                 Next → <i class="ri-arrow-right-line text-2xl"></i>
-            </button>
+            </a>
             <p class="text-base">Click <span class="text-blue-800 font-medium">"Next"</span> to move to the next
                 page</p>
             <p class="text-sm text-gray-500">(Pindutin ang <span class="text-blue-800 font-medium">"Next"</span>
