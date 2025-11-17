@@ -81,7 +81,7 @@
             </div>
 
             <!-- EDUCATION + CERTIFICATIONS -->
-            <div id="" class="border-2 bg-white shadow-lg rounded-3xl p-10 relative mt-6">
+            {{-- <div id="" class="border-2 bg-white shadow-lg rounded-3xl p-10 relative mt-6">
                 <button onclick="editSection('education')"
                     class="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-xl text-2xl font-semibold">Edit</button>
                 <h3 class="text-3xl font-bold text-[#1E40AF] border-b-4 border-blue-200 pb-3 mb-8 text-center sm:text-left">
@@ -116,7 +116,7 @@
                 <h3 class="text-3xl font-bold text-[#1E40AF] border-b-4 border-blue-200 pb-3 mb-8 text-center sm:text-left">
                     Work Experience</h3>
                 <div id="rev-work-container" class="space-y-6 text-lg"></div>
-            </div>
+            </div>--}}
 
             <!-- REQUIRED DOCUMENTS -->
             <div id="" class="border-2 bg-white shadow-lg rounded-3xl p-10 relative mt-6">
