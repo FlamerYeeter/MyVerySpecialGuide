@@ -109,11 +109,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       errorDiv.textContent = data.message || 'Login failed.';
     }
   } catch (err) {
-<<<<<<< Updated upstream
     loadingModal.classList.add('hidden');
-=======
-    console.log(err);
->>>>>>> Stashed changes
     errorDiv.textContent = 'Server error.';
   }
 });
