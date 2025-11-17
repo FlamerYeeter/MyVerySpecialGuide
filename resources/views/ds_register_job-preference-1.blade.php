@@ -428,15 +428,20 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const buttons = document.querySelectorAll('.tts-btn');
-            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
-            let preferredVoice = null;
+            const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
+            let preferredEnglishVoice = null;
+            let preferredTagalogVoice = null;
             let currentBtn = null;
             let availableVoices = [];
 
             function populateVoices() {
                 availableVoices = window.speechSynthesis.getVoices() || [];
-                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
+                preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName)
                     || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                    || null;
+                preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName)
+                    || availableVoices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name))
                     || null;
             }
 
@@ -481,15 +486,18 @@
                     setTimeout(function () {
                         if (!window.speechSynthesis) return;
                         function voiceFor(langHint) {
-                            if (preferredVoice) return preferredVoice;
                             if (langHint) {
                                 const hint = (langHint || '').toLowerCase();
                                 if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                    if (preferredTagalogVoice) return preferredTagalogVoice;
                                     return chooseVoiceForLang('tl');
                                 }
-                                return chooseVoiceForLang(langHint);
+                                if (hint.startsWith('en')) {
+                                    if (preferredEnglishVoice) return preferredEnglishVoice;
+                                    return chooseVoiceForLang('en');
+                                }
                             }
-                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                            return preferredEnglishVoice || chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
                         }
 
                         const seq = [];

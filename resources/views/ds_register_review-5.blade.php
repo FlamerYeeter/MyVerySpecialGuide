@@ -625,36 +625,68 @@
     <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
     <script>
         (function(){
-            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
             let voices = [];
-            const populateVoices = () => { voices = speechSynthesis.getVoices() || []; };
-            const pickBest = (list, langPrefix) => {
+            let preferredEnglish = null;
+            let preferredTagalog = null;
+
+            function populateVoices() {
+                voices = speechSynthesis.getVoices() || [];
+                preferredEnglish = voices.find(v => v.name === preferredEnglishVoiceName) || voices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name)) || null;
+                preferredTagalog = voices.find(v => v.name === preferredTagalogVoiceName) || voices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name)) || null;
+            }
+
+            function pickBest(list) {
                 if (!list || !list.length) return null;
-                const exact = list.find(v=>v.name === preferredVoiceName); if (exact) return exact;
-                const fuzzy = list.find(v=>v.name && v.name.toLowerCase().includes('microsoft') && v.name.toLowerCase().includes('multilingual')); if (fuzzy) return fuzzy;
-                const langMatch = list.find(v => v.lang && v.lang.toLowerCase().startsWith(langPrefix)); if (langMatch) return langMatch;
-                return list[0] || null;
-            };
-            const voiceFor = (lang) => { const forLang = voices.filter(v => v.lang && v.lang.toLowerCase().startsWith(lang)); return pickBest(forLang.length ? forLang : voices, lang); };
-            const stopSpeaking = () => { try { speechSynthesis.cancel(); document.querySelectorAll('.tts-btn.speaking').forEach(b=>b.classList.remove('speaking')); } catch(e){} };
-            const startSequence = (btn, en, tl) => {
-                stopSpeaking(); if (!en && !tl) return; btn.classList.add('speaking'); btn.setAttribute('aria-pressed','true');
-                const uEn = en ? new SpeechSynthesisUtterance(en) : null; const uTl = tl ? new SpeechSynthesisUtterance(tl) : null;
-                if (uEn) { uEn.lang='en-US'; uEn.voice = voiceFor('en') || null; }
-                if (uTl) { uTl.lang='tl-PH'; uTl.voice = voiceFor('tl') || (voiceFor('en') || null); }
-                const finalize = () => { btn.classList.remove('speaking'); btn.setAttribute('aria-pressed','false'); };
-                if (uEn && uTl) { uEn.onend = () => { setTimeout(()=>speechSynthesis.speak(uTl), 180); }; uTl.onend = finalize; speechSynthesis.speak(uEn); }
-                else if (uEn) { uEn.onend = finalize; speechSynthesis.speak(uEn); }
-                else if (uTl) { uTl.onend = finalize; speechSynthesis.speak(uTl); }
-            };
+                const preferred = list.find(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                return preferred || list[0];
+            }
+
+            function chooseVoiceForLang(langCode) {
+                if (!voices.length) return null;
+                langCode = (langCode || '').toLowerCase();
+                if (langCode.startsWith('tl') || langCode.startsWith('fil')) {
+                    if (preferredTagalog) return preferredTagalog;
+                    const candidates = voices.filter(v => (v.lang||'').toLowerCase().startsWith('tl') || (v.lang||'').toLowerCase().startsWith('fil'));
+                    return pickBest(candidates.length ? candidates : voices);
+                }
+                if (langCode.startsWith('en')) {
+                    if (preferredEnglish) return preferredEnglish;
+                    const candidates = voices.filter(v => (v.lang||'').toLowerCase().startsWith('en'));
+                    return pickBest(candidates.length ? candidates : voices);
+                }
+                return preferredEnglish || voices[0] || null;
+            }
+
+            function stopSpeaking() {
+                try { speechSynthesis.cancel(); document.querySelectorAll('.tts-btn.speaking').forEach(b=>b.classList.remove('speaking')); } catch(e){}
+            }
+
+            function startSequence(btn, en, tl) {
+                stopSpeaking();
+                if (!en && !tl) return;
+                btn.classList.add('speaking'); btn.setAttribute('aria-pressed','true');
+                const uEn = en ? new SpeechSynthesisUtterance(en) : null;
+                const uTl = tl ? new SpeechSynthesisUtterance(tl) : null;
+                if (uEn) { uEn.lang='en-US'; uEn.voice = chooseVoiceForLang('en') || null; }
+                if (uTl) { uTl.lang='tl-PH'; uTl.voice = chooseVoiceForLang('tl') || chooseVoiceForLang('en') || null; }
+                const finalize = () => { btn.classList.remove('speaking'); btn.removeAttribute('aria-pressed'); };
+                if (uEn && uTl) { uEn.onend = () => { setTimeout(()=>speechSynthesis.speak(uTl), 160); }; uTl.onend = finalize; uEn.onerror = uTl.onerror = finalize; speechSynthesis.speak(uEn); }
+                else if (uEn) { uEn.onend = finalize; uEn.onerror = finalize; speechSynthesis.speak(uEn); }
+                else if (uTl) { uTl.onend = finalize; uTl.onerror = finalize; speechSynthesis.speak(uTl); }
+            }
+
             const init = () => {
-                populateVoices(); window.speechSynthesis.onvoiceschanged = populateVoices;
-                document.querySelectorAll('.tts-btn').forEach(b=>{
+                populateVoices();
+                window.speechSynthesis.onvoiceschanged = populateVoices;
+                document.querySelectorAll('.tts-btn').forEach(b => {
                     b.addEventListener('click', ()=>{ if (b.classList.contains('speaking')) { stopSpeaking(); return; } startSequence(b, b.getAttribute('data-tts-en')||'', b.getAttribute('data-tts-tl')||''); });
                     b.addEventListener('keydown', ev=>{ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); b.click(); } });
                 });
                 window.addEventListener('beforeunload', stopSpeaking);
             };
+
             if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
         })();
     </script>

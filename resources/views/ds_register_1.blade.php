@@ -259,36 +259,34 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const buttons = document.querySelectorAll('.tts-btn');
-            // prefer a single high-quality voice for both English and Filipino
-            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
-            let preferredVoice = null;
+            const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
+            let preferredEnglishVoice = null;
+            let preferredTagalogVoice = null;
             let currentBtn = null;
             let availableVoices = [];
 
             function populateVoices() {
                 availableVoices = window.speechSynthesis.getVoices() || [];
-                // try exact match first, then fuzzy match for known Microsoft AvaMultilingual
-                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
+                preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName)
                     || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                    || null;
+                preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName)
+                    || availableVoices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name))
                     || null;
             }
 
-            // heuristics to pick a good voice for a given lang (e.g., 'tl' or 'en')
             function chooseVoiceForLang(langCode) {
                 if (!availableVoices.length) return null;
                 langCode = (langCode || '').toLowerCase();
-                // prefer exact lang match
                 let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
                 if (candidates.length) return pickBest(candidates);
-                // prefer voices whose name contains high-quality markers
                 candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
                 if (candidates.length) return pickBest(candidates);
-                // fallback to first available
                 return availableVoices[0];
             }
 
             function pickBest(list) {
-                // prefer non-local (cloud-backed) or names with Neural/WaveNet
                 let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
                 if (preferred.length) return preferred[0];
                 return list[0];
@@ -306,45 +304,39 @@
             }
 
             buttons.forEach(function (btn) {
-                // make keyboard accessible
                 btn.setAttribute('role', 'button');
                 btn.setAttribute('tabindex', '0');
 
                 btn.addEventListener('click', function () {
                     const textEn = (btn.getAttribute('data-tts-en') || '').trim();
                     const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
-                    // nothing to speak
                     if (!textEn && !textTl) return;
 
-                    // If same button clicked while speaking, stop
                     if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
                         stopSpeaking();
                         return;
                     }
 
-                    // Stop any existing speech then speak new text(s)
                     stopSpeaking();
 
-                    // Small timeout to ensure previous utterance canceled
                     setTimeout(function () {
                         if (!window.speechSynthesis) return;
 
-                        // Helper to pick voice for a given language (or selected by user)
                         function voiceFor(langHint) {
-                            // prefer the configured Microsoft AvaMultilingual voice when available
-                            if (preferredVoice) return preferredVoice;
                             if (langHint) {
                                 const hint = (langHint || '').toLowerCase();
                                 if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                    if (preferredTagalogVoice) return preferredTagalogVoice;
                                     return chooseVoiceForLang('tl');
                                 }
-                                return chooseVoiceForLang(langHint);
+                                if (hint.startsWith('en')) {
+                                    if (preferredEnglishVoice) return preferredEnglishVoice;
+                                    return chooseVoiceForLang('en');
+                                }
                             }
-                            // fallback to any reasonable voice
-                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                            return preferredEnglishVoice || chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
                         }
 
-                        // Build utterances sequence: English first (if any), then Tagalog
                         const seq = [];
                         if (textEn) {
                             const uEn = new SpeechSynthesisUtterance(textEn);
@@ -363,14 +355,12 @@
 
                         if (!seq.length) return;
 
-                        // Attach lifecycle handlers to the sequence
                         seq[0].onstart = function () {
                             btn.classList.add('speaking');
                             btn.setAttribute('aria-pressed', 'true');
                             currentBtn = btn;
                         };
 
-                        // chain subsequent utterances
                         for (let i = 0; i < seq.length; i++) {
                             const ut = seq[i];
                             ut.onerror = function () {
@@ -380,7 +370,6 @@
                             };
                             if (i < seq.length - 1) {
                                 ut.onend = function () {
-                                    // speak next
                                     window.speechSynthesis.speak(seq[i + 1]);
                                 };
                             } else {
@@ -392,12 +381,10 @@
                             }
                         }
 
-                        // start sequence
                         window.speechSynthesis.speak(seq[0]);
                     }, 50);
                 });
 
-                // also allow Enter/Space to trigger
                 btn.addEventListener('keydown', function (ev) {
                     if (ev.key === 'Enter' || ev.key === ' ') {
                         ev.preventDefault();
@@ -406,22 +393,18 @@
                 });
             });
 
-            // Stop speech when navigating away or reloading
             window.addEventListener('beforeunload', function () {
                 if (window.speechSynthesis) window.speechSynthesis.cancel();
             });
-            // populate voices now or when they change
+
             if (window.speechSynthesis) {
                 populateVoices();
                 window.speechSynthesis.onvoiceschanged = function () {
                     populateVoices();
                 };
             }
-
-            // No preview UI: when voices are populated we attempt to use the preferred Microsoft AvaMultilingual voice
         });
     </script>
 
 </body>
-
 </html>

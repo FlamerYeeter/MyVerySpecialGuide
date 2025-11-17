@@ -5,6 +5,17 @@
     <!-- Icon link -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 
+    {{-- Insert small CSS for TTS speaking state --}}
+    <style>
+    /* TTS speaking state for audio buttons (minimal) */
+    .tts-btn.speaking {
+        background-color: #2563eb !important;
+        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+        transform: scale(1.03);
+        color: #fff;
+    }
+    </style>
+
     <div class="font-sans bg-white text-gray-800">
 
         <!-- Back Button -->
@@ -75,7 +86,11 @@
 
      <!-- Card 2 - COMPLETED -->
   <div class="bg-white rounded-2xl shadow-lg p-6 text-center relative border-4 border-green-200 hover:scale-105 transition-transform duration-300 w-full max-w-sm">
-    <button class="absolute top-3 right-3 text-green-500 hover:scale-110" title="Play narration">
+    <button
+      class="absolute top-3 right-3 text-green-500 hover:scale-110 tts-btn"
+      title="Play narration"
+      data-tts-en="Completed assessments overview. Completed: -"
+      data-tts-tl="Paglalarawan ng mga natapos na pagsusuri. Natapos: -">
       <img src="https://img.icons8.com/color/48/speaker.png" class="w-7 h-7" alt="Speaker Icon">
     </button>
     <div class="flex justify-center mb-3">
@@ -88,7 +103,11 @@
 
   <!-- Card 3 - OVERALL PROGRESS -->
   <div class="bg-white rounded-2xl shadow-lg p-6 text-center relative border-4 border-blue-200 hover:scale-105 transition-transform duration-300 w-full max-w-sm">
-    <button class="absolute top-3 right-3 text-blue-500 hover:scale-110" title="Play narration">
+    <button
+      class="absolute top-3 right-3 text-blue-500 hover:scale-110 tts-btn"
+      title="Play narration"
+      data-tts-en="Overall progress: - percent"
+      data-tts-tl="Kabuuang progreso: - porsyento">
       <img src="https://img.icons8.com/color/48/speaker.png" class="w-7 h-7" alt="Speaker Icon">
     </button>
     <div class="flex justify-center mb-3">
@@ -288,7 +307,13 @@
         <img src="https://img.icons8.com/color/48/star--v1.png" class="w-10 h-10" alt="Star Icon">
         Your Assessments
       </h3>
-      <button class="text-green-500 hover:scale-110" title="Play narration">
+
+      {{-- Make this narration button TTS-enabled --}}
+      <button
+        class="text-green-500 hover:scale-110 tts-btn"
+        title="Play narration"
+        data-tts-en="Your assessments section. View your current assessments and progress."
+        data-tts-tl="Seksyon ng iyong mga pagsusuri. Tingnan ang iyong kasalukuyang mga pagsusuri at progreso.">
         <img src="https://img.icons8.com/color/48/speaker.png" class="w-10 h-10" alt="Speaker Icon">
       </button>
     </div>
@@ -386,4 +411,159 @@
             });
         }
     </script>
+
+    {{-- Insert the TTS Web Speech API handler (copied from register_1) --}}
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const buttons = document.querySelectorAll('.tts-btn');
+            // prefer separate high-quality voices for English and Tagalog
+            const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
+            let preferredEnglishVoice = null;
+            let preferredTagalogVoice = null;
+            let currentBtn = null;
+            let availableVoices = [];
+
+            function populateVoices() {
+                availableVoices = window.speechSynthesis.getVoices() || [];
+                preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName)
+                    || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                    || null;
+                preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName)
+                    || availableVoices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name))
+                    || null;
+            }
+
+            function chooseVoiceForLang(langCode) {
+                if (!availableVoices.length) return null;
+                langCode = (langCode || '').toLowerCase();
+                let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                if (candidates.length) return pickBest(candidates);
+                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                if (candidates.length) return pickBest(candidates);
+                return availableVoices[0];
+            }
+
+            function pickBest(list) {
+                let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                if (preferred.length) return preferred[0];
+                return list[0];
+            }
+
+            function stopSpeaking() {
+                if (window.speechSynthesis) {
+                    window.speechSynthesis.cancel();
+                }
+                if (currentBtn) {
+                    currentBtn.classList.remove('speaking');
+                    currentBtn.removeAttribute('aria-pressed');
+                    currentBtn = null;
+                }
+            }
+
+            buttons.forEach(function (btn) {
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('tabindex', '0');
+
+                btn.addEventListener('click', function () {
+                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                    if (!textEn && !textTl) return;
+
+                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                        stopSpeaking();
+                        return;
+                    }
+
+                    stopSpeaking();
+
+                    setTimeout(function () {
+                        if (!window.speechSynthesis) return;
+
+                        function voiceFor(langHint) {
+                            // prefer explicit per-language preferred voices when available
+                            if (langHint) {
+                                const hint = (langHint || '').toLowerCase();
+                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                    if (preferredTagalogVoice) return preferredTagalogVoice;
+                                    return chooseVoiceForLang('tl');
+                                }
+                                if (hint.startsWith('en')) {
+                                    if (preferredEnglishVoice) return preferredEnglishVoice;
+                                    return chooseVoiceForLang('en');
+                                }
+                            }
+                            // fallback: prefer English preferred voice, then any reasonable voice
+                            return preferredEnglishVoice || chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                        }
+
+                        const seq = [];
+                        if (textEn) {
+                            const uEn = new SpeechSynthesisUtterance(textEn);
+                            uEn.lang = 'en-US';
+                            const v = voiceFor('en');
+                            if (v) uEn.voice = v;
+                            seq.push(uEn);
+                        }
+                        if (textTl) {
+                            const uTl = new SpeechSynthesisUtterance(textTl);
+                            uTl.lang = 'tl-PH';
+                            const v2 = voiceFor('tl');
+                            if (v2) uTl.voice = v2;
+                            seq.push(uTl);
+                        }
+
+                        if (!seq.length) return;
+
+                        seq[0].onstart = function () {
+                            btn.classList.add('speaking');
+                            btn.setAttribute('aria-pressed', 'true');
+                            currentBtn = btn;
+                        };
+
+                        for (let i = 0; i < seq.length; i++) {
+                            const ut = seq[i];
+                            ut.onerror = function () {
+                                if (btn) btn.classList.remove('speaking');
+                                if (btn) btn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            };
+                            if (i < seq.length - 1) {
+                                ut.onend = function () {
+                                    window.speechSynthesis.speak(seq[i + 1]);
+                                };
+                            } else {
+                                ut.onend = function () {
+                                    if (btn) btn.classList.remove('speaking');
+                                    if (btn) btn.removeAttribute('aria-pressed');
+                                    currentBtn = null;
+                                };
+                            }
+                        }
+
+                        window.speechSynthesis.speak(seq[0]);
+                    }, 50);
+                });
+
+                btn.addEventListener('keydown', function (ev) {
+                    if (ev.key === 'Enter' || ev.key === ' ') {
+                        ev.preventDefault();
+                        btn.click();
+                    }
+                });
+            });
+
+            window.addEventListener('beforeunload', function () {
+                if (window.speechSynthesis) window.speechSynthesis.cancel();
+            });
+
+            if (window.speechSynthesis) {
+                populateVoices();
+                window.speechSynthesis.onvoiceschanged = function () {
+                    populateVoices();
+                };
+            }
+        });
+    </script>
+
 @endsection

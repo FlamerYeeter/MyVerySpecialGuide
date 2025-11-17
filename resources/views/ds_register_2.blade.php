@@ -143,36 +143,35 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const buttons = document.querySelectorAll('.tts-btn');
-            // prefer a single high-quality voice for both English and Filipino
-            const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
-            let preferredVoice = null;
+            // prefer a single high-quality voice for both English and Filipino but separate per language
+            const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+            const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
+            let preferredEnglishVoice = null;
+            let preferredTagalogVoice = null;
             let currentBtn = null;
             let availableVoices = [];
 
             function populateVoices() {
                 availableVoices = window.speechSynthesis.getVoices() || [];
-                // try exact match first, then fuzzy match for known Microsoft AvaMultilingual
-                preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
+                preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName)
                     || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                    || null;
+                preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName)
+                    || availableVoices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name))
                     || null;
             }
 
-            // heuristics to pick a good voice for a given lang (e.g., 'tl' or 'en')
             function chooseVoiceForLang(langCode) {
                 if (!availableVoices.length) return null;
                 langCode = (langCode || '').toLowerCase();
-                // prefer exact lang match
                 let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
                 if (candidates.length) return pickBest(candidates);
-                // prefer voices whose name contains high-quality markers
                 candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
                 if (candidates.length) return pickBest(candidates);
-                // fallback to first available
                 return availableVoices[0];
             }
 
             function pickBest(list) {
-                // prefer non-local (cloud-backed) or names with Neural/WaveNet
                 let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
                 if (preferred.length) return preferred[0];
                 return list[0];
@@ -215,17 +214,18 @@
 
                         // Helper to pick voice for a given language (or selected by user)
                         function voiceFor(langHint) {
-                            // prefer the configured Microsoft AvaMultilingual voice when available
-                            if (preferredVoice) return preferredVoice;
                             if (langHint) {
                                 const hint = (langHint || '').toLowerCase();
                                 if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                    if (preferredTagalogVoice) return preferredTagalogVoice;
                                     return chooseVoiceForLang('tl');
                                 }
-                                return chooseVoiceForLang(langHint);
+                                if (hint.startsWith('en')) {
+                                    if (preferredEnglishVoice) return preferredEnglishVoice;
+                                    return chooseVoiceForLang('en');
+                                }
                             }
-                            // fallback to any reasonable voice
-                            return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                            return preferredEnglishVoice || chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
                         }
 
                         // Build utterances sequence: English first (if any), then Tagalog
