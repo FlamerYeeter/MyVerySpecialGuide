@@ -62,7 +62,7 @@
         <!-- Profile Dropdown -->
         <div class="relative">
           <button id="profileButton"
-            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 flex items-center gap-2 transition">
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition flex items-center gap-2 {{ Request::routeIs('viewprofile1') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
             Profile
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
