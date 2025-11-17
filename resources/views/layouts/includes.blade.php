@@ -62,7 +62,7 @@
         <!-- Profile Dropdown -->
         <div class="relative">
           <button id="profileButton"
-            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition flex items-center gap-2 {{ Request::routeIs('viewprofile1') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition flex items-center gap-2 {{ Request::routeIs(['viewprofile1', 'viewprofile2', 'viewprofile3']) ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
             Profile
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
               stroke="currentColor">
@@ -75,10 +75,10 @@
           <div id="dropdownMenu"
             class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-md text-gray-700 z-20">
             <a href="{{ route('viewprofile1') }}"
-              class="w-full text-left block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">View Profile</a>
+              class="w-full text-left block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">View Profile</a>
 
             <a href="{{ route('my.job.applications') }}"
-              class="w-full text-left block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">My Job Applications</a>
+              class="w-full text-left block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">My Job Applications</a>
 
             <form method="POST" action="{{ route('logout') }}">
               @csrf
