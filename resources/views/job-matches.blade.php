@@ -126,9 +126,11 @@
                     <select name="work_environment" onchange="this.form.submit()"
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
                         <option value="">Select Environment</option>
-                        <option value="Quiet" {{ request('work_environment') == 'Quiet' ? 'selected' : '' }}>Quiet
-                        </option>
-                        <option value="Busy" {{ request('work_environment') == 'Busy' ? 'selected' : '' }}>Busy</option>
+                        <option value="Quiet" {{ request('work_environment') == 'Friendly Team' ? 'selected' : '' }}>Friendly Team</option>
+                        <option value="Busy" {{ request('work_environment') == 'Buddy Helper' ? 'selected' : '' }}>Buddy Helper</option>
+                        <option value="Busy" {{ request('work_environment') == 'Simple Instructions' ? 'selected' : '' }}>Simple Instructions</option>
+                        <option value="Busy" {{ request('work_environment') == 'Safe and Light Work' ? 'selected' : '' }}>Safe and Light Work</option>
+                        <option value="Busy" {{ request('work_environment') == 'No Heavy Lifting/No Pharmacy Task' ? 'selected' : '' }}>No Heavy Lifting/No Pharmacy Task</option>
                     </select>
                     <svg xmlns="http://www.w3.org/2000/svg"
                         class="w-7 h-7 text-blue-600 absolute right-5 top-[70%] transform -translate-y-1/2 pointer-events-none"
