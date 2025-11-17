@@ -704,7 +704,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
     <!-- Evaluation metrics block removed to avoid Blade parsing issues (was wrapped in a Blade comment containing Blade directives). Re-enable carefully if needed. -->
 
 
-    <!-- Therapist Assessment Notice -->
+    <!-- Therapist Assessment Notice 
     <section
         class="bg-gradient-to-r from-[#FFEDD5] to-[#FEF3C7] mx-6 sm:mx-12 lg:mx-20 rounded-2xl p-8 mt-8 shadow-lg border-l-8 border-[#F59E0B]">
         <div class="flex items-start gap-6">
@@ -730,7 +730,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 </p>
             </div>
         </div>
-    </section>
+    </section> -->
 
     <!-- Job Match Notice -->
     <section class="bg-[#10B981] text-white mx-6 sm:mx-12 lg:mx-20 rounded-2xl p-8 mt-8 shadow-lg">
@@ -754,7 +754,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="Star icon" class="w-7 h-7" />
 
                 <!-- Text -->
-                <span>All Matches (2)</span>
+                <span>All Matches ()</span>
             </div>
     </section>
 
@@ -846,7 +846,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
             <!-- Progress Bar -->
             <div class="mt-10 w-full">
-                <p class="text-xl font-semibold text-gray-800 mb-2 text-center">Application Progress</p>
+                <p class="text-xl font-semibold text-gray-800 mb-2 text-center">Number of Applicants</p>
                 <div class="h-5 bg-gray-200 rounded-md overflow-hidden">
                     <div class="h-full bg-[#88BF02]" style="width: 50%;"></div>
                 </div>
