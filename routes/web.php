@@ -1369,7 +1369,7 @@ Route::get('/assessment', function () {
 })->name('assessment');
 
 Route::get('/whythisjob', function () {
-    return view('why-this-job-1');
+    return view('why-this-job-2');
 })->name('whythisjob');
 
 

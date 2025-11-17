@@ -71,7 +71,7 @@
           <!-- Dropdown -->
           <div id="dropdownMenu"
             class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-xl shadow-md text-gray-700 z-20">
-            <a href="#"
+            <a href="{{ route('viewprofile1') }}"
               class="w-full text-left block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">View Profile</a>
 
             <a href="{{ route('my.job.applications') }}"
