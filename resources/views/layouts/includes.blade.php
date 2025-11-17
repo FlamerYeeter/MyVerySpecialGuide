@@ -39,19 +39,22 @@
 
         <nav id="navMenu" class="flex flex-wrap justify-center gap-3 sm:gap-4">
           <a href="{{ route('job.matches') }}"
-            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition {{ Request::routeIs('job.matches') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
             Jobs
           </a>
+
           <a href="{{ route('saved') }}"
-            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition {{ Request::routeIs('saved') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
             Saved Jobs
           </a>
+
           <a href="{{ route('assessment') }}"
-            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition {{ Request::routeIs('assessment') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
             Assessment Progress
           </a>
+
           <a href="{{ route('whythisjob') }}"
-            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition">
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition {{ Request::routeIs('whythisjob') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
             Why this Job 
           </a>
         </nav>
@@ -126,27 +129,56 @@
     const dropdownMenu = document.getElementById('dropdownMenu');
     const menuToggle = document.getElementById('menuToggle');
     const mobileNav = document.getElementById('mobileNav');
-    const navLinks = document.querySelectorAll('.nav-link');
+    // only consider the primary nav items inside #navMenu (exclude the Profile button)
+    const navLinks = document.querySelectorAll('#navMenu .nav-link');
 
-    // Toggle dropdown
-    profileButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      dropdownMenu.classList.toggle('hidden');
-    });
-
-    // Close dropdown when clicking outside
-    window.addEventListener('click', (e) => {
-      if (!profileButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-        dropdownMenu.classList.add('hidden');
+    // helper to toggle Profile active style while dropdown open
+    function setProfileActive(active) {
+      if (!profileButton) return;
+      if (active) {
+        profileButton.classList.add('bg-blue-700', 'text-white', 'font-bold');
+        profileButton.classList.remove('bg-white', 'text-gray-900');
+      } else {
+        profileButton.classList.remove('bg-blue-700', 'text-white', 'font-bold');
+        profileButton.classList.add('bg-white', 'text-gray-900');
       }
-    });
+    }
 
-    // Toggle mobile menu
-    menuToggle.addEventListener('click', () => {
-      mobileNav.classList.toggle('hidden');
-    });
+    // Toggle dropdown (guarded) — keep profile button active while open
+    if (profileButton && dropdownMenu) {
+      profileButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const nowOpen = dropdownMenu.classList.toggle('hidden') === false;
+        setProfileActive(nowOpen);
+      });
 
-    // Highlight active link
+      // Close dropdown when clicking outside (guarded)
+      window.addEventListener('click', (e) => {
+        if (!profileButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+          if (!dropdownMenu.classList.contains('hidden')) {
+            dropdownMenu.classList.add('hidden');
+            setProfileActive(false);
+          }
+        }
+      });
+
+      // Close dropdown when clicking any dropdown item (links/buttons)
+      dropdownMenu.querySelectorAll('a, button').forEach(item => {
+        item.addEventListener('click', () => {
+          dropdownMenu.classList.add('hidden');
+          setProfileActive(false);
+        });
+      });
+    }
+
+    // Toggle mobile menu (guarded)
+    if (menuToggle) {
+      menuToggle.addEventListener('click', () => {
+        if (mobileNav) mobileNav.classList.toggle('hidden');
+      });
+    }
+
+    // Highlight active link (only navMenu items; Profile button no longer included)
     navLinks.forEach(link => {
       link.addEventListener('click', () => {
         navLinks.forEach(l => {
@@ -157,7 +189,8 @@
         link.classList.add('bg-blue-700', 'text-white', 'font-bold');
       });
     });
-  </script>
+</script>
+
 
 </body>
 </html>
