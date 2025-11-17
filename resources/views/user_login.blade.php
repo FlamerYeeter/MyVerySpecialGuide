@@ -93,7 +93,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     });
 
     const data = await res.json();
-
+ console.log(data);
     if (data.success) {
       localStorage.setItem('session_id', data.session_id);
       localStorage.setItem('user_id', data.user.id);
@@ -109,7 +109,11 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       errorDiv.textContent = data.message || 'Login failed.';
     }
   } catch (err) {
+<<<<<<< Updated upstream
     loadingModal.classList.add('hidden');
+=======
+    console.log(err);
+>>>>>>> Stashed changes
     errorDiv.textContent = 'Server error.';
   }
 });
