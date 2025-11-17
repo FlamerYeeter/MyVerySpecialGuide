@@ -290,6 +290,126 @@
                 </p>
             </div>
 
+            <!-- Job 8 -->
+            <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+                data-value="Menu & Order Assistant" onclick="toggleJobPref1Choice(this,'Menu & Order Assistant ')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Menu & Order Assistant:You help show the menu, guide customers, and assist in taking their orders together with a partner crew." 
+                    data-tts-tl="Tutulong mo ipakita ang menu, gabayan ang customers, at kumuha ng kanilang order kasama ang partner crew" aria-label="Play audio for Creative Work">🔊</button>
+                <img src="image/job8.jpg" alt="order assistant" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Menu & Order Assistant</h3>
+                <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
+                   You help show the menu, guide customers, and assist in taking their orders together with a partner crew. 
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-2 text-center">
+                    (Tutulong mo ipakita ang menu, gabayan ang customers, at kumuha ng kanilang order kasama ang partner crew)
+                </p>
+            </div>
+
+            <!-- Job 9 -->
+            <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+                data-value="Food Runner / Server Assistant" onclick="toggleJobPref1Choice(this,'Food Runner / Server Assistant')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Food Runner / Server Assistant:You bring food to the customers' tables safely and politely. " 
+                    data-tts-tl="Ikaw ay magdadala ng pagkain sa mesa ng customers nang maayos at magalang" aria-label="Play audio for Creative Work">🔊</button>
+                <img src="image/job9.jpg" alt="server assistant" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Food Runner / Server Assistant </h3>
+                <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
+                   You bring food to the customers' tables safely and politely. 
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-2 text-center">
+                    (Ikaw ay magdadala ng pagkain sa mesa ng customers nang maayos at magalang)
+                </p>
+            </div>
+
+            <!-- Job 10 -->
+            <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+                data-value="Table Setter / Dining Area Assistant " onclick="toggleJobPref1Choice(this,'Table Setter / Dining Area Assistant')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Table Setter / Dining Area Assistant:You set up tables, wipe surfaces, and help keep the dining area clean." 
+                    data-tts-tl="Aayusin mo ang mesa, lilinisin ang ibabaw nito, at tutulong panatilihing malinis ang dining area" aria-label="Play audio for Creative Work">🔊</button>
+                <img src="image/job10.jpg" alt="dining assistant" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Table Setter / Dining Area Assistant </h3>
+                <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
+                   You set up tables, wipe surfaces, and help keep the dining area clean. 
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-2 text-center">
+                    (Aayusin mo ang mesa, lilinisin ang ibabaw nito, at tutulong panatilihing malinis ang dining area)
+                </p>
+            </div>
+
+            <!-- Job 11 -->
+            <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+                data-value="Kitchen Helper" onclick="toggleJobPref1Choice(this,'Kitchen Helper')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Kitchen Helper:You help with simple kitchen tasks like sorting utensils or preparing food." 
+                    data-tts-tl="Tutulong ka sa mga simpleng gawain sa kusina tulad ng pagsasaayos ng utensils o paghahanda ng maliliit na pagkain" aria-label="Play audio for Creative Work">🔊</button>
+                <img src="image/job11.jpg" alt="kitchen helper" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Kitchen Helper</h3>
+                <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
+                   You help with simple kitchen tasks like sorting utensils or preparing food.  
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-2 text-center">
+                    (Tutulong ka sa mga simpleng gawain sa kusina tulad ng pagsasaayos ng utensils o paghahanda ng maliliit na pagkain)
+                </p>
+            </div>
+
+             <!-- Job 12 -->
+            <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+                data-value="Housekeeping Assistant" onclick="toggleJobPref1Choice(this,'Housekeeping Assistant')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Housekeeping Assistant:You help clean rooms, make beds, fold towels, and organize items." 
+                    data-tts-tl="Tututulong ka maglinis ng kwarto, mag-ayos ng kama, magtupi ng tuwalya, at mag-ayos ng mga gamit" aria-label="Play audio for Creative Work">🔊</button>
+                <img src="image/job12.jpg" alt="housekeeping assistant" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Housekeeping Assistant </h3>
+                <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
+                   You help clean rooms, make beds, fold towels, and organize items.   
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-2 text-center">
+                    (Tututulong ka maglinis ng kwarto, mag-ayos ng kama, magtupi ng tuwalya, at mag-ayos ng mga gamit)
+                </p>
+            </div>
+
+            <!-- Job 13 -->
+            <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+                data-value="Concierge / Front Desk Helper" onclick="toggleJobPref1Choice(this,'Concierge / Front Desk Helper')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en="Concierge / Front Desk Helper:You help welcome guests, smile, greet them, and guide them to where they need to go. " 
+                    data-tts-tl="Tututulong ka mag-welcome ng guests, bumati, ngumiti, at ituro sila sa tamang lugar kung saan sila dadaan" aria-label="Play audio for Creative Work">🔊</button>
+                <img src="image/job13.jpg" alt="concierge" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center">Concierge / Front Desk Helper </h3>
+                <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
+                   You help welcome guests, smile, greet them, and guide them to where they need to go.  
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-2 text-center">
+                    (Tututulong ka mag-welcome ng guests, bumati, ngumiti, at ituro sila sa tamang lugar kung saan sila dadaan)
+                </p>
+            </div>
+
+            <!-- Job 14 -->
+            <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
+                data-value=" Sales & Promotion Assistant" onclick="toggleJobPref1Choice(this,' Sales & Promotion Assistant')">
+                <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                    data-tts-en=" Sales & Promotion Assistant:You give out flyers, help with simple promotions, or assist in arranging display items." 
+                    data-tts-tl="Ikaw ay mamimigay ng flyers, tutulong sa simpleng promotions, o tututulong mag-ayos ng mga display" aria-label="Play audio for Creative Work">🔊</button>
+                <img src="image/job14.jpg" alt="sales" class="w-full rounded-md mb-4" />
+                <h3 class="text-blue-600 font-semibold text-center"> Sales & Promotion Assistant</h3>
+                <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
+                   You give out flyers, help with simple promotions, or assist in arranging display items.  
+                </p>
+                <p class="text-[13px] text-gray-500 italic mt-2 text-center">
+                    (Ikaw ay mamimigay ng flyers, tutulong sa simpleng promotions, o tututulong mag-ayos ng mga display)
+                </p>
+            </div>
+            
+
         </div>
 
         <!-- Hidden input for job preference (JSON array) -->
