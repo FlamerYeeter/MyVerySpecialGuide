@@ -5,8 +5,8 @@
 
 
         <!-- Back Button -->
-        <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
-            <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
+        <div class="bg-yellow-400 w-full py-6 px-6 sm:px-10 lg:px-24">
+            <div class="flex justify-start items-center space-x-3 max-w-[1600px] mx-auto">
                 <a href="/viewprofile2"
                     class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
@@ -20,18 +20,18 @@
 
 
         <!-- Profile Section -->
-        <section class="max-w-7xl mx-auto px-6 py-12 space-y-10">
+        <section class="max-w-[1600px] mx-auto px-10 py-14 space-y-12">
 
             <!-- Profile Card -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
-                <div class="bg-blue-800 text-white flex items-center gap-6 px-8 py-8 rounded-t-2xl">
+                <div class="bg-blue-800 text-white flex items-center gap-12 px-8 py-10 rounded-t-2xl">
                     <div
-                        class="bg-white text-blue-800 font-bold rounded-full w-20 h-20 flex items-center justify-center text-2xl">
+                        class="bg-white text-blue-800 font-bold rounded-full w-24 h-24 flex items-center justify-center text-3xl">
                         JD
                     </div>
                     <div>
-                        <h1 class="text-xl font-semibold">Juan Dela Cruz</h1>
-                        <p class="flex items-center gap-2 text-base mt-2"><img
+                        <h1 class="text-2xl font-semibold">Juan Dela Cruz</h1>
+                        <p class="flex items-center gap-3 text-lg mt-2"><img
                                 src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
                             Taguig City, Metro Manila</p>
                         <p class="flex items-center gap-4 text-base mt-2"><img
@@ -41,11 +41,11 @@
                     </div>
                 </div>
 
-                <div class="p-8">
+                <div class="p-10 space-y-14">
 
 <!-- Skills Info -->
                     <section class="border-b border-gray-200 pb-8 mb-8">
-                        <h3 class="text-2xl font-bold mb-6">Your Skills</h3>
+                        <h3 class="text-blue-800 text-3xl font-bold mb-8">Your Skills</h3>
 
                         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -66,20 +66,20 @@
                         </div>
 
                         <!-- Edit Button -->
-                        <div class="flex flex-col items-end mt-6 space-y-2">
-                            <p class="text-sm text-gray-500">
+                        <div class="flex flex-col items-end mt-10 space-y-2">
+                            <p class="text-lg text-gray-600">
                                 Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
                             </p>
                             <button
-                                class="bg-green-500 text-white px-24 py-3 rounded-lg text-base font-medium hover:bg-green-600">
+                                class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
                                 Edit
                             </button>
                         </div>
                     </section>
 
 <!-- Job Preference Info -->
-                    <section class="border-b border-gray-200 pb-8 mb-8">
-                        <h3 class="text-2xl font-bold mb-6">Your Job Preferences</h3>
+                    <section class="">
+                        <h3 class="text-blue-800 text-3xl font-bold mb-8">Your Job Preferences</h3>
 
                         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -100,12 +100,12 @@
                         </div>
 
                         <!-- Edit Button -->
-                        <div class="flex flex-col items-end mt-6 space-y-2">
-                            <p class="text-sm text-gray-500">
+                        <div class="flex flex-col items-end mt-10 space-y-2">
+                            <p class="text-lg text-gray-600">
                                 Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
                             </p>
                             <button
-                                class="bg-green-500 text-white px-24 py-3 rounded-lg text-base font-medium hover:bg-green-600">
+                                class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
                                 Edit
                             </button>
                         </div>

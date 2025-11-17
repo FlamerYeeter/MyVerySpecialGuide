@@ -127,12 +127,12 @@
             <label for="first_name" class="font-semibold text-gray-800 text-sm sm:text-base">First Name</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
             <input id="first_name" type="text" disabled
-                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm" />
             </div>
 
  <!-- Last Name -->
             <div>
-            <label for="ast_name" class="font-semibold text-gray-800 text-sm sm:text-base">Last Name</label>
+            <label for="last_name" class="font-semibold text-gray-800 text-sm sm:text-base">Last Name</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
             <input id="last_name" type="text" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
@@ -222,7 +222,7 @@
    <!-- Relationship to User -->
         <div>
             <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to User</label>
-            <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa Gagamit</p>
+            <p class="text-gray-600 italic text-xs sm:text-sm">(Ka-ano-ano mo siya?)</p>
             <select id="guardian_relationship" disabled
             class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none">
             <option value="">-- Select Relationship --</option>

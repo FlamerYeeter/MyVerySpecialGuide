@@ -3,14 +3,13 @@
 @section('content')
     <main class="flex-grow w-full bg-gray-50 font-sans text-gray-800">
 
-
         <!-- Back Button -->
-        <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
-            <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
+        <div class="bg-yellow-400 w-full py-6 px-6 sm:px-10 lg:px-24">
+            <div class="flex justify-start items-center space-x-3 max-w-[1600px] mx-auto">
                 <a href="/navigationbuttons"
-                    class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
+                    class="flex items-center space-x-3 text-[#1E40AF] font-bold text-3xl hover:underline focus:outline-none transition-all">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
-                        stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
+                        stroke="currentColor" class="w-10 h-10">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                     </svg>
                     <span>Back</span>
@@ -18,121 +17,139 @@
             </div>
         </div>
 
-
         <!-- Profile Section -->
-        <section class="max-w-7xl mx-auto px-6 py-12 space-y-10">
+        <section class="max-w-[1600px] mx-auto px-10 py-14 space-y-12">
 
             <!-- Profile Card -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
-                <div class="bg-blue-800 text-white flex items-center gap-6 px-8 py-8 rounded-t-2xl">
+            <div class="bg-white rounded-2xl shadow-md border border-gray-200">
+
+                <!-- Header -->
+                <div class="bg-blue-800 text-white flex items-center gap-12 px-10 py-10 rounded-t-2xl">
                     <div
-                        class="bg-white text-blue-800 font-bold rounded-full w-20 h-20 flex items-center justify-center text-2xl">
+                        class="bg-white text-blue-800 font-bold rounded-full w-24 h-24 flex items-center justify-center text-3xl">
                         JD
                     </div>
                     <div>
-                        <h1 class="text-xl font-semibold">Juan Dela Cruz</h1>
-                        <p class="flex items-center gap-2 text-base mt-2"><img
-                                src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
-                            Taguig City, Metro Manila</p>
-                        <p class="flex items-center gap-4 text-base mt-2"><img
-                                src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" alt="Email Icon"
-                                class="w-5 h-5">
-                            juancruz@gmail.com</p>
+                        <h1 class="text-2xl font-semibold">Juan Dela Cruz</h1>
+                        <p class="flex items-center gap-3 text-lg mt-2">
+                            <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-7 h-7">
+                            Taguig City, Metro Manila
+                        </p>
+                        <p class="flex items-center gap-3 text-lg mt-2">
+                            <img src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" class="w-6 h-6">
+                            juancruz@gmail.com
+                        </p>
                     </div>
                 </div>
 
-                <div class="p-8">
+                <div class="p-10 space-y-14">
 
 <!-- Personal Info -->
-                    <section class="border-b border-gray-200 pb-8 mb-8">
-                        <h3 class="text-2xl font-bold mb-6">Personal Information</h3>
-                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <section>
+                        <h3 class="text-blue-800 text-3xl font-bold mb-8">Personal Information</h3>
+
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">First Name <span
+                                <label for="first_name" class="block text-lg font-semibold mb-3">First Name <span
                                         class="text-gray-500">(Unang Pangalan)</span></label>
-                                <input type="text" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <input id="first_name" type="text" disabled
+                                    class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Last Name <span
+                                <label for="last_name" class="block text-lg font-semibold mb-3">Last Name <span
                                         class="text-gray-500">(Apelyido)</span></label>
-                                <input type="text" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <input id="last_name" type="text" disabled
+                                    class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Age <span
+                                <label for="age" class="block text-lg font-semibold mb-3">Age <span
                                         class="text-gray-500">(Edad)</span></label>
-                                <input type="text" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <input id="age" type="text" disabled
+                                    class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
                         </div>
 
-                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                        <div class="grid md:grid-cols-2 gap-8 mt-8">
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Email Address</label>
-                                <input type="email" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <label for="email" class="block text-lg font-semibold mb-3">Email Address</label>
+                                <input id="email" type="email" disabled
+                                    class="w-full border rounded-xl px-5 py-4 text-lg  select-none">
                             </div>
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Phone Number</label>
-                                <input type="text" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <label for="phone" class="block text-lg font-semibold mb-3">Contact Number</label>
+                                <input id="phone" type="tel" placeholder="+63 9XX XXX XXXX"
+                                    pattern="^\+63\s?9\d{2}\s?\d{3}\s?\d{4}$"
+                                    title="Please enter a valid Philippine number (e.g. +63 912 345 6789)" disabled
+                                    class="w-full border rounded-xl px-5 py-4 text-lg">
                             </div>
                         </div>
 
-                        <div class="mt-6">
-                            <label class="block text-base font-semibold text-black-700 mb-2">Address <span
+                        <div class="mt-8">
+                            <label for="address" class="block text-lg font-semibold mb-3">Address <span
                                     class="text-gray-500">(Tirahan)</span></label>
-                            <input type="text" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                            <input id="address" type="text" disabled
+                                class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                         </div>
 
-                        <div class="mt-6">
-                            <label class="block text-base font-semibold text-black-700 mb-2">Type of Syndrome<span
+                        <div class="mt-8">
+                            <label for="r_dsType1" class="block text-lg font-semibold mb-3">Type of Syndrome <span
                                     class="text-gray-500">(optional)</span></label>
-                            <select id="" name=""
-                                class="w-full sm:w-60 border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
-                                <option value="">-- Select Type --</option>
+                            <select id="r_dsType1" disabled
+                                class="w-full sm:w-80 border rounded-xl px-5 py-4 text-lg select-none">
+                                <option>-- Select Type --</option>
                                 <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
                                 <option value="Mosaic Down Syndrome">Mosaic Down Syndrome</option>
                                 <option value="Translocation Down">Translocation Down Syndrome</option>
                             </select>
                         </div>
-
-                        <div class="flex flex-col items-end mt-6 space-y-2">
-                            <p class="text-sm text-gray-500">Pindutin ang <span
-                                    class="text-blue-600 font-medium">"Edit"</span> upang baguhin</p>
-                            <button
-                                class="bg-green-500 text-white px-24 py-3 rounded-lg text-base font-medium hover:bg-green-600">Edit</button>
-                        </div>
                     </section>
 
 <!-- Parent/Guardian Info -->
-                    <section class="border-b border-gray-200 pb-8 mb-8">
-                        <h3 class="text-2xl font-bold mb-6">Parent/Guardian Information</h3>
-                        <div class="grid md:grid-cols-2 gap-6">
+                    <section class="mt-4 border-b border-gray-200 pb-10 mb-10">
+                        <h3 class="text-blue-800 text-3xl font-bold mb-8">Parent/Guardian Information</h3>
+
+<!-- Names -->
+                        <div class="grid md:grid-cols-2 gap-8">
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">First Name <span
-                                        class="text-gray-500">(Unang Pangalan)</span></label>
-                                <input type="text" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <label for="g_first_name" class="block text-lg font-semibold mb-2">
+                                    First Name <span class="text-gray-500">(Unang Pangalan)</span>
+                                </label>
+                                <input id="g_first_name" type="text" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
                             </div>
+
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Last Name <span
-                                        class="text-gray-500">(Apelyido)</span></label>
-                                <input type="text" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <label for="g_last_name" class="block text-lg font-semibold mb-2">
+                                    Last Name <span class="text-gray-500">(Apelyido)</span>
+                                </label>
+                                <input id="g_last_name" type="text" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
                             </div>
                         </div>
 
-                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+<!-- Contact Info -->
+                        <div class="grid md:grid-cols-2 gap-8 mt-8">
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Email Address</label>
-                                <input type="email" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <label for="g_email" class="block text-lg font-semibold mb-2">Email Address</label>
+                                <input id="g_email" type="email" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
                             </div>
+
                             <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Phone Number</label>
-                                <input type="text" value="" class="w-full border rounded-lg px-4 py-3 text-base">
+                                <label for="g_phone" class="block text-lg font-semibold mb-2">Contact Number</label>
+                                <input id="g_phone" type="tel" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
                             </div>
                         </div>
 
-                        <div class="mt-6">
-                            <label class="block text-base font-semibold text-black-700 mb-2">Relation to User <span
-                                    class="text-gray-500">(Ka-ano-ano mo siya?)</span></label>
-                            <select id=""
-                                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
+<!-- Relation -->
+                        <div class="mt-8">
+                            <label for="guardian_relationship" class="block text-lg font-semibold mb-2">
+                                Relationship to User <span class="text-gray-500">(Ka-ano-ano mo siya?)</span>
+                            </label>
+                            <select id="guardian_relationship" disabled
+                                class="w-full sm:w-80 border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none"
+                                style="margin-left:-6px;">
                                 <option value="" disabled selected>Select Relationship</option>
                                 <option value="parent">Parent</option>
                                 <option value="guardian">Guardian</option>
@@ -142,80 +159,102 @@
                             </select>
                         </div>
 
-                        <div class="flex flex-col items-end mt-6 space-y-2">
-                            <p class="text-sm text-gray-500">Pindutin ang <span
-                                    class="text-blue-600 font-medium">"Edit"</span> upang baguhin</p>
-                            <button
-                                class="bg-green-500 text-white px-24 py-3 rounded-lg text-base font-medium hover:bg-green-600">Edit</button>
-                        </div>
-                    </section>
-
-<!-- Account Details -->
-                    <section class="border-b border-gray-200 pb-8 mb-8">
-                        <h3 class="text-2xl font-bold mb-6">Account Details</h3>
-                        <div class="grid md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Username</label>
-                                <input type="text" value=""
-                                    class="w-full border rounded-lg px-4 py-3 text-base">
-                            </div>
-                            <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Password</label>
-                                <input type="password" value=""
-                                    class="w-full border rounded-lg px-4 py-3 text-base">
-                                <p class="text-sm text-gray-500 mt-2 flex items-center gap-2"><input type="checkbox">
-                                    Click the box to show password (Pindutin ang box para makita ang password)</p>
-                                <p class="text-sm text-gray-500 mt-2">Pindutin ang <a href="#"
-                                        class="text-blue-600 underline">"Change Password"</a> upang baguhin</p>
-                                <button
-                                    class="bg-blue-800 text-white px-6 py-3 mt-3 rounded-lg text-base font-medium hover:bg-blue-900">Change
-                                    Password</button>
-                            </div>
-                        </div>
-
-
-                        <div class="flex flex-col items-end mt-6 space-y-2">
-                            <p class="text-sm text-gray-500">Pindutin ang <span
-                                    class="text-blue-600 font-medium">"Edit"</span> upang baguhin</p>
-                            <button
-                                class="bg-green-500 text-white px-24 py-3 rounded-lg text-base font-medium hover:bg-green-600">Edit</button>
-                        </div>
-                    </section>
-
-
-<!-- Uploaded Files -->
-                    <section class="border-b border-gray-200 pb-8 mb-8">
-                        <h3 class="text-2xl font-bold mb-6">Uploaded Files</h3>
-
-                        <div class="grid md:grid-cols-2 gap-6">
-<!-- Membership -->
-                            <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Proof of Membership
-                                    <span class="text-gray-500 italic">Uploaded file (if any)</span></label>
-                                <div class="border rounded-lg px-4 py-3 bg-gray-50 text-gray-700">No file uploaded
-                                </div>
-                            </div>
-
-<!-- Medical Certificate -->
-                            <div>
-                                <label class="block text-base font-semibold text-black-700 mb-2">Medical Certificate
-                                    <span class="text-gray-500 italic">Uploaded file (if any)</span></label>
-                                <div class="border rounded-lg px-4 py-3 bg-gray-50 text-gray-700">No file uploaded
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col items-end mt-6 space-y-2">
-                            <p class="text-sm text-gray-500">
+                        <!-- Edit -->
+                        <div class="flex flex-col items-end mt-10 space-y-2">
+                            <p class="text-lg text-gray-600">
                                 Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
                             </p>
                             <button
-                                class="bg-green-500 text-white px-24 py-3 rounded-lg text-base font-medium hover:bg-green-600">
+                                class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
                                 Edit
                             </button>
                         </div>
                     </section>
 
+<!-- Account Details -->
+                    <section class="border-b border-gray-200 pb-10 mb-10">
+                        <h3 class="text-3xl font-bold text-blue-800 mb-8">Account Details</h3>
+
+                        <div class="grid md:grid-cols-2 gap-8">
+
+<!-- Username -->
+                            <div>
+                                <label for="username" class="block text-lg font-semibold mb-2">Username</label>
+                                <input id="username" type="text" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm">
+                            </div>
+
+<!-- Password -->
+                            <div>
+                                <label for="password" class="block text-lg font-semibold mb-2">Password</label>
+                                <input disabled id="password" type="password"
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm">
+
+                                <p class="text-sm text-gray-600 mt-2 flex items-center gap-2">
+                                    <input type="checkbox"> Click the box to show password
+                                </p>
+
+                                <p class="text-sm text-gray-600 mt-2">
+                                    Pindutin ang <span class="text-blue-600 font-medium">"Change Password"</span> upang
+                                    baguhin
+                                </p>
+
+                                <button id="openChangePasswordModal"
+                                    class="bg-blue-800 text-white px-6 py-3 mt-3 rounded-lg text-base font-medium hover:bg-blue-900">
+                                    Change Password
+                                </button>
+
+                                <div class="flex flex-col items-end mt-10 space-y-2">
+                                    <p class="text-lg text-gray-600">
+                                        Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                                    </p>
+                                    <button
+                                        class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
+                                        Edit
+                                    </button>
+                                </div>
+                            </div>
+                    </section>
+
+<!-- Uploaded Files -->
+                    <section class="border-b border-gray-200 pb-10 mb-10">
+                        <h3 class="text-3xl font-bold text-blue-800 mb-8">Uploaded Files</h3>
+
+                        <div class="grid md:grid-cols-2 gap-8">
+
+<!-- Membership -->
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">
+                                    Proof of Membership <span class="text-gray-500 italic">Uploaded file (if any)</span>
+                                </label>
+                                <div id="r_proof"
+                                    class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
+                                    No file uploaded
+                                </div>
+                            </div>
+
+<!-- Medical Certificate -->
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">
+                                    Medical Certificate <span class="text-gray-500 italic">Uploaded file (if any)</span>
+                                </label>
+                                <div id="r_medical"
+                                    class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
+                                    No file uploaded
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col items-end mt-10 space-y-2">
+                            <p class="text-lg text-gray-600">
+                                Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                            </p>
+                            <button
+                                class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
+                                Edit
+                            </button>
+                        </div>
+                    </section>
 
                     <!-- Next Button -->
                     <div class="text-center space-y-3">
@@ -230,5 +269,95 @@
                     </div>
 
         </section>
+
+<!-- ============ CHANGE PASSWORD MODAL ============ -->
+        <div id="changePasswordModal"
+            class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center px-4 hidden z-50">
+
+            <div class="bg-white rounded-3xl shadow-xl max-w-4xl w-full p-10 relative">
+
+                <!-- Cancel Button -->
+                <button id="closeModal"
+                    class="absolute top-6 right-6 bg-red-600 text-white px-6 py-2 rounded-lg text-lg font-semibold hover:bg-red-700">
+                    Cancel
+                </button>
+
+                <h2 class="text-3xl font-bold text-blue-800 mb-10">Change Password</h2>
+
+                <div class="grid md:grid-cols-2 gap-10">
+
+                    <div>
+                        <label class="block text-lg font-semibold mb-2">New Password</label>
+                        <input id="newPass" type="password"
+                            class="w-full border border-gray-300 rounded-xl px-5 py-3 text-lg shadow-sm">
+                        <p class="text-sm text-gray-600 mt-2 flex items-center gap-2">
+                            <input id="showNewPass" type="checkbox">
+                            Click the box to show password.
+                        </p>
+                    </div>
+
+                    <div>
+                        <label class="block text-lg font-semibold mb-2">Retype New Password</label>
+                        <input id="retypePass" type="password"
+                            class="w-full border border-gray-300 rounded-xl px-5 py-3 text-lg shadow-sm">
+                        <p class="text-sm text-gray-600 mt-2 flex items-center gap-2">
+                            <input id="showRetypePass" type="checkbox">
+                            Click the box to show password.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="border-2 border-blue-300 bg-blue-50 rounded-2xl p-8 mt-10 grid md:grid-cols-2 gap-10">
+
+                    <div>
+                        <h3 class="font-bold text-lg mb-2">English</h3>
+                        <ul class="list-disc ml-5 mt-2 text-gray-700">
+                            <li>One uppercase letter</li>
+                            <li>One lowercase letter</li>
+                            <li>One number</li>
+                            <li>Minimum 8 characters</li>
+                        </ul>
+                        <p class="mt-3 font-semibold">Example: Lovedog12</p>
+                    </div>
+
+                    <div>
+                        <h3 class="font-bold text-lg mb-2">Tagalog</h3>
+                        <ul class="list-disc ml-5 mt-2 text-gray-700">
+                            <li>Isang malaking letra</li>
+                            <li>Isang maliit na letra</li>
+                            <li>Isang numero</li>
+                            <li>Hindi bababa sa 8 characters</li>
+                        </ul>
+                        <p class="mt-3 font-semibold">Halimbawa: Lovedog12</p>
+                    </div>
+                </div>
+
+                <div class="text-right mt-10">
+                    <button class="bg-blue-800 text-white px-10 py-4 rounded-xl text-xl font-semibold hover:bg-blue-900">
+                        Save
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ============ Change Password Script ============ -->
+        <script>
+            const modal = document.getElementById("changePasswordModal");
+            const openBtn = document.getElementById("openChangePasswordModal");
+            const closeBtn = document.getElementById("closeModal");
+
+            openBtn.addEventListener("click", () => modal.classList.remove("hidden"));
+            closeBtn.addEventListener("click", () => modal.classList.add("hidden"));
+
+            document.getElementById("showNewPass").addEventListener("change", function() {
+                document.getElementById("newPass").type = this.checked ? "text" : "password";
+            });
+
+            document.getElementById("showRetypePass").addEventListener("change", function() {
+                document.getElementById("retypePass").type = this.checked ? "text" : "password";
+            });
+        </script>
+
     </main>
 @endsection
