@@ -131,7 +131,7 @@ $manifestPath = public_path('build/manifest.json');
                 <h3 class="font-semibold text-gray-800 mb-3 text-lg">Address</h3>
                 <p class="text-gray-600 text-sm leading-relaxed">
                     3rd Floor 295 Fortress Hill Building <br>
-                    Shaw Boulevard Bgy Hagdan Bato Libis,<br>
+                    Shaw Boulevard Bgy Hagdan Bato Libis,
                     Mandaluyong, Philippines
                 </p>
             </div>
