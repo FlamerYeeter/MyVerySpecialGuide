@@ -16,7 +16,7 @@
 
     @php
         // guard Vite manifest so missing build doesn't throw a 500
-        $manifestPath = public_path('build/manifest.json');
+$manifestPath = public_path('build/manifest.json');
     @endphp
 
     @if (file_exists($manifestPath))
@@ -36,33 +36,45 @@
         <div class="flex items-center justify-between">
             <!-- Logo (links to home) -->
             <a href="{{ route('home') }}" class="flex items-center space-x-3">
-                <img src="image/logo.png" alt="MyVerySpecialGuide Logo" class="w-14 h-14 md:w-16 md:h-16 object-contain">
+                <img src="image/logo.png" alt="MyVerySpecialGuide Logo"
+                    class="w-14 h-14 md:w-16 md:h-16 object-contain">
                 <span class="text-xl md:text-2xl font-bold text-blue-700">MyVerySpecialGuide</span>
             </a>
 
             <!-- Nav Links -->
             <div class="hidden md:flex items-center space-x-8">
-                <a href="{{ route('home') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
-                <a href="{{ route('about.us') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About MVSG</a>
-                <a href="{{ route('about.ds') }}" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
+                <a href="{{ route('home') }}"
+                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
+                <a href="{{ route('about.us') }}"
+                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About MVSG</a>
+                <a href="{{ route('about.ds') }}"
+                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
+                <a href="/" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Down
+                    Syndrome Association</a>
             </div>
 
             <div class="flex items-center space-x-4">
                 @auth
-                <div class="hidden md:block relative">
-                    <button id="desktopProfileBtn" type="button" onclick="document.getElementById('desktopProfileMenu').classList.toggle('hidden')"
+                    <div class="hidden md:block relative">
+                        <button id="desktopProfileBtn" type="button"
+                            onclick="document.getElementById('desktopProfileMenu').classList.toggle('hidden')"
                             class="flex items-center gap-2 border px-3 py-1 rounded-full">
-                        <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}" alt="avatar" class="w-6 h-6 rounded-full">
-                        <span class="text-sm">{{ Auth::user()->name ?? 'Profile' }}</span>
-                    </button>
-                    <div id="desktopProfileMenu" class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
-                        <a href="{{ route('user.role') }}" class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                        <form method="POST" action="{{ route('logout') }}" class="px-2">
-                            @csrf
-                            <button type="submit" class="w-full text-left text-sm text-red-600 px-2 py-2 hover:bg-gray-100 rounded">Sign Out</button>
-                        </form>
+                            <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}" alt="avatar"
+                                class="w-6 h-6 rounded-full">
+                            <span class="text-sm">{{ Auth::user()->name ?? 'Profile' }}</span>
+                        </button>
+                        <div id="desktopProfileMenu"
+                            class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
+                            <a href="{{ route('user.role') }}"
+                                class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                            <form method="POST" action="{{ route('logout') }}" class="px-2">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full text-left text-sm text-red-600 px-2 py-2 hover:bg-gray-100 rounded">Sign
+                                    Out</button>
+                            </form>
+                        </div>
                     </div>
-                </div>
                 @endauth
 
                 <!-- Responsive Menu Button -->
@@ -77,11 +89,17 @@
 
         <!-- Responsive Dropdown Menu -->
         <div id="mobile-menu" class="hidden flex-col mt-4 space-y-3 md:hidden">
-            <a href="{{ route('home') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">Home</a>
-            <a href="{{ route('about.us') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About MVSG</a>
-            <a href="{{ route('about.ds') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down Syndrome</a>
+            <a href="{{ route('home') }}"
+                class="block text-gray-700 hover:text-blue-600 font-medium text-base">Home</a>
+            <a href="{{ route('about.us') }}"
+                class="block text-gray-700 hover:text-blue-600 font-medium text-base">About MVSG</a>
+            <a href="{{ route('about.ds') }}"
+                class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down Syndrome</a>
+            <a href="/" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Down Syndrome
+                Association</a>
             @auth
-                <a href="{{ route('user.role') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">Profile</a>
+                <a href="{{ route('user.role') }}"
+                    class="block text-gray-700 hover:text-blue-600 font-medium text-base">Profile</a>
                 <form method="POST" action="{{ route('logout') }}" class="px-0">
                     @csrf
                     <button type="submit" class="w-full text-left text-red-600 font-medium py-2">Sign Out</button>
@@ -98,11 +116,13 @@
     <!-- Footer -->
     <footer class="bg-white border-t mt-12">
         <div
-            class="container mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-5 text-center md:text-left items-center md:items-start">
+            class="container md:px-12 mx-auto px-6 py-10 
+               grid grid-cols-1 md:grid-cols-5 gap-5 
+               text-center md:text-left items-start">
 
             <!-- Logo -->
             <div class="flex flex-col items-center md:items-start space-y-3">
-                <img src="{{ asset('image/orglogo.png') }}" alt="Logo"
+                <img src="{{ asset('image/orglogo.jpg') }}" alt="Logo"
                     class="h-28 w-28 object-contain mx-auto md:mx-0">
             </div>
 
@@ -110,18 +130,19 @@
             <div>
                 <h3 class="font-semibold text-gray-800 mb-3 text-lg">Address</h3>
                 <p class="text-gray-600 text-sm leading-relaxed">
-                    Tri-AX One Center,<br>
-                    Second Floor, 133 M. Almeda St.,<br>
-                    Brgy. San Roque
+                    3rd Floor 295 Fortress Hill Building <br>
+                    Shaw Boulevard Bgy Hagdan Bato Libis,<br>
+                    Mandaluyong, Philippines
                 </p>
             </div>
 
             <!-- Socials -->
-            <div>
+            <div class="px-16">
                 <h3 class="font-semibold text-gray-800 mb-3 text-lg">Socials</h3>
                 <ul class="text-gray-600 text-sm space-y-1">
-                    <li><a href="#" class="hover:text-blue-500 transition-colors">Facebook</a></li>
-                    <li><a href="mailto:info@example.com" class="hover:text-blue-500 transition-colors">Email</a></li>
+                    <li><a href="https://www.facebook.com/downsyndromeassociationofthephilippinesinc"
+                            class="hover:text-blue-500 transition-colors">Facebook</a></li>
+                    <li><a href="mailto:dsapi@hotmail.com" class="hover:text-blue-500 transition-colors">Email</a></li>
                 </ul>
             </div>
 
@@ -132,6 +153,17 @@
                     <li><a href="#" class="hover:text-blue-500 transition-colors">Privacy Policy</a></li>
                 </ul>
             </div>
+
+            <!-- Go Up Button -->
+            <div class="flex justify-center md:justify-start mt-6 md:mt-0">
+                <button id="goUpBtn"
+                    class="flex items-center gap-2 bg-blue-600 text-white font-semibold 
+                       px-12 py-4 rounded-xl shadow-md text-lg
+                       hover:bg-blue-700 active:scale-95 transition-all">
+                    ⬆ Go Up
+                </button>
+            </div>
+
         </div>
 
         <!-- Bottom Bar -->
@@ -139,6 +171,7 @@
             © 2025 EmpowerPath. All rights reserved.
         </div>
     </footer>
+
 
     <!-- Script for Responsive Menu Toggle -->
     <script>
@@ -149,6 +182,17 @@
             mobileMenu.classList.toggle('hidden');
         });
     </script>
+
+    <script>
+        const goUpBtn = document.getElementById("goUpBtn");
+        goUpBtn.addEventListener("click", () => {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+    </script>
+
 
 </body>
 
