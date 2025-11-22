@@ -121,7 +121,7 @@ $manifestPath = public_path('build/manifest.json');
                text-center md:text-left items-start">
 
             <!-- Logo -->
-            <div class="flex flex-col items-center md:items-start space-y-3">
+            <div class="px-12 flex flex-col items-center md:items-start space-y-3">
                 <img src="{{ asset('image/orglogo.jpg') }}" alt="Logo"
                     class="h-28 w-28 object-contain mx-auto md:mx-0">
             </div>
@@ -142,7 +142,7 @@ $manifestPath = public_path('build/manifest.json');
                 <ul class="text-gray-600 text-sm space-y-1">
                     <li><a href="https://www.facebook.com/downsyndromeassociationofthephilippinesinc"
                             class="hover:text-blue-500 transition-colors">Facebook</a></li>
-                    <li><a href="mailto:dsapi@hotmail.com" class="hover:text-blue-500 transition-colors">Email</a></li>
+                    <li><a href="dsapi@hotmail.com" class="hover:text-blue-500 transition-colors">Email</a></li>
                 </ul>
             </div>
 
@@ -160,14 +160,18 @@ $manifestPath = public_path('build/manifest.json');
                     class="flex items-center gap-2 bg-blue-600 text-white font-semibold 
                        px-12 py-4 rounded-xl shadow-md text-lg
                        hover:bg-blue-700 active:scale-95 transition-all">
-                    ⬆ Go Up
+                       <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor" stroke-width="3">
+                       <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                       </svg>
+                    Go Up
                 </button>
             </div>
 
         </div>
 
         <!-- Bottom Bar -->
-        <div class="bg-blue-500 text-white text-center py-3 text-sm">
+        <div class="bg-[#2563EB] text-white text-center py-3 text-sm">
             © 2025 EmpowerPath. All rights reserved.
         </div>
     </footer>

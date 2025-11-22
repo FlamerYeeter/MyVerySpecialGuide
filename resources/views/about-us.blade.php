@@ -13,7 +13,7 @@
             <!-- Content -->
             <div class="relative z-10 max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center">
                 <div>
-                    <h2 class="text-4xl md:text-5xl font-extrabold text-blue-700 mb-6 leading-tight drop-shadow-sm">
+                    <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-700 mb-6 leading-tight drop-shadow-sm">
                         About Us
                     </h2>
                     <div class="text-justify text-base md:text-lg text-gray-700 leading-relaxed space-y-4">
@@ -49,12 +49,13 @@
                     </div>
                 </div>
 
-                <!-- Image -->
-                <div class="flex justify-center">
-                    <img src="image/logo.png" alt="MVSG Logo"
-                        class="w-72 sm:w-80 md:w-96 drop-shadow-xl hover:scale-105 transition-transform duration-300">
-                </div>
+
+            <!-- Logo -->
+            <div class="flex justify-center">
+                <img src="{{ asset('image/logo.png') }}" alt="MVSG Logo"
+                    class="w-72 sm:w-80 md:w-96 drop-shadow-2xl hover:scale-105 transition-transform duration-300 rounded-xl bg-white/70 p-4">
             </div>
+        </div>
         </section>
 
 
@@ -90,28 +91,14 @@
 
         <!-- MISSION / VISION SECTION -->
         <section class="relative py-16 sm:py-20 px-4 sm:px-8 md:px-16 bg-blue-50 overflow-hidden">
-
-            <!-- Mascots -->
-            <img src="image/obj2.png" alt="Pink Mascot"
-                class="absolute bottom-2 sm:bottom-6 left-[10%] sm:left-[18%] w-10 sm:w-16 md:w-20 opacity-90">
-            <img src="image/obj4.png" alt="Yellow Mascot"
-                class="absolute bottom-2 sm:bottom-6 right-[10%] sm:right-[16%] w-10 sm:w-16 md:w-20 opacity-90">
-
-            <!-- Section Header -->
-            <div class="text-center mb-12 sm:mb-16 relative z-10 px-2">
-                <h2 class="text-2xl sm:text-3xl md:text-4xl font-extrabold text-blue-700 mb-4">
-                    OUR MISSION AND VISION
-                </h2>
-            </div>
-
             <!-- Mission / Vision Cards -->
             <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 items-stretch relative z-10">
 
                 <!-- Mission -->
                 <div
-                    class="relative bg-[url('/image/border6.png')] bg-cover bg-center text-gray-800 rounded-2xl shadow-lg px-10 sm:px-12 md:px-16 pt-20 sm:pt-32 pb-10 flex flex-col justify-start min-h-[450px] sm:min-h-[500px]">
-                    <h3 class="text-2xl sm:text-3xl font-extrabold mb-3 sm:mb-4 text-black drop-shadow-sm">MISSION</h3>
-                    <p class="leading-relaxed text-justify text-base sm:text-lg">
+                    class="relative bg-[url('/image/border6.png')] bg-cover bg-center text-white-800 rounded-2xl shadow-lg px-10 sm:px-12 md:px-16 pt-20 sm:pt-32 pb-10 flex flex-col justify-start min-h-[450px] sm:min-h-[500px]">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold mb-3 sm:mb-4 text-white drop-shadow-sm">MISSION</h3>
+                    <p class="leading-relaxed text-black text-justify text-base sm:text-lg">
                         Our mission is to bridge the gap between potential and opportunity by using the power of
                         machine learning to deliver personalized job recommendations. We believe that every individual
                         deserves a career path that not only matches their skills and interests but also nurtures growth,
@@ -121,13 +108,10 @@
 
                 <!-- Vision -->
                 <div
-                    class="relative bg-[url('/image/border7.png')] bg-cover bg-center text-gray-800 rounded-2xl shadow-lg px-10 sm:px-12 md:px-16 pt-20 sm:pt-32 pb-10 flex flex-col justify-start min-h-[450px] sm:min-h-[500px]">
-                    <!-- Mascot on top of Vision card -->
-                    <img src="image/obj12.png" alt="Mascot above Vision"
-                        class="absolute -top-8 sm:-top-10 left-1/2 transform -translate-x-1/2 w-16 sm:w-20 md:w-24">
+                    class="relative bg-[url('/image/border7.png')] bg-cover bg-center text-white-800 rounded-2xl shadow-lg px-10 sm:px-12 md:px-16 pt-20 sm:pt-32 pb-10 flex flex-col justify-start min-h-[450px] sm:min-h-[500px]">
 
-                    <h3 class="text-2xl sm:text-3xl font-extrabold mb-3 sm:mb-4 text-black drop-shadow-sm">VISION</h3>
-                    <p class="leading-relaxed text-justify text-base sm:text-lg">
+                    <h3 class="text-2xl sm:text-3xl font-extrabold mb-3 sm:mb-4 text-white drop-shadow-sm">VISION</h3>
+                    <p class="leading-relaxed text-black text-justify text-base sm:text-lg">
                         MVSG envisions a world where neurodivergent individuals thrive in careers tailored to their
                         unique strengths and potential. Through innovation, compassion, and inclusivity, we aim to create
                         not just a recommendation system—but a personalized guide that nurtures lifelong growth.
@@ -146,7 +130,7 @@
                     Sign up to hear from the MyVerySpecialGuide team and discover how you can be part of the journey.
                 </h3>
 
-                <p class="text-blue-400 mb-8 text-sm sm:text-base md:text-lg leading-relaxed" style="text-align: justify;">
+                <p class="text-blue-600 mb-8 text-sm sm:text-base md:text-lg leading-relaxed" style="text-align: justify;">
                     Together, we are building a digital platform to support individuals with Down Syndrome
                     in finding meaningful employment. With the right support and inclusive workplaces, they
                     can thrive, contribute, and work side by side with everyone else.
@@ -155,7 +139,7 @@
                 <!-- Button -->
                 <div class="text-center">
                     <a href="{{ route('user.role') }}"
-                       class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-10 sm:px-12 md:px-14 py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105">
+                       class="inline-block bg-[#2563EB] hover:bg-blue-600 text-white px-10 sm:px-12 md:px-14 py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105">
                         Sign Up
                     </a>
                 </div>

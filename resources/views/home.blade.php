@@ -24,7 +24,7 @@
                       <span class="text-blue-600">MyVerySpecialGuide</span>
                   </h1>
                   <a href="{{ route('user.role') }}"
-                     class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
+                     class="inline-block bg-[#2563EB] hover:bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
                      Get Started
                  </a>
               </div>
@@ -93,7 +93,7 @@
                       potential.
                   </p>
                   <a href="{{ route('about.ds') }}"
-                      class="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105 text-sm sm:text-base">
+                      class="inline-block bg-[#2563EB] hover:bg-blue-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-lg font-semibold shadow-md transition-transform hover:scale-105 text-sm sm:text-base">
                       Learn More
                   </a>
               </div>
