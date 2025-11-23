@@ -273,7 +273,6 @@
 </div>
 
 <!-- 🔹 MODAL PREVIEW -->
-<!-- 🔹 MODAL PREVIEW -->
 <div
   id="fileModal"
   class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50"

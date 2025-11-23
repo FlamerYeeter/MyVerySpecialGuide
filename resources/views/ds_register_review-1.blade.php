@@ -111,119 +111,132 @@
             <!-- Form -->
         <form id="registrationForm" class="mt-10 space-y-10 text-left"></form>
 
-            <!-- Personal Information -->
-                    <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                        <h3
-                            class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                            Personal Information
-                        </h3>
+<!-- Personal Information -->
+         <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+            <div class="flex items-center justify-between mb-4 border-b border-blue-300 pb-2">
+                 <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600">
+                    Personal Information
+                </h3>
+                <button id="editPersonalInfoBtn" type="button"
+                class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-blue-700 transition">
+                 ✏️ Edit Information
+                </button>
+            </div>
+            
+            <div id="registerreview1" class="space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-                        <form id="registerreview1" class="space-y-6">
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          
         <!-- First Name -->
-            <div>
+        <div>
             <label for="first_name" class="font-semibold text-gray-800 text-sm sm:text-base">First Name</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
             <input id="first_name" type="text" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm" />
-            </div>
+        </div>
 
- <!-- Last Name -->
-            <div>
+        <!-- Last Name -->
+        <div>
             <label for="last_name" class="font-semibold text-gray-800 text-sm sm:text-base">Last Name</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
             <input id="last_name" type="text" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-            </div>
- <!-- Age -->
-            <div>
+        </div>
+
+        <!-- Age -->
+        <div>
             <label for="age" class="font-semibold text-gray-800 text-sm sm:text-base">Age</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Edad</p>
             <input id="age" type="number" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-            </div>
         </div>
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Email -->
-            <div>
+
+    </div>
+
+    <!-- Email + Phone -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Email -->
+        <div>
             <label for="email" class="font-semibold text-gray-800 text-sm sm:text-base">Email</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
             <input id="email" type="email" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-            </div>
- <!-- Contact Number -->
-            <div>
-                <label for="phone"
-                    class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                    Contact Number <span></span>
-                </label>
-                <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
-                <input   id="phone" 
-                        type="tel" 
-                        placeholder="+63 9XX XXX XXXX"
-                        pattern="^\+63\s?9\d{2}\s?\d{3}\s?\d{4}$"
-                        title="Please enter a valid Philippine number (e.g. +63 912 345 6789)"
-                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
-            </div>
         </div>
- <!-- Address -->
+
+        <!-- Contact Number -->
         <div>
-            <label for="address" class="font-semibold text-gray-800 text-sm sm:text-base">Address</label>
-            <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
-            <input id="address" type="text" disabled
+            <label for="phone" class="font-semibold text-gray-800 text-sm sm:text-base">Contact Number</label>
+            <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
+            <input id="phone" type="tel" disabled
+                placeholder="+63 9XX XXX XXXX"
+                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+        </div>
+
+    </div>
+
+    <!-- Address -->
+    <div>
+        <label for="address" class="font-semibold text-gray-800 text-sm sm:text-base">Address</label>
+        <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
+        <input id="address" type="text" disabled
             class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-        </div>
-        <!-- DS Type -->
-        <div>
-            <label for="r_dsType1" class="font-semibold text-gray-800 text-sm sm:text-base">Type of Down Syndrome</label>
-            <p class="text-gray-600 italic text-xs sm:text-sm">Pumili ng uri</p>
-            <select id="r_dsType1" disabled
+    </div>
+
+    <!-- DS Type -->
+    <div>
+        <label for="r_dsType1" class="font-semibold text-gray-800 text-sm sm:text-base">Type of Down Syndrome</label>
+        <p class="text-gray-600 italic text-xs sm:text-sm">Pumili ng uri</p>
+        <select id="r_dsType1" disabled
             class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none">
             <option value="">-- Select Type --</option>
             <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
             <option value="Mosaic Down Syndrome">Mosaic Down Syndrome</option>
             <option value="Translocation Down Syndrome">Translocation Down Syndrome</option>
-            </select>
-        </div>
- <!-- Guardian Info -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Guardian First Name -->
-            <div>
+        </select>
+    </div>
+
+    <!-- Guardian Info -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <!-- Guardian First Name -->
+        <div>
             <label for="g_first_name" class="font-semibold text-gray-800 text-sm sm:text-base">Guardian First Name</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
             <input id="g_first_name" type="text" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-            </div>
-  <!-- Guardian Last Name -->
-            <div>
+        </div>
+
+        <!-- Guardian Last Name -->
+        <div>
             <label for="g_last_name" class="font-semibold text-gray-800 text-sm sm:text-base">Guardian Last Name</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
             <input id="g_last_name" type="text" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-            </div>
-  <!-- Guardian Email -->
-            <div>
+        </div>
+
+        <!-- Guardian Email -->
+        <div>
             <label for="g_email" class="font-semibold text-gray-800 text-sm sm:text-base">Guardian Email</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
             <input id="g_email" type="email" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-            </div>
+        </div>
 
-            <!-- Guardian Phone -->
-            <div>
+        <!-- Guardian Phone -->
+        <div>
             <label for="g_phone" class="font-semibold text-gray-800 text-sm sm:text-base">Guardian Contact Number</label>
             <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
             <input id="g_phone" type="tel" disabled
                 class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-            </div>
         </div>
-   <!-- Relationship to User -->
-        <div>
-            <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to User</label>
-            <p class="text-gray-600 italic text-xs sm:text-sm">(Ka-ano-ano mo siya?)</p>
-            <select id="guardian_relationship" disabled
+
+    </div>
+
+    <!-- Relationship -->
+    <div>
+        <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to User</label>
+        <p class="text-gray-600 italic text-xs sm:text-sm">(Ka-ano-ano mo siya?)</p>
+        <select id="guardian_relationship" disabled
             class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none">
             <option value="">-- Select Relationship --</option>
             <option value="Parent">Parent</option>
@@ -231,116 +244,279 @@
             <option value="Sibling">Sibling</option>
             <option value="Relative">Relative</option>
             <option value="Other">Other</option>
-            </select>
+        </select>
+    </div>
+
+</div>
+</div>
+
+
+<!-- Account Details -->
+<div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
+
+    <!-- Header with single Edit/Save button -->
+    <div class="flex justify-between items-center border-b border-blue-300 pb-2 mb-4">
+        <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600">
+            Account Details
+        </h3>
+
+        <button id="editAccountBtn"
+            type="button"
+            class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-blue-700 transition">
+            ✏️ Edit Information
+        </button>
+    </div>
+
+    <!-- Fields -->
+    <div id="accountSection" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Username -->
+        <div>
+            <label for="username" class="font-semibold flex items-center gap-1">Username</label>
+            <input id="username" type="text" disabled
+                class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
         </div>
+
+        <!-- Password -->
+        <div class="relative">
+            <label for="password" class="font-semibold flex items-center gap-1">Password</label>
+            <input disabled id="password" name="password" type="password"
+                pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
+                class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-10 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+
+            <!-- Eye icon -->
+            <button type="button" id="togglePassword"
+                class="absolute top-[42px] right-3 text-gray-600 text-lg focus:outline-none">
+                👁️
+            </button>
+
+            <p id="passwordMessage" class="mt-1 text-sm text-red-500 italic hidden">
+                Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
+            </p>
         </div>
-                                <!-- Account Details -->
-                <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-  <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Account Details
-                </h3>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Username -->
-                    <div>
-                    <label for="username" class="font-semibold flex items-center gap-1">Username</label>
-                    <input id="username" type="text" disabled
-                        class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
-                    </div>
+    </div>
+</div>
 
-                    <!-- Password -->
-                    <div class="relative">
-                    <label for="password" class="font-semibold flex items-center gap-1">Password</label>
-                     <input disabled id="password" name="password" type="password"
-                        placeholder=""
-                        pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
-                        title="Password must have at least 1 uppercase letter, 1 lowercase letter, 1 number, and be 8+ characters long."
+<script>
+// Function to toggle edit/save for any section
+function setupEditSection(buttonId, sectionId) {
+    const button = document.getElementById(buttonId);
+    const section = document.getElementById(sectionId);
+    const fields = section.querySelectorAll("input, select, textarea");
 
-                    class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-10 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+    button.addEventListener("click", function () {
+        const isSaving = this.dataset.mode === "editing";
 
-                    <!-- Eye icon -->
-                    <button type="button" id="togglePassword" class="absolute top-[42px] right-3 text-gray-600 text-lg focus:outline-none">
-                        👁️
-                    </button>
+        if (isSaving) {
+            // SAVE MODE → disable all fields
+            fields.forEach(f => f.disabled = true);
 
-                    <p id="passwordMessage" class="mt-1 text-sm text-red-500 italic hidden">
-                         Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
-                    </p>
-                    </div>
+            this.innerText = "✏️ Edit Information";
+            this.classList.remove("bg-green-600", "hover:bg-green-700");
+            this.classList.add("bg-blue-600", "hover:bg-blue-700");
+            this.dataset.mode = "view";
 
-                </div>
-                </div>
+        } else {
+            // EDIT MODE → enable all fields
+            fields.forEach(f => f.disabled = false);
 
-               <!-- Uploaded files preview (Proof + Medical) -->
-               <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 mt-6">
-                 <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                   Uploaded Files Preview
-                 </h3>
-                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                   <!-- Proof preview -->
-                   <div>
-                     <label class="font-semibold text-gray-800 text-sm sm:text-base">Proof of Membership</label>
-                     <p class="text-gray-600 italic text-xs sm:text-sm mb-2">Uploaded file (if any)</p>
+            this.innerText = "💾 Save Changes";
+            this.classList.remove("bg-blue-600", "hover:bg-blue-700");
+            this.classList.add("bg-green-600", "hover:bg-green-700");
+            this.dataset.mode = "editing";
+        }
+    });
+}
 
-                     <!-- visible placeholder for simple fallback text -->
-                     <div id="r_proof" class="mt-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">No file uploaded</div>
+// Apply to both Personal Information and Account Details
+setupEditSection("editPersonalInfoBtn", "registerreview1");
+setupEditSection("editAccountBtn", "accountSection");
+</script>
 
-                     <!-- detailed file info / actions (hidden until a file exists) -->
-                    <div id="proofFileInfo" class="mt-3 hidden flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-                      <span id="proofFileIcon" class="text-2xl">📁</span>
-                      <div class="flex-1 min-w-0">
-                        <span id="proofFileName" class="block truncate text-sm text-gray-700"></span>
-                      </div>
-                      <div class="flex gap-2">
-                        <button id="proofViewBtn" type="button" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md" aria-label="View proof">View</button>
-                        <button id="proofRemoveBtn" type="button" class="bg-red-500 text-white text-xs px-3 py-1 rounded-md" aria-label="Remove proof">Remove</button>
-                      </div>
-                    </div>
-                   </div>
 
-                   <!-- Medical preview -->
-                   <div>
-                     <label class="font-semibold text-gray-800 text-sm sm:text-base">Medical Certificate</label>
-                     <p class="text-gray-600 italic text-xs sm:text-sm mb-2">Uploaded file (if any)</p>
+<!-- Uploaded Files Review Section -->
+<div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 mt-6">
+  <div class="flex items-center justify-between mb-4 border-b border-blue-300 pb-2">
+    <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600">Uploaded Files Preview</h3>
+    <button id="editFilesBtn" type="button"
+      class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-blue-700 transition">
+      ✏️ Edit Files
+    </button>
+  </div>
 
-                     <div id="r_medical" class="mt-2 px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 text-gray-700">No file uploaded</div>
+  <div class="space-y-6">
+    <!-- Proof of Membership -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex-1">
+        <p class="font-medium text-gray-800 text-sm sm:text-base">Upload Proof of Membership</p>
+        <p class="text-gray-600 italic text-xs sm:text-sm mt-1">
+          (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br>
+          Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b>
+        </p>
+        <div id="proofDisplay"></div>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+        <label for="proofFile" class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+          📁 Choose File / Pumili ng File
+        </label>
+        <input id="proofFile" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" disabled />
+      </div>
+    </div>
 
-                    <div id="medFileInfo" class="mt-3 hidden flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-                      <span id="medFileIcon" class="text-2xl">📁</span>
-                      <div class="flex-1 min-w-0">
-                        <span id="medFileName" class="block truncate text-sm text-gray-700"></span>
-                      </div>
-                      <div class="flex gap-2">
-                        <button id="medViewBtn" type="button" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md" aria-label="View medical">View</button>
-                        <button id="medRemoveBtn" type="button" class="bg-red-500 text-white text-xs px-3 py-1 rounded-md" aria-label="Remove medical">Remove</button>
-                      </div>
-                    </div>
-                   </div>
+    <!-- Medical Certificate -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+      <div class="flex-1">
+        <p class="font-medium text-gray-800 text-sm sm:text-base">Upload Medical Certificate</p>
+        <p class="text-gray-600 italic text-xs sm:text-sm mt-1">
+          (Mag-upload ng larawan o PDF ng iyong medical certificate.)<br>
+          Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b>
+        </p>
+        <div id="medDisplay"></div>
+      </div>
+      <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+        <label for="medFile" class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+          📁 Choose File / Pumili ng File
+        </label>
+        <input id="medFile" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" disabled />
+      </div>
+    </div>
+  </div>
+</div>
 
-                 </div>
-               </div>
-               
+<!-- Modal for viewing files -->
+<div id="fileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg max-w-3xl w-full p-4 sm:p-6 relative">
+    <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-lg font-bold">&times;</button>
+    <div id="modalContent" class="flex justify-center items-center"></div>
+  </div>
+</div>
+
+<!-- Uploaded Files Edit Script -->
+<script>
+const editFilesBtn = document.getElementById("editFilesBtn");
+
+const proofFileInput = document.getElementById("proofFile");
+const medFileInput = document.getElementById("medFile");
+
+const proofDisplay = document.getElementById("proofDisplay");
+const medDisplay = document.getElementById("medDisplay");
+
+const fileModal = document.getElementById("fileModal");
+const modalContent = document.getElementById("modalContent");
+const closeModalBtn = document.getElementById("closeModalBtn");
+
+let proofFileURL = null;
+let medFileURL = null;
+
+// Enable/Disable file inputs
+editFilesBtn.addEventListener("click", () => {
+  const isEditing = editFilesBtn.dataset.mode === "editing";
+
+  if (isEditing) {
+    // Save mode
+    proofFileInput.disabled = true;
+    medFileInput.disabled = true;
+    editFilesBtn.innerText = "✏️ Edit Files";
+    editFilesBtn.classList.replace("bg-green-600", "bg-blue-600");
+    editFilesBtn.dataset.mode = "view";
+  } else {
+    // Edit mode
+    proofFileInput.disabled = false;
+    medFileInput.disabled = false;
+    editFilesBtn.innerText = "💾 Save Files";
+    editFilesBtn.classList.replace("bg-blue-600", "bg-green-600");
+    editFilesBtn.dataset.mode = "editing";
+  }
+});
+
+// Setup file preview with view/remove buttons
+function setupFileInput(fileInput, display, fileURLVar) {
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files[0];
+    if (!file) {
+      display.innerHTML = "";
+      fileURLVar && URL.revokeObjectURL(fileURLVar);
+      return;
+    }
+
+    fileURLVar && URL.revokeObjectURL(fileURLVar);
+    fileURLVar = URL.createObjectURL(file);
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    const icon = ['jpg','jpeg','png'].includes(ext) ? '🖼️' : ext === 'pdf' ? '📄' : '📁';
+
+    display.innerHTML = `
+      <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">${icon}</span>
+          <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
+        </div>
+        <div class="flex gap-2">
+          <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button>
+          <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button>
+        </div>
+      </div>
+    `;
+
+    const viewBtn = display.querySelector(".viewBtn");
+    const removeBtn = display.querySelector(".removeBtn");
+
+    // View button
+    viewBtn.addEventListener("click", () => {
+      let contentHTML = "";
+      if (ext === "pdf") {
+        contentHTML = `<iframe src="${fileURLVar}" class="w-full h-[500px]"></iframe>`;
+      } else {
+        contentHTML = `<img src="${fileURLVar}" class="max-h-[500px] object-contain" />`;
+      }
+      modalContent.innerHTML = contentHTML;
+      fileModal.classList.remove("hidden");
+      fileModal.classList.add("flex");
+    });
+
+    // Remove button
+    removeBtn.addEventListener("click", () => {
+      fileInput.value = "";
+      display.innerHTML = "";
+      fileURLVar && URL.revokeObjectURL(fileURLVar);
+      fileURLVar = null;
+    });
+  });
+
+  return fileURLVar;
+}
+
+proofFileURL = setupFileInput(proofFileInput, proofDisplay, proofFileURL);
+medFileURL = setupFileInput(medFileInput, medDisplay, medFileURL);
+
+// Close modal
+closeModalBtn.addEventListener("click", () => {
+  modalContent.innerHTML = "";
+  fileModal.classList.add("hidden");
+  fileModal.classList.remove("flex");
+});
+</script>
+
 
          <!-- Action Buttons -->
-        <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">
+        <div class="text-center mt-10">
 
 
             <!-- Continue Button -->
             <button id="review1Continue" type="button"
-                class="flex justify-center items-center gap-2 bg-[#2E2EFF] text-white text-lg font-semibold 
-           px-10 py-4 rounded-2xl hover:bg-blue-600 active:scale-95 transition-all duration-200 
-           shadow-md w-full sm:w-64 text-center">
+                class="bg-[#2E2EFF] text-white font-semibold text-lg px-20 py-3 rounded-xl hover:bg-blue-600 transition shadow-md">
                 Continue →
             </button>
-        </div>
+        
 
         <!-- Helper Text -->
-        <p class="text-gray-700 text-sm mt-4 text-center">
+        <p class="text-gray-700 text-sm mt-3">
             Click <span class="text-[#1E40AF] font-medium">“Continue”</span> to move to the next page
         </p>
-        <p class="text-gray-600 italic text-[13px] text-center">
+        <p class="text-gray-600 italic text-[13px]">
             (Pindutin ang “Continue” upang magpatuloy)
         </p>
-    </div>
+       </div>
+</div>
 
 
     {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}

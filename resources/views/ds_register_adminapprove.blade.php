@@ -417,7 +417,7 @@
     <div class="flex-1">
       <p class="font-medium text-gray-800 text-sm sm:text-base">
         <span id="proofLabel" class="flex items-center gap-2">
-          <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+          <span>Upload Proof (Image or PDF)</span> 
         </span>
       </p>
       <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
@@ -466,7 +466,7 @@
     <div class="flex-1">
       <p class="font-medium text-gray-800 text-sm sm:text-base">
         <span id="medLabel" class="flex items-center gap-2">
-          <span>Upload File (Image or PDF)</span> <span>⭐</span>
+          <span>Upload File (Image or PDF)</span> 
         </span>
       </p>
       <p id="medHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
