@@ -737,23 +737,23 @@
                 }
 
                 // Wire section Edit buttons to their routes
-                document.addEventListener('DOMContentLoaded', function(){
-                    try {
-                        const routeMap = {
-                            'education': '{{ route('registereducation') }}',
-                            'work': '{{ route('registerworkexpinfo') }}',
-                            'environment': '{{ route('registerworkplace') }}'
-                        };
-                        document.querySelectorAll('.edit-btn').forEach(btn => {
-                            try {
-                                const sec = (btn.getAttribute('data-section') || '').trim();
-                                const target = routeMap[sec];
-                                if (!target) return;
-                                btn.addEventListener('click', function(ev){ ev.preventDefault(); saveDraftAndGoto(target); });
-                            } catch(e) { /* ignore per-button errors */ }
-                        });
-                    } catch (e) { console.warn('[review-2] wiring edit buttons failed', e); }
-                });
+                // document.addEventListener('DOMContentLoaded', function(){
+                //     try {
+                //         const routeMap = {
+                //             'education': '{{ route('registereducation') }}',
+                //             'work': '{{ route('registerworkexpinfo') }}',
+                //             'environment': '{{ route('registerworkplace') }}'
+                //         };
+                //         document.querySelectorAll('.edit-btn').forEach(btn => {
+                //             try {
+                //                 const sec = (btn.getAttribute('data-section') || '').trim();
+                //                 const target = routeMap[sec];
+                //                 if (!target) return;
+                //                 btn.addEventListener('click', function(ev){ ev.preventDefault(); saveDraftAndGoto(target); });
+                //             } catch(e) { /* ignore per-button errors */ }
+                //         });
+                //     } catch (e) { console.warn('[review-2] wiring edit buttons failed', e); }
+                // });
             </script>
 
 
