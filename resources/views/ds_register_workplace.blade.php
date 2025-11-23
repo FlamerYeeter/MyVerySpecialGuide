@@ -239,34 +239,59 @@
             <script>
                 document.addEventListener("DOMContentLoaded", () => {
                     const workplaceNextbtn = document.getElementById('workplaceNext');
+                    if (!workplaceNextbtn) return;
+
                     workplaceNextbtn.addEventListener('click', function() {
+                        const errorEl = document.getElementById('workplaceError');
+                        if (errorEl) errorEl.textContent = '';
+
                         const selected = [];
-
                         document.querySelectorAll('.workplace-card.selected').forEach(card => {
-                           // attempt to read the value passed in the onclick (fallback to h3 text)
-                            const onclickAttr = card.getAttribute('onclick') || '';
-                            const match = onclickAttr.match(/'([^']+)'/);
-                            let value = match ? match[1] : (card.getAttribute('data-value') || (card.querySelector('h3')?.textContent || '').trim());
+                           const onclickAttr = card.getAttribute('onclick') || '';
+                           const match = onclickAttr.match(/'([^']+)'/);
+                           let value = match ? match[1] : (card.getAttribute('data-value') || (card.querySelector('h3')?.textContent || '').trim());
+                           if (value) selected.push({ card, value });
+                        });
 
-                            if (!value) return;
-                            if (value === 'other') {
-                                const otherInput = document.getElementById('selectworkplace_other_text');
-                                if (otherInput && otherInput.value.trim()) selected.push(otherInput.value.trim());
-                            } else {
-                                selected.push(value);
+                        // Validation: require at least one selection
+                        if (!selected.length) {
+                            if (errorEl) errorEl.textContent = 'Please select at least one working environment.';
+                            const firstCard = document.querySelector('.workplace-card');
+                            if (firstCard) { firstCard.scrollIntoView({behavior:'smooth', block:'center'}); }
+                            return;
+                        }
+
+                        // If "other" was selected, require the text input to be filled
+                        const otherSelected = selected.find(s => (String(s.value).toLowerCase() === 'other' || s.value === 'other'));
+                        if (otherSelected) {
+                            const otherInput = document.getElementById('selectworkplace_other_text');
+                            if (!otherInput || !otherInput.value || !otherInput.value.trim()) {
+                                if (errorEl) errorEl.textContent = 'Please type your answer for "Other".';
+                                if (otherInput) { otherInput.scrollIntoView({behavior:'smooth', block:'center'}); otherInput.focus(); }
+                                return;
                             }
+                        }
+
+                        // Passed validation — build array and save
+                        const values = selected.map(s => {
+                            if (String(s.value).toLowerCase() === 'other') {
+                                const otherInput = document.getElementById('selectworkplace_other_text');
+                                return otherInput && otherInput.value.trim() ? otherInput.value.trim() : 'Other';
+                            }
+                            return s.value;
                         });
 
                         // Save array to hidden input and localStorage
                         const hidden = document.getElementById('workplace_choices');
-                        if (hidden) hidden.value = JSON.stringify(selected);
-                        localStorage.setItem('workplace', JSON.stringify(selected));
+                        if (hidden) hidden.value = JSON.stringify(values);
+                        try { localStorage.setItem('workplace', JSON.stringify(values)); } catch (e) {}
 
                         // Navigate to skills page
                         window.location.href = '{{ route("registerskills1") }}';
                     });
                 });
             </script>
+
 
             <script>
                 // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_workplace.blade.php

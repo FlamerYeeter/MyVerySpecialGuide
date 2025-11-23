@@ -781,77 +781,6 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 </script>
 
             </div>
-            
-    <!-- Save draft script: persist to rpi_personal1 so register.js autofills personal page -->
-    <script>
-        (function() {
-            // Save-only helper: persist draft so the central register.js can pick it up and create the account.
-            const btn = document.getElementById('createAccountBtn');
-            if (!btn) return;
-
-            btn.addEventListener('click', function() {
-                try {
-                    // btn.disabled = true;
-                    btn.classList.add('opacity-60');
-                    const data = {};
-                    // collect all inputs/selects/textareas that have an id
-                    document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
-                        const id = el.id;
-                        if (!id) return;
-                        if (el.type === 'checkbox') data[id] = !!el.checked;
-                        else data[id] = el.value || '';
-                    });
-
-                    // normalize common fields to expected keys
-                    const draft = {
-                        firstName: data.first_name || data.firstName || data.first || '',
-                        lastName: data.last_name || data.lastName || data.last || '',
-                        email: data.email || '',
-                        phone: data.phone || '',
-                        age: data.age || '',
-                        address: data.address || '',
-                        username: data.username || '',
-                        // persist selected Down Syndrome type (if present) under multiple keys for compatibility
-                        dsType: data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
-                        r_dsType1: data.r_dsType1 || data.r_dsType || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
-                        r_dsType: data.r_dsType || data.r_dsType1 || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
-                        guardian_first: data.guardian_first || data.guardianFirst || '',
-                        guardian_last: data.guardian_last || data.guardianLast || '',
-                        guardian_email: data.guardian_email || '',
-                        guardian_phone: data.guardian_phone || '',
-                        guardian_relationship: data.guardian_relationship || data.guardianRelationship || '',
-                        r_dsType1: data.r_dsType1 || '',
-                        password: data.password || '',
-                    };
-
-                    try {
-                        localStorage.setItem('rpi_personal1', JSON.stringify(draft));
-                    } catch (err) {
-                        console.warn('Could not save rpi_personal1', err);
-                    }
-
-                    console.info('[adminapprove] saved rpi_personal1 draft', Object.keys(draft));
-                    // dispatch event for other scripts to pick up
-                    try {
-                        window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
-                            detail: {
-                                key: 'rpi_personal1',
-                                data: draft
-                            }
-                        }));
-                    } catch (e) {}
-
-                   window.location.href = '{{ route("registereducation") }}';
-                  //  window.location.href = '{{ route("registerreview1") }}';
-
-                } catch (err) {
-                    console.error('[adminapprove] submit failed', err);
-                    // btn.disabled = false;
-                    btn.classList.remove('opacity-60');
-                }
-            });
-        })();
-    </script>
 
     <!-- Show/hide password toggles -->
     <script>
@@ -1171,7 +1100,186 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             }
         });
     </script>
+<script>
+    (function() {
+        // Save-only helper: persist draft so the central register.js can pick it up and create the account.
+        const btn = document.getElementById('createAccountBtn');
+        if (!btn) return;
 
+        const required = {
+            personal: ['first_name','last_name','age','email','phone','address'],
+            guardian: ['guardian_first','guardian_last','guardian_email','guardian_phone','guardian_relationship'],
+            account: ['username','password','confirmPassword']
+        };
+
+        const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRe = /^\+63\d{10}$/; // expects "+63" + 10 digits (no spaces) -- input enforces this format
+        const passwordRe = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+        function showFieldError(id, msg) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.add('border-red-500');
+            // existing error element?
+            let err = el.parentNode.querySelector('.field-error');
+            if (!err) {
+                err = document.createElement('p');
+                err.className = 'field-error mt-1 text-sm text-red-500 italic';
+                el.parentNode.appendChild(err);
+            }
+            err.textContent = msg;
+        }
+
+        function clearFieldError(id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.remove('border-red-500');
+            const err = el.parentNode.querySelector('.field-error');
+            if (err) err.remove();
+        }
+
+        function validateRequired() {
+            // clear previous errors
+            [...required.personal, ...required.guardian, ...required.account].forEach(clearFieldError);
+
+            const values = {};
+            [...required.personal, ...required.guardian, ...required.account].forEach(id => {
+                const el = document.getElementById(id);
+                values[id] = el ? (el.value || '').trim() : '';
+            });
+
+            const errors = [];
+
+            // Personal checks
+            required.personal.forEach(id => {
+                if (!values[id]) {
+                    errors.push({ id, msg: 'This field is required.' });
+                }
+            });
+
+            // age numeric > 0
+            if (values.age && !(Number(values.age) > 0)) {
+                errors.push({ id: 'age', msg: 'Please enter a valid age.' });
+            }
+
+            // email
+            if (values.email && !emailRe.test(values.email)) {
+                errors.push({ id: 'email', msg: 'Please enter a valid email.' });
+            }
+
+            // phone
+            // because the input formatting script forces +63 prefix, we accept +63XXXXXXXXXX
+            if (values.phone && !phoneRe.test(values.phone.replace(/\s+/g,''))) {
+                errors.push({ id: 'phone', msg: 'Please enter a valid Philippine number (e.g. +639121234567).' });
+            }
+
+            // guardian checks
+            required.guardian.forEach(id => {
+                if (!values[id]) {
+                    errors.push({ id, msg: 'This field is required.' });
+                }
+            });
+
+            // guardian_relationship - ensure not default empty
+            if (!values.guardian_relationship) {
+                errors.push({ id: 'guardian_relationship', msg: 'Please select a relationship.' });
+            }
+
+            // account checks
+            if (!values.username) errors.push({ id: 'username', msg: 'Please enter a username.' });
+            if (!values.password) errors.push({ id: 'password', msg: 'Please enter a password.' });
+            if (values.password && !passwordRe.test(values.password)) {
+                errors.push({ id: 'password', msg: 'Password must have 1 uppercase, 1 lowercase, 1 number and be 8+ chars.' });
+            }
+            if (!values.confirmPassword) errors.push({ id: 'confirmPassword', msg: 'Please confirm your password.' });
+            if (values.password && values.confirmPassword && values.password !== values.confirmPassword) {
+                errors.push({ id: 'confirmPassword', msg: 'Passwords do not match.' });
+            }
+
+            if (errors.length) {
+                // show errors; focus first error and scroll into view
+                const first = errors[0];
+                errors.forEach(e => showFieldError(e.id, e.msg));
+                const firstEl = document.getElementById(first.id);
+                if (firstEl) {
+                    firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstEl.focus();
+                }
+                return false;
+            }
+
+            return true;
+        }
+
+        btn.addEventListener('click', function() {
+            try {
+                // run validation first
+                if (!validateRequired()) {
+                    // visually undo the "working" state if validation failed
+                    btn.classList.remove('opacity-60');
+                    return;
+                }
+
+                btn.classList.add('opacity-60');
+                const data = {};
+                // collect all inputs/selects/textareas that have an id
+                document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
+                    const id = el.id;
+                    if (!id) return;
+                    if (el.type === 'checkbox') data[id] = !!el.checked;
+                    else data[id] = el.value || '';
+                });
+
+                // normalize common fields to expected keys
+                const draft = {
+                    firstName: data.first_name || data.firstName || data.first || '',
+                    lastName: data.last_name || data.lastName || data.last || '',
+                    email: data.email || '',
+                    phone: data.phone || '',
+                    age: data.age || '',
+                    address: data.address || '',
+                    username: data.username || '',
+                    // persist selected Down Syndrome type (if present) under multiple keys for compatibility
+                    dsType: data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                    r_dsType1: data.r_dsType1 || data.r_dsType || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                    r_dsType: data.r_dsType || data.r_dsType1 || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                    guardian_first: data.guardian_first || data.guardianFirst || '',
+                    guardian_last: data.guardian_last || data.guardianLast || '',
+                    guardian_email: data.guardian_email || '',
+                    guardian_phone: data.guardian_phone || '',
+                    guardian_relationship: data.guardian_relationship || data.guardianRelationship || '',
+                    r_dsType1: data.r_dsType1 || '',
+                    password: data.password || '',
+                };
+
+                try {
+                    localStorage.setItem('rpi_personal1', JSON.stringify(draft));
+                } catch (err) {
+                    console.warn('Could not save rpi_personal1', err);
+                }
+
+                console.info('[adminapprove] saved rpi_personal1 draft', Object.keys(draft));
+                // dispatch event for other scripts to pick up
+                try {
+                    window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
+                        detail: {
+                            key: 'rpi_personal1',
+                            data: draft
+                        }
+                    }));
+                } catch (e) {}
+
+               window.location.href = '{{ route("registereducation") }}';
+              //  window.location.href = '{{ route("registerreview1") }}';
+
+            } catch (err) {
+                console.error('[adminapprove] submit failed', err);
+                // btn.disabled = false;
+                btn.classList.remove('opacity-60');
+            }
+        });
+    })();
+</script>
 </body>
 
 </html>

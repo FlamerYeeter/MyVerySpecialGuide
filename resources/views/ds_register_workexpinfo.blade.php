@@ -36,6 +36,12 @@
             transform: translateY(-4px);
             background-color: #eff6ff;
         }
+        .workexp-card.disabled,
+        .workyr-card.disabled {
+            opacity: 0.45;
+            pointer-events: none;
+            filter: grayscale(0.05);
+        }
     .tts-btn.speaking {
         background-color: #2563eb !important;
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
@@ -514,115 +520,276 @@
                     else current = String(v).split(',').map(s => s.trim()).filter(Boolean);
                 } catch (e) { current = []; }
 
-                // toggle the clicked card visually
-                if (el && el.classList) {
+                const val = String(value || (el && el.dataset && el.dataset.value) || '');
+
+                if (!val) return;
+
+                // Special handling for "none" (first-time) choice:
+                if (val === 'none') {
+                    // if toggling off "none"
                     if (el.classList.contains('selected')) {
                         el.classList.remove('selected');
-                        // remove value
-                        current = current.filter(x => x !== value);
+                        current = current.filter(x => x !== 'none');
+                        // re-enable other cards
+                        document.querySelectorAll('.workexp-card').forEach(c => c.classList.remove('disabled'));
                     } else {
+                        // selecting "none": clear other selections and disable other cards
+                        document.querySelectorAll('.workexp-card.selected').forEach(c => c.classList.remove('selected'));
+                        document.querySelectorAll('.workexp-card').forEach(c => {
+                            if (c.getAttribute('data-value') !== 'none') c.classList.add('disabled');
+                            else c.classList.remove('disabled');
+                        });
                         el.classList.add('selected');
-                        // add value if not present
-                        if (!current.includes(value)) current.push(value);
+                        current = ['none'];
                     }
                 } else {
-                    // fallback behavior: if no element passed, just toggle in array
-                    if (current.includes(value)) current = current.filter(x => x !== value);
-                    else current.push(value);
+                    // selecting a normal work-type card: if "none" present, remove it and re-enable cards first
+                    if (current.includes('none')) {
+                        current = current.filter(x => x !== 'none');
+                        const noneCard = document.querySelector('.workexp-card[data-value="none"]');
+                        if (noneCard) noneCard.classList.remove('selected');
+                        document.querySelectorAll('.workexp-card').forEach(c => c.classList.remove('disabled'));
+                    }
+
+                    // toggle this card
+                    if (el && el.classList) {
+                        if (el.classList.contains('selected')) {
+                            el.classList.remove('selected');
+                            current = current.filter(x => x !== val);
+                        } else {
+                            el.classList.add('selected');
+                            if (!current.includes(val)) current.push(val);
+                        }
+                    } else {
+                        if (current.includes(val)) current = current.filter(x => x !== val);
+                        else current.push(val);
+                    }
                 }
 
                 // write back as JSON array for consistency
                 try { hidden.value = JSON.stringify(current); } catch (e) { hidden.value = (current || []).join(','); }
 
+                // Clear any top-level errors
                 const err = document.getElementById('workExpError') || document.getElementById('schoolError');
                 if (err) err.textContent = '';
+
+                // adjust dependent UI (work-years & experiences) after change
+                updateWorkExpState();
+
             } catch (e) {
                 console.error('selectWorkTypeChoice error', e);
             }
         }
+    // Keeps work-years cards, job experience inputs and Add-button in sync with the "none" selection.
+    function updateWorkExpState() {
+        try {
+            const hidden = document.getElementById('work_type');
+            const addBtn = document.getElementById('addJobBtn');
+            const container = document.getElementById('job_experiences_container');
+            const workyrHidden = document.getElementById('work_years');
+            const workyrCards = document.querySelectorAll('.workyr-card');
+
+            let noneSelected = false;
+            try {
+                const v = hidden ? (hidden.value || '') : '';
+                const arr = v && v.trim().startsWith('[') ? JSON.parse(v) : (v ? String(v).split(',').map(s=>s.trim()).filter(Boolean) : []);
+                noneSelected = Array.isArray(arr) && arr.includes('none');
+            } catch (e) { noneSelected = false; }
+
+            if (noneSelected) {
+                // disable work-year cards and clear any selection
+                workyrCards.forEach(c => { c.classList.add('disabled'); c.classList.remove('selected'); });
+
+                // set coded work_years to 'none' so downstream logic knows
+                if (workyrHidden) workyrHidden.value = 'none';
+
+                // clear job experience entries and show one disabled empty entry
+                if (container) {
+                    container.innerHTML = '';
+                    const tpl = document.getElementById('job_exp_template');
+                    if (tpl) {
+                        const node = tpl.content.firstElementChild.cloneNode(true);
+                        // disable inputs and hide remove button
+                        node.querySelectorAll('input, textarea, button').forEach(el => {
+                            try { el.disabled = true; } catch (e) {}
+                            if (el.classList && el.classList.contains('remove-job')) el.style.display = 'none';
+                        });
+                        container.appendChild(node);
+                    }
+                }
+
+                // disable Add button
+                if (addBtn) { addBtn.disabled = true; addBtn.classList.add('opacity-50','cursor-not-allowed'); }
+
+            } else {
+                // enable work-year cards
+                workyrCards.forEach(c => c.classList.remove('disabled'));
+
+                // reset coded work_years if it was 'none'
+                if (workyrHidden && workyrHidden.value === 'none') workyrHidden.value = '';
+
+                // ensure at least one editable job entry exists
+                if (container) {
+                    if (!container.children.length) {
+                        const tpl = document.getElementById('job_exp_template');
+                        if (tpl) {
+                            const node = tpl.content.firstElementChild.cloneNode(true);
+                            node.querySelectorAll('input, textarea, button').forEach(el => { try { el.disabled = false; } catch (e) {} });
+                            container.appendChild(node);
+                        }
+                    } else {
+                        // enable inputs in existing entries
+                        container.querySelectorAll('input, textarea, button').forEach(el => {
+                            try { el.disabled = false; } catch (e) {}
+                            if (el.classList && el.classList.contains('remove-job')) el.style.display = '';
+                        });
+                    }
+                }
+
+                if (addBtn) { addBtn.disabled = false; addBtn.classList.remove('opacity-50','cursor-not-allowed'); }
+            }
+        } catch (e) {
+            console.warn('updateWorkExpState error', e);
+        }
+    }
 
         // initialize visual selection from hidden value (if any)
         document.addEventListener('DOMContentLoaded', function() {
-            try {
-                const hidden = document.getElementById('work_type');
-                if (!hidden) return;
-                let current = [];
                 try {
-                    const v = hidden.value || '';
-                    if (!v) current = [];
-                    else if (v.trim().startsWith('[')) current = JSON.parse(v);
-                    else current = String(v).split(',').map(s => s.trim()).filter(Boolean);
-                } catch (e) { current = []; }
+                    const hidden = document.getElementById('work_type');
+                    if (!hidden) return;
+                    let current = [];
+                    try {
+                        const v = hidden.value || '';
+                        if (!v) current = [];
+                        else if (v.trim().startsWith('[')) current = JSON.parse(v);
+                        else current = String(v).split(',').map(s => s.trim()).filter(Boolean);
+                    } catch (e) { current = []; }
 
-                if (Array.isArray(current) && current.length) {
-                    document.querySelectorAll('.workexp-card').forEach(card => {
-                        const val = card.getAttribute('data-value');
-                        if (val && current.includes(val)) card.classList.add('selected');
-                    });
-                }
-            } catch (e) { console.warn('workexp init failed', e); }
-
-            const workExpNextBtn = document.getElementById('workExpNext');
-            if (workExpNextBtn) {
-                workExpNextBtn.addEventListener('click', function() {
-
-                // Get only selected work experience cards
-                const selectedWorkExpCards = document.querySelectorAll(".workexp-card.selected");
-                const selectedWorkExpValues = [];
-
-                for (let i = 0; i < selectedWorkExpCards.length; i++) {
-                
-                    const card = selectedWorkExpCards[i];
-                    const value = card.getAttribute("data-value") || "";
-                    if (value) {
-                        selectedWorkExpValues.push(value);
-                    }
-                }
-
-                // Save only selected values to localStorage
-                localStorage.setItem("selected_work_experience", JSON.stringify(selectedWorkExpValues));
-                const selectedCard = document.querySelector(".workyr-card.selected");
-     
-                if (selectedCard) {
-                    const onclickAttr = selectedCard.getAttribute("onclick");
-                    const match = onclickAttr.match(/selectWorkYearsChoice\(this,\s*'([^']+)'\)/);
-                    if (match && match[1]) {
-                        const workYearValue = match[1];
-                        localStorage.setItem("selected_work_year", workYearValue);
-                        console.log("Selected work year saved:", workYearValue);
-                    }
-                } else {
-                    console.log("No work year selected.");
-                }
-
-                const jobExperiences = [];
-
-                // Loop through all job experience cards
-                document.querySelectorAll('#job_experiences_container .job_exp_item').forEach(item => {
-                    const jobTitle = item.querySelector('.job_title')?.value?.trim() || '';
-                    const companyName = item.querySelector('.company_name')?.value?.trim() || '';
-                    const workYear = item.querySelector('.job_work_year')?.value?.trim() || '';
-                    const jobDescription = item.querySelector('.job_description')?.value?.trim() || '';
-
-                    // Add only if at least one field has data
-                    if (jobTitle || companyName || workYear || jobDescription) {
-                        jobExperiences.push({
-                            title: jobTitle,
-                            company: companyName,
-                            year: workYear,
-                            description: jobDescription
+                    if (Array.isArray(current) && current.length) {
+                        document.querySelectorAll('.workexp-card').forEach(card => {
+                            const val = card.getAttribute('data-value');
+                            if (val && current.includes(val)) card.classList.add('selected');
                         });
                     }
-                });
+                } catch (e) { console.warn('workexp init failed', e); }
 
-                // Save to localStorage
-                localStorage.setItem('job_experiences', JSON.stringify(jobExperiences));
-                console.log('✅ Job experiences saved:', jobExperiences);
+                const workExpNextBtn = document.getElementById('workExpNext');
+                if (workExpNextBtn) {
+                    workExpNextBtn.addEventListener('click', function() {
+                        try {
+                            const errorEl = document.getElementById('workExpError');
+                            if (errorEl) errorEl.textContent = '';
 
-                window.location.href = '{{ route("registerworkplace") }}';
-                });
-            }
-        });
+                            // parse work_type hidden to detect "none"
+                            const wt = document.getElementById('work_type');
+                            let workTypeArr = [];
+                            try {
+                                const v = wt ? (wt.value || '') : '';
+                                if (v && v.trim().startsWith('[')) workTypeArr = JSON.parse(v);
+                                else workTypeArr = v ? String(v).split(',').map(s=>s.trim()).filter(Boolean) : [];
+                            } catch (e) { workTypeArr = []; }
+
+                            // If user chose "none", allow proceed without further required fields
+                            const noneSelected = Array.isArray(workTypeArr) && workTypeArr.includes('none');
+
+                            // If not 'none', validate selections/entries
+                            if (!noneSelected) {
+                                // require at least one workexp card selected
+                                const selectedWorkExpCards = document.querySelectorAll(".workexp-card.selected");
+                                if (!selectedWorkExpCards || selectedWorkExpCards.length === 0) {
+                                    if (errorEl) errorEl.textContent = 'Please answer whether you have worked before.';
+                                    const firstCard = document.querySelector('.workexp-card');
+                                    if (firstCard) { firstCard.scrollIntoView({behavior:'smooth', block:'center'}); }
+                                    return;
+                                }
+
+                                // require a work-year selection
+                                const selectedWorkYear = document.querySelector('.workyr-card.selected');
+                                if (!selectedWorkYear) {
+                                    if (errorEl) errorEl.textContent = 'Please select how long you worked there.';
+                                    const workYrTop = document.querySelector('.workyr-card') || document.getElementById('workExpNext');
+                                    if (workYrTop) workYrTop.scrollIntoView({behavior:'smooth', block:'center'});
+                                    return;
+                                }
+
+                                // require at least one non-empty job experience entry
+                                const jobItems = Array.from(document.querySelectorAll('#job_experiences_container .job_exp_item'));
+                                let nonEmptyCount = 0;
+                                for (const item of jobItems) {
+                                    // skip disabled entries (they are present only for 'none' state)
+                                    const anyInput = Array.from(item.querySelectorAll('input, textarea')).some(inp => {
+                                        try { if (inp.disabled) return false; } catch (e) {}
+                                        const v = (inp.value || '').trim();
+                                        return v.length > 0;
+                                    });
+                                    if (anyInput) nonEmptyCount++;
+                                }
+                                if (nonEmptyCount === 0) {
+                                    if (errorEl) errorEl.textContent = 'Please add at least one previous work experience.';
+                                    const jobTop = document.getElementById('job_experiences_container') || document.getElementById('workExpNext');
+                                    if (jobTop) jobTop.scrollIntoView({behavior:'smooth', block:'center'});
+                                    return;
+                                }
+                            }
+
+                            // Passed validation (or noneSelected). Save and redirect.
+                            // Save selected work experience cards
+                            const selectedWorkExpCards = document.querySelectorAll(".workexp-card.selected");
+                            const selectedWorkExpValues = [];
+                            for (let i = 0; i < selectedWorkExpCards.length; i++) {
+                                const card = selectedWorkExpCards[i];
+                                const value = card.getAttribute("data-value") || "";
+                                if (value) selectedWorkExpValues.push(value);
+                            }
+                            localStorage.setItem("selected_work_experience", JSON.stringify(selectedWorkExpValues));
+
+                            // Save selected work year if any
+                            const selectedCard = document.querySelector(".workyr-card.selected");
+                            if (selectedCard) {
+                                const onclickAttr = selectedCard.getAttribute("onclick") || '';
+                                const match = onclickAttr.match(/selectWorkYearsChoice\(this,\s*'([^']+)'\)/);
+                                if (match && match[1]) {
+                                    const workYearValue = match[1];
+                                    localStorage.setItem("selected_work_year", workYearValue);
+                                    console.log("Selected work year saved:", workYearValue);
+                                } else {
+                                    // fallback to hidden value
+                                    const wyHidden = document.getElementById('work_years');
+                                    if (wyHidden && wyHidden.value) localStorage.setItem("selected_work_year", wyHidden.value);
+                                }
+                            } else {
+                                // if none selected, ensure work_year cleared in storage
+                                if (!noneSelected) localStorage.removeItem("selected_work_year");
+                            }
+
+                            // collect job experiences (only include entries with data)
+                            const jobExperiences = [];
+                            document.querySelectorAll('#job_experiences_container .job_exp_item').forEach(item => {
+                                const jobTitle = item.querySelector('.job_title')?.value?.trim() || '';
+                                const companyName = item.querySelector('.company_name')?.value?.trim() || '';
+                                const workYear = item.querySelector('.job_work_year')?.value?.trim() || '';
+                                const jobDescription = item.querySelector('.job_description')?.value?.trim() || '';
+                                if (jobTitle || companyName || workYear || jobDescription) {
+                                    jobExperiences.push({
+                                        title: jobTitle,
+                                        company: companyName,
+                                        year: workYear,
+                                        description: jobDescription
+                                    });
+                                }
+                            });
+                            localStorage.setItem('job_experiences', JSON.stringify(jobExperiences));
+                            console.log('✅ Job experiences saved:', jobExperiences);
+
+                            // navigate
+                            window.location.href = '{{ route("registerworkplace") }}';
+                        } catch (err) {
+                            console.error('workExpNext error', err);
+                        }
+                    });
+                }
+            });
     </script>
     <script>
         document.getElementById('workplaceNext').addEventListener('click', function() {

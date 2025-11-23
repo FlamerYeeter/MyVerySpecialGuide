@@ -536,27 +536,51 @@
                 });
             </script>
             <script>
-                document.getElementById('skills1Next').addEventListener('click', () => {
+                document.getElementById('skills1Next').addEventListener('click', function () {
+                    const errEl = document.getElementById('skills1Error');
+                    if (errEl) errEl.textContent = '';
+
+                    const selectedCards = Array.from(document.querySelectorAll('.skills-card.selected') || []);
                     const selected = [];
 
-                    document.querySelectorAll('.skills-card.selected').forEach(card => {
-                        const value = card.getAttribute('data-value');
+                    // validate selections (handle 'other' requiring text)
+                    for (const card of selectedCards) {
+                        const value = (card.getAttribute('data-value') || '').trim();
+                        if (!value) continue;
                         if (value === 'other') {
-                            const otherInput = document.getElementById('skills1_other_text').value.trim();
-                            if (otherInput) selected.push(otherInput);
+                            const otherInput = document.getElementById('skills1_other_text');
+                            const otherVal = otherInput ? (otherInput.value || '').trim() : '';
+                            if (!otherVal) {
+                                if (errEl) errEl.textContent = 'Please type your answer for "Other".';
+                                if (otherInput) { otherInput.focus(); otherInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+                                return;
+                            }
+                            selected.push(otherVal);
                         } else {
                             selected.push(value);
                         }
-                    });
-  // alert(selected);
-                    // Save all selected skills to localStorage at once
-                    localStorage.setItem('skills1_selected', JSON.stringify(selected));
-                  
-                    // Navigate to next page
+                    }
+
+                    if (selected.length === 0) {
+                        if (errEl) errEl.textContent = 'Please select at least one skill.';
+                        const firstCard = document.querySelector('.skills-card');
+                        if (firstCard) firstCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        return;
+                    }
+
+                    // persist selections
+                    try {
+                        const hidden = document.getElementById('skills_page1');
+                        if (hidden) hidden.value = JSON.stringify(selected);
+                    } catch (e) { /* ignore */ }
+
+                    try { localStorage.setItem('skills1_selected', JSON.stringify(selected)); } catch (e) {}
+
+                    // proceed
                     window.location.href = '{{ route("registerjobpreference1") }}';
-                       //window.location.href = '{{ route("registerreview4") }}';
                 });
             </script>
+
     </div>
     </div>
     </form>
