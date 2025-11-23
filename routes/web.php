@@ -1426,6 +1426,10 @@ Route::get('/about-ds', function () {
     return view('about-ds');
 })->name('about.ds');
 
+Route::get('/about-dsapi', function () {
+    return view('about-dsapi');
+})->name('about.dsapi');
+
 Route::get('/user-role', function () {
     return view('user_role');
 })->name('user.role');

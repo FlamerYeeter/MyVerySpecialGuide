@@ -49,8 +49,8 @@ $manifestPath = public_path('build/manifest.json');
                     class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About MVSG</a>
                 <a href="{{ route('about.ds') }}"
                     class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
-                <a href="/" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Down
-                    Syndrome Association</a>
+                <a href="{{ route('about.dsapi') }}" 
+                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Down Syndrome Association</a>
             </div>
 
             <div class="flex items-center space-x-4">
