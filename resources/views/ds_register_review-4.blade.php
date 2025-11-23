@@ -106,7 +106,7 @@
       <div class="flex justify-center">
         <button type="button" id="rv4_change_skills_btn"
           class="bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-transform duration-200 hover:scale-105">
-          ✏️ Change
+          ✏️ Edit
         </button>
       </div>
     </div>
@@ -346,12 +346,12 @@
       }
 
       // Wire the Change button to save draft first then navigate
-      document.addEventListener('DOMContentLoaded', function(){
-        try {
-          const btn = document.getElementById('rv4_change_skills_btn');
-          if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoSkills('{{ route('registerskills1') }}'); });
-        } catch(e) { console.debug('[review-4] wiring change button failed', e); }
-      });
+      // document.addEventListener('DOMContentLoaded', function(){
+      //   try {
+      //     const btn = document.getElementById('rv4_change_skills_btn');
+      //     if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoSkills('{{ route('registerskills1') }}'); });
+      //   } catch(e) { console.debug('[review-4] wiring change button failed', e); }
+      // });
     </script>
   <!-- TTS script: speaks English then Filipino; prefers Microsoft AvaMultilingual voice when available -->
   <script>

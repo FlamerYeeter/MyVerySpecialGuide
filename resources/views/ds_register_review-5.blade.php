@@ -163,7 +163,7 @@
             <div class="flex justify-center mt-6">
                 <button type="button" id="rv5_change_jobprefs_btn"
                     class="bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold px-6 py-3 rounded-2xl shadow-md transition-transform duration-200 hover:scale-105">
-                    ✏️ Change
+                    ✏️ Edit
                 </button>
             </div>
         </div>
@@ -385,12 +385,12 @@
             } catch(e) { window.location.href = url; }
         }
 
-        document.addEventListener('DOMContentLoaded', function(){
-            try {
-                const btn = document.getElementById('rv5_change_jobprefs_btn');
-                if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoJobPrefs('{{ route('registerjobpreference1') }}'); });
-            } catch(e) { console.debug('[review-5] wiring change button failed', e); }
-        });
+        // document.addEventListener('DOMContentLoaded', function(){
+        //     try {
+        //         const btn = document.getElementById('rv5_change_jobprefs_btn');
+        //         if (btn) btn.addEventListener('click', function(e){ e.preventDefault(); saveDraftAndGotoJobPrefs('{{ route('registerjobpreference1') }}'); });
+        //     } catch(e) { console.debug('[review-5] wiring change button failed', e); }
+        // });
     </script>
     <script>
         // Continue: collect visible prefs, save local draft, attempt Firestore write, then navigate
