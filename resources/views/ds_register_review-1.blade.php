@@ -392,109 +392,226 @@ setupEditSection("editAccountBtn", "accountSection");
 
 <!-- Uploaded Files Edit Script -->
 <script>
-const editFilesBtn = document.getElementById("editFilesBtn");
+/* Replaced Uploaded Files Edit Script with adminapprove-style stacked preview and View/Remove handling.
+   Uses (in order): admin_uploaded_* keys, uploadedProofs1 array, legacy single-file keys.
+*/
+(function(){
+  const proofDisplay = document.getElementById("proofDisplay");
+  const medDisplay = document.getElementById("medDisplay");
+  const fileModal = document.getElementById("fileModal");
+  const modalContent = document.getElementById("modalContent");
+  const closeModalBtn = document.getElementById("closeModalBtn");
+  const editFilesBtn = document.getElementById("editFilesBtn");
 
-const proofFileInput = document.getElementById("proofFile");
-const medFileInput = document.getElementById("medFile");
+  const LS_ARRAY_KEY = 'uploadedProofs1';
+  const ADMIN_KEYS = {
+    proof: { name: 'admin_uploaded_proof_name', data: 'admin_uploaded_proof_data', type: 'admin_uploaded_proof_type' },
+    medical: { name: 'admin_uploaded_med_name', data: 'admin_uploaded_med_data', type: 'admin_uploaded_med_type' }
+  };
+  const LEGACY_KEYS = {
+    proof: { name: 'uploadedProofName1', data: 'uploadedProofData1', type: 'uploadedProofType1' },
+    medical: { name: 'uploadedProofName0', data: 'uploadedProofData0', type: 'uploadedProofType0' }
+  };
 
-const proofDisplay = document.getElementById("proofDisplay");
-const medDisplay = document.getElementById("medDisplay");
-
-const fileModal = document.getElementById("fileModal");
-const modalContent = document.getElementById("modalContent");
-const closeModalBtn = document.getElementById("closeModalBtn");
-
-let proofFileURL = null;
-let medFileURL = null;
-
-// Enable/Disable file inputs
-editFilesBtn.addEventListener("click", () => {
-  const isEditing = editFilesBtn.dataset.mode === "editing";
-
-  if (isEditing) {
-    // Save mode
-    proofFileInput.disabled = true;
-    medFileInput.disabled = true;
-    editFilesBtn.innerText = "✏️ Edit Files";
-    editFilesBtn.classList.replace("bg-green-600", "bg-blue-600");
-    editFilesBtn.dataset.mode = "view";
-  } else {
-    // Edit mode
-    proofFileInput.disabled = false;
-    medFileInput.disabled = false;
-    editFilesBtn.innerText = "💾 Save Files";
-    editFilesBtn.classList.replace("bg-blue-600", "bg-green-600");
-    editFilesBtn.dataset.mode = "editing";
+  function readJson(key){ try { return JSON.parse(localStorage.getItem(key)); } catch(e){ return null; } }
+  function readFirst(keys){
+    for(const k of keys){ try{ const v = localStorage.getItem(k); if(v) return v; }catch(e){} }
+    return null;
   }
-});
 
-// Setup file preview with view/remove buttons
-function setupFileInput(fileInput, display, fileURLVar) {
-  fileInput.addEventListener("change", () => {
-    const file = fileInput.files[0];
-    if (!file) {
-      display.innerHTML = "";
-      fileURLVar && URL.revokeObjectURL(fileURLVar);
-      return;
-    }
+  function loadArrayFiles(){
+    const arr = readJson(LS_ARRAY_KEY);
+    return Array.isArray(arr) ? arr : [];
+  }
 
-    fileURLVar && URL.revokeObjectURL(fileURLVar);
-    fileURLVar = URL.createObjectURL(file);
-
-    const ext = file.name.split('.').pop().toLowerCase();
-    const icon = ['jpg','jpeg','png'].includes(ext) ? '🖼️' : ext === 'pdf' ? '📄' : '📁';
-
-    display.innerHTML = `
-      <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl">${icon}</span>
-          <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
+  function renderListTo(container, list){
+    container.innerHTML = '';
+    if(!list || !list.length){ container.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>'; return; }
+    list.forEach((f, idx) => {
+      const ext = (f.type || (f.name||'').split('.').pop()||'').toLowerCase();
+      const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
+      const card = document.createElement('div');
+      card.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+      card.dataset.idx = idx;
+      card.innerHTML = `
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="text-2xl">${icon}</div>
+          <div class="min-w-0">
+            <div class="text-sm text-gray-700 truncate max-w-[420px]">${escapeHtml(f.name)}</div>
+            <div class="text-xs text-gray-500 mt-1">${(f.type||'').toUpperCase()}</div>
+          </div>
         </div>
-        <div class="flex gap-2">
-          <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button>
-          <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button>
+        <div class="ml-auto flex gap-2">
+          <button data-action="view" data-idx="${idx}" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
+          <button data-action="remove" data-idx="${idx}" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+        </div>
+      `;
+      container.appendChild(card);
+    });
+
+    // bind
+    container.querySelectorAll('[data-action="view"]').forEach(b => b.addEventListener('click', (ev)=>{
+      const i = Number(ev.currentTarget.dataset.idx);
+      const list = loadArrayFiles();
+      const item = list[i];
+      if(item && item.data) openPreview(item.name, item.data, item.type);
+      else alert('Preview not available for this file.');
+    }));
+
+    container.querySelectorAll('[data-action="remove"]').forEach(b => b.addEventListener('click', (ev)=>{
+      const i = Number(ev.currentTarget.dataset.idx);
+      const list = loadArrayFiles();
+      if(!Array.isArray(list) || !list.length) return;
+      list.splice(i,1);
+      try { localStorage.setItem(LS_ARRAY_KEY, JSON.stringify(list)); } catch(e){ console.warn(e); }
+      // also update legacy/admin single-file keys to keep pages compatible (clear them)
+      ['uploadedProofData','uploadedProofType','uploadedProofName','uploadedProofData1','uploadedProofType1','uploadedProofName1'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+      renderAll();
+    }));
+  }
+
+  function renderSingleTo(container, name, data, type, storageKeysForRemoval){
+    container.innerHTML = '';
+    if(!name || !data){ container.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>'; return; }
+    const ext = (type || (name||'').split('.').pop()||'').toLowerCase();
+    const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
+    const card = document.createElement('div');
+    card.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+    card.innerHTML = `
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="text-2xl">${icon}</div>
+        <div class="min-w-0">
+          <div class="text-sm text-gray-700 truncate max-w-[420px]">${escapeHtml(name)}</div>
+          <div class="text-xs text-gray-500 mt-1">${(type||'').toUpperCase()}</div>
         </div>
       </div>
+      <div class="ml-auto flex gap-2">
+        <button id="r_view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
+        <button id="r_remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+      </div>
     `;
+    container.appendChild(card);
 
-    const viewBtn = display.querySelector(".viewBtn");
-    const removeBtn = display.querySelector(".removeBtn");
+    container.querySelector('#r_view').addEventListener('click', ()=>{
+      openPreview(name, data, type);
+    });
+    container.querySelector('#r_remove').addEventListener('click', ()=>{
+      (storageKeysForRemoval || []).forEach(k=>{ try{ localStorage.removeItem(k); } catch(e){} });
+      // if array exists, remove first matching by name
+      const arr = loadArrayFiles();
+      const idx = arr.findIndex(x => String(x.name||'') === String(name||''));
+      if(idx >= 0){ arr.splice(idx,1); try{ localStorage.setItem(LS_ARRAY_KEY, JSON.stringify(arr)); }catch(e){} }
+      renderAll();
+    });
+  }
 
-    // View button
-    viewBtn.addEventListener("click", () => {
-      let contentHTML = "";
-      if (ext === "pdf") {
-        contentHTML = `<iframe src="${fileURLVar}" class="w-full h-[500px]"></iframe>`;
+  function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  function openPreview(name, dataUrl, type){
+    if(!fileModal || !modalContent) return;
+    modalContent.innerHTML = `<h2 class="font-semibold mb-2">${escapeHtml(name)}</h2>`;
+    const ext = (type || (name||'').split('.').pop() || '').toLowerCase();
+    if (['jpg','jpeg','png'].includes(ext)) modalContent.innerHTML += `<img src="${dataUrl}" class="max-h-[80vh] mx-auto rounded-lg">`;
+    else if (ext === 'pdf') modalContent.innerHTML += `<iframe src="${dataUrl}" class="w-full h-[80vh] rounded-lg border-0"></iframe>`;
+    else modalContent.innerHTML += `<p class="text-gray-700 text-center">This file type cannot be previewed.</p>`;
+    fileModal.classList.remove('hidden');
+  }
+
+  closeModalBtn?.addEventListener('click', (e)=>{ e.preventDefault(); fileModal.classList.add('hidden'); modalContent.innerHTML = ''; });
+  fileModal?.addEventListener('click', (e)=>{ if(e.target === fileModal){ fileModal.classList.add('hidden'); modalContent.innerHTML=''; } });
+
+   function renderAll(){
+    // PRIORITY: show admin files first (adminapprove), then uploadedProofs1 array, then legacy single-file keys.
+    const adminProofName = localStorage.getItem(ADMIN_KEYS.proof.name);
+    const adminProofData = localStorage.getItem(ADMIN_KEYS.proof.data);
+    const adminProofType = localStorage.getItem(ADMIN_KEYS.proof.type);
+
+    const adminMedName = localStorage.getItem(ADMIN_KEYS.medical.name);
+    const adminMedData = localStorage.getItem(ADMIN_KEYS.medical.data);
+    const adminMedType = localStorage.getItem(ADMIN_KEYS.medical.type);
+
+    // 1) If admin keys exist, render them (single-file cards)
+    if (adminProofName && adminProofData) {
+      renderSingleTo(proofDisplay, adminProofName, adminProofData, adminProofType, [ADMIN_KEYS.proof.name, ADMIN_KEYS.proof.data, ADMIN_KEYS.proof.type]);
+    } else {
+      // 2) fallback to uploadedProofs1 array
+      const arr = loadArrayFiles();
+      if (Array.isArray(arr) && arr.length) {
+        renderListTo(proofDisplay, arr);
       } else {
-        contentHTML = `<img src="${fileURLVar}" class="max-h-[500px] object-contain" />`;
+        // 3) fallback to legacy single-file keys for proof
+        const legacyProofName = localStorage.getItem(LEGACY_KEYS.proof.name);
+        const legacyProofData = localStorage.getItem(LEGACY_KEYS.proof.data);
+        const legacyProofType = localStorage.getItem(LEGACY_KEYS.proof.type);
+        if (legacyProofName && legacyProofData) {
+          renderSingleTo(proofDisplay, legacyProofName, legacyProofData, legacyProofType, [LEGACY_KEYS.proof.name, LEGACY_KEYS.proof.data, LEGACY_KEYS.proof.type]);
+        } else {
+          proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+        }
       }
-      modalContent.innerHTML = contentHTML;
-      fileModal.classList.remove("hidden");
-      fileModal.classList.add("flex");
-    });
+    }
 
-    // Remove button
-    removeBtn.addEventListener("click", () => {
-      fileInput.value = "";
-      display.innerHTML = "";
-      fileURLVar && URL.revokeObjectURL(fileURLVar);
-      fileURLVar = null;
+    // Repeat for medical / admin uploaded med
+    if (adminMedName && adminMedData) {
+      renderSingleTo(medDisplay, adminMedName, adminMedData, adminMedType, [ADMIN_KEYS.medical.name, ADMIN_KEYS.medical.data, ADMIN_KEYS.medical.type]);
+    } else {
+      // If array had items and they were used for proof, we already showed them; show empty for med
+      const arr2 = loadArrayFiles();
+      if (Array.isArray(arr2) && arr2.length) {
+        // if you want to separate proof vs medical files inside the array you can filter by naming convention;
+        // for now treat array as general proofs and show empty for medical to avoid duplication
+        medDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+      } else {
+        const legacyMedName = localStorage.getItem(LEGACY_KEYS.medical.name);
+        const legacyMedData = localStorage.getItem(LEGACY_KEYS.medical.data);
+        const legacyMedType = localStorage.getItem(LEGACY_KEYS.medical.type);
+        if (legacyMedName && legacyMedData) {
+          renderSingleTo(medDisplay, legacyMedName, legacyMedData, legacyMedType, [LEGACY_KEYS.medical.name, LEGACY_KEYS.medical.data, LEGACY_KEYS.medical.type]);
+        } else {
+          medDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+        }
+      }
+    }
+  }
+
+
+  // wire Edit Files toggle to enable/disable file inputs if present (keeps UX)
+  if(editFilesBtn){
+    editFilesBtn.addEventListener('click', ()=>{
+      const isEditing = editFilesBtn.dataset.mode === 'editing';
+      const proofFile = document.getElementById('proofFile');
+      const medFile = document.getElementById('medFile');
+      if(isEditing){
+        if(proofFile) proofFile.disabled = true;
+        if(medFile) medFile.disabled = true;
+        editFilesBtn.innerText = '✏️ Edit Files';
+        editFilesBtn.dataset.mode = 'view';
+      } else {
+        if(proofFile) proofFile.disabled = false;
+        if(medFile) medFile.disabled = false;
+        editFilesBtn.innerText = '💾 Save Files';
+        editFilesBtn.dataset.mode = 'editing';
+      }
     });
+  }
+
+  // initial render
+  renderAll();
+
+  // listen storage changes
+  window.addEventListener('storage', (e)=>{
+    if(!e.key) { renderAll(); return; }
+    const watch = [LS_ARRAY_KEY,
+      ADMIN_KEYS.proof.name, ADMIN_KEYS.proof.data, ADMIN_KEYS.proof.type,
+      ADMIN_KEYS.medical.name, ADMIN_KEYS.medical.data, ADMIN_KEYS.medical.type,
+      LEGACY_KEYS.proof.name, LEGACY_KEYS.proof.data, LEGACY_KEYS.proof.type,
+      LEGACY_KEYS.medical.name, LEGACY_KEYS.medical.data, LEGACY_KEYS.medical.type
+    ];
+    if(watch.includes(e.key)) setTimeout(renderAll, 20);
   });
-
-  return fileURLVar;
-}
-
-proofFileURL = setupFileInput(proofFileInput, proofDisplay, proofFileURL);
-medFileURL = setupFileInput(medFileInput, medDisplay, medFileURL);
-
-// Close modal
-closeModalBtn.addEventListener("click", () => {
-  modalContent.innerHTML = "";
-  fileModal.classList.add("hidden");
-  fileModal.classList.remove("flex");
-});
+})();
 </script>
+
 
 
          <!-- Action Buttons -->

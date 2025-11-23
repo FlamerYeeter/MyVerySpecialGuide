@@ -1525,261 +1525,174 @@
                     }
                     </script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const reviewContainer = document.getElementById('certificateReview');
-    const modal = document.getElementById('fileModal');
-    const modalContent = document.getElementById('modalContent');
-    const closeModalBtn = document.getElementById('closeModalBtn');
-
-    if (!reviewContainer) return;
-
-    /* ==========================================================
-       COMPATIBILITY SHIM — Ensure both "normal" and "1" variants 
-       exist so all pages can read uploaded file keys consistently.
-    ========================================================== */
-    (function ensureKeyVariants() {
-        try {
-            const map = [
-                ['uploadedProofData', 'uploadedProofData1'],
-                ['uploadedProofType', 'uploadedProofType1'],
-                ['uploadedProofName', 'uploadedProofName1'],
-                ['uploadedProofData0', 'uploadedProofData'],
-                ['uploadedProofType0', 'uploadedProofType'],
-                ['uploadedProofName0', 'uploadedProofName']
-            ];
-            map.forEach(([a, b]) => {
-                try {
-                    const va = localStorage.getItem(a);
-                    const vb = localStorage.getItem(b);
-
-                    if (va && !vb) localStorage.setItem(b, va);
-                    else if (vb && !va) localStorage.setItem(a, vb);
-
-                } catch (e) { /* ignore */ }
-            });
-        } catch (e) { /* ignore */ }
-    })();
-    /* ========================================================== */
-
-
-    // ----------------------------------------------------------------------
-    // Utility helpers
-    // ----------------------------------------------------------------------
-
-    function readFirst(keys) {
-        for (const k of keys) {
+/*
+  Replace legacy single-file getters with a robust reader that:
+  - prefers admin_uploaded_* keys
+  - falls back to uploadedProofs1 (array)
+  - then falls back to uploadedProofData1 / uploadedProofData etc.
+  This also updates renderPreviewBlock to display stacked files when uploadedProofs1 is used.
+*/
+(function(){
+    // helper: read first non-empty localStorage key
+    function readFirst(keys){
+        for(const k of keys){
             try {
                 const v = localStorage.getItem(k);
-                if (v !== null && v !== undefined) return v;
-            } catch (e) {}
+                if (v !== null && v !== undefined && String(v).trim() !== '') return v;
+            } catch(e){}
         }
         return null;
     }
 
-    function getSavedCert() {
+    // unified loader: returns { list: [{name,type,data}], hasCertFlag }
+    function loadSavedCerts() {
+        // 1) array-style storage used by Education page (prefer this)
+        try {
+            const arrRaw = localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || '[]';
+            const arr = JSON.parse(arrRaw || '[]');
+            if (Array.isArray(arr) && arr.length) {
+                const normalized = arr.map(it => {
+                    if (!it) return null;
+                    if (typeof it === 'string') return { name: it, type: (it.split('.').pop()||'').toLowerCase(), data: null };
+                    return { name: it.name || it.filename || '', type: (it.type || (it.name||'').split('.').pop()||'').toLowerCase(), data: it.data || it.url || null };
+                }).filter(Boolean);
+                if (normalized.length) return { list: normalized, hasCertFlag: localStorage.getItem('review_certs') || null };
+            }
+        } catch(e){ /* ignore parse errors */ }
+
+        // 2) legacy single-file keys (many variants)
         const data = readFirst(['uploadedProofData1','uploadedProofData','uploadedProofData0','uploaded_proof_data','proofData']);
         const type = readFirst(['uploadedProofType1','uploadedProofType','uploadedProofType0','uploaded_proof_type','proofType']);
         const name = readFirst(['uploadedProofName1','uploadedProofName','uploadedProofName0','uploaded_proof_name','proofName']);
-        const hasCertFlag = localStorage.getItem('review_certs') || null;
-        return { data, type, name, hasCertFlag };
+        if (data && name) {
+            return { list: [{ name, type: (type||name.split('.').pop()).toLowerCase(), data }], hasCertFlag: localStorage.getItem('review_certs') || null };
+        }
+
+        // 3) admin single-file keys (adminapprove) — fallback, not preferred
+        const adminProofName = readFirst(['admin_uploaded_proof_name','admin_uploaded_proofName']);
+        const adminProofData = readFirst(['admin_uploaded_proof_data','admin_uploaded_proofData']);
+        const adminProofType = readFirst(['admin_uploaded_proof_type','admin_uploaded_proofType']);
+
+        if (adminProofName && adminProofData) {
+            return { list: [{ name: adminProofName, type: (adminProofType||adminProofName.split('.').pop()).toLowerCase(), data: adminProofData }], hasCertFlag: localStorage.getItem('review_certs') || null };
+        }
+
+        // nothing found
+        return { list: [], hasCertFlag: localStorage.getItem('review_certs') || null };
     }
 
-    // ----------------------------------------------------------------------
-    // Renderer for the preview block on the review page
-    // ----------------------------------------------------------------------
+    // render one stacked card (used for list)
+    function makeFileCard(item, idx) {
+        const ext = (item.type || (item.name||'').split('.').pop()||'').toLowerCase();
+        const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
+        const nameSafe = String(item.name || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        return `
+        <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3" data-idx="${idx}">
+            <span class="text-2xl">${icon}</span>
+            <span class="text-sm text-gray-700 truncate max-w-[420px]">${nameSafe}</span>
+            <div class="ml-auto flex gap-2">
+                <button type="button" data-idx="${idx}" data-action="view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
+                <button type="button" data-idx="${idx}" data-action="remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+            </div>
+        </div>
+        `;
+    }
 
-    function renderPreviewBlock(saved) {
+    // replace the previous renderPreviewBlock with one that uses loadSavedCerts()
+    function renderPreviewBlock() {
+        const reviewContainer = document.getElementById('certificateReview');
+        if (!reviewContainer) return;
+
+        const saved = loadSavedCerts();
         reviewContainer.innerHTML = '';
 
+        // if user explicitly selected "no", show No
         if (saved.hasCertFlag && String(saved.hasCertFlag).toLowerCase() === 'no') {
             reviewContainer.innerHTML = '<p class="text-gray-700 italic">Certificates / Trainings: No</p>';
             return;
         }
 
-        if (saved.data && saved.name) {
-            const ext = (saved.type || saved.name.split('.').pop()).toLowerCase();
-            const icon = (ext === 'pdf') ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
+        if (Array.isArray(saved.list) && saved.list.length) {
+            // build stacked list
+            const wrapper = document.createElement('div');
+            wrapper.innerHTML = saved.list.map((it, idx) => makeFileCard(it, idx)).join('');
+            reviewContainer.appendChild(wrapper);
 
-            const block = document.createElement('div');
-            block.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm';
-            block.innerHTML = `
-                <span class="text-2xl">${icon}</span>
-                <span class="text-sm text-gray-700 truncate max-w-[240px]">${saved.name}</span>
-                <div class="ml-auto flex gap-2">
-                    <button type="button" id="reviewViewCertBtn" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
-                    <button type="button" id="reviewRemoveCertBtn" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
-                </div>
-            `;
-            reviewContainer.appendChild(block);
-
-            document.getElementById('reviewViewCertBtn').addEventListener('click', function () {
-                const fresh = getSavedCert();
-                if (fresh.data && fresh.name) {
-                    const updatedExt = (fresh.type || fresh.name.split('.').pop()).toLowerCase();
-                    openPreviewModal(fresh.name, fresh.data, updatedExt);
-                } else {
-                    alert('No file data found to preview.');
-                }
+            // bind view/remove
+            wrapper.querySelectorAll('[data-action="view"]').forEach(btn => {
+                btn.addEventListener('click', (ev) => {
+                    const idx = Number(ev.currentTarget.dataset.idx);
+                    const it = saved.list[idx];
+                    if (!it) return alert('No preview available.');
+                    openPreviewModal(it.name, it.data || it.url || '', it.type || (it.name||'').split('.').pop());
+                });
             });
-
-            document.getElementById('reviewRemoveCertBtn').addEventListener('click', function () {
-                ['uploadedProofData1','uploadedProofType1','uploadedProofName1',
-                 'uploadedProofData','uploadedProofType','uploadedProofName',
-                 'uploadedProofData0','uploadedProofType0','uploadedProofName0',
-                 'uploaded_proof_data','uploaded_proof_type','uploaded_proof_name',
-                 'proofData','proofType','proofName'
-                ].forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
-
-                renderPreviewBlock({ hasCertFlag: localStorage.getItem('review_certs') });
-            });
-
-            return;
-        }
-
-        const filenameFromSpan = document.getElementById('review_certs')?.textContent?.trim();
-        if (filenameFromSpan) {
-            reviewContainer.innerHTML = `
-                <p class="text-gray-700">
-                    <span class="font-semibold">Certificates / Trainings:</span>
-                    <span id="rv_filename" class="text-blue-600 underline cursor-pointer">${filenameFromSpan}</span>
-                </p>
-            `;
-            const el = document.getElementById('rv_filename');
-            if (el) el.addEventListener('click', function () {
-                const s = getSavedCert();
-                if (s.data && s.name)
-                    openPreviewModal(s.name, s.data, (s.type || s.name.split('.').pop()).toLowerCase());
-                else alert('No file data available to preview.');
+            wrapper.querySelectorAll('[data-action="remove"]').forEach(btn => {
+                btn.addEventListener('click', (ev) => {
+                    const idx = Number(ev.currentTarget.dataset.idx);
+                    // remove from both array and legacy keys to keep UI consistent
+                    try {
+                        // if uploadedProofs1 exists, update it
+                        const arrRaw = localStorage.getItem('uploadedProofs1');
+                        if (arrRaw) {
+                            const arr = JSON.parse(arrRaw || '[]') || [];
+                            if (Array.isArray(arr) && arr.length > idx) {
+                                arr.splice(idx,1);
+                                localStorage.setItem('uploadedProofs1', JSON.stringify(arr));
+                            }
+                        }
+                    } catch(e){}
+                    // also remove legacy single-file keys if filename matches
+                    const fname = saved.list[idx] && saved.list[idx].name;
+                    if (fname) {
+                        ['uploadedProofName','uploadedProofData','uploadedProofType',
+                        'uploadedProofName1','uploadedProofData1','uploadedProofType1',
+                        'uploadedProofName0','uploadedProofData0','uploadedProofType0',
+                        'admin_uploaded_proof_name','admin_uploaded_proof_data','admin_uploaded_proof_type'].forEach(k=>{ try{ const v = localStorage.getItem(k); if(v && String(v).includes(fname)) localStorage.removeItem(k); }catch(e){} });
+                    }
+                    // re-render
+                    setTimeout(renderPreviewBlock, 30);
+                });
             });
             return;
         }
 
+        // nothing
         reviewContainer.innerHTML = '<p class="text-gray-700 italic">Certificates / Trainings: No file uploaded</p>';
     }
 
-    // ----------------------------------------------------------------------
-    // Modal Preview
-    // ----------------------------------------------------------------------
-
+    // small helper used by view handlers in other scripts
     function openPreviewModal(name, dataUrl, ext) {
+        const modal = document.getElementById('fileModal') || document.getElementById('filePreviewModal');
+        const modalContent = document.getElementById('modalContent') || document.getElementById('filePreviewContent');
         if (!modal || !modalContent) return;
         modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
-
-        let src = null;
-        try {
-            const s = String(dataUrl || '').trim();
-
-            // Direct data: URL (base64)
-            if (s.startsWith('data:')) {
-                src = s;
-            }
-            // Fully qualified http/https or root-relative ("/")
-            else if (s.startsWith('http://') || s.startsWith('https://') || s.startsWith('/')) {
-                src = s;
-            }
-            else {
-                // Try alternate fallback storage keys
-                const fallbackKeys = [
-                    'uploadedProofUrl', 'uploaded_proof_url',
-                    'uploadedProofPath', 'uploaded_proof_path',
-                    'uploadedProofDataUrl', 'uploaded_proof_data_url'
-                ];
-
-                for (const k of fallbackKeys) {
-                    const v = localStorage.getItem(k);
-                    if (v) {
-                        src = v;
-                        break;
-                    }
-                }
-
-                // Final fallback: assume Laravel `/storage/uploads/<filename>`
-                if (!src) {
-                    const safe = encodeURIComponent((name || '').split(/[/\\]+/).pop());
-                    src = safe ? '/storage/uploads/' + safe : '';
-                }
-            }
-        } catch (e) { /* ignore */ }
-
-        /* -----------------------------
-        EXTENSION-SPECIFIC PREVIEW
-        ------------------------------*/
-        if (['jpg', 'jpeg', 'png'].includes(ext)) {
-            modalContent.innerHTML += src
-                ? `<img src="${src}" alt="${name}" class="w-auto max-w-full max-h-[85vh] mx-auto rounded-lg shadow" />`
-                : `<p class="text-gray-700">No preview source available for this image.</p>`;
-        }
-        else if (ext === 'pdf') {
-            modalContent.innerHTML += src
-                ? `<iframe src="${src}" class="w-full h-[85vh] rounded-lg border"></iframe>`
-                : `<p class="text-gray-700">No preview source available for this PDF.</p>`;
-        }
-        else {
+        const e = (ext || (name||'').split('.').pop() || '').toLowerCase();
+        const src = (dataUrl && String(dataUrl).trim()) || null;
+        if (['jpg','jpeg','png'].includes(e)) {
+            if (src) modalContent.innerHTML += `<img src="${src}" class="max-h-[85vh] mx-auto rounded-lg shadow" />`;
+            else modalContent.innerHTML += `<p class="text-gray-700">No preview source available for this image.</p>`;
+        } else if (e === 'pdf') {
+            if (src) modalContent.innerHTML += `<iframe src="${src}" class="w-full h-[85vh] rounded-lg border"></iframe>`;
+            else modalContent.innerHTML += `<p class="text-gray-700">No preview source available for this PDF.</p>`;
+        } else {
             modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
         }
-
         modal.classList.remove('hidden');
     }
 
-
-    function closeModalFn() {
-        modal.classList.add('hidden');
-        modalContent.innerHTML = '';
-    }
-
-    // ----------------------------------------------------------------------
-    // Bind click handlers
-    // ----------------------------------------------------------------------
-
-    const fallbackFilenameEl = document.getElementById('review_certfile');
-    if (fallbackFilenameEl) {
-        fallbackFilenameEl.classList.add('cursor-pointer');
-        fallbackFilenameEl.addEventListener('click', function () {
-            const s = getSavedCert();
-            if (s.data && s.name)
-                openPreviewModal(s.name, s.data, (s.type || s.name.split('.').pop()).toLowerCase());
-            else alert('No file data available to preview.');
-        });
-    }
-
-    const proofViewBtn = document.getElementById('proofViewBtn');
-    if (proofViewBtn) {
-        proofViewBtn.addEventListener('click', function () {
-            const s = getSavedCert();
-            if (s.data && s.type && s.name)
-                openPreviewModal(s.name, s.data, s.type.toLowerCase());
-            else if (s.data && s.name)
-                openPreviewModal(s.name, s.data, (s.name.split('.').pop()).toLowerCase());
-            else
-                alert('No uploaded file found.');
-        });
-    }
-
-    closeModalBtn?.addEventListener('click', e => { e.preventDefault(); closeModalFn(); });
-    modal?.addEventListener('click', e => { if (e.target === modal) closeModalFn(); });
-
-    // initial render
-    renderPreviewBlock(getSavedCert());
-
-    // listen for storage changes
-    window.addEventListener('storage', function (e) {
-        if (!e.key) { renderPreviewBlock(getSavedCert()); return; }
-
-        const watchKeys = [
-            'uploadedProofData1','uploadedProofType1','uploadedProofName1',
-            'uploadedProofData','uploadedProofType','uploadedProofName',
-            'uploadedProofData0','uploadedProofType0','uploadedProofName0',
-            'uploaded_proof_data','uploaded_proof_type','uploaded_proof_name',
-            'proofData','proofType','proofName',
-            'review_certs'
-        ];
-        if (watchKeys.includes(e.key)) {
-            setTimeout(() => renderPreviewBlock(getSavedCert()), 30);
-        }
+    // initial render and watch storage
+    document.addEventListener('DOMContentLoaded', renderPreviewBlock);
+    window.addEventListener('storage', function(e){
+        const watch = ['uploadedProofs1','uploadedProofData','uploadedProofName','uploadedProofData1','uploadedProofName1','admin_uploaded_proof_name','admin_uploaded_proof_data','review_certs'];
+        if (!e.key || watch.includes(e.key)) setTimeout(renderPreviewBlock, 30);
     });
 
-});
+    // expose openPreviewModal globally for other handlers
+    window.__mvsg_openReviewPreview = openPreviewModal;
+})();
 </script>
+
 <script>
 (function(){
     // Ensure a registerreview1-style modal exists (create if not)
