@@ -747,8 +747,6 @@
         });
     </script>
 <script>
-// filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_education.blade.php
-// ...existing code...
 (function () {
     const fileInput = document.getElementById("proof");
     const fileInfo = document.getElementById("proofFileInfo");
@@ -758,20 +756,20 @@
     const hintEl = document.getElementById("proofHint");
     const fileuploadSection = document.getElementById("fileuploadSection");
 
-    const LS_KEY = "uploadedProofs1"; // stores JSON array [{name, type, data}]
+    const LS_KEY = "uploadedProofs1"; // unified key: array of {name,type,data}
     const MAX_BYTES = 5 * 1024 * 1024; // 5MB per file
 
     function readFileAsDataURL(file) {
         return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onerror = () => reject(new Error("File read error"));
-            reader.onload = () => resolve(reader.result);
-            reader.readAsDataURL(file);
+            const r = new FileReader();
+            r.onerror = () => reject(new Error("file read error"));
+            r.onload = () => resolve(r.result);
+            r.readAsDataURL(file);
         });
     }
 
-    function getFileType(filename) {
-        return String(filename).split(".").pop().toLowerCase();
+    function getFileType(name) {
+        return String(name || "").split(".").pop().toLowerCase();
     }
 
     function loadSavedProofs() {
@@ -784,84 +782,8 @@
 
     function saveProofs(list) {
         try {
-            localStorage.setItem(LS_KEY, JSON.stringify(list));
-        } catch (e) { console.warn("Could not save proofs", e); }
-    }
-
-    function showFileList(list) {
-        if (!fileInfo) return;
-        if (!list || !list.length) {
-            fileInfo.classList.add("hidden");
-            if (hintEl) hintEl.style.display = "";
-            return;
-        }
-        if (hintEl) hintEl.style.display = "none";
-        fileInfo.classList.remove("hidden");
-
-        // stacked vertical list (full width cards)
-        const items = list.map((f, idx) => {
-            const icon = f.type === "pdf" ? "📄" : "🖼️";
-            const displayName = f.name.length > 70 ? f.name.slice(0, 67) + "..." : f.name;
-            return `
-                <div class="w-full bg-white rounded-lg border shadow-sm p-3 mb-3 flex items-center justify-between gap-4" data-idx="${idx}">
-                    <div class="flex items-center gap-4 min-w-0">
-                        <div class="text-3xl">${icon}</div>
-                        <div class="flex-1 min-w-0">
-                            <div class="text-sm text-gray-700 truncate">${displayName}</div>
-                            <div class="text-xs text-gray-500 mt-1">${(f.type || '').toUpperCase()}</div>
-                        </div>
-                    </div>
-                    <div class="flex gap-2 ml-4">
-                        <button data-action="view" data-idx="${idx}" type="button" class="view-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button>
-                        <button data-action="remove" data-idx="${idx}" type="button" class="remove-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button>
-                    </div>
-                </div>
-            `;
-        }).join("");
-
-        fileInfo.style.display = "block";
-        fileInfo.style.overflowX = "visible";
-        fileInfo.style.padding = "0.5rem";
-        fileInfo.innerHTML = items;
-
-        // bind handlers
-        fileInfo.querySelectorAll('[data-action="view"]').forEach(b => {
-            b.addEventListener('click', (ev) => {
-                const idx = Number(ev.currentTarget.dataset.idx);
-                const list = loadSavedProofs();
-                const item = list[idx];
-                if (item) openModalPreview(item.name, item.data, item.type);
-            });
-        });
-        fileInfo.querySelectorAll('[data-action="remove"]').forEach(b => {
-            b.addEventListener('click', (ev) => {
-                const idx = Number(ev.currentTarget.dataset.idx);
-                const list = loadSavedProofs();
-                if (!list || !list.length) return;
-                list.splice(idx, 1);
-                saveProofs(list);
-                showFileList(list);
-                // if no files left and cert radio is not yes, hide upload section
-                if (!list.length) {
-                    const sel = document.querySelector('input[name="certs"]:checked');
-                    if (!sel || sel.value !== 'yes') {
-                        if (fileuploadSection) fileuploadSection.style.display = "none";
-                    }
-                }
-            });
-        });
-    }
-
-    function openModalPreview(name, data, type) {
-        modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
-        if (["jpg", "jpeg", "png"].includes(type)) {
-            modalContent.innerHTML += `<img src="${data}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
-        } else if (type === "pdf") {
-            modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
-        } else {
-            modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
-        }
-        modal.classList.remove("hidden");
+            localStorage.setItem(LS_KEY, JSON.stringify(list || []));
+        } catch (e) { console.warn("saveProofs failed", e); }
     }
 
     function hideFileInfo() {
@@ -871,29 +793,99 @@
         if (hintEl) hintEl.style.display = "";
     }
 
-    // Initialize UI from storage - keep upload section hidden until user selects "Yes"
+    function openModalPreview(name, dataUrl, type) {
+        if (!modal || !modalContent) return;
+        modalContent.innerHTML = `<h3 class="font-semibold mb-2">${name}</h3>`;
+        if (["jpg", "jpeg", "png"].includes(type)) {
+            modalContent.innerHTML += `<img src="${dataUrl}" alt="${name}" class="max-h-[70vh] mx-auto rounded-lg shadow" />`;
+        } else if (type === "pdf") {
+            modalContent.innerHTML += `<iframe src="${dataUrl}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`;
+        } else {
+            modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+        }
+        modal.classList.remove("hidden");
+    }
+
+    function showFileList(list) {
+        if (!fileInfo) return;
+        if (!Array.isArray(list) || !list.length) {
+            hideFileInfo();
+            return;
+        }
+        if (hintEl) hintEl.style.display = "none";
+        fileInfo.classList.remove("hidden");
+
+        const html = list.map((f, idx) => {
+            const icon = f.type === "pdf" ? "📄" : "🖼️";
+            const name = (f.name || "").length > 70 ? (f.name || "").slice(0, 67) + "..." : f.name;
+            return `
+            <div class="w-full bg-white rounded-lg border shadow-sm p-3 mb-3 flex items-center justify-between gap-4" data-idx="${idx}">
+                <div class="flex items-center gap-4 min-w-0">
+                    <div class="text-3xl">${icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm text-gray-700 truncate">${name}</div>
+                        <div class="text-xs text-gray-500 mt-1">${(f.type || '').toUpperCase()}</div>
+                    </div>
+                </div>
+                <div class="flex gap-2 ml-4">
+                    <button data-action="view" data-idx="${idx}" type="button" class="view-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button>
+                    <button data-action="remove" data-idx="${idx}" type="button" class="remove-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button>
+                </div>
+            </div>
+            `;
+        }).join("");
+        fileInfo.style.display = "block";
+        fileInfo.style.overflowX = "visible";
+        fileInfo.style.padding = "0.5rem";
+        fileInfo.innerHTML = html;
+
+        // bind handlers
+        fileInfo.querySelectorAll('[data-action="view"]').forEach(b => {
+            b.addEventListener('click', (ev) => {
+                const idx = Number(ev.currentTarget.dataset.idx);
+                const saved = loadSavedProofs();
+                const item = saved[idx];
+                if (item) openModalPreview(item.name, item.data, item.type);
+            });
+        });
+        fileInfo.querySelectorAll('[data-action="remove"]').forEach(b => {
+            b.addEventListener('click', (ev) => {
+                const idx = Number(ev.currentTarget.dataset.idx);
+                const saved = loadSavedProofs();
+                if (!saved || !saved.length) return;
+                saved.splice(idx, 1);
+                saveProofs(saved);
+                showFileList(saved);
+                if (!saved.length) {
+                    // hide if user had selected No
+                    const sel = document.querySelector('input[name="certs"]:checked');
+                    if (!sel || sel.value !== 'yes') {
+                        if (fileuploadSection) fileuploadSection.style.display = "none";
+                    } else {
+                        hideFileInfo();
+                    }
+                }
+            });
+        });
+    }
+
+    // init UI from storage
     (function init() {
         const saved = loadSavedProofs();
         if (saved && saved.length) {
-            // if files exist, show upload area regardless of radio (useful when returning to page)
-            if (fileuploadSection) {
-                fileuploadSection.style.display = "block";
-            }
+            if (fileuploadSection) fileuploadSection.style.display = "block";
             showFileList(saved);
         } else {
             hideFileInfo();
-            // ensure section remains hidden until user explicitly selects Yes
             if (fileuploadSection) fileuploadSection.style.display = "none";
         }
     })();
 
-    // Handle file selection (multiple)
+    // file selection (multiple)
     if (fileInput) {
         fileInput.addEventListener("change", async function () {
             const files = Array.from(this.files || []);
             if (!files.length) return;
-
-            // Validate and read each file, then append to saved list
             const saved = loadSavedProofs();
             for (const f of files) {
                 const ext = getFileType(f.name);
@@ -914,14 +906,12 @@
             }
             saveProofs(saved);
             showFileList(saved);
-            // clear native input so same file(s) can be selected again if needed
             fileInput.value = "";
-            // make sure upload area visible when files are added
             if (fileuploadSection) fileuploadSection.style.display = "block";
         });
     }
 
-    // Modal close
+    // modal close handlers
     if (closeModal) {
         closeModal.addEventListener("click", (e) => {
             e.preventDefault();
@@ -929,14 +919,16 @@
             modalContent.innerHTML = "";
         });
     }
-    modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-            modal.classList.add("hidden");
-            modalContent.innerHTML = "";
-        }
-    });
+    if (modal) {
+        modal.addEventListener("click", (e) => {
+            if (e.target === modal) {
+                modal.classList.add("hidden");
+                modalContent.innerHTML = "";
+            }
+        });
+    }
 
-    // react to certs radio changes: show upload section only when user selects "Yes"
+    // radio visibility logic already present in file — ensure it uses same LS key
     document.querySelectorAll('input[name="certs"]').forEach(radio => {
         radio.addEventListener('change', (ev) => {
             const val = ev.target.value;
@@ -945,14 +937,12 @@
                     fileuploadSection.style.display = "block";
                     if (fileInput) fileInput.disabled = false;
                 } else {
-                    // hide and clear files when user chooses No
                     fileuploadSection.style.display = "none";
                     if (fileInput) fileInput.value = "";
                     localStorage.removeItem(LS_KEY);
                     hideFileInfo();
                 }
             }
-            // also persist selection
             try { localStorage.setItem("review_certs", val); } catch (e) {}
         });
     });
@@ -1023,8 +1013,9 @@
 
                 // file presence check (either input files or stored base64)
                 const proofInput = document.getElementById('proof');
-                const savedProof = localStorage.getItem('uploadedProofData1') || localStorage.getItem('uploadedProofName1') || '';
-                const proofHasFile = (proofInput && proofInput.files && proofInput.files.length) || savedProof;
+                let savedProofs = [];
+                try { savedProofs = JSON.parse(localStorage.getItem('uploadedProofs1') || '[]') || []; } catch (e) { savedProofs = []; }
+                const proofHasFile = (proofInput && proofInput.files && proofInput.files.length) || (Array.isArray(savedProofs) && savedProofs.length > 0);
 
                 const errors = [];
 
