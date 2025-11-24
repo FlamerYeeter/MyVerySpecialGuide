@@ -756,7 +756,7 @@
     const hintEl = document.getElementById("proofHint");
     const fileuploadSection = document.getElementById("fileuploadSection");
 
-    const LS_KEY = "uploadedProofs1"; // unified key: array of {name,type,data}
+    const LS_KEY = "uploadedProofs_proof"; // unified key: array of {name,type,data}
     const MAX_BYTES = 5 * 1024 * 1024; // 5MB per file
 
     function readFileAsDataURL(file) {
@@ -775,8 +775,20 @@
     function loadSavedProofs() {
         try {
             const raw = localStorage.getItem(LS_KEY);
-            if (!raw) return [];
-            return JSON.parse(raw) || [];
+            let arr = [];
+            if (raw) arr = JSON.parse(raw) || [];
+
+            // Prevent admin uploads from leaking into Education list:
+            // if admin page has saved names, exclude them here.
+            const adminProofName = localStorage.getItem('admin_uploaded_proof_name');
+            const adminMedName   = localStorage.getItem('admin_uploaded_med_name');
+            const adminNames = [];
+            if (adminProofName) adminNames.push(String(adminProofName));
+            if (adminMedName) adminNames.push(String(adminMedName));
+            if (adminNames.length && Array.isArray(arr)) {
+                arr = arr.filter(it => !(it && it.name && adminNames.includes(String(it.name))));
+            }
+            return arr;
         } catch (e) { return []; }
     }
 
@@ -1014,7 +1026,7 @@
                 // file presence check (either input files or stored base64)
                 const proofInput = document.getElementById('proof');
                 let savedProofs = [];
-                try { savedProofs = JSON.parse(localStorage.getItem('uploadedProofs1') || '[]') || []; } catch (e) { savedProofs = []; }
+                try { savedProofs = JSON.parse(localStorage.getItem('uploadedProofs_proof') || '[]') || []; } catch (e) { savedProofs = []; }
                 const proofHasFile = (proofInput && proofInput.files && proofInput.files.length) || (Array.isArray(savedProofs) && savedProofs.length > 0);
 
                 const errors = [];
@@ -1151,11 +1163,14 @@
 
                                 // Clear file input & localStorage
                                 if (fileInput) fileInput.value = "";
-                                localStorage.removeItem("uploadedProofData1");
-                                localStorage.removeItem("uploadedProofType1");
-                                localStorage.removeItem("uploadedProofName1");
+                                try {
+                                    // remove education canonical array
+                                    localStorage.removeItem(LS_KEY);
+                                    // also remove legacy single-file keys if they exist (safe no-op otherwise)
+                                    ['uploadedProofData1','uploadedProofType1','uploadedProofName1','uploadedProofData','uploadedProofName','uploadedProofType'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+                                } catch(e) { console.warn('education cleanup failed', e); }
                                 if (typeof hideFileInfo === "function") hideFileInfo();
-                                console.log("File input cleared & localStorage removed");
+                                console.log("File input cleared & education localStorage removed");
                             } else {
                                 fileUploadSection.style.display = "block"; // show section
                                 console.log("certYes selected → fileuploadSection shown");

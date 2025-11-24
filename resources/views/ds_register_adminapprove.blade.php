@@ -508,6 +508,66 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
   if (!fileInput) return;
 
+  // --------------------------------------------------------------------
+  // ⭐ Robust cleanup helper (your requested fix)
+  // --------------------------------------------------------------------
+  function cleanupUploadedFileByName(filename) {
+    try {
+      const name = String(filename || '').trim();
+
+      const keys = [
+        // admin
+        'admin_uploaded_proof_name','admin_uploaded_proof_data','admin_uploaded_proof_type',
+        'admin_uploaded_med_name','admin_uploaded_med_data','admin_uploaded_med_type',
+
+        // legacy single-file
+        'uploadedProofName','uploadedProofData','uploadedProofType',
+        'uploadedProofName1','uploadedProofData1','uploadedProofType1',
+        'uploadedProofName0','uploadedProofData0','uploadedProofType0',
+        'uploaded_proof_name','uploaded_proof_data','uploaded_proof_type',
+        'proofName','proofData','proofType','proofFilename',
+
+        // review keys
+        'review_certfile','review_certs_file','review_certfile_name','review_certs_name'
+      ];
+
+      keys.forEach(k => {
+        try { localStorage.removeItem(k); sessionStorage.removeItem(k); } catch {}
+      });
+
+      // Array-based uploaded items
+      const arrayKeys = [
+        'uploadedProofs1',
+        'uploadedProofs',
+        'uploadedProofs_proof',
+        'uploadedProofs_med'
+      ];
+
+      arrayKeys.forEach(k => {
+        try {
+          const raw = localStorage.getItem(k);
+          if (!raw) return;
+
+          const arr = JSON.parse(raw || '[]');
+          if (!Array.isArray(arr)) return;
+
+          const filtered = arr.filter(it => {
+            const iname = (it && (it.name || it.filename)) ? String(it.name || it.filename) : '';
+            return name ? iname !== name : true;
+          });
+
+          localStorage.setItem(k, JSON.stringify(filtered));
+        } catch {}
+      });
+
+      console.info('[cleanup] removed legacy/admin keys and pruned arrays for', name || '<unknown>');
+    } catch (e) {
+      console.warn('[cleanup] error', e);
+    }
+  }
+  // --------------------------------------------------------------------
+
+
   fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
     if (!file) {
@@ -536,7 +596,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
       </div>
     `;
 
-    // --- Unique admin keys ---
+    // Unique admin keys
     let nameKey, dataKey, typeKey;
     if (inputId === 'proofFile') {
       nameKey = 'admin_uploaded_proof_name';
@@ -562,13 +622,13 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     };
     reader.readAsDataURL(file);
 
-    // View button
+    // View
     display.querySelector('.viewBtn').addEventListener('click', (e) => {
       e.preventDefault();
       openModal(fileURL, ext);
     });
 
-    // Remove button
+    // Remove
     display.querySelector('.removeBtn').addEventListener('click', (e) => {
       e.preventDefault();
       resetDisplay();
@@ -577,12 +637,17 @@ function setupUpload(inputId, displayId, labelId, hintId) {
       if (fileURL) URL.revokeObjectURL(fileURL);
       fileURL = null;
 
-      // Remove storage entries
+      // Remove admin keys
       localStorage.removeItem(nameKey);
       localStorage.removeItem(dataKey);
       localStorage.removeItem(typeKey);
 
-      console.info('[adminapprove] removed upload', nameKey);
+      // ⭐ NEW: full cleanup fix
+      cleanupUploadedFileByName(
+        file?.name || localStorage.getItem(nameKey)
+      );
+
+      console.info('[adminapprove] removed upload and cleaned legacy keys for', nameKey);
     });
 
     labelEl.textContent = 'File Uploaded:';
@@ -603,7 +668,6 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     }
   }
 
-  // Modal close logic
   closeModalBtn.addEventListener('click', (e) => {
     e.preventDefault();
     modal.classList.add('hidden');
@@ -617,7 +681,6 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     }
   });
 
-  // Reset UI
   function resetDisplay() {
     display.innerHTML = '';
     labelEl.textContent = labelEl.dataset.original || 'Upload File';
