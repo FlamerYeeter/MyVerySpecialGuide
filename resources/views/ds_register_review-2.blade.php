@@ -647,7 +647,7 @@ function saveEducationEdit() {
                 <p class="mt-1 text-[13px] text-gray-600 italic">(Walang mabigat na buhat at pharmacy tasks)</p>
             </div>
 
-            <!-- OTHER -->
+            <!-- OTHER 
             <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
                         hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center"
                  data-value="other">
@@ -660,7 +660,7 @@ function saveEducationEdit() {
                        type="text"
                        class="mt-3 w-full border border-gray-300 rounded-lg p-2 text-sm"
                        placeholder="Type here...">
-            </div>
+            </div>-->
         </div>
 
         <!-- Buttons -->
@@ -694,119 +694,354 @@ function saveEducationEdit() {
 <!-- Work Environment edit/save script -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("editEnvironmentModal");
+  const cards = Array.from(document.querySelectorAll(".workplace-option"));
+  const hiddenInput = document.getElementById("workplace_page1"); // optional hidden input
+  const otherInput = document.getElementById("workplace_other_input");
+  const reviewList = document.getElementById("review_workplace_list");
+  const editBtns = Array.from(document.querySelectorAll(".edit-btn"));
+  const closeBtn = document.getElementById("closeEnvironmentModal");
+  const saveBtn = document.getElementById("saveEnvironmentEdit");
+  const IMG_CONTAINER_ID = "review_workplace_choice_img_container";
+  const LS_KEYS = ['workplace','preferred_workplace','workplace_choice','workplaceChoice','preferred_workplace_choice','workplace_page1','workplace_page'];
 
-    const cards = document.querySelectorAll(".workplace-option");
-    const otherInput = document.getElementById("workplace_other_input");
-    const reviewList = document.getElementById("review_workplace_list");
-
-    /* RESET CARDS */
-    function resetSelections() {
-        cards.forEach(card => card.classList.remove("selected-card"));
-        otherInput.value = "";
+  const parseMaybeJson = (v) => {
+    if (v === null || v === undefined) return v;
+    if (Array.isArray(v) || typeof v === 'object') return v;
+    if (typeof v !== 'string') return v;
+    const s = v.trim();
+    if (!s) return '';
+    if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+      try { return JSON.parse(s); } catch(e){}
     }
+    return s;
+  };
 
-    /* LOAD PREVIOUS SELECTIONS FOR EDITING */
-    function loadPreviousSelections() {
-        resetSelections();
-
-        const selectedBadges = reviewList.querySelectorAll("span");
-        const savedValues = Array.from(selectedBadges).map(b => b.textContent.trim());
-
-        savedValues.forEach(value => {
-            let matched = false;
-
-            cards.forEach(card => {
-                if (card.dataset.value === value) {
-                    card.classList.add("selected-card");
-                    matched = true;
-                }
-            });
-
-            if (!matched && value !== "—") {
-                const otherCard = document.querySelector('[data-value="other"]');
-                otherCard.classList.add("selected-card");
-                otherInput.value = value;
-            }
-        });
+  const normalizeArray = (v) => {
+    if (v === null || v === undefined) return [];
+    if (Array.isArray(v)) return v.map(x => typeof x === 'string' ? x.trim() : String(x||'')).filter(Boolean);
+    if (typeof v === 'object') {
+      try { return Object.values(v).map(x => String(x||'').trim()).filter(Boolean); } catch(e){ return []; }
     }
-
-    /* MULTI-SELECT */
-    cards.forEach(card => {
-        card.addEventListener("click", (e) => {
-            if (e.target.classList.contains("tts-btn")) return;
-            card.classList.toggle("selected-card");
-        });
-    });
-
-    /* OPEN MODAL */
-    document.querySelectorAll(".edit-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-            if (btn.dataset.section === "environment") {
-
-                const modal = document.getElementById("editEnvironmentModal");
-
-                modal.classList.remove("hidden");
-                setTimeout(() => {
-                    modal.classList.remove("opacity-0");
-                    modal.querySelector("div").classList.remove("scale-95");
-                }, 10);
-
-                loadPreviousSelections();
-            }
-        });
-    });
-
-    /* CLOSE MODAL */
-    function closeEnvironmentModal() {
-        const modal = document.getElementById("editEnvironmentModal");
-        modal.classList.add("opacity-0");
-        modal.querySelector("div").classList.add("scale-95");
-
-        setTimeout(() => {
-            modal.classList.add("hidden");
-        }, 200);
+    if (typeof v === 'string') {
+      const s = v.trim();
+      if (!s) return [];
+      if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+        try { return normalizeArray(JSON.parse(s)); } catch(e){}
+      }
+      if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
+      return [s];
     }
+    return [];
+  };
 
-    document.getElementById("closeEnvironmentModal").onclick = closeEnvironmentModal;
-
-    /* SAVE */
-    document.getElementById("saveEnvironmentEdit").addEventListener("click", () => {
-
-        const selectedValues = [];
-        const otherValue = otherInput.value.trim();
-
-        cards.forEach(card => {
-            if (card.classList.contains("selected-card")) {
-
-                const value = card.dataset.value;
-
-                if (value === "other" && otherValue !== "") {
-                    selectedValues.push(otherValue);
-                } 
-                else if (value !== "other") {
-                    selectedValues.push(value);
-                }
+  function getSavedWorkplace() {
+    try {
+      if (hiddenInput && hiddenInput.value) {
+        const parsed = parseMaybeJson(hiddenInput.value);
+        const norm = normalizeArray(parsed);
+        if (norm.length) return norm;
+      }
+      for (const k of LS_KEYS) {
+        try {
+          const raw = localStorage.getItem(k);
+          if (!raw) continue;
+          const parsed = parseMaybeJson(raw);
+          const norm = normalizeArray(parsed);
+          if (norm.length) return norm;
+        } catch(e){}
+      }
+      try {
+        const rpRaw = localStorage.getItem('rpi_personal') || localStorage.getItem('rpi_personal2');
+        if (rpRaw) {
+          const rp = parseMaybeJson(rpRaw) || rpRaw;
+          if (rp && typeof rp === 'object') {
+            const candidates = [];
+            if (rp.workplace) candidates.push(rp.workplace);
+            if (rp.workplace_choice) candidates.push(rp.workplace_choice);
+            if (rp.preferred_workplace) candidates.push(rp.preferred_workplace);
+            for (const c of candidates) {
+              const norm = normalizeArray(c);
+              if (norm.length) return norm;
             }
-        });
-
-        const listContainer = reviewList;
-        listContainer.innerHTML = "";
-
-        if (selectedValues.length === 0) {
-            listContainer.innerHTML = `<span class="text-gray-600">—</span>`;
-        } else {
-            selectedValues.forEach(item => {
-                const badge = document.createElement("span");
-                badge.className = "px-3 py-1 bg-blue-100 text-blue-700 font-semibold rounded-lg text-sm";
-                badge.textContent = item;
-                listContainer.appendChild(badge);
-            });
+          }
         }
+      } catch(e){}
+      try {
+        const d = window.__mvsg_lastLoadedDraft || window.registrationDraft || window.__REGISTRATION_DRAFT__;
+        if (d && typeof d === 'object') {
+          const candidates = [];
+          if (d.workplace) candidates.push(d.workplace);
+          if (d.workplace_choice) candidates.push(d.workplace_choice);
+          if (d.preferred_workplace) candidates.push(d.preferred_workplace);
+          for (const c of candidates) {
+            const norm = normalizeArray(c);
+            if (norm.length) return norm;
+          }
+        }
+      } catch(e){}
+    } catch(e) { console.debug("getSavedWorkplace error", e); }
+    return [];
+  }
 
-        document.getElementById("review_workplace_choice_img_container").classList.add("hidden");
-
-        closeEnvironmentModal();
+  function resetSelections() {
+    cards.forEach(card => {
+      card.classList.remove("selected-card","selected");
+      card.setAttribute('aria-pressed','false');
+      card.tabIndex = 0;
     });
+    if (otherInput) otherInput.value = "";
+  }
+
+  // robust normalizer for matching text
+  function normalizeForCompare(s){
+    if (s === null || s === undefined) return '';
+    try {
+      return String(s)
+        .replace(/\u2013|\u2014/g, '-')          // normalize dashes
+        .replace(/[^\w\s\/&-]/g, '')            // remove punctuation except slash & ampersand and dash
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+    } catch(e){
+      return String(s||'').toLowerCase().trim();
+    }
+  }
+
+  // mark cards if they match review pills or storage values
+  function markCardsSelectedIfMatch(){
+    try {
+      // collect canonical values from reviewList if present, else from storage/draft
+      let pills = [];
+      if (reviewList) {
+        pills = Array.from(reviewList.querySelectorAll('span'))
+                     .map(s => (s.textContent||'').trim())
+                     .filter(Boolean)
+                     .filter(t => t !== '—');
+      }
+      if (!pills.length) {
+        const stored = getSavedWorkplace();
+        if (stored && stored.length) pills = stored;
+      }
+      // normalize and dedupe
+      const normalizedPills = [...new Set(pills.map(p => normalizeForCompare(p)).filter(Boolean))];
+
+      // clear all first
+      cards.forEach(c => c.classList.remove('selected-card','selected'));
+
+      if (!normalizedPills.length) {
+        if (otherInput) otherInput.value = '';
+        return;
+      }
+
+      // attempt exact normalized match, then loose match (token overlap)
+      cards.forEach(card => {
+        const dv = normalizeForCompare(card.dataset.value || '');
+        const title = normalizeForCompare(card.querySelector('h3')?.textContent || '');
+        let matched = false;
+        for (const pill of normalizedPills) {
+          if (pill === dv || pill === title) { matched = true; break; }
+        }
+        if (!matched) {
+          for (const pill of normalizedPills) {
+            // loose match: token intersection threshold
+            const pillParts = pill.split(/[\/&\-\s]+/).filter(Boolean);
+            const target = (dv || title);
+            const hits = pillParts.reduce((acc, t) => acc + (target.includes(t) ? 1 : 0), 0);
+            if (hits >= Math.max(1, Math.floor(pillParts.length / 2))) { matched = true; break; }
+          }
+        }
+        if (matched) card.classList.add('selected-card','selected');
+      });
+
+      // populate otherInput with unmatched original pill texts (not normalized)
+      if (otherInput) {
+        const unmatched = pills.filter(p => {
+          const pn = normalizeForCompare(p);
+          return !cards.some(c => {
+            const dv = normalizeForCompare(c.dataset.value || '');
+            const title = normalizeForCompare(c.querySelector('h3')?.textContent || '');
+            return pn === dv || pn === title;
+          });
+        });
+        otherInput.value = unmatched.join(', ');
+      }
+    } catch(e) { console.debug('markCardsSelectedIfMatch error', e); }
+  }
+
+  function loadPreviousSelections() {
+    resetSelections();
+    const saved = getSavedWorkplace();
+    if (!saved || !saved.length) return;
+    const normSet = new Set(saved.map(s => normalizeForCompare(String(s||''))));
+    cards.forEach(card => {
+      const value = normalizeForCompare((card.dataset.value || '').trim());
+      const title = normalizeForCompare((card.querySelector('h3')?.textContent || '').trim());
+      if ((value && normSet.has(value)) || (title && normSet.has(title))) {
+        card.classList.add("selected-card","selected");
+        card.setAttribute('aria-pressed','true');
+      }
+    });
+
+    // unmatched -> other input (use original saved values)
+    const unmatched = saved.filter(s => {
+      const low = normalizeForCompare(String(s||'').trim());
+      return !cards.some(c => {
+        const dv = normalizeForCompare((c.dataset.value||'').trim());
+        const t = normalizeForCompare((c.querySelector('h3')?.textContent||'').trim());
+        return dv === low || t === low;
+      });
+    });
+    if (unmatched.length && otherInput) otherInput.value = unmatched.join(', ');
+  }
+
+  function updateReviewSection(selected) {
+    if (!reviewList) return;
+    reviewList.innerHTML = "";
+    if (!selected || !selected.length) {
+      reviewList.innerHTML = `<span class="text-gray-600">—</span>`;
+      // ensure cards cleared
+      markCardsSelectedIfMatch();
+      return;
+    }
+    selected.forEach(item => {
+      const span = document.createElement('span');
+      span.className = 'bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm font-medium';
+      span.textContent = item;
+      reviewList.appendChild(span);
+    });
+    // after rendering pills, mark cards
+    setTimeout(markCardsSelectedIfMatch, 8);
+  }
+
+  // wire card click toggles (ignore tts buttons)
+  cards.forEach(card => {
+    card.setAttribute('role','button');
+    card.tabIndex = 0;
+    card.setAttribute('aria-pressed', card.classList.contains('selected-card') ? 'true' : 'false');
+
+    card.addEventListener('click', (e) => {
+      if (e.target && e.target.classList && e.target.classList.contains('tts-btn')) return;
+      card.classList.toggle('selected-card');
+      card.classList.toggle('selected');
+      const pressed = card.classList.contains('selected-card');
+      card.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+    });
+
+    card.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); card.click(); }
+    });
+  });
+
+  // open modal and preselect
+  editBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if ((btn.dataset.section || '').trim() !== 'environment') return;
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      setTimeout(() => {
+        modal.classList.remove('opacity-0');
+        modal.querySelector('.rounded-3xl, div')?.classList.remove('scale-95');
+      }, 10);
+      loadPreviousSelections();
+      const focusTarget = modal.querySelector('input, button, textarea, [role="button"]');
+      if (focusTarget) focusTarget.focus();
+    });
+  });
+
+  // close modal
+  function closeModal() {
+    if (!modal) return;
+    modal.classList.add('opacity-0');
+    modal.querySelector('.rounded-3xl, div')?.classList.add('scale-95');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 220);
+  }
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (modal) {
+    modal.addEventListener('click', (ev) => { if (ev.target === modal) closeModal(); });
+    document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && modal && !modal.classList.contains('hidden')) closeModal(); });
+  }
+
+  // save button inside modal
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const selected = [];
+      cards.forEach(card => {
+        if (card.classList.contains('selected-card') || card.classList.contains('selected')) {
+          const v = (card.dataset.value || '').trim();
+          if (v === 'other') {
+            const oth = (otherInput && otherInput.value || '').trim();
+            if (oth) selected.push(...oth.split(',').map(s=>s.trim()).filter(Boolean));
+          } else if (v) selected.push(v);
+        }
+      });
+
+      if (hiddenInput) hiddenInput.value = JSON.stringify(selected);
+      updateReviewSection(selected);
+
+      // hide image preview container if present
+      const imgContainer = document.getElementById(IMG_CONTAINER_ID);
+      if (imgContainer) imgContainer.classList.add('hidden');
+
+      // persist canonical keys
+      try {
+        const arr = selected.length ? JSON.stringify(selected) : '';
+        if (arr) {
+          localStorage.setItem('workplace', arr);
+          localStorage.setItem('preferred_workplace', arr);
+          localStorage.setItem('workplace_choice', arr);
+        } else {
+          LS_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
+        }
+      } catch(e){ console.debug('persist workplace failed', e); }
+
+      try { window.dispatchEvent(new CustomEvent('mvsg:workplaceChanged', { detail: { values: selected } })); } catch(e){}
+
+      // ensure cards reflect saved pills
+      setTimeout(markCardsSelectedIfMatch, 20);
+
+      closeModal();
+    });
+  }
+
+  // Initial populate of review area and ensure matching cards are marked
+  (function initialPopulate() {
+    let saved = getSavedWorkplace();
+    if (!saved || !saved.length) {
+      try {
+        if (hiddenInput && hiddenInput.value) saved = normalizeArray(parseMaybeJson(hiddenInput.value));
+      } catch(e){}
+    }
+    const uniq = [...new Set((saved||[]).map(x => String(x||'').trim()).filter(Boolean))];
+    updateReviewSection(uniq);
+    setTimeout(markCardsSelectedIfMatch, 10);
+  })();
+
+  // observe review list changes and storage to re-run matching
+  try {
+    if (reviewList) {
+      const obs = new MutationObserver(() => setTimeout(markCardsSelectedIfMatch, 10));
+      obs.observe(reviewList, { childList: true, subtree: true, characterData: true });
+    }
+  } catch(e){}
+
+  window.addEventListener('storage', (ev) => {
+    const keys = ['workplace','preferred_workplace','workplace_choice','workplaceChoice','preferred_workplace_choice','rpi_personal2','registrationDraft'];
+    if(!ev.key || keys.includes(ev.key)) setTimeout(() => {
+      // refresh review UI from storage and re-mark
+      try {
+        let fromStore = getSavedWorkplace();
+        if (!fromStore || !fromStore.length) {
+          if (hiddenInput && hiddenInput.value) fromStore = normalizeArray(parseMaybeJson(hiddenInput.value));
+        }
+        const uniq = [...new Set((fromStore||[]).map(x => String(x||'').trim()).filter(Boolean))];
+        updateReviewSection(uniq);
+        setTimeout(markCardsSelectedIfMatch, 8);
+      } catch(e){ console.debug('storage handler failed', e); }
+    }, 30);
+  });
 
 });
 </script>

@@ -231,7 +231,7 @@
                     <p class="text-[13px] text-gray-600 italic text-center">(Kaya ko matuto kapag may nagtuturo sa akin nang simple)</p>
                 </div>
 
-                <!-- Other 
+                <!-- Other -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
                     data-value="other" onclick="toggleSkills1Choice(this,'other')">
                     <button type="button"
@@ -249,7 +249,7 @@
                     <input id="skills1_other_text" name="skills1_other_text" type="text"
                         aria-labelledby="skills1_other_label" placeholder="Type your answer here"
                         class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div>-->
+                </div>
             </div>
 
             <input id="skills_page1" type="hidden" value="[]" />
