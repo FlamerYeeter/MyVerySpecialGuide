@@ -212,7 +212,7 @@
                     <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Hindi ka magbubuhat ng mabibigat na gamit at hindi ka gagawa ng anumang pharmacy-related na trabaho)</p>
                 </div>
 
-                <!-- Other 
+                <!-- Other -->
                 <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center workplace-card"
                     data-value="other" onclick="selectWorkplaceChoice(this,'other')">
                     <button type="button"
@@ -230,7 +230,7 @@
                     <input id="selectworkplace_other_text" name="workplace_other_text" type="text"
                         aria-labelledby="workplace_other_label" placeholder="Type your answer here"
                         class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
-                </div> -->
+                </div> 
             </div>
 
             <!-- Hidden Input for Workplace Choice -->

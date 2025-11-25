@@ -107,10 +107,11 @@
             <!-- Education Info -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
                 <div class="flex justify-between items-center mb-4 border-b border-blue-300 pb-2">
-                    <h3 class="text-lg font-semibold text-blue-600">Education Information</h3>
-                   <button type="button"
-                    class="text-blue-600 hover:text-blue-800 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition edit-btn"
-                    id="editSchoolBtn">✏️ Edit</button>
+                <h3 class="text-lg font-semibold text-blue-600">Education Information</h3>
+                <button id="editSchoolBtn" type="button"
+                class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-blue-700 transition">
+                 ✏️ Edit Information
+                </button>
                 </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-gray-800">
@@ -289,13 +290,72 @@
   </div>
 </div>
     </div>
+
+<!-- Education Info edit/save btn script -->
+<script>
+const editEduBtn = document.getElementById("editSchoolBtn");
+let isEditingEdu = false;
+editEduBtn.addEventListener("click", () => {
+    isEditingEdu = !isEditingEdu;
+    if (isEditingEdu) {
+        enableEducationEdit();
+    } else {
+        saveEducationEdit();
+    }
+});
+
+function enableEducationEdit() {
+    editEduBtn.textContent = "💾 Save Changes";
+    editEduBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
++   editEduBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+
+    // Education Level
+    document.getElementById("educationLevel").style.display = "none";
+    document.getElementById("edit_edu_select").classList.remove("hidden");
+
+    // School Name
+    document.getElementById("schoolName").classList.add("hidden");
+    document.getElementById("edit_school_input").classList.remove("hidden");
+
+    // Certificates card becomes visible
+    document.getElementById("certificateCard").classList.remove("hidden");
+
+    // Show Choose File
+    document.getElementById("ChooseFilelabel").classList.remove("hidden");
+}
+
+function saveEducationEdit() {
+    editEduBtn.textContent = "✏️ Edit Information";
+    editEduBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
++   editEduBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+
+    // Save education level
+    const eduValue = document.getElementById("edit_edu_select").value;
+    document.getElementById("educationLevel").value = eduValue;
+    document.getElementById("educationLevel").style.display = "block";
+    document.getElementById("edit_edu_select").classList.remove("hidden");
+    document.getElementById("edit_edu_select").classList.add("hidden");
+
+    // Save school name
+    const schoolInput = document.getElementById("edit_school_input").value;
+    document.getElementById("schoolName").textContent = schoolInput;
+    document.getElementById("schoolName").classList.remove("hidden");
+    document.getElementById("edit_school_input").classList.add("hidden");
+
+    // Hide upload button again
+    document.getElementById("ChooseFilelabel").classList.add("hidden");
+}
+</script>
+
             <!-- Work Experience -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
                 <div class="flex justify-between items-center mb-4 border-b border-blue-300 pb-2">
                     <h3 class="text-lg font-semibold text-blue-600">Work Experience</h3>
                     <button type="button"
-                        class="text-blue-600 hover:text-blue-800 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition edit-btn"
-                        data-section="work">✏️ Edit</button>
+                    class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-blue-700 transition edit-btn" 
+                    data-section="work">
+                    ✏️ Edit Information
+                </button>
                 </div>
 
                 <div class="text-gray-800 mb-5">
@@ -446,30 +506,312 @@
                 })();
             </script>
 
-            <!-- Work Environment -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
-                <div class="flex justify-between items-center mb-4 border-b border-blue-300 pb-2">
-                    <h3 class="text-lg font-semibold text-blue-600">Work Environment</h3>
-                    <button type="button"
-                        class="text-blue-600 hover:text-blue-800 text-sm font-medium bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md transition edit-btn"
-                        data-section="environment">✏️ Edit</button>
-                </div>
+<!-- Work Environment -->
+<div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200 relative">
+    <div class="flex justify-between items-center mb-4 border-b border-blue-300 pb-2">
+        <h3 class="text-lg font-semibold text-blue-600">Work Environment</h3>
+        <button type="button"
+                class="px-4 py-2 rounded-xl bg-blue-600 text-white text-sm sm:text-base font-semibold shadow-md hover:bg-blue-700 transition edit-btn"
+                data-section="environment">
+            ✏️ Edit Information
+        </button>
+    </div>
 
-                <div class="text-gray-800">
-                    <p class="flex items-start gap-2"><span class="font-semibold">Preferred Workplace:</span>
-                        <span id="review_workplace_list" class="flex flex-wrap gap-2 items-center">
-                            <span class="text-gray-600">—</span>
-                        </span>
-                    </p>
-                </div>
-                <div id="review_workplace_choice_img_container" class="mt-4 text-center hidden">
-                    <div
-                        class="inline-flex items-center justify-center w-40 h-40 bg-white rounded-xl shadow-md p-2 mx-auto">
-                        <img id="review_workplace_choice_img" src="" alt="Workplace image"
-                            class="w-full h-full object-contain rounded-md" />
-                    </div>
-                </div>
+    <div class="text-gray-800">
+        <p class="flex items-start gap-2">
+            <span class="font-semibold">Preferred Workplace:</span>
+            <span id="review_workplace_list" class="flex flex-wrap gap-2 items-center">
+                <span class="text-gray-600">—</span>
+            </span>
+        </p>
+    </div>
+
+    <div id="review_workplace_choice_img_container" class="mt-4 text-center hidden">
+        <div class="inline-flex items-center justify-center w-40 h-40 bg-white rounded-xl shadow-md p-2 mx-auto">
+            <img id="review_workplace_choice_img" src="" alt="Workplace image"
+                 class="w-full h-full object-contain rounded-md" />
+        </div>
+    </div>
+</div>
+
+
+<!--  WORK ENVIRONMENT EDIT MODAL -->
+<div id="editEnvironmentModal"
+     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center 
+            z-[9999] transition-opacity duration-300 opacity-0">
+
+    <div class="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-5xl w-[95%] max-h-[90vh] 
+                overflow-y-auto border border-gray-200 relative scale-95 transition-all duration-300">
+
+
+        <!-- Title -->
+        <h2 class="text-center text-1xl sm:text-2xl font-extrabold text-gray-800">
+            What kind of working environment feels comfortable for you?
+        </h2>
+
+        <p class="text-center text-gray-500 italic mt-1">
+            (Anong klaseng lugar ng trabaho ang komportable para sa iyo?)
+        </p>
+
+        <!-- Yellow Note -->
+        <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-4 mt-6 text-center shadow-sm">
+            <p class="font-semibold text-yellow-900">You can choose more than one option</p>
+            <p class="text-yellow-800 italic text-sm">(Puwede kang pumili ng higit sa isa)</p>
+        </div>
+
+        <!-- Cards Grid -->
+        <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-8 px-2 sm:px-4">
+
+            <!-- Friendly Team -->
+            <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
+                        hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative text-center"
+                 data-value="Friendly Team">
+
+                <button type="button"
+                        class="absolute top-3 right-3 bg-blue-700 hover:bg-blue-900 text-white p-2 
+                               rounded-full shadow transition tts-btn"
+                        data-tts-en="Friendly Team: You will work with a kind and helpful team."
+                        data-tts-tl="Makikipagtrabaho ka sa mabait at matulunging team">🔊</button>
+
+                <img src="image/workplc1.jpg" class="w-full rounded-lg mb-4 shadow-sm"/>
+                <h3 class="text-blue-700 font-bold text-lg">Friendly Team</h3>
+                <p class="mt-2 text-sm">You will work with a kind and helpful team.</p>
+                <p class="mt-1 text-[13px] text-gray-600 italic">(Makikipagtrabaho ka sa mabait at matulunging team)</p>
             </div>
+
+            <!-- Buddy Helper -->
+            <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
+                        hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative text-center"
+                 data-value="Buddy Helper">
+
+                <button type="button"
+                        class="absolute top-3 right-3 bg-blue-700 hover:bg-blue-900 text-white p-2 
+                               rounded-full shadow transition tts-btn"
+                        data-tts-en="Buddy Helper: You will have a buddy who guides you."
+                        data-tts-tl="Magkakaroon ka ng buddy na gagabay at tutulong sa’yo">🔊</button>
+
+                <img src="image/workplc2.jpg" class="w-full rounded-lg mb-4 shadow-sm"/>
+                <h3 class="text-blue-700 font-bold text-lg">Buddy Helper</h3>
+                <p class="mt-2 text-sm">You will have a buddy who guides and helps you.</p>
+                <p class="mt-1 text-[13px] text-gray-600 italic">(Magkakaroon ka ng buddy na gagabay at tutulong sa’yo)</p>
+            </div>
+
+            <!-- Simple Instructions -->
+            <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
+                        hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative text-center"
+                 data-value="Simple Instructions">
+
+                <button type="button"
+                        class="absolute top-3 right-3 bg-blue-700 hover:bg-blue-900 text-white p-2 
+                               rounded-full shadow transition tts-btn"
+                        data-tts-en="Simple Instructions: Easy and clear steps."
+                        data-tts-tl="Malinaw at madaling sundin ang instructions.">🔊</button>
+
+                <img src="image/workplc3.jpg" class="w-full rounded-lg mb-4 shadow-sm"/>
+                <h3 class="text-blue-700 font-bold text-lg">Simple Instructions</h3>
+                <p class="mt-2 text-sm">Easy-to-understand instructions with steps or pictures.</p>
+                <p class="mt-1 text-[13px] text-gray-600 italic">(Malinaw at madaling sundan na instructions)</p>
+            </div>
+
+            <!-- Safe and Light Work -->
+            <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
+                        hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative text-center"
+                 data-value="Safe and Light Work">
+
+                <button type="button"
+                        class="absolute top-3 right-3 bg-blue-700 hover:bg-blue-900 text-white p-2 
+                               rounded-full shadow transition tts-btn"
+                        data-tts-en="Safe and Light Work: Tasks are safe and not heavy."
+                        data-tts-tl="Ang trabaho ay ligtas at hindi mabigat.">🔊</button>
+
+                <img src="image/workplc4.jpg" class="w-full rounded-lg mb-4 shadow-sm"/>
+                <h3 class="text-blue-700 font-bold text-lg">Safe and Light Work</h3>
+                <p class="mt-2 text-sm">Your tasks will be safe and not heavy.</p>
+                <p class="mt-1 text-[13px] text-gray-600 italic">(Ligtas at hindi mabigat ang gawain)</p>
+            </div>
+
+            <!-- No Heavy Lifting -->
+            <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
+                        hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative text-center"
+                 data-value="No Heavy Lifting / No Pharmacy Tasks">
+
+                <button type="button"
+                        class="absolute top-3 right-3 bg-blue-700 hover:bg-blue-900 text-white p-2 
+                               rounded-full shadow transition tts-btn"
+                        data-tts-en="No heavy lifting or pharmacy tasks."
+                        data-tts-tl="Walang mabigat na buhat at pharmacy tasks.">🔊</button>
+
+                <img src="image/workplc5.jpg" class="w-full rounded-lg mb-4 shadow-sm"/>
+                <h3 class="text-blue-700 font-bold text-lg">No Heavy Lifting / No Pharmacy Tasks</h3>
+                <p class="mt-2 text-sm">No heavy lifting. No pharmacy work.</p>
+                <p class="mt-1 text-[13px] text-gray-600 italic">(Walang mabigat na buhat at pharmacy tasks)</p>
+            </div>
+
+            <!-- OTHER -->
+            <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
+                        hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center"
+                 data-value="other">
+
+                <h3 class="text-blue-700 font-bold text-lg mb-2">Other</h3>
+                <p class="text-sm">Type your answer if not in the choices</p>
+                <p class="text-xs italic text-gray-600">(Isulat ang sagot kung wala sa mga pagpipilian)</p>
+
+                <input id="workplace_other_input"
+                       type="text"
+                       class="mt-3 w-full border border-gray-300 rounded-lg p-2 text-sm"
+                       placeholder="Type here...">
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex justify-center gap-6 mt-10">
+            <button id="closeEnvironmentModal"
+                    class="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl 
+                           hover:bg-red-700 transition shadow-sm">
+                Cancel
+            </button>
+
+            <button id="saveEnvironmentEdit"
+                    class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl 
+                           hover:bg-blue-700 transition shadow-sm">
+                Save Changes
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- SELECTED CARD STYLE -->
+<style>
+.selected-card {
+    border: 3px solid #1E40AF !important;
+    background-color: #DBEAFE !important;
+}
+</style>
+
+
+<!-- Work Environment edit/save script -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const cards = document.querySelectorAll(".workplace-option");
+    const otherInput = document.getElementById("workplace_other_input");
+    const reviewList = document.getElementById("review_workplace_list");
+
+    /* RESET CARDS */
+    function resetSelections() {
+        cards.forEach(card => card.classList.remove("selected-card"));
+        otherInput.value = "";
+    }
+
+    /* LOAD PREVIOUS SELECTIONS FOR EDITING */
+    function loadPreviousSelections() {
+        resetSelections();
+
+        const selectedBadges = reviewList.querySelectorAll("span");
+        const savedValues = Array.from(selectedBadges).map(b => b.textContent.trim());
+
+        savedValues.forEach(value => {
+            let matched = false;
+
+            cards.forEach(card => {
+                if (card.dataset.value === value) {
+                    card.classList.add("selected-card");
+                    matched = true;
+                }
+            });
+
+            if (!matched && value !== "—") {
+                const otherCard = document.querySelector('[data-value="other"]');
+                otherCard.classList.add("selected-card");
+                otherInput.value = value;
+            }
+        });
+    }
+
+    /* MULTI-SELECT */
+    cards.forEach(card => {
+        card.addEventListener("click", (e) => {
+            if (e.target.classList.contains("tts-btn")) return;
+            card.classList.toggle("selected-card");
+        });
+    });
+
+    /* OPEN MODAL */
+    document.querySelectorAll(".edit-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            if (btn.dataset.section === "environment") {
+
+                const modal = document.getElementById("editEnvironmentModal");
+
+                modal.classList.remove("hidden");
+                setTimeout(() => {
+                    modal.classList.remove("opacity-0");
+                    modal.querySelector("div").classList.remove("scale-95");
+                }, 10);
+
+                loadPreviousSelections();
+            }
+        });
+    });
+
+    /* CLOSE MODAL */
+    function closeEnvironmentModal() {
+        const modal = document.getElementById("editEnvironmentModal");
+        modal.classList.add("opacity-0");
+        modal.querySelector("div").classList.add("scale-95");
+
+        setTimeout(() => {
+            modal.classList.add("hidden");
+        }, 200);
+    }
+
+    document.getElementById("closeEnvironmentModal").onclick = closeEnvironmentModal;
+
+    /* SAVE */
+    document.getElementById("saveEnvironmentEdit").addEventListener("click", () => {
+
+        const selectedValues = [];
+        const otherValue = otherInput.value.trim();
+
+        cards.forEach(card => {
+            if (card.classList.contains("selected-card")) {
+
+                const value = card.dataset.value;
+
+                if (value === "other" && otherValue !== "") {
+                    selectedValues.push(otherValue);
+                } 
+                else if (value !== "other") {
+                    selectedValues.push(value);
+                }
+            }
+        });
+
+        const listContainer = reviewList;
+        listContainer.innerHTML = "";
+
+        if (selectedValues.length === 0) {
+            listContainer.innerHTML = `<span class="text-gray-600">—</span>`;
+        } else {
+            selectedValues.forEach(item => {
+                const badge = document.createElement("span");
+                badge.className = "px-3 py-1 bg-blue-100 text-blue-700 font-semibold rounded-lg text-sm";
+                badge.textContent = item;
+                listContainer.appendChild(badge);
+            });
+        }
+
+        document.getElementById("review_workplace_choice_img_container").classList.add("hidden");
+
+        closeEnvironmentModal();
+    });
+
+});
+</script>
+
+
 
             <!-- Buttons -->
             <div class="text-center mt-10">

@@ -68,10 +68,10 @@
         </svg>
         <div class="flex-1 text-center sm:text-left">
           <p class="font-medium text-xs sm:text-base leading-relaxed">
-            You can change your skills by clicking the "Change" button. 
+            You can change your skills by clicking the "Edit" button. 
           </p>
           <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-            (Maaari mong baguhin ang iyong mga kasanayan sa pamamagitan ng pag-click sa button na “Change”)
+            (Maaari mong baguhin ang iyong mga kasanayan sa pamamagitan ng pag-click sa button na “Edit”)
           </p>
         </div>
       </div>
@@ -110,6 +110,254 @@
         </button>
       </div>
     </div>
+
+     <input id="skills_page1" type="hidden" value="[]" />
+
+    <!--  SKILLS EDIT MODAL -->
+
+<div id="editSkillsModal"
+     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center 
+            z-[9999] transition-opacity duration-300 opacity-0">
+
+<div class="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-5xl w-[95%] max-h-[90vh] 
+            overflow-y-auto border border-gray-200 relative scale-95 transition-all duration-300">
+
+    <!-- Title -->
+    <h2 class="text-center text-1xl sm:text-2xl font-extrabold text-gray-800">
+        What skills do you have or feel confident doing?
+    </h2>
+    <p class="text-center text-gray-500 italic mt-1">
+        (Anong mga kakayahan ang kaya mong gawin o komportable ka?)
+    </p>
+
+    <!-- Yellow Note -->
+    <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-4 mt-6 text-center shadow-sm">
+        <p class="font-semibold text-yellow-900">You can choose more than one option</p>
+        <p class="text-yellow-800 italic text-sm">(Puwede kang pumili ng higit sa isa)</p>
+    </div>
+
+    <!-- Skills Cards Grid -->
+    <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
+
+        <!-- Card 1 -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
+            data-value="Following Instructions">
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                data-tts-en="Following Instructions:I can follow easy steps one at a time." 
+                data-tts-tl="Kaya kong sundin ang simple, step-by-step na utos">🔊</button>
+            <img src="image/skill1.png" alt="following instructions" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-700 font-bold text-lg mb-2">Following Instructions</h3>
+            <p class="text-[13px] text-black-600 text-center mt-2">I can follow easy steps one at a time.</p>
+            <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong sundin ang simple, step-by-step na utos)</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
+            data-value="Communication Skills">
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                data-tts-en="Communication Skills: I can greet people, talk in a simple way, and answer Yes or No." 
+                data-tts-tl="Kaya kong bumati (“Hello/Good morning”), makipag-usap nang simple, at sumagot ng Yes/No">🔊</button>
+            <img src="image/skill2.png" alt="communication skills" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-700 font-bold text-lg mb-2">Communication Skills</h3>
+            <p class="text-[13px] text-black-600 text-center mt-2">I can greet people, talk in a simple way, and answer Yes or No.</p>
+            <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong bumati (“Hello/Good morning”), makipag-usap nang simple, at sumagot ng Yes/No)</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
+            data-value="Social Interaction">
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                data-tts-en="Social Interaction: I can be polite, friendly, and talk nicely to other people." 
+                data-tts-tl="Ako ay magalang, friendly, at kaya kong makipag-usap sa ibang tao o customers">🔊</button>
+            <img src="image/skill3.png" alt="social interaction" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-700 font-bold text-lg mb-2">Social Interaction</h3>
+            <p class="text-[13px] text-black-600 text-center mt-2">I can be polite, friendly, and talk nicely to other people.</p>
+            <p class="text-[13px] text-gray-600 italic text-center mt-2">(Ako ay magalang, friendly, at kaya kong makipag-usap sa ibang tao o customers)</p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
+            data-value="Physical Ability">
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                data-tts-en="Physical Ability: I can stand, walk, and carry light things." 
+                data-tts-tl="Kaya kong tumayo, maglakad, at magbuhat ng magagaan na gamit">🔊</button>
+            <img src="image/skill4.png" alt="physical ability" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-700 font-bold text-lg mb-2">Physical Ability</h3>
+            <p class="text-[13px] text-black-600 text-center mt-2">I can stand, walk, and carry light things.</p>
+            <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong tumayo, maglakad, at magbuhat ng magagaan na gamit)</p>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
+            data-value="Attention to Task">
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                data-tts-en="Attention to Task: I can stay focused and finish my task." 
+                data-tts-tl="Kaya kong mag-focus at tapusin ang trabaho nang tuloy-tuloy">🔊</button>
+            <img src="image/skill5.png" alt="attention to task" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-700 font-bold text-lg mb-2">Attention to Task</h3>
+            <p class="text-[13px] text-black-600 text-center mt-2">I can stay focused and finish my task.</p>
+            <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong mag-focus at tapusin ang trabaho nang tuloy-tuloy)</p>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
+            data-value="Task Repetition">
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                data-tts-en="Task Repetition: I can repeat the same task many times, like arranging items." 
+                data-tts-tl="Kaya kong ulit-ulitin ang gawain tulad ng pag-aayos ng products">🔊</button>
+            <img src="image/skill6.png" alt="task repetition" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-700 font-bold text-lg mb-2">Task Repetition</h3>
+            <p class="text-[13px] text-black-600 text-center mt-2">I can repeat the same task many times, like arranging items.</p>
+            <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya kong ulit-ulitin ang gawain tulad ng pag-aayos ng products)</p>
+        </div>
+
+        <!-- Card 7 -->
+        <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
+            data-value="Trainable">
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                data-tts-en="Trainable: I can learn new tasks when someone teaches me step by step." 
+                data-tts-tl="Kaya ko matuto kapag may nagtuturo sa akin nang simple">🔊</button>
+            <img src="image/skill7.png" alt="trainable" class="w-full rounded-md mb-4">
+            <h3 class="text-blue-700 font-bold text-lg mb-2">Trainable</h3>
+            <p class="text-[13px] text-black-600 text-center mt-2">I can learn new tasks when someone teaches me step by step.</p>
+            <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya ko matuto kapag may nagtuturo sa akin nang simple)</p>
+        </div>
+
+        <!-- Other 
+        <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
+            data-value="Other">
+            <button type="button"
+                class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
+                data-tts-en="Other, Type your answer inside the box if not in the choices" 
+                data-tts-tl="Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian">🔊</button>
+            <h3 class="text-blue-700 font-bold text-lg mb-2">Other</h3>
+            <p class="text-sm text-center mt-2">Type your answer if not in the choices</p>
+            <p class="text-[13px] text-gray-600 italic text-center mt-1">(Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)</p>
+            <input id="skills_other_input" type="text" placeholder="Type your answer here"
+                class="w-full border border-gray-300 rounded-lg p-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+        </div>-->
+    </div>
+
+   
+
+    <!-- Buttons -->
+    <div class="flex justify-center gap-6 mt-10">
+        <button id="closeSkillsModal"
+                class="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl 
+                       hover:bg-red-700 transition shadow-sm">
+            Cancel
+        </button>
+
+        <button id="saveSkillsEdit"
+                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl 
+                       hover:bg-blue-700 transition shadow-sm">
+            Save Changes
+        </button>
+    </div>
+</div>
+</div>
+
+
+
+<!-- Skills Card Style -->
+<style>
+.selected-card {
+    border: 3px solid #1E40AF !important;
+    background-color: #DBEAFE !important;
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const skillsModal = document.getElementById("editSkillsModal");
+    const skillsCards = document.querySelectorAll(".skills-card");
+    const hiddenInput = document.getElementById("skills_page1");
+    const editBtn = document.getElementById("rv4_change_skills_btn");
+    const closeBtn = document.getElementById("closeSkillsModal");
+    const saveBtn = document.getElementById("saveSkillsEdit");
+    const reviewList = document.getElementById("review_skills_list");
+
+    function resetSelections() {
+        skillsCards.forEach(card => card.classList.remove("selected-card"));
+    }
+
+    function loadPreviousSelections() {
+        resetSelections();
+        let saved = JSON.parse(hiddenInput.value || "[]");
+        skillsCards.forEach(card => {
+            if (saved.includes(card.dataset.value)) card.classList.add("selected-card");
+        });
+    }
+
+    skillsCards.forEach(card => {
+        card.addEventListener("click", () => {
+            card.classList.toggle("selected-card");
+        });
+    });
+
+    editBtn.addEventListener("click", () => {
+    skillsModal.classList.remove("hidden");
+
+    // target the correct modal content div
+    const modalContent = skillsModal.querySelector(".rounded-3xl");
+
+    setTimeout(() => {
+        skillsModal.classList.remove("opacity-0");
+        if (modalContent) modalContent.classList.remove("scale-95");
+    }, 10);
+
+    loadPreviousSelections(); // <-- this will now always apply correctly
+});
+
+    function closeModal() {
+        skillsModal.classList.add("opacity-0");
+        skillsModal.querySelector("div").classList.add("scale-95");
+        setTimeout(() => skillsModal.classList.add("hidden"), 200);
+    }
+    closeBtn.addEventListener("click", closeModal);
+
+    function updateReviewSection(selected) {
+        reviewList.innerHTML = "";
+        if (!selected.length) {
+            reviewList.innerHTML = `<span class="text-gray-600">—</span>`;
+            return;
+        }
+        selected.forEach(skill => {
+            const badge = document.createElement("span");
+            badge.className = "px-3 py-1 bg-blue-100 text-blue-700 font-semibold rounded-xl flex items-center gap-2 shadow-sm";
+            badge.textContent = skill;
+            reviewList.appendChild(badge);
+        });
+    }
+
+    saveBtn.addEventListener("click", () => {
+        const selected = [];
+        skillsCards.forEach(card => {
+            if (card.classList.contains("selected-card")) selected.push(card.dataset.value);
+        });
+        hiddenInput.value = JSON.stringify(selected);
+        updateReviewSection(selected);
+        closeModal();
+    });
+
+    // Initialize review section
+    try {
+        const initialData = JSON.parse(hiddenInput.value || "[]");
+        updateReviewSection(initialData);
+    } catch (e) {
+        reviewList.innerHTML = `<span class="text-gray-600">—</span>`;
+    }
+});
+</script>
+
+
 
     <!-- Continue Button -->
     <div class="flex flex-col sm:flex-row justify-center items-center gap-6 mt-12">

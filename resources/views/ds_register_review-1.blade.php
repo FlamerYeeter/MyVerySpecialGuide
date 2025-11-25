@@ -296,6 +296,8 @@
     </div>
 </div>
 
+
+<!-- Personal Info & Account Details edit/save btn script -->
 <script>
 // Function to toggle edit/save for any section
 function setupEditSection(buttonId, sectionId) {
@@ -482,8 +484,8 @@ setupEditSection("editAccountBtn", "accountSection");
         </div>
       </div>
       <div class="ml-auto flex gap-2">
-        <button id="r_view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
-        <button id="r_remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+        <button id="r_view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+        <button id="r_remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove / Tanggalin</button>
       </div>
     `;
     container.appendChild(card);
@@ -672,7 +674,7 @@ setupEditSection("editAccountBtn", "accountSection");
   // toggle edit mode
   if (editFilesBtn) {
     if(!editFilesBtn.dataset.mode) editFilesBtn.dataset.mode = 'view';
-    editFilesBtn.innerText = editFilesBtn.dataset.mode === 'editing' ? '💾 Save Files' : '✏️ Edit Files';
+    editFilesBtn.innerText = editFilesBtn.dataset.mode === 'editing' ? '💾 Save Changes' : '✏️ Edit Files';
     editFilesBtn.addEventListener('click', ()=>{
       const isEditing = editFilesBtn.dataset.mode === 'editing';
       const proofFile = document.getElementById('proofFile');
@@ -683,11 +685,15 @@ setupEditSection("editAccountBtn", "accountSection");
         if(medFile) medFile.disabled = true;
         editFilesBtn.innerText = '✏️ Edit Files';
         editFilesBtn.dataset.mode = 'view';
+        editFilesBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
+        editFilesBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
       } else {
         if(proofFile) proofFile.disabled = false;
         if(medFile) medFile.disabled = false;
-        editFilesBtn.innerText = '💾 Save Files';
+        editFilesBtn.innerText = '💾 Save Changes';
         editFilesBtn.dataset.mode = 'editing';
+        editFilesBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+        editFilesBtn.classList.add('bg-green-600', 'hover:bg-green-700');
       }
     });
   }
