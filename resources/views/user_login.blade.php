@@ -102,7 +102,7 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       // ✅ simulate loading delay for nice UX
       setTimeout(() => {
         loadingModal.classList.add('hidden');
-        window.location.href = '/navigation-buttons';
+        window.location.href = '/navigationbuttons';
       }, 1000);
     } else {
       loadingModal.classList.add('hidden');

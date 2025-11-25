@@ -765,82 +765,77 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     Recommended companies based on application history, preferences, and recent platform activity.
               </p>
        <!--Job Card -->
-        <div
-            class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
+      <div id="job-container" class="space-y-10"></div>
+        <script>
+        fetch('/db/get-jobs.php')
+        .then(response => response.json())
+        .then(result => {
+            if (!result.success || !result.jobs.length) {
+            document.getElementById('job-container').innerHTML = 
+                '<p class="text-center text-3xl text-gray-600">No job postings available at the moment.</p>';
+            return;
+            }
 
+            const container = document.getElementById('job-container');
+
+            result.jobs.forEach(job => {
+            // Calculate progress barS width
+            const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
+
+            const cardHTML = `
+        <div class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
             <!-- Top Section -->
             <div class="flex flex-col lg:flex-row justify-between items-start gap-10">
-
                 <!-- Left: Company Info -->
                 <div class="flex items-start gap-6">
-                    <!-- Flag Button -->
-                    {{-- <button class="text-gray-400 text-5xl focus:outline-none hover:text-red-500 transition-all"
-                        aria-label="Flag this job">
-                        <i class="ri-flag-2-fill"></i>
-                    </button> --}}
-
                     <!-- Company Logo -->
-                    <div
-                        class="w-36 h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center">
-                        <i class="ri-building-4-fill text-[#1E40AF] text-7xl"></i>
+                    <div class="w-36 h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
+                        <img src="${escapeHtml(job.logo)}" alt="${escapeHtml(job.company_name)} logo" class="w-full h-full object-cover">
                     </div>
-
                     <!-- Company Details -->
                     <div>
-                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2">Pet Care Assistant</h2>
-                        <p class="text-2xl text-gray-800 font-semibold mb-2">iPet Club</p>
+                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2">${escapeHtml(job.job_role)}</h2>
+                        <p class="text-2xl text-gray-800 font-semibold mb-2">${escapeHtml(job.company_name)}</p>
                         <p class="flex items-center text-xl text-gray-700 gap-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
-                            Taguig City, Metro Manila
+                            ${escapeHtml(job.address)}
                         </p>
-
-                        <!-- Tags -->
-                        {{-- <div class="flex flex-wrap gap-3 mt-3">
-                            <span
-                                class="bg-green-200 text-green-900 text-lg px-5 py-2 rounded-md font-semibold">Healthcare</span>
-                            <span
-                                class="bg-yellow-200 text-yellow-900 text-lg px-5 py-2 rounded-md font-semibold">Quiet</span>
-                        </div> --}}
                     </div>
                 </div>
-
-                <!-- Right: Why It Matches -->
-                <a href="#"
-                    class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center whitespace-nowrap">
+                <!-- Why It Matches -->
+                <a href="#" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center whitespace-nowrap">
                     Why this job matches you?
                 </a>
             </div>
 
-            <!-- Separator -->
             <hr class="my-8 border-gray-300">
 
             <!-- Description -->
             <div>
                 <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Description</h3>
                 <p class="text-gray-800 text-2xl leading-relaxed max-w-6xl">
-                    Help feed animals, clean their spaces, and provide love and care. You’ll be part of a kind, friendly
-                    team who loves pets and teamwork.
+                    ${escapeHtml(job.description).replace(/\n/g, '<br>')}
                 </p>
             </div>
 
             <!-- Skills Section -->
+            ${job.skills && job.skills.length > 0 ? `
             <div class="mt-8">
                 <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills you will Use</h3>
                 <div class="flex flex-wrap gap-4">
-                    <span
-                        class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">Organization</span>
-                    <span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">Cleaning</span>
-                    <span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">Following
-                        Instructions</span>
+                    ${job.skills.map(skill => 
+                    `<span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">${escapeHtml(skill)}</span>`
+                    ).join('')}
                 </div>
-            </div>
+            </div>` : ''}
 
-            <!-- Job Type Section -->
+            <!-- Job Type -->
             <div class="mt-8">
                 <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Type</h3>
                 <div class="flex flex-wrap gap-4">
-                    <span
-                        class="border-2 border-[#2563EB] text-[#2563EB] text-lg px-6 py-2 rounded-md font-bold bg-blue-50">Full-Time</span>
+                    <span class="border-2 border-[#2563EB] text-[#2563EB] text-lg px-6 py-2 rounded-md font-bold bg-blue-50">
+                        ${escapeHtml(job.job_type)}
+                    </span>
                 </div>
             </div>
 
@@ -848,49 +843,55 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             <div class="mt-10 w-full">
                 <p class="text-xl font-semibold text-gray-800 mb-2 text-center">Number of Applicants</p>
                 <div class="h-5 bg-gray-200 rounded-md overflow-hidden">
-                    <div class="h-full bg-[#88BF02]" style="width: 50%;"></div>
+                    <div class="h-full bg-[#88BF02]" style="width: ${progress}%;"></div>
                 </div>
                 <p class="text-lg text-gray-700 mt-2 text-center">
-                    <strong>5 applied</strong> out of 10 openings
+                    <strong>${job.applied} applied</strong> out of ${job.openings} openings
                 </p>
             </div>
 
             <!-- Action Buttons -->
             <div class="flex flex-wrap justify-center gap-6 mt-10">
-                <button
-                    type="button"
-                    onclick="window.location.href='{{ route('job.details') }}'"
-                    class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition"
-                    aria-label="See job details"
-                >
+                <button onclick="location.href='job-details?id=${job.id}'"
+                        class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
                     📝 See Details
                 </button>
-
-                <button
-                    type="button"
-                    onclick="window.location.href='{{ route('job.application.1') }}'"
-                    class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition"
-                    aria-label="Apply now"
-                >
+                <button onclick="location.href='apply.php?id=${job.id}'"
+                        class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
                     🚀 Apply Now
                 </button>
-                <button
-                    class="bg-[#008000] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition">
+                <button onclick="saveJob(${job.id})"
+                        class="bg-[#008000] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition">
                     💾 Save
                 </button>
             </div>
+        </div>`;
+            container.innerHTML += cardHTML;
+            });
+        })
+        .catch(err => {
+            console.error('Error loading jobs:', err);
+            document.getElementById('job-container').innerHTML = 
+            '<p class="text-center text-red-600 text-2xl">Failed to load jobs. Please try again later.</p>';
+        });
 
-            <!-- Assessment CTA -->
-            {{-- <div class="flex justify-center mt-10">
-                <button
-                    class="bg-[#FFAC1D] text-white text-2xl font-extrabold rounded-md px-12 py-6 w-full sm:w-[700px] hover:bg-[#D78203] transition">
-                    Apply for Therapist Job Readiness Assessment
-                </button>
-            </div> --}}
+        // Helper function to prevent XSS
+        function escapeHtml(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+        }
 
-        </div>
-
-
+        // Save Job function (optional)
+        function saveJob(jobId) {
+        alert('Job ID ' + jobId + ' saved!');
+        // Implement actual save logic here
+        }
+        </script>
         <!-- Instruction Section Wrapper -->
         <div class="space-y-8">
 
@@ -1528,463 +1529,6 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 </script>
             </div>
         </div>
-        // <!-- Ensure user is signed-in before taking actions like Apply or Save -->
-        // <script>
-        //     // Development convenience: disable login requirement so auto-trigger runs for all visitors.
-        //     // WARNING: This treats every visitor as authenticated for recommendation generation on this page.
-        //     // Revert to the @@auth directive for production.
-        //     window.__SERVER_AUTH = true;
-        // </script>
-        // <script>
-        //     // Firebase removed: provide a minimal stub so legacy client code still runs without errors.
-        //     // The project now uses the Oracle-backed server endpoints for recommendation generation.
-        //     async function importFirebaseModuleStub() {
-        //         return {
-        //             signInWithServerToken: async function() { /* no-op */ },
-        //             isSignedIn: async function(timeout) { return !!window.__SERVER_AUTH; },
-        //             debugAuthLogging: function() { return function() {}; },
-        //             ensureInit: async function() { /* no-op */ },
-        //             getUserProfile: async function() { return null; }
-        //         };
-        //     }
-        // </script>
-        // <script type="module">
-        //     (async function() {
-        //         try {
-        //             // Firebase removed: use stub instead of importing the old module.
-        //             const mod = await importFirebaseModuleStub();
-        //             // client-logger is optional; avoid importing to keep page lightweight in Oracle-only mode
-        //             const logger = {
-        //                 sendClientLog: function() {}
-        //             };
-        //             // Attempt server-backed sign-in (makes Firebase ID token available to the page)
-        //             try {
-        //                 // firebase.token removed
-        //             } catch (e) {
-        //                 console.debug('job-matches signInWithServerToken failed', e);
-        //                 try {
-        //                     logger.sendClientLog('debug', 'job-matches signInWithServerToken failed', {
-        //                         error: String(e)
-        //                     });
-        //                 } catch (_) {}
-        //             }
-        //             const signed = await mod.isSignedIn(7000);
-        //             console.debug('job-matches auth guard: isSignedIn ->', signed);
-        //             if (!signed) {
-        //                 if (window.__SERVER_AUTH) {
-        //                     console.info('job-matches: server session present, not redirecting');
-        //                     try {
-        //                         logger.sendClientLog('info', 'job-matches auth guard: server session present', {});
-        //                     } catch (_) {}
-        //                     return;
-        //                 }
-        //                 const current = window.location.pathname + window.location.search;
-        //                 try {
-        //                     logger.sendClientLog('info', 'job-matches auth guard: redirecting to login', {
-        //                         redirect: current
-        //                     });
-        //                 } catch (_) {}
-        //                 window.location.href = 'login?redirect=' + encodeURIComponent(current);
-        //                 return;
-        //             }
-        //         } catch (err) {
-        //             console.error('job-matches auth guard failed', err);
-        //             try {
-        //                 (await import("{{ asset('js/client-logger.js') }}")).sendClientLog('error',
-        //                     'job-matches auth guard failed', {
-        //                         error: String(err)
-        //                     });
-        //             } catch (_) {}
-        //         }
-        //     })();
-
-        //     // If server-side session exists but client Firebase profile is not present,
-        //     // trigger the recommendations generator on the server so users who are
-        //     // authenticated via backend still get per-user recs on page load.
-        //     (async function() {
-        //         try {
-        //             if (!window.__SERVER_AUTH) return; // only when server session present
-        //             // don't spam: set a short guard in sessionStorage per-page-load
-        //             const key = 'reco_auto_trigger_' + window.location.pathname;
-        //             if (sessionStorage.getItem(key)) return;
-        //             sessionStorage.setItem(key, '1');
-        //             window.__HYBRID_RECO_DEBUG = window.__HYBRID_RECO_DEBUG || {
-        //                 events: []
-        //             };
-        //             window.__HYBRID_RECO_DEBUG.events.push({
-        //                 when: Date.now(),
-        //                 ev: 'auto_trigger_via_server_session'
-        //             });
-        //             const resp = await fetch('{{ url('/api/recommendations/user') }}', {
-        //                 method: 'POST',
-        //                 credentials: 'same-origin',
-        //                 headers: {
-        //                     'Content-Type': 'application/json',
-        //                     'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //                 },
-        //                 // request a forced synchronous generation when possible (dev-friendly)
-        //                 body: JSON.stringify({
-        //                     force: true
-        //                 })
-        //             });
-        //             window.__HYBRID_RECO_DEBUG.events.push({
-        //                 when: Date.now(),
-        //                 ev: 'auto_trigger_response',
-        //                 status: resp.status
-        //             });
-
-        //             // If a synchronous result was returned, try to render it in-place
-        //             if (resp.ok) {
-        //                 const data = await resp.json().catch(() => null);
-        //                 const normalize = (d) => {
-        //                     if (!d) return [];
-        //                     if (Array.isArray(d)) return d;
-        //                     if (typeof d === 'object') {
-        //                         const vals = Object.values(d);
-        //                         const arrVal = vals.find(v => Array.isArray(v));
-        //                         if (arrVal) return arrVal;
-        //                         const keys = Object.keys(d || {});
-        //                         if (keys.length > 0 && Array.isArray(d[keys[0]])) return d[keys[0]];
-        //                     }
-        //                     return [];
-        //                 };
-        //                 const recs = normalize(data);
-        //                 if (recs && recs.length > 0) {
-        //                     // reuse the same rendering logic as the manual generator
-        //                     const esc = s => {
-        //                         if (s === null || s === undefined) return '';
-        //                         return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        //                     };
-        //                     const container = document.querySelector('.container.mx-auto.mt-8.px-4.space-y-6');
-        //                     if (container) {
-        //                         let out = '';
-        //                         recs.slice(0, 50).forEach((r2, idx) => {
-        //                             const jid = String(r2.job_id ?? ('p' + idx));
-        //                             const title = esc(r2.Title || r2.title || r2.job_title || (r2.job_description || '').substring(0, 80) || 'Untitled Job');
-        //                             const company = esc(r2.Company || r2.company || r2.company_name || '');
-        //                             let rawMatchVal = Number(r2.hybrid_score ?? r2.content_score ?? r2.match_score ?? 0) || 0;
-        //                             let matchPercent = 0;
-        //                             if (rawMatchVal > 0 && rawMatchVal <= 1.01) matchPercent = Math.round(rawMatchVal * 100);
-        //                             else if (rawMatchVal > 0 && rawMatchVal <= 5.0) matchPercent = Math.round(rawMatchVal * 20);
-        //                             else matchPercent = Math.round(rawMatchVal);
-        //                             const why = esc((r2.job_description || r2.description || '').substring(0, 400));
-        //                             const industry = esc(r2.industry || '');
-        //                             const workEnv = esc(r2.work_environment || '');
-        //                             const fit = esc(r2.fit_level || '');
-        //                             const growth = esc(r2.growth_potential || '');
-        //                             const salary = esc(r2.salary ?? '-');
-        //                             const deadline = esc(r2.deadline ?? '');
-        //                             out += `
-        //                                 <div id="job_${jid}" data-job-id="${jid}" data-job-id-canonical="${jid}" data-title="${title}" data-company="${company}" data-description="${why}" data-location="${esc(r2.location || '')}" data-fit-level="${fit}" data-content-score="${esc(String(r2.content_score ?? r2.computed_score ?? 0))}" data-raw-match="${esc(String(rawMatchVal))}" class="job-card bg-white shadow-md rounded-xl p-6 flex flex-col md:flex-row justify-between items-start">
-        //                                     <div class="flex-1 pr-6">
-        //                                         <h3 class="text-lg font-bold">${title}</h3>
-        //                                         <div class="mt-2"><span class="js-match-badge bg-green-100 text-green-800 px-3 py-1 rounded-md text-sm font-semibold">${matchPercent}% Match <small class="text-xs text-gray-500">(raw: ${esc(String(rawMatchVal))})</small></span></div>
-        //                                         ${ company ? `<p class="text-sm text-gray-700 font-medium">${company}</p>` : '' }
-        //                                         <p class="text-gray-600 mt-2 text-sm">${why}</p>
-        //                                         <div class="flex gap-2 text-xs mt-2">
-        //                                             ${ industry ? `<span class="bg-gray-100 px-2 py-1 rounded">${industry}</span>` : '' }
-        //                                             ${ workEnv ? `<span class="bg-gray-100 px-2 py-1 rounded">${workEnv}</span>` : '' }
-        //                                         </div>
-        //                                         <div class="flex gap-2 mt-2">
-        //                                             ${ fit ? `<span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">${fit}</span>` : '' }
-        //                                             ${ growth ? `<span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs">${growth}</span>` : '' }
-        //                                         </div>
-        //                                         <span class="job-id-debug" style="display:block;font-size:10px;color:#666;margin-top:4px">debug-id: ${jid}</span>
-        //                                         <p class="text-xs text-gray-400 mt-1">Salary: ${salary} ${ deadline ? '• Deadline: ' + deadline : '' }</p>
-        //                                     </div>
-        //                                     <div class="flex items-center gap-3 mt-4 md:mt-0">
-        //                                         <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-blue-500 text-white px-4 rounded-lg hover:bg-blue-600 text-center text-sm font-medium leading-none">View Details</a>
-        //                                         <form method="POST" action="{{ route('my.job.applications') }}" class="inline-block">
-        //                                             <input type="hidden" name="_token" value="{{ csrf_token() }}">
-        //                                             <input type="hidden" name="job_id" value="${jid}">
-        //                                             <button type="submit" class="inline-flex items-center justify-center h-11 min-w-[120px] bg-green-600 text-white px-4 rounded-lg hover:bg-green-700 text-sm font-medium leading-none">Save</button>
-        //                                         </form>
-        //                                     </div>
-        //                                 </div>
-        //                             `;
-        //                         });
-        //                         container.innerHTML = out;
-        //                     }
-        //                 }
-        //             }
-        //         } catch (e) {
-        //             console.debug('auto server-side reco trigger failed', e);
-        //         }
-        //     })();
-        //     @if (app()->environment('local') || request()->getHost() === 'localhost')
-        //         // In local environment, also trigger a bulk generation for all users so per-UID caches are created.
-        //         (async function() {
-        //             try {
-        //                 // Run bulk generation (restricted to local by server route). Do not block UI.
-        //                 fetch('{{ url('/api/recommendations/all') }}', {
-        //                     method: 'POST',
-        //                     credentials: 'same-origin',
-        //                     headers: {
-        //                         'Content-Type': 'application/json'
-        //                     },
-        //                     body: JSON.stringify({})
-        //                 }).then(async r => {
-        //                     // Protect client from HTML error pages or redirects which are not JSON.
-        //                     const ct = r.headers.get('content-type') || '';
-        //                     const txt = await r.text().catch(() => null);
-        //                     if (ct.indexOf('application/json') !== -1) {
-        //                         try {
-        //                             const j = JSON.parse(txt);
-        //                             console.debug('bulk reco all triggered', j);
-        //                         } catch (e) {
-        //                             console.debug('bulk reco all returned invalid json', e, txt && txt.substring ? txt.substring(0,300) : txt);
-        //                         }
-        //                     } else {
-        //                         console.debug('bulk reco all returned non-json response; skipping', ct, txt && txt.substring ? txt.substring(0,300) : txt);
-        //                     }
-        //                 }).catch(e => console.debug('bulk reco all failed', e));
-        //             } catch (e) {
-        //                 console.debug('bulk reco all start failed', e);
-        //             }
-        //         })();
-        //     @endif
-        // </script>
-        // <script>
-        //     // Hook up the "Generate recommendations now" button to call the debug/oracle-recs endpoint
-        //     // and render results immediately (synchronous fetch + in-place rendering).
-        //     document.addEventListener('DOMContentLoaded', function() {
-        //         const btn = document.getElementById('btn-generate-recs');
-        //         const status = document.getElementById('btn-generate-status');
-        //         const listEl = document.getElementById('client-job-list');
-        //         if (!btn) return;
-
-        //         function clientRenderTags(skills) {
-        //             const arr = [];
-        //             if (!skills) return '';
-        //             if (Array.isArray(skills)) {
-        //                 skills.forEach(s => { if (s) arr.push(String(s).trim()); });
-        //             } else {
-        //                 const txt = String(skills || '');
-        //                 txt.split(/[,|;]+/).forEach(p => { const t = p.trim(); if (t) arr.push(t); });
-        //             }
-        //             return arr.map(t => `<span class="bg-blue-100 text-blue-700 text-lg font-semibold px-5 py-2 rounded-md">${String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`).join(' ');
-        //         }
-
-        //         function renderOracleRecs(data) {
-        //             if (!listEl) return;
-        //             const esc = s => s === null || s === undefined ? '' : String(s)
-        //                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-        //             // Favor 'hybrid' payload. Fall back to content/collab only if hybrid not present.
-        //             const hybridRecs = Array.isArray(data.hybrid) && data.hybrid.length > 0 ? data.hybrid : (Array.isArray(data.content) ? data.content : []);
-        //             let out = '';
-
-        //             // Render only hybrid results — do not render separate content/collab sections
-        //             if (hybridRecs && hybridRecs.length > 0) {
-        //                 hybridRecs.slice(0, 50).forEach((r, idx) => {
-        //                     const title = esc(r.title || r.Title || r.job_title || 'Untitled');
-        //                     const company = esc(r.company || r.company_name || r.Company || '');
-        //                     const location = esc(r.location || r.city || r.CITY || '');
-        //                     const desc = esc(String((r.description || r.job_description || '').substring(0, 400)));
-        //                     const skills = r.required_skills || r.skills || r.REQUIRED_SKILLS || '';
-        //                     const logo = r.logo || r.logo_url || r.company_logo || (r.company && r.company.logo) || '';
-
-        //                     out += `
-        //                         <div class="relative bg-white border-2 border-blue-200 rounded-3xl shadow-lg p-10 mb-6 transition-transform hover:scale-[1.02]">
-        //                             <div class="flex flex-col lg:flex-row justify-between items-start gap-8">
-        //                                 <div class="flex items-start gap-6">
-        //                                     <div class="flex items-center gap-4">
-        //                                         <button class="flag-btn text-gray-400 text-5xl focus:outline-none hover:text-red-500 transition-all duration-300"><i class="ri-flag-line"></i></button>
-        //                                         <div class="flex-shrink-0">
-        //                                             ${ logo ? `<img src="${esc(logo)}" class="w-32 h-32 rounded-2xl border-4 border-gray-300 object-cover"/>` : `<div class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50"><i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i></div>` }
-        //                                         </div>
-        //                                     </div>
-
-        //                                     <div>
-        //                                         <h3 class="font-bold text-3xl text-gray-900">${title}</h3>
-        //                                         <p class="text-gray-700 text-2xl font-medium mt-2">${company}</p>
-        //                                         <p class="text-gray-600 text-lg mt-1 flex items-center gap-2">${location ? `<img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/> <span>${location}</span>` : ''}</p>
-
-        //                                         <div class="flex flex-wrap gap-3 mt-3">${clientRenderTags(skills)}</div>
-        //                                     </div>
-        //                                 </div>
-
-        //                                 <a href="#" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job match you?</a>
-        //                             </div>
-
-        //                             <p class="text-gray-700 text-xl mt-8 leading-relaxed max-w-4xl">${desc}</p>
-
-        //                             <div class="flex flex-wrap gap-3 mt-6">${clientRenderTags(skills)}</div>
-
-        //                             <div class="flex flex-wrap gap-3 mt-8">
-        //                                 <span class="border border-[#2563EB] text-[#2563EB] text-lg px-5 py-2 rounded-md font-semibold">Full-Time</span>
-        //                                 <span class="border border-[#88BF02] text-[#88BF02] text-lg px-5 py-2 rounded-md font-semibold">Full Support</span>
-        //                                 <span class="border border-[#F89596] text-[#F89596] text-lg px-5 py-2 rounded-md font-semibold">Excellent Fit</span>
-        //                             </div>
-
-        //                             <div class="flex justify-end mt-10">
-        //                                 <button class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[480px] hover:bg-[#D78203] transition text-center">Apply for Therapist Job Readiness Assessment</button>
-        //                             </div>
-
-        //                             <div class="flex justify-end flex-wrap gap-4 mt-4">
-        //                                 <button class="bg-[#55BEBB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#47a4a1] transition">Details</button>
-        //                                 <button class="bg-[#2563EB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#1e4fc5] transition">Apply</button>
-        //                                 <button class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
-        //                             </div>
-        //                         </div>
-        //                     `;
-        //                 });
-        //             } else {
-        //                 out += `<p class="text-sm text-gray-500 mb-6">No hybrid recommendations available.</p>`;
-        //             }
-
-        //             // collaborative section suppressed in favor of hybrid-only listing
-        //             // (keep this empty; frontend should not render collab separately)
-        //             if (false) {
-        //                 collabRecs.slice(0, 50).forEach((r, idx) => {
-        //                     const title = esc(r.title || r.Title || r.job_title || 'Untitled');
-        //                     const company = esc(r.company || r.company_name || r.Company || '');
-        //                     const location = esc(r.location || r.city || r.CITY || '');
-        //                     const desc = esc(String((r.description || r.job_description || '').substring(0, 300)));
-        //                     const skills = r.required_skills || r.skills || r.REQUIRED_SKILLS || '';
-        //                     const logo = r.logo || r.logo_url || r.company_logo || (r.company && r.company.logo) || '';
-
-        //                     out += `
-        //                         <div class="bg-white border-2 border-blue-100 rounded-none shadow-lg p-8 flex flex-col lg:flex-row justify-between items-start gap-8 hover:scale-[1.01] transition-all">
-        //                             <div class="flex items-center gap-5 w-full lg:w-2/3">
-        //                                 <button class="flag-btn text-gray-400 text-5xl font-bold focus:outline-none hover:text-red-500 transition-all duration-300"><i class="ri-flag-line"></i></button>
-        //                                 <div class="flex-shrink-0">
-        //                                     ${ logo ? `<img src="${esc(logo)}" class="w-32 h-32 rounded-2xl border-2 border-gray-300 object-cover"/>` : `<div class="w-32 h-32 flex items-center justify-center rounded-2xl border-2 border-gray-300 bg-gray-50"><i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i></div>` }
-        //                                 </div>
-        //                                 <div>
-        //                                     <h3 class="font-bold text-2xl text-gray-800">${title}</h3>
-        //                                     <p class="text-lg text-gray-600 mt-2 flex items-center gap-2">${location ? `<img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/> <span>${location}</span>` : ''}</p>
-        //                                     <div class="flex flex-wrap gap-2 mt-2">${clientRenderTags(skills)}</div>
-        //                                 </div>
-        //                             </div>
-
-        //                             <div class="flex flex-col items-center lg:items-end w-full lg:w-1/3 mt-4 lg:mt-0">
-        //                                 <button class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[365px] mb-4 hover:bg-[#D78203] transition text-center">Apply for Therapist Job Readiness Assessment</button>
-        //                                 <div class="flex gap-4 mb-4">
-        //                                     <button class="bg-[#55BEBB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#399f96] transition-all w-[110px]">Details</button>
-        //                                     <button class="bg-[#2563EB] text-white font-bold px-8 py-3 text-lg rounded-lg hover:bg-[#1b3999] transition-all w-[110px]">Apply</button>
-        //                                     <button class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 hover:bg-[#006400] transition w-[110px]">Save</button>
-        //                                 </div>
-        //                                 <div class="w-full sm:w-[360px]">
-        //                                     <div class="h-3 bg-gray-200 rounded-none overflow-hidden"><div class="h-full bg-[#88BF02] w-1/2 rounded-none"></div></div>
-        //                                     <p class="text-sm text-gray-500 font-semibold mt-2 text-center lg:text-right"><span class="font-semibold text-black">5 applied</span> of 10 capacity</p>
-        //                                 </div>
-        //                             </div>
-        //                         </div>
-        //                     `;
-        //                 });
-        //             } else {
-        //                 // no collaborative block for hybrid-only display
-        //             }
-
-        //             listEl.innerHTML = out;
-        //         }
-
-        //         btn.addEventListener('click', async function() {
-        //             if (window.__SERVER_RECO_LOADED) {
-        //                 status.textContent = 'Server-rendered recommendations already present; reload page to refresh.';
-        //                 btn.disabled = false;
-        //                 return;
-        //             }
-        //             try {
-        //                 btn.disabled = true;
-        //                 status.textContent = 'Generating recommendations...';
-        //                 const uid = @json(request()->get('uid') ?: (auth()->check() ? auth()->id() : null));
-        //                 const url = '{{ url('/debug/oracle-recs') }}' + (uid ? ('?uid=' + encodeURIComponent(uid)) : '');
-        //                 const r = await fetch(url, { credentials: 'same-origin' });
-        //                 if (!r.ok) throw new Error('HTTP ' + r.status + ' ' + r.statusText);
-        //                 const data = await r.json().catch(() => null);
-        //                 if (!data) {
-        //                     status.textContent = 'No recommendations returned.';
-        //                     return;
-        //                 }
-        //                 // Normalize expected shapes: {content, collab} or older single-array shapes
-        //                 let content = Array.isArray(data.content) ? data.content : [];
-        //                 let collab = Array.isArray(data.collab) ? data.collab : [];
-        //                 if ((!content.length) && (!collab.length)) {
-        //                     if (Array.isArray(data)) collab = data;
-        //                     else if (Array.isArray(data.results)) collab = data.results;
-        //                     else if (Array.isArray(data.data)) collab = data.data;
-        //                     else {
-        //                         for (const k of Object.keys(data || {})) { if (Array.isArray(data[k])) { collab = data[k]; break; } }
-        //                     }
-        //                 }
-        //                 status.textContent = 'Recommendations ready — rendering.';
-        //                 renderOracleRecs({ content: content, collab: collab });
-        //             } catch (e) {
-        //                 console.debug('generate failed', e);
-        //                 status.textContent = 'Generation failed: ' + String(e);
-        //             } finally {
-        //                 btn.disabled = false;
-        //             }
-        //         });
-        //     });
-        // </script>
-        // <script>
-        //     // expose guardian approvals to client-side renderer
-        //     window.__GUARDIAN_APPROVALS = {!! json_encode($guardianApprovals ?? []) !!};
-
-        //     function escapeHtml(s) {
-        //         if (!s) return '';
-        //         return String(s).replace(/[&<>"]+/g, function(ch) {
-        //             return {
-        //                 '&': '&amp;',
-        //                 '<': '&lt;',
-        //                 '>': '&gt;',
-        //                 '"': '&quot;'
-        //             } [ch];
-        //         });
-        //     }
-        // </script>
-        // <script type="module">
-        //     // Rescoring client removed: server will provide rescored recommendations from Oracle-backed algorithm.
-        //     // No-op here to keep old code paths safe.
-        //     try { await Promise.resolve(); } catch (e) {}
-        // </script>
-        // <script type="module">
-        //     (async function() {
-        //         try {
-        //             // Firebase removed: use stub instead of importing the old module.
-        //             const mod = await importFirebaseModuleStub();
-        //             console.debug('Auth guard: (oracle mode) assuming server session or anonymous');
-        //             try {
-        //                 // firebase.token removed
-        //             } catch (e) {
-        //                 console.debug('signInWithServerToken failed', e);
-        //             }
-        //             const signed = await mod.isSignedIn(7000);
-        //             console.debug('Auth guard: isSignedIn ->', signed);
-        //             // debugAuthLogging not available in Oracle-only mode
-        //             if (!signed) {
-        //                 // if server has a session, assume the user is already authenticated via backend and skip client redirect
-        //                 if (window.__SERVER_AUTH) {
-        //                     console.info('Auth guard: server session present, not redirecting');
-        //                     return;
-        //                 }
-        //                 // if still not signed after waiting, redirect to login
-        //                 const current = window.location.pathname + window.location.search;
-        //                 console.info('Auth guard: not signed, redirecting to login');
-        //                 window.location.href = 'login?redirect=' + encodeURIComponent(current);
-        //                 return;
-        //             }
-        //         } catch (err) {
-        //             console.error('Auth guard failed on job matches', err);
-        //         }
-        //     })();
-
-        //     // Guardian approve/flag handlers (AJAX) - require authentication
-        //     function postAction(url, body) {
-        //         return fetch(url, {
-        //             method: 'POST',
-        //             headers: {
-        //                 'Content-Type': 'application/json',
-        //                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        //             },
-        //             body: JSON.stringify(body || {})
-        //         }).then(r => r.json());
-        //     }
-
-        //     // Approve/flag actions are only available in the Guardian Review pages; no handlers here.
-        // </script>
         <script type="module">
             // Re-score job cards using the user's Firestore profile (if available)
             (async function() {

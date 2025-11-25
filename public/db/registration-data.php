@@ -21,6 +21,36 @@ function saveBase64File($base64String, $path = '../uploads/') {
     return $filename;
 }
 
+function base64ToBlob($input) {
+    if (empty($input)) return null;
+
+    $binary = '';
+
+    // Try to decode as JSON array
+    $items = json_decode($input, true);
+    if (is_array($items)) {
+    foreach ($items as $item) {
+    if (!empty($item['data'])) {
+    if (($pos = strpos($item['data'], ',')) !== false) {
+    $item['data'] = substr($item['data'], $pos + 1);
+    }
+    $data = base64_decode($item['data'], true);
+    if ($data !== false) {
+    $binary .= $data; // append to single blob
+    }
+    }
+    }
+    return $binary !== '' ? $binary : null;
+    }
+
+    // Single Base64 string
+    if (($pos = strpos($input, ',')) !== false) {
+    $input = substr($input, $pos + 1);
+    }
+    $data = base64_decode($input, true);
+    return $data !== false ? $data : null;
+}
+
 // ——— READ & VALIDATE JSON ———
 $json = file_get_contents('php://input');
 $data = json_decode($json, true);
@@ -31,14 +61,13 @@ if (!$data) {
 
 // ——— EXTRACT DATA ———
 $user_info         = json_decode($data['rpi_personal'] ?? '{}', true);
-$education_level   = $data['education'] ?? null;
-$main_course       = $data['school_name'] ?? null;
+$education_level   = json_decode($data['education'], true);
 $is_graduate       = $data['review_certs'] ?? null;
 $license_type      = $data['selected_work_year'] ?? null;
 $status            = $data['workplace'] ?? null;
-$proof = saveBase64File($data['uploadedProofData0'] ?? '');
-$medcerts = saveBase64File($data['uploadedProofData1'] ?? '');
-$certs = saveBase64File($data['uploadedProofData2'] ?? '');
+$proof = base64ToBlob($data['admin_uploaded_proof_data'] ?? '');
+$medcerts = base64ToBlob($data['admin_uploaded_med_data'] ?? '');
+$certs = base64ToBlob($data['uploadedProofs_proof'] ?? '');
 
 // Personal
 $firstName   = $user_info['firstName'] ?? null;
@@ -59,7 +88,7 @@ $gp = $user_info['g_phone'] ?? null;
 $gr = $user_info['guardian_relationship'] ?? null;
 
 // IDs
-$user_guardian_id = generateNumericId();
+$user_guardian_id = generateNumericId();    
 
 // Connect
 $conn = getOracleConnection();
@@ -73,6 +102,14 @@ oci_set_action($conn, "Registration Transaction");
 
 // BEGIN TRANSACTION
 $allGood = true;
+$lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
+$lob_certs = oci_new_descriptor($conn, OCI_D_LOB);
+$lob_med   = oci_new_descriptor($conn, OCI_D_LOB);
+
+// Write binary data to LOB
+$lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
+$lob_certs->writeTemporary($certsBlob, OCI_TEMP_BLOB);
+$lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
 
 // ——— 1. INSERT user_guardian ———
 $sql1 = "INSERT INTO user_guardian (
@@ -80,26 +117,26 @@ $sql1 = "INSERT INTO user_guardian (
     age, education, school,
     guardian_first_name, guardian_last_name, guardian_email,
     guardian_contact_number, relationship_to_user, created_at, updated_at,
-    address, types_of_ds, proof_of_membership, certificates, username
+    address, types_of_ds, proof_of_membership, certificates, username, med_certificates
 ) VALUES (
     :v0,'User',:v2,:v3,:v4,:v5,:v6,
     :v7,:v8,:v9,
     :v11,:v12,:v13,:v14,:v15,SYSDATE,SYSDATE,
-    :v16,:v17,:v18,:v19,:v20
+    :v16,:v17,:v18,:v19,:v20,:v21
 )";
 
 $stid1 = oci_parse($conn, $sql1);
+
+// ----- TEXT BINDS -----
 oci_bind_by_name($stid1, ':v0',  $user_guardian_id);
-// oci_bind_by_name($stid1, ':v1',  $status);
 oci_bind_by_name($stid1, ':v2',  $firstName);
 oci_bind_by_name($stid1, ':v3',  $lastName);
 oci_bind_by_name($stid1, ':v4',  $email);
 oci_bind_by_name($stid1, ':v5',  $phone);
 oci_bind_by_name($stid1, ':v6',  $password);
 oci_bind_by_name($stid1, ':v7',  $age);
-oci_bind_by_name($stid1, ':v8',  $education_level);
-oci_bind_by_name($stid1, ':v9',  $main_course);
-// oci_bind_by_name($stid1, ':v10', $is_graduate);
+oci_bind_by_name($stid1, ':v8',  $education_level['educationLevel']);
+oci_bind_by_name($stid1, ':v9',  $education_level['schoolName']);
 oci_bind_by_name($stid1, ':v11', $gf);
 oci_bind_by_name($stid1, ':v12', $gl);
 oci_bind_by_name($stid1, ':v13', $ge);
@@ -107,10 +144,14 @@ oci_bind_by_name($stid1, ':v14', $gp);
 oci_bind_by_name($stid1, ':v15', $gr);
 oci_bind_by_name($stid1, ':v16', $address);
 oci_bind_by_name($stid1, ':v17', $types_of_ds);
-oci_bind_by_name($stid1, ':v18', $proof);
-oci_bind_by_name($stid1, ':v19', $certs);
 oci_bind_by_name($stid1, ':v20', $username);
 
+// ----- BLOB BINDS -----
+oci_bind_by_name($stid1, ':v18', $lob_proof, -1, OCI_B_BLOB);
+oci_bind_by_name($stid1, ':v19', $lob_certs, -1, OCI_B_BLOB);
+oci_bind_by_name($stid1, ':v21', $lob_med,   -1, OCI_B_BLOB);
+
+// EXECUTE
 if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
     $e = oci_error($stid1);
     $allGood = false;

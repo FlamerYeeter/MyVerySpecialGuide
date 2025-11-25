@@ -20,7 +20,7 @@ if (!$conn) {
 
 $sql = "SELECT id, email, password, first_name, last_name
         FROM user_guardian
-        WHERE email = :email";
+        WHERE upper(email) = upper(:email)";
 
 $stid = oci_parse($conn, $sql);
 oci_bind_by_name($stid, ':email', $email);

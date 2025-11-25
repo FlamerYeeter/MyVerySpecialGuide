@@ -294,26 +294,24 @@
 
     // ✅ Save data to backend 
     const data = {
-      education: localStorage.getItem('education'),
+      education: localStorage.getItem('rpi_personal2'),
       job_experiences: localStorage.getItem('job_experiences'),
       review_certs: localStorage.getItem('review_certs'),
-      rpi_personal: localStorage.getItem('rpi_personal'),
+      rpi_personal: localStorage.getItem('rpi_personal1'),
       school_name: localStorage.getItem('school_name'),
       selected_work_experience: localStorage.getItem('selected_work_experience'),
       selected_work_year: localStorage.getItem('selected_work_year'),
-      support: localStorage.getItem('support'),
-      uploadedProofData0: localStorage.getItem('uploadedProofData0'),
-      uploadedProofData1: localStorage.getItem('uploadedProofData1'),
-      uploadedProofName0: localStorage.getItem('uploadedProofName0'),
-      uploadedProofName1: localStorage.getItem('uploadedProofName1'),
-      uploadedProofType0: localStorage.getItem('uploadedProofType0'),
-      uploadedProofType1: localStorage.getItem('uploadedProofType1'),
+      admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
+      admin_uploaded_proof_data: localStorage.getItem('admin_uploaded_proof_data'),
+      uploadedProofs_proof: localStorage.getItem('uploadedProofs_proof'),
       workplace: localStorage.getItem('workplace'),
       jobPreferences: localStorage.getItem('jobPreferences'),
       skills1_selected: localStorage.getItem('skills1_selected')
     };
 
-    fetch('public/db/registration-data.php', {
+    debugger;
+
+    fetch('db/registration-data.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
