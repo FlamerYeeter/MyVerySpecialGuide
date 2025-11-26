@@ -230,7 +230,7 @@
             <p class="text-[13px] text-gray-600 italic text-center mt-2">(Kaya ko matuto kapag may nagtuturo sa akin nang simple)</p>
         </div>
 
-        <!-- Other 
+        <!-- Other -->
         <div class="bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 shadow-md hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center skills-card"
             data-value="Other">
             <button type="button"
@@ -242,7 +242,7 @@
             <p class="text-[13px] text-gray-600 italic text-center mt-1">(Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)</p>
             <input id="skills_other_input" type="text" placeholder="Type your answer here"
                 class="w-full border border-gray-300 rounded-lg p-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-        </div>-->
+        </div>
     </div>
 
    
@@ -274,86 +274,226 @@
 }
 </style>
 
+<!-- Skills edit/save script -->
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-    const skillsModal = document.getElementById("editSkillsModal");
-    const skillsCards = document.querySelectorAll(".skills-card");
-    const hiddenInput = document.getElementById("skills_page1");
-    const editBtn = document.getElementById("rv4_change_skills_btn");
-    const closeBtn = document.getElementById("closeSkillsModal");
-    const saveBtn = document.getElementById("saveSkillsEdit");
-    const reviewList = document.getElementById("review_skills_list");
+  // consolidate and update: only use 'selected-card' class (remove any use of legacy 'selected' class)
+  const skillsModal = document.getElementById("editSkillsModal");
+  const skillsCards = Array.from(document.querySelectorAll(".skills-card, .selectable-card"));
+  const hiddenInput = document.getElementById("skills_page1");
+  const editBtn = document.getElementById("rv4_change_skills_btn");
+  const closeBtn = document.getElementById("closeSkillsModal");
+  const saveBtn = document.getElementById("saveSkillsEdit");
+  const reviewList = document.getElementById("review_skills_list");
 
-    function resetSelections() {
-        skillsCards.forEach(card => card.classList.remove("selected-card"));
+  const LS_KEYS = ['skills_page1','skills_page_1','skills1','skills','selected_skills','selectedSkills','skills_page','skills_page1_value','skills1_selected'];
+
+  const parseMaybeJson = (v) => {
+    if (v === null || v === undefined) return v;
+    if (Array.isArray(v) || typeof v === 'object') return v;
+    if (typeof v !== 'string') return v;
+    const s = v.trim();
+    if (!s) return '';
+    if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+      try { return JSON.parse(s); } catch(e){}
     }
+    return s;
+  };
 
-    function loadPreviousSelections() {
-        resetSelections();
-        let saved = JSON.parse(hiddenInput.value || "[]");
-        skillsCards.forEach(card => {
-            if (saved.includes(card.dataset.value)) card.classList.add("selected-card");
-        });
+  const normalizeArray = (v) => {
+    if (v === null || v === undefined) return [];
+    if (Array.isArray(v)) return v.map(x => typeof x === 'string' ? x.trim() : String(x||'')).filter(Boolean);
+    if (typeof v === 'object') {
+      try { return Object.values(v).map(x => String(x||'').trim()).filter(Boolean); } catch(e){ return []; }
     }
-
-    skillsCards.forEach(card => {
-        card.addEventListener("click", () => {
-            card.classList.toggle("selected-card");
-        });
-    });
-
-    editBtn.addEventListener("click", () => {
-    skillsModal.classList.remove("hidden");
-
-    // target the correct modal content div
-    const modalContent = skillsModal.querySelector(".rounded-3xl");
-
-    setTimeout(() => {
-        skillsModal.classList.remove("opacity-0");
-        if (modalContent) modalContent.classList.remove("scale-95");
-    }, 10);
-
-    loadPreviousSelections(); // <-- this will now always apply correctly
-});
-
-    function closeModal() {
-        skillsModal.classList.add("opacity-0");
-        skillsModal.querySelector("div").classList.add("scale-95");
-        setTimeout(() => skillsModal.classList.add("hidden"), 200);
+    if (typeof v === 'string') {
+      const s = v.trim();
+      if (!s) return [];
+      if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+        try { return normalizeArray(JSON.parse(s)); } catch(e){}
+      }
+      if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
+      return [s];
     }
-    closeBtn.addEventListener("click", closeModal);
+    return [];
+  };
 
-    function updateReviewSection(selected) {
-        reviewList.innerHTML = "";
-        if (!selected.length) {
-            reviewList.innerHTML = `<span class="text-gray-600">—</span>`;
-            return;
-        }
-        selected.forEach(skill => {
-            const badge = document.createElement("span");
-            badge.className = "px-3 py-1 bg-blue-100 text-blue-700 font-semibold rounded-xl flex items-center gap-2 shadow-sm";
-            badge.textContent = skill;
-            reviewList.appendChild(badge);
-        });
-    }
-
-    saveBtn.addEventListener("click", () => {
-        const selected = [];
-        skillsCards.forEach(card => {
-            if (card.classList.contains("selected-card")) selected.push(card.dataset.value);
-        });
-        hiddenInput.value = JSON.stringify(selected);
-        updateReviewSection(selected);
-        closeModal();
-    });
-
-    // Initialize review section
+  function getSavedSkills() {
     try {
-        const initialData = JSON.parse(hiddenInput.value || "[]");
-        updateReviewSection(initialData);
-    } catch (e) {
-        reviewList.innerHTML = `<span class="text-gray-600">—</span>`;
+      // 1) hidden input first (explicit)
+      if (hiddenInput && hiddenInput.value) {
+        const parsed = parseMaybeJson(hiddenInput.value);
+        const norm = normalizeArray(parsed);
+        if (norm.length) return norm;
+      }
+
+      // 2) localStorage keys
+      for (const k of LS_KEYS) {
+        try {
+          const raw = localStorage.getItem(k);
+          if (!raw) continue;
+          const parsed = parseMaybeJson(raw);
+          const norm = normalizeArray(parsed);
+          if (norm.length) return norm;
+        } catch(e){}
+      }
+
+      // 3) rpi_personal namespace (narrow to skills fields)
+      try {
+        const rpRaw = localStorage.getItem('rpi_personal');
+        if (rpRaw) {
+          const rp = parseMaybeJson(rpRaw) || rpRaw;
+          if (rp && typeof rp === 'object') {
+            const candidates = [];
+            if (rp.skills) candidates.push(rp.skills);
+            if (rp.selected_skills) candidates.push(rp.selected_skills);
+            if (rp.selectedSkills) candidates.push(rp.selectedSkills);
+            if (rp.skills_page1) candidates.push(rp.skills_page1);
+            for (const c of candidates) {
+              const norm = normalizeArray(c);
+              if (norm.length) return norm;
+            }
+          }
+        }
+      } catch(e){}
+
+      // 4) preloaded draft object
+      try {
+        const d = window.__mvsg_lastLoadedDraft;
+        if (d && typeof d === 'object') {
+          const candidates = [];
+          if (d.skills) candidates.push(d.skills);
+          if (d.selected_skills) candidates.push(d.selected_skills);
+          if (d.selectedSkills) candidates.push(d.selectedSkills);
+          if (d.skills_page1) candidates.push(d.skills_page1);
+          for (const c of candidates) {
+            const norm = normalizeArray(c);
+            if (norm.length) return norm;
+          }
+        }
+      } catch(e){}
+    } catch(e) {
+      console.debug("getSavedSkills error", e);
     }
+    return [];
+  }
+
+  function resetSelections() {
+    skillsCards.forEach(card => card.classList.remove("selected-card"));
+  }
+
+  function loadPreviousSelections() {
+    resetSelections();
+    const saved = getSavedSkills();
+    if (!saved || !saved.length) return;
+    const normSet = new Set(saved.map(s => String(s||'').trim().toLowerCase()));
+    skillsCards.forEach(card => {
+      const value = (card.dataset.value || '').trim();
+      const title = (card.querySelector('h3')?.textContent || '').trim();
+      if (value && normSet.has(value.toLowerCase())) card.classList.add("selected-card");
+      else if (title && normSet.has(title.toLowerCase())) card.classList.add("selected-card");
+    });
+  }
+
+  function updateReviewSection(selected) {
+    if (!reviewList) return;
+    reviewList.innerHTML = "";
+    if (!selected || !selected.length) {
+      reviewList.innerHTML = `<span class="text-gray-600">—</span>`;
+      return;
+    }
+    selected.forEach(skill => {
+      const span = document.createElement('span');
+      span.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
+      span.textContent = skill;
+      reviewList.appendChild(span);
+    });
+  }
+
+  // wire card click toggles (ONLY 'selected-card' now)
+  skillsCards.forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.toggle('selected-card');
+    });
+    card.addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); card.click(); }
+    });
+  });
+
+  // open modal and preselect
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      if (!skillsModal) return;
+      skillsModal.classList.remove('hidden');
+      setTimeout(() => {
+        skillsModal.classList.remove('opacity-0');
+        const modalContent = skillsModal.querySelector('.rounded-3xl');
+        if (modalContent) modalContent.classList.remove('scale-95');
+      }, 10);
+      loadPreviousSelections();
+    });
+  }
+
+  // close modal
+  function closeModal() {
+    if (!skillsModal) return;
+    skillsModal.classList.add('opacity-0');
+    const modalContent = skillsModal.querySelector('.rounded-3xl, div');
+    if (modalContent) modalContent.classList.add('scale-95');
+    setTimeout(() => {
+      skillsModal.classList.add('hidden');
+    }, 220);
+  }
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+  // save button inside modal
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const selected = skillsCards.filter(c => c.classList.contains('selected-card'))
+                                  .map(c => c.dataset.value || c.querySelector('h3')?.textContent || '').filter(Boolean);
+      if (hiddenInput) hiddenInput.value = JSON.stringify(selected);
+      updateReviewSection(selected);
+      closeModal();
+    });
+  }
+
+  // Initial populate of review area and ensure matching cards are marked
+  (function initialPopulate() {
+    let saved = getSavedSkills();
+    if (!saved || !saved.length) {
+      try {
+        if (hiddenInput && hiddenInput.value) saved = normalizeArray(parseMaybeJson(hiddenInput.value));
+      } catch(e){}
+    }
+    const uniq = [...new Set((saved||[]).map(x => String(x||'').trim()).filter(Boolean))];
+    updateReviewSection(uniq);
+    try {
+      const lcSet = new Set(uniq.map(u => u.toLowerCase()));
+      skillsCards.forEach(card => {
+        const title = (card.querySelector('h3')?.textContent || card.dataset.value || '').trim();
+        if (title && lcSet.has(title.toLowerCase())) card.classList.add('selected-card');
+        else card.classList.remove('selected-card');
+      });
+    } catch(e){ console.debug('mark cards failed', e); }
+  })();
+
+  // Ensure other scripts that might mark cards use 'selected-card' as well:
+  try {
+    // mark matching cards for any pre-rendered review list
+    if (reviewList) {
+      const spans = Array.from(reviewList.querySelectorAll('span')).map(s => (s.textContent||'').trim()).filter(Boolean);
+      const vals = spans.filter(v => v !== '—');
+      if (vals.length) {
+        const lc = new Set(vals.map(v => v.toLowerCase()));
+        skillsCards.forEach(card => {
+          const title = (card.querySelector('h3')?.textContent || card.dataset.value || '').trim();
+          if (title && lc.has(title.toLowerCase())) card.classList.add('selected-card');
+          else card.classList.remove('selected-card');
+        });
+      }
+    }
+  } catch(e){}
+
 });
 </script>
 

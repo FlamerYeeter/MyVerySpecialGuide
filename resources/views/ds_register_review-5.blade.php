@@ -145,14 +145,14 @@
                 Job Preferences Summary
             </h3>
 
-            <!-- Job Preference Image -->
+            <!-- Job Preference Image 
             <div id="review_jobprefs_img_container" class="mt-4 text-center" style="display:none;">
                 <div
                     class="inline-flex items-center justify-center w-40 h-40 bg-gray-50 rounded-xl shadow-md p-2 mx-auto">
                     <img id="review_jobprefs_img" src="" alt="Job preference image"
                         class="w-full h-full object-contain rounded-md" />
                 </div>
-            </div>
+            </div> -->
 
             <!-- Job Preference List -->
             <div id="review_jobprefs_list" class="flex flex-wrap gap-3 mt-6">
@@ -169,18 +169,28 @@
         </div>
 
         <!-- Job Preference Modal  -->
-<div id="jobPrefModal" class="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999] hidden">
-    <div class="bg-white w-[95%] max-w-6xl max-h-[90vh] rounded-2xl shadow-xl overflow-hidden flex flex-col">
+<div id="jobPrefModal"
+     class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex justify-center items-center 
+            z-[9999] transition-opacity duration-300 opacity-0">
+  <div class="bg-white rounded-3xl shadow-2xl p-6 sm:p-8 max-w-5xl w-[95%] max-h-[90vh] 
+            overflow-y-auto border border-gray-200 relative scale-95 transition-all duration-300">
 
-        <!-- Modal Header -->
-        <div class="p-5 border-b flex justify-between items-center">
-            <h2 class="text-2xl font-bold text-blue-700">Choose a Job You Prefer</h2>
-            <button onclick="closeJobPrefModal()" class="text-gray-600 hover:text-gray-900 text-3xl leading-none">&times;</button>
-        </div>
+    <!-- Header -->
+    <div class="items-center justify-between mb-4">
+      <h2 class="text-center text-1xl sm:text-2xl font-extrabold text-gray-800">Choose a Job You Prefer</h2>
+      <p class="text-center text-gray-500 italic mt-1">
+        (Pumili ng trabahong gusto mo)
+    </p>
+    </div>
+   
+    <!-- Yellow Note -->
+    <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-4 mt-6 text-center shadow-sm">
+        <p class="font-semibold text-yellow-900">You can choose more than one option</p>
+        <p class="text-yellow-800 italic text-sm">(Puwede kang pumili ng higit sa isa)</p>
+    </div>
 
         <!-- Scrollable Job Cards Grid -->
-        <div class="overflow-y-auto p-6">
-            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+             <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
 
                 <!-- Job 1 -->
                 <div class="bg-white p-4 rounded-xl shadow transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative jobpref-card"
@@ -192,7 +202,7 @@
                         data-tts-tl="Mananatili ka sa iyong assigned place upang mag-welcome ng mga dumarating na customer. Magiliw mo 
                         silang gagabayan sa mga lugar na hinahanap nila at tutulungan mahanap ang kanilang mga kailangan" aria-label="Play audio for Store Greeter/Customer Assistant">🔊</button>
                     <img src="image/job1.jpg" alt="store greeter" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Store Greeter / Customer Assistant</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Store Greeter / Customer Assistant</h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                         You stay in your assigned place with a warm smile, welcoming customers as they arrive. You kindly
                          assist them by guiding them to the areas they’re looking for and helping them find what they need.
@@ -213,7 +223,7 @@
                         data-tts-tl="Tutulong ka upang maging maganda at maayos tingnan ang store. Aayuisn mo ang mga products sa lalagyanan at tinitiyak mong 
                         maayos at nasa tamang pwesto ang mga ito." aria-label="Play audio for Store Work">🔊</button>
                     <img src="image/job2.jpg" alt="merchandising assistant" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Merchandising Assistant</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Merchandising Assistant</h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                       You will help keep the store looking nice. You arrange products on the shelves and make sure everything looks neat 
                       and in the right place.
@@ -232,7 +242,7 @@
                         data-tts-en="Stockroom Helper: You work in the stockroom where you sort items and fix boxes. You help prepare products before they go out to the store." 
                         data-tts-tl="Magtatrabaho ka sa stockroom kung saan inaayos mo ang mga gamit at mga kahon. Tinutulungan mong ihanda ang mga products bago ilagay sa store" aria-label="Play audio for Cleaning Work">🔊</button>
                     <img src="image/job3.jpg" alt="stockroom helper" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Stockroom Helper</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Stockroom Helper</h3>
                     <p class="text-sm mt-2 text-justify" style="text-align: justify; text-align-last: center;">
                         You work in the stockroom where you sort items and fix boxes. You help prepare products before they go out to the store.
                     </p>
@@ -250,13 +260,14 @@
                         so customers can easily use them." 
                         data-tts-tl="Maingat mong kinokolekta ang mga nagamit na basket at cart at ibinabalik ang mga ito sa tamang lugar. Inaayos mo rin ang mga ito nang maayos sa entrance para madaling magamit ng mga customer" aria-label="Play audio for Hospitality Work">🔊</button>
                     <img src="image/job4.jpg" alt="basket organizer" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Basket & Cart Organizer</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Basket & Cart Organizer</h3>
                     <p class="text-sm mt-2 text-justify" style="text-align: justify; text-align-last: center;">
                         You carefully collect the used baskets and carts and bring them back to their proper place. You arrange them neatly at the entrance 
                         so customers can easily use them.
                     </p>
                     <p class="text-[13px] text-gray-500 italic mt-2 text-center">
                         (Maingat mong kinokolekta ang mga nagamit na basket at cart at ibinabalik ang mga ito sa tamang lugar. Inaayos mo rin ang mga ito nang maayos sa entrance para madaling magamit ng mga customer)
+                    </p>
                 </div>
 
                 <!-- Job 5 -->
@@ -267,7 +278,7 @@
                         data-tts-en="Store Utility / Cleaner: You help keep the store clean. You wipe tables, organize small areas, and make sure paths are clear and safe for customers." 
                         data-tts-tl="Tumutulong kang panatilihing malinis ang store. Pinupunasan mo ang mga mesa at tinitiyak na malinis at ligtas ang daanan para sa mga customer" aria-label="Play audio for Food Service Work">🔊</button>
                     <img src="image/job5.jpg" alt="store cleaner" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Store Utility / Cleaner</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Store Utility / Cleaner</h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                         You help keep the store clean. You wipe tables, organize small areas, and make sure paths are clear and safe for customers.
                     </p>
@@ -284,7 +295,7 @@
                         data-tts-en="Packaging Support / Bagging Assistant:You help customers by placing their items gently and neatly into bags at the cashier area." 
                         data-tts-tl="Tutuulungan mo ang customer sa cashier sa paglalagay ng kanilang mga binili sa bag nang maingat at maayos" aria-label="Play audio for Packing Packages Work">🔊</button>
                     <img src="image/job6.jpg" alt="packing support" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Packaging Support / Bagging Assistant</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Packaging Support / Bagging Assistant</h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                         You help customers by placing their items gently and neatly into bags at the cashier area.
                     </p>
@@ -303,7 +314,7 @@
                         data-tts-tl="Tutulong ka sa pag-aayos ng damit gamit ang simpleng pananahi, tulad ng pagpapaikli ng pantalon o pag-ayos ng maliliit na bahagi. Gumagamit ka ng simpleng gamit pangtahi 
                         at tinitiyak na handa ang damit para sa mga customer" aria-label="Play audio for Creative Work">🔊</button>
                     <img src="image/job7.jpg" alt="tailoring assistant" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Alteration/Tailoring Assistant (for a clothing line)</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Alteration/Tailoring Assistant (for a clothing line)</h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                        You help fix clothes by doing simple sewing tasks, like shortening pants or repairing small parts. You use basic
                         sewing tools and make sure the clothes are ready for customers.
@@ -322,7 +333,7 @@
                         data-tts-en="Menu & Order Assistant:You help show the menu, guide customers, and assist in taking their orders together with a partner crew." 
                         data-tts-tl="Tutulong mo ipakita ang menu, gabayan ang customers, at kumuha ng kanilang order kasama ang partner crew" aria-label="Play audio for Creative Work">🔊</button>
                     <img src="image/job8.jpg" alt="order assistant" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Menu & Order Assistant</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Menu & Order Assistant</h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                        You help show the menu, guide customers, and assist in taking their orders together with a partner crew. 
                     </p>
@@ -339,7 +350,7 @@
                         data-tts-en="Food Runner / Server Assistant:You bring food to the customers' tables safely and politely. " 
                         data-tts-tl="Ikaw ay magdadala ng pagkain sa mesa ng customers nang maayos at magalang" aria-label="Play audio for Creative Work">🔊</button>
                     <img src="image/job9.jpg" alt="server assistant" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Food Runner / Server Assistant </h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Food Runner / Server Assistant </h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                        You bring food to the customers' tables safely and politely. 
                     </p>
@@ -356,7 +367,7 @@
                         data-tts-en="Table Setter / Dining Area Assistant:You set up tables, wipe surfaces, and help keep the dining area clean." 
                         data-tts-tl="Aayusin mo ang mesa, lilinisin ang ibabaw nito, at tutulong panatilihing malinis ang dining area" aria-label="Play audio for Creative Work">🔊</button>
                     <img src="image/job10.jpg" alt="dining assistant" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Table Setter / Dining Area Assistant </h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Table Setter / Dining Area Assistant </h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                        You set up tables, wipe surfaces, and help keep the dining area clean. 
                     </p>
@@ -373,7 +384,7 @@
                         data-tts-en="Kitchen Helper:You help with simple kitchen tasks like sorting utensils or preparing food." 
                         data-tts-tl="Tutulong ka sa mga simpleng gawain sa kusina tulad ng pagsasaayos ng utensils o paghahanda ng maliliit na pagkain" aria-label="Play audio for Creative Work">🔊</button>
                     <img src="image/job11.jpg" alt="kitchen helper" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Kitchen Helper</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Kitchen Helper</h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                        You help with simple kitchen tasks like sorting utensils or preparing food.  
                     </p>
@@ -390,7 +401,7 @@
                         data-tts-en="Housekeeping Assistant:You help clean rooms, make beds, fold towels, and organize items." 
                         data-tts-tl="Tututulong ka maglinis ng kwarto, mag-ayos ng kama, magtupi ng tuwalya, at mag-ayos ng mga gamit" aria-label="Play audio for Creative Work">🔊</button>
                     <img src="image/job12.jpg" alt="housekeeping assistant" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Housekeeping Assistant </h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Housekeeping Assistant </h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                        You help clean rooms, make beds, fold towels, and organize items.   
                     </p>
@@ -407,7 +418,7 @@
                         data-tts-en="Concierge / Front Desk Helper:You help welcome guests, smile, greet them, and guide them to where they need to go. " 
                         data-tts-tl="Tututulong ka mag-welcome ng guests, bumati, ngumiti, at ituro sila sa tamang lugar kung saan sila dadaan" aria-label="Play audio for Creative Work">🔊</button>
                     <img src="image/job13.jpg" alt="concierge" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center">Concierge / Front Desk Helper </h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center">Concierge / Front Desk Helper </h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                        You help welcome guests, smile, greet them, and guide them to where they need to go.  
                     </p>
@@ -424,7 +435,7 @@
                         data-tts-en=" Sales & Promotion Assistant:You give out flyers, help with simple promotions, or assist in arranging display items." 
                         data-tts-tl="Ikaw ay mamimigay ng flyers, tutulong sa simpleng promotions, o tututulong mag-ayos ng mga display" aria-label="Play audio for Creative Work">🔊</button>
                     <img src="image/job14.jpg" alt="sales" class="w-full rounded-md mb-4" />
-                    <h3 class="text-blue-600 font-semibold text-center"> Sales & Promotion Assistant</h3>
+                    <h3 class="text-blue-700 font-bold text-lg mb-2 text-center"> Sales & Promotion Assistant</h3>
                     <p class="text-sm mt-2" style="text-align: justify; text-align-last: center;">
                        You give out flyers, help with simple promotions, or assist in arranging display items.  
                     </p>
@@ -432,88 +443,282 @@
                         (Ikaw ay mamimigay ng flyers, tutulong sa simpleng promotions, o tututulong mag-ayos ng mga display)
                     </p>
                 </div>
-
             </div>
-        </div>
+
+            <!-- Buttons -->
+    <div class="flex justify-center gap-6 mt-10">
+        <button id="cancelJobPrefEdit"
+                class="px-6 py-3 bg-red-600 text-white font-semibold rounded-xl 
+                       hover:bg-red-700 transition shadow-sm">
+            Cancel
+        </button>
+
+        <button id="saveJobPrefEdit"
+                class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-xl 
+                       hover:bg-blue-700 transition shadow-sm">
+            Save Changes
+        </button>
+    </div>
+</div>
+</div>
+
+<!-- Skills Card Style -->
+<style>
+.selected-card {
+    border: 3px solid #1E40AF !important;
+    background-color: #DBEAFE !important;
+}
+</style>
 
         
-        <script>
-// OPEN MODAL
-document.getElementById("rv5_change_jobprefs_btn").addEventListener("click", function () {
-    const modal = document.getElementById("jobpref_modal");
-    const container = document.getElementById("jobpref_modal_container");
+ <script> 
+document.addEventListener("DOMContentLoaded", () => {
+  const modal = document.getElementById("jobPrefModal");
+  const editBtn = document.getElementById("rv5_change_jobprefs_btn");
+  const closeBtn = document.getElementById("closeJobPrefModalBtn");
+  const cancelBtn = document.getElementById("cancelJobPrefEdit");
+  const saveBtn = document.getElementById("saveJobPrefEdit");
+  const cards = Array.from(document.querySelectorAll(".jobpref-card, .selectable-card"));
+  const reviewList = document.getElementById("review_jobprefs_list");
+  const imgContainer = document.getElementById("review_jobprefs_img_container");
+  const imgPreview = document.getElementById("review_jobprefs_img");
+  const hiddenInput = document.getElementById("jobpref1");
+  const STORAGE_KEYS = ['jobPreferences','jobpref1','jobpref','jobprefs','job_preferences'];
 
-    container.innerHTML = ""; // Clear old contents
-
-    // CLONE ALL JOB OPTION CARDS
-    document.querySelectorAll(".jobpref-card").forEach(originalCard => {
-        const clone = originalCard.cloneNode(true);
-
-        // Clean hover classes (modal uses different style)
-        clone.classList.remove("hover:bg-blue-100");
-        clone.classList.add("cursor-pointer");
-
-        // Modal version uses dataset value for selection
-        clone.onclick = () => toggleJobPref1Choice(clone, clone.dataset.value);
-
-        container.appendChild(clone);
-    });
-
-    modal.classList.remove("hidden");
-});
-
-// CLOSE MODAL
-function closeJobPrefModal() {
-    document.getElementById("jobpref_modal").classList.add("hidden");
-}
-
-// UPDATE REVIEW SECTION
-function updateJobPrefReview(selectedJobs) {
-    const listContainer = document.getElementById("review_jobprefs_list");
-    const imgContainer = document.getElementById("review_jobprefs_img_container");
-    const img = document.getElementById("review_jobprefs_img");
-
-    listContainer.innerHTML = "";
-
-    if (selectedJobs.length === 0) {
-        imgContainer.style.display = "none";
-        return;
+  const parseMaybeJson = v => {
+    if (v === null || v === undefined) return v;
+    if (Array.isArray(v) || typeof v === 'object') return v;
+    if (typeof v !== 'string') return v;
+    const s = v.trim();
+    if (!s) return '';
+    if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+      try { return JSON.parse(s); } catch(e){}
     }
+    return s;
+  };
 
-    // Show image of the FIRST selected job
-    const firstCard = document.querySelector(`.jobpref-card[data-value="${selectedJobs[0]}"] img`);
-    if (firstCard) {
-        img.src = firstCard.src;
-        imgContainer.style.display = "block";
+  const normalizeArray = v => {
+    if (v === null || v === undefined) return [];
+    if (Array.isArray(v)) return v.map(x => typeof x === 'string' ? x.trim() : String(x||'')).filter(Boolean);
+    if (typeof v === 'object') {
+      try { return Object.values(v).map(x => String(x||'').trim()).filter(Boolean); } catch(e){ return []; }
     }
+    if (typeof v === 'string') {
+      const s = v.trim();
+      if (!s) return [];
+      if ((s.startsWith('[') && s.endsWith(']')) || (s.startsWith('{') && s.endsWith('}'))) {
+        try { return normalizeArray(JSON.parse(s)); } catch(e){}
+      }
+      if (s.includes(',')) return s.split(',').map(x=>x.trim()).filter(Boolean);
+      return [s];
+    }
+    return [];
+  };
 
-    // Create job pills
-    selectedJobs.forEach(job => {
-        const pill = document.createElement("span");
-        pill.textContent = job;
-        pill.className =
-            "bg-blue-100 text-blue-700 px-4 py-2 rounded-full shadow font-medium text-sm";
-        listContainer.appendChild(pill);
+  function getSavedJobPrefs() {
+    try {
+      if (hiddenInput && hiddenInput.value) {
+        const parsed = parseMaybeJson(hiddenInput.value);
+        const norm = normalizeArray(parsed);
+        if (norm.length) return norm;
+      }
+      for (const k of STORAGE_KEYS) {
+        try {
+          const raw = localStorage.getItem(k);
+          if (!raw) continue;
+          const parsed = parseMaybeJson(raw);
+          const norm = normalizeArray(parsed);
+          if (norm.length) return norm;
+        } catch(e){}
+      }
+      try {
+        const rpRaw = localStorage.getItem('rpi_personal') || localStorage.getItem('registrationDraft') || localStorage.getItem('registerDraft');
+        if (rpRaw) {
+          const rp = parseMaybeJson(rpRaw) || rpRaw;
+          if (rp && typeof rp === 'object') {
+            const candidates = [];
+            if (rp.jobPreferences) candidates.push(rp.jobPreferences);
+            if (rp.jobpref1) candidates.push(rp.jobpref1);
+            if (rp.jobpref) candidates.push(rp.jobpref);
+            for (const c of candidates) {
+              const norm = normalizeArray(c);
+              if (norm.length) return norm;
+            }
+          }
+        }
+      } catch(e){}
+      try {
+        const d = window.__mvsg_lastLoadedDraft || window.registrationDraft || window.__REGISTRATION_DRAFT__;
+        if (d && typeof d === 'object') {
+          const candidates = [];
+          if (d.jobPreferences) candidates.push(d.jobPreferences);
+          if (d.jobpref1) candidates.push(d.jobpref1);
+          if (d.jobpref) candidates.push(d.jobpref);
+          for (const c of candidates) {
+            const norm = normalizeArray(c);
+            if (norm.length) return norm;
+          }
+        }
+      } catch(e){}
+    } catch(e){ console.debug('getSavedJobPrefs error', e); }
+    return [];
+  }
+
+  function resetSelections() {
+    cards.forEach(card => {
+      card.classList.remove("selected-card","selected","ring","ring-blue-500","scale-[1.02]");
+      card.setAttribute('aria-pressed', 'false');
     });
-}
+  }
 
-// ARRAY for tracking selections
-const selectedJobPrefs = [];
-
-// SELECTION HANDLER
-function toggleJobPref1Choice(card, value) {
-    const index = selectedJobPrefs.indexOf(value);
-
-    if (index === -1) {
-        selectedJobPrefs.push(value);
-        card.classList.add("ring", "ring-blue-500", "scale-[1.02]");
+  function setPreviewImageFor(value) {
+    if (!imgPreview || !imgContainer) return;
+    const selector = `.jobpref-card[data-value="${CSS && CSS.escape ? CSS.escape(value) : value}"] img`;
+    const firstImg = document.querySelector(selector) || document.querySelector(`.jobpref-card img`);
+    if (firstImg && firstImg.src) {
+      imgPreview.src = firstImg.src;
+      imgContainer.style.display = 'block';
     } else {
-        selectedJobPrefs.splice(index, 1);
-        card.classList.remove("ring", "ring-blue-500", "scale-[1.02]");
+      imgContainer.style.display = 'none';
+    }
+  }
+
+  function updateReviewSection(selected) {
+    if (!reviewList) return;
+    reviewList.innerHTML = "";
+    const uniq = [...new Set((selected||[]).map(s => String(s||'').trim()).filter(Boolean))];
+    if (!uniq.length) {
+      reviewList.innerHTML = `<span class="text-gray-600">—</span>`;
+      if (imgContainer) imgContainer.style.display = 'none';
+    } else {
+      uniq.forEach(item => {
+        const span = document.createElement('span');
+        span.className = 'bg-blue-100 text-blue-700 px-4 py-2 rounded-xl shadow font-medium text-sm';
+        span.textContent = item;
+        reviewList.appendChild(span);
+      });
+      setPreviewImageFor(uniq[0]);
     }
 
-    updateJobPrefReview(selectedJobPrefs);
-}
+    try {
+      const arr = uniq.length ? JSON.stringify(uniq) : '';
+      if (arr) {
+        localStorage.setItem('jobPreferences', arr);
+        localStorage.setItem('jobpref1', arr);
+      } else {
+        STORAGE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
+      }
+      if (hiddenInput) hiddenInput.value = uniq.length ? JSON.stringify(uniq) : '';
+      try { window.dispatchEvent(new CustomEvent('mvsg:jobprefsChanged', { detail: { values: uniq } })); } catch(e){}
+    } catch(e){ console.debug('persist jobprefs failed', e); }
+  }
+
+  // card toggle (ignore tts button clicks)
+  function cardToggleHandler(e) {
+    if (e.target && e.target.classList && e.target.classList.contains('tts-btn')) return;
+    const card = this;
+    card.classList.toggle('selected-card');
+    const pressed = card.classList.contains('selected-card');
+    card.setAttribute('aria-pressed', pressed ? 'true' : 'false');
+
+    const selected = Array.from(cards.filter(c => c.classList.contains('selected-card')))
+                          .map(c => (c.dataset.value || c.querySelector('h3')?.textContent || '').trim())
+                          .filter(Boolean);
+    updateReviewSection(selected);
+  }
+
+  cards.forEach(card => {
+    card.setAttribute('role','button');
+    card.tabIndex = 0;
+    card.setAttribute('aria-pressed', card.classList.contains('selected-card') ? 'true' : 'false');
+    card.addEventListener('click', cardToggleHandler);
+    card.addEventListener('keydown', ev => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); card.click(); } });
+  });
+
+  function loadPreviousSelections() {
+    resetSelections();
+    const saved = getSavedJobPrefs();
+    if (!saved || !saved.length) return updateReviewSection([]);
+    const norm = saved.map(s => String(s||'').trim());
+    const lcSet = new Set(norm.map(x => x.toLowerCase()));
+    cards.forEach(card => {
+      const value = (card.dataset.value || '').trim();
+      const title = (card.querySelector('h3')?.textContent || '').trim();
+      if ((value && lcSet.has(value.toLowerCase())) || (title && lcSet.has(title.toLowerCase()))) {
+        card.classList.add('selected-card');
+        card.setAttribute('aria-pressed','true');
+      }
+    });
+    updateReviewSection(norm);
+  }
+
+  // open modal
+  if (editBtn) {
+    editBtn.addEventListener('click', () => {
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      document.documentElement.style.overflow = 'hidden';
+      setTimeout(() => modal.classList.remove('opacity-0'), 10);
+      loadPreviousSelections();
+      const focusTarget = modal.querySelector('input, button, textarea, [role="button"]');
+      if (focusTarget) focusTarget.focus();
+    });
+  }
+
+  // close modal
+  function closeModalLocal() {
+    if (!modal) return;
+    modal.classList.add('opacity-0');
+    setTimeout(() => modal.classList.add('hidden'), 180);
+    document.documentElement.style.overflow = '';
+  }
+  // hook close UI
+  if (closeBtn) closeBtn.addEventListener('click', closeModalLocal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModalLocal);
+  // preserve global name used by inline handlers
+  window.closeJobPrefModal = closeModalLocal;
+
+  // save changes
+  if (saveBtn) {
+    saveBtn.addEventListener('click', () => {
+      const selected = Array.from(cards.filter(c => c.classList.contains('selected-card')))
+                            .map(c => (c.dataset.value || c.querySelector('h3')?.textContent || '').trim())
+                            .filter(Boolean);
+      if (hiddenInput) hiddenInput.value = JSON.stringify(selected);
+      updateReviewSection(selected);
+      closeModalLocal();
+    });
+  }
+
+  // initial populate on load
+  (function initialPopulate() {
+    let saved = getSavedJobPrefs();
+    if (!saved || !saved.length) {
+      try { if (hiddenInput && hiddenInput.value) saved = normalizeArray(parseMaybeJson(hiddenInput.value)); } catch(e){}
+    }
+    const uniq = [...new Set((saved||[]).map(x => String(x||'').trim()).filter(Boolean))];
+    updateReviewSection(uniq);
+    try {
+      const lcSet = new Set(uniq.map(u => u.toLowerCase()));
+      cards.forEach(card => {
+        const title = (card.querySelector('h3')?.textContent || card.dataset.value || '').trim();
+        if (title && lcSet.has(title.toLowerCase())) card.classList.add('selected-card');
+        else card.classList.remove('selected-card');
+      });
+    } catch(e){ console.debug('initial mark failed', e); }
+  })();
+
+  // sync on storage changes
+  window.addEventListener('storage', (ev) => {
+    const keys = [...STORAGE_KEYS, 'rpi_personal','registrationDraft','registerDraft'];
+    if (!ev.key || keys.includes(ev.key)) {
+      setTimeout(() => {
+        try { const saved = getSavedJobPrefs(); updateReviewSection(saved); } catch(e){/*ignore*/ }
+      }, 30);
+    }
+  });
+
+});
 </script>
 
 
