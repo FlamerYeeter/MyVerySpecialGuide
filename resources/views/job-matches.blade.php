@@ -154,10 +154,10 @@
                 <!-- Search Bar -->
                 <div class="relative w-full sm:col-span-2 md:col-span-3">
                 <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Search Job Title</label>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by job title (e.g. Sales Assistant, Barista)"
-                   class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 
-                   text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 
-                   focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200"/>
+                <input id="searchJobTitle" type="text" name="search" value="{{ request('search') }}" placeholder="Search by job title (e.g. Sales Assistant, Barista)"
+                class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 
+                text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 
+                focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200"/>
 
                 <svg xmlns="http://www.w3.org/2000/svg"
                 class="w-7 h-7 text-blue-600 absolute right-6 top-[62%] transform -translate-y-1/2 pointer-events-none"
@@ -2072,4 +2072,86 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 }
             })();
         </script>
+<script>
+(function(){
+  // Lightweight client-side search for job listings
+  function qs(sel){ return Array.from(document.querySelectorAll(sel || '')); }
+  function getCandidates(){
+    const nodes = [];
+    qs('#job-container > div').forEach(n=>nodes.push(n));
+    qs('#client-job-list > div').forEach(n=>nodes.push(n));
+    qs('.job-card').forEach(n=>nodes.push(n));
+    qs('[data-job-id]').forEach(n=>nodes.push(n));
+    return Array.from(new Set(nodes));
+  }
+
+  function normalizeText(node){
+    try {
+      const title = node.dataset && (node.dataset.title || node.dataset.jobTitle) ? (node.dataset.title || node.dataset.jobTitle) : '';
+      const company = node.dataset && (node.dataset.company) ? node.dataset.company : '';
+      const desc = node.dataset && (node.dataset.description) ? node.dataset.description : '';
+      const fallback = node.innerText || node.textContent || '';
+      return (title + ' ' + company + ' ' + desc + ' ' + fallback).toLowerCase();
+    } catch(e){
+      return (node.innerText || node.textContent || '').toLowerCase();
+    }
+  }
+
+  function applySearch(term){
+    const t = String(term || '').trim().toLowerCase();
+    const candidates = getCandidates();
+    let visible = 0;
+    candidates.forEach(node=>{
+      if(!node) return;
+      const hay = normalizeText(node);
+      const ok = t === '' ? true : hay.indexOf(t) !== -1;
+      node.style.display = ok ? '' : 'none';
+      if(ok) visible++;
+    });
+
+    const countEl = document.getElementById('all-matches');
+    if(countEl){
+      const total = getCandidates().length || 0;
+      try { countEl.textContent = `All Matches (${visible} / ${total})`; } catch(e){}
+    }
+    return visible;
+  }
+
+  function debounce(fn, ms){ let t; return function(...a){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,a), ms); }; }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    // CORRECT selector: use the input id added in the template
+    const input = document.getElementById('searchJobTitle');
+    if(!input) return;
+
+    // Prevent the native form submit (Enter) and run client-side filter instead
+    const form = input.closest('form');
+    if(form){
+      form.addEventListener('submit', (ev)=>{
+        ev.preventDefault();
+        applySearch(input.value);
+      });
+    }
+
+    // Debounced live filter while typing
+    const handler = debounce(()=>applySearch(input.value), 160);
+    input.addEventListener('input', handler);
+
+    // Also handle Enter explicitly (prevents submit in some browsers)
+    input.addEventListener('keydown', (e)=>{
+      if(e.key === 'Enter'){
+        e.preventDefault();
+        applySearch(input.value);
+      }
+    });
+
+    // initial run if URL contains search param
+    const urlQ = new URLSearchParams(window.location.search || '').get('search') || '';
+    if(urlQ && urlQ.trim().length) {
+      input.value = urlQ;
+      applySearch(urlQ);
+    }
+  });
+})();
+</script>
     @endsection
