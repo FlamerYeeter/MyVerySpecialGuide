@@ -754,7 +754,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="Star icon" class="w-7 h-7" />
 
                 <!-- Text -->
-                <span>All Matches ()</span>
+                <span id='all-matches'>All Matches (🔃)</span>
             </div>
     </section>
 
@@ -768,9 +768,9 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
       <div id="job-container" class="space-y-10"></div>
         <script>
 
-    const data = {
-      user_id: localStorage.getItem('user_id')
-    };
+        const data = {
+        user_id: localStorage.getItem('user_id')
+        };
 
         fetch('/db/get-jobs.php', {
             method: 'POST',
@@ -784,10 +784,14 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 '<p class="text-center text-3xl text-gray-600">No job postings available at the moment.</p>';
             return;
             }
-
             const container = document.getElementById('job-container');
+            const count_matches = document.getElementById('all-matches');
+
+            // Update the total count first
+            count_matches.innerHTML = 'All Matches (' + result.jobs.length + ')';
 
             result.jobs.forEach(job => {
+            
             // Calculate progress barS width
             const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
 

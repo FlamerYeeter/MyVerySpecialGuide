@@ -21,7 +21,8 @@ if (!$conn) {
 $user_id = $data['user_id'];
 
 $sql = "
-(
+SELECT *
+FROM (
     SELECT 
         jp.ID,
         jp.COMPANY_NAME,
@@ -30,37 +31,50 @@ $sql = "
         jp.ADDRESS,
         jp.JOB_TYPE,
         jp.EMPLOYEE_CAPACITY,
-        1 AS PRIORITY,
-        jp.JOB_POST_DATE
-    FROM JOB_POSTINGS jp
-    INNER JOIN JOB_PROFILE JPR
-        ON JPR.JOB_POSTING_ID = jp.ID
-    INNER JOIN USER_PROFILE UP
-        ON UP.VALUE = JPR.VALUE
-    INNER JOIN USER_GUARDIAN UG
-        ON UG.ID = UP.GUARDIAN_ID
-    WHERE UG.ID = :user_id
+        PRIORITY,
+        jp.JOB_POST_DATE,
+        ROW_NUMBER() OVER (PARTITION BY jp.ID ORDER BY PRIORITY) AS rn
+    FROM (
+        -- Priority 1: profile match
+        SELECT 
+            jp.ID,
+            jp.COMPANY_NAME,
+            jp.JOB_ROLE,
+            jp.JOB_DESCRIPTION,
+            jp.ADDRESS,
+            jp.JOB_TYPE,
+            jp.EMPLOYEE_CAPACITY,
+            1 AS PRIORITY,
+            jp.JOB_POST_DATE
+        FROM JOB_POSTINGS jp
+        INNER JOIN JOB_PROFILE JPR
+            ON JPR.JOB_POSTING_ID = jp.ID
+        INNER JOIN USER_PROFILE UP
+            ON UP.VALUE = JPR.VALUE
+        INNER JOIN USER_GUARDIAN UG
+            ON UG.ID = UP.GUARDIAN_ID
+        WHERE UG.ID = :user_id
+
+        UNION ALL
+
+        -- Priority 2: address match only
+        SELECT 
+            jp.ID,
+            jp.COMPANY_NAME,
+            jp.JOB_ROLE,
+            jp.JOB_DESCRIPTION,
+            jp.ADDRESS,
+            jp.JOB_TYPE,
+            jp.EMPLOYEE_CAPACITY,
+            2 AS PRIORITY,
+            jp.JOB_POST_DATE
+        FROM JOB_POSTINGS jp
+        INNER JOIN USER_GUARDIAN UG
+            ON UG.ADDRESS = jp.ADDRESS
+        WHERE UG.ID = :user_id
+    ) jp
 )
-
-UNION
-
-(
-    SELECT 
-        jp.ID,
-        jp.COMPANY_NAME,
-        jp.JOB_ROLE,
-        jp.JOB_DESCRIPTION,
-        jp.ADDRESS,
-        jp.JOB_TYPE,
-        jp.EMPLOYEE_CAPACITY,
-        2 AS PRIORITY,
-        jp.JOB_POST_DATE
-    FROM JOB_POSTINGS jp
-    INNER JOIN USER_GUARDIAN UG
-        ON UG.ADDRESS = jp.ADDRESS
-    WHERE UG.ID = :user_id
-)
-
+WHERE rn = 1
 ORDER BY PRIORITY, JOB_POST_DATE DESC
 
 ";
