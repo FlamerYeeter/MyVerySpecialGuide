@@ -767,7 +767,16 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
        <!--Job Card -->
       <div id="job-container" class="space-y-10"></div>
         <script>
-        fetch('/db/get-jobs.php')
+
+    const data = {
+      user_id: localStorage.getItem('user_id')
+    };
+
+        fetch('/db/get-jobs.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
         .then(response => response.json())
         .then(result => {
             if (!result.success || !result.jobs.length) {
