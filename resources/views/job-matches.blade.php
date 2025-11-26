@@ -150,6 +150,22 @@
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200"
                     />
                 </div>
+
+                <!-- Search Bar -->
+                <div class="relative w-full sm:col-span-2 md:col-span-3">
+                <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Search Job Title</label>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search by job title (e.g. Sales Assistant, Barista)"
+                   class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 
+                   text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 
+                   focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200"/>
+
+                <svg xmlns="http://www.w3.org/2000/svg"
+                class="w-7 h-7 text-blue-600 absolute right-6 top-[62%] transform -translate-y-1/2 pointer-events-none"
+                fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z" />
+                </svg>
+            </div>
+
             </div>
         </form>
 
@@ -919,19 +935,12 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     </div>
 
                     <div>
-                        <p class="text-xl text-gray-900 font-semibold leading-snug">
-                            The <span class="text-[#2563EB] font-bold">“Apply”</span> button will be available
-                            <span class="text-[#2563EB] font-bold">after your therapist confirms</span> that you are ready
-                            and fit for work.
+                         <p class="text-xl text-gray-900 font-semibold leading-snug">
+                            Click the <span class="text-[#55BEBB] font-bold">“Apply”</span> button to apply for 
+                            the job.
                         </p>
                         <p class="text-base text-gray-700 italic mt-2">
-                            (Magiging available lamang ang <span class="font-semibold text-[#2563EB]">“Apply”</span> button
-                            kapag nakumpirma ng iyong therapist na ikaw ay handa na at akma sa trabaho.)
-                        </p>
-                        <p class="text-lg text-gray-800 mt-3 leading-relaxed">
-                            This helps make sure that you apply only for jobs that match your readiness, comfort, and
-                            abilities.
-                        </p>
+                            (Pindutin ang <span class="font-semibold text-[#55BEBB]">“Apply”</span> upang mag apply sa trabaho.)
                     </div>
                 </div>
             </div>
