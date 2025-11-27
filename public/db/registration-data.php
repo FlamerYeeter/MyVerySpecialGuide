@@ -201,7 +201,7 @@ if ($allGood) {
 
     foreach ($work_type as $v) insertGuardianDetail($conn, $user_guardian_id, 'work_experience', $v);
     foreach ($skills1_selected as $v) insertGuardianDetail($conn, $user_guardian_id, 'skills', $v);
-    foreach ($job_category as $v) insertGuardianDetail($conn, $user_guardian_id, 'job_category', $v);
+    foreach ($job_category as $v) insertGuardianDetail($conn, $user_guardian_id, 'job_preference', $v);
     foreach ($workplace as $v) insertGuardianDetail($conn, $user_guardian_id, 'workplace', $v);
 }
 
