@@ -143,54 +143,88 @@
 
 
     <!-- Job Cards -->
-    <div class="max-w-4xl mx-auto mt-8 px-4 space-y-8">
-        @if (empty($savedJobs))
-            <div class="bg-yellow-50 border border-yellow-200 rounded p-6 text-center text-gray-600">You have no saved jobs
-                yet.</div>
-        @else
-            @foreach ($savedJobs as $job)
-                @php
-                    // JobCsvParser returns lowercase header keys; support both shapes
-                    $title = $job['title'] ?? ($job['job_title'] ?? ($job['job_id'] ?? 'Untitled Job'));
-                    $company = $job['company'] ?? ($job['company_name'] ?? '');
-                    $location = $job['location'] ?? '';
-                    $description =
-                        $job['description'] ??
-                        ($job['job_description'] ?? ($job['raw']['job_description'] ?? '' ?? ''));
-                    $jobId = $job['job_id'] ?? (($job['job_id'] = $job['row_index'] ?? null) ?? ($job['job_id'] ?? ''));
-                @endphp
-                <div class="border border-gray-300 rounded-lg p-6 flex justify-between items-start shadow-sm">
-                    <div>
-                        <h3 class="font-semibold text-lg">{{ $title }}</h3>
-                        @if ($company)
-                            <p class="text-gray-600 text-sm">{{ $company }}</p>
-                        @endif
-                        @if ($location)
-                            <p class="text-gray-500 text-sm mt-1">{{ $location }}</p>
-                        @endif
+    <div id="saved-jobs-list" class="max-w-6xl mx-auto mt-8 px-4 space-y-8">
+        <p class="text-center text-gray-600">Loading saved jobs…</p>
+    </div>
 
-                        <p class="text-sm text-gray-700 mt-3">{{ Str::limit(strip_tags($description), 220) }}</p>
-                    </div>
-
-                    <div class="flex flex-col items-end space-y-4">
-                        <img src="{{ asset('image/jobexp3.png') }}" alt="logo" class="w-20 h-20 object-contain">
-                        <div class="flex space-x-2">
-                            <a href="{{ route('job.details', ['job_id' => $jobId]) }}"
-                                class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600 transition">View
-                                Details</a>
-                            <form method="POST" action="{{ route('my.job.applications.remove') }}" class="inline-block">
-                                @csrf
-                                <input type="hidden" name="job_id" value="{{ $jobId }}">
-                                <button type="submit"
-                                    class="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium">Remove</button>
-                            </form>
+    <script>
+    (function(){
+        function esc(s){ return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+        fetch('/db/saved-jobs.php', { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(json => {
+            const container = document.getElementById('saved-jobs-list');
+            if (!json || !json.success || !Array.isArray(json.saved) || json.saved.length === 0) {
+                container.innerHTML = '<div class="bg-yellow-50 border border-yellow-200 rounded p-6 text-center text-gray-600">You have no saved jobs yet.</div>';
+                return;
+            }
+            let out = '';
+            json.saved.forEach(j => {
+                const jid = esc(j.job_id || '');
+                const title = esc(j.job_role || 'Untitled Job');
+                const company = esc(j.company_name || '');
+                const loc = esc(j.address || '');
+                const desc = esc((j.description || '').substring(0, 500));
+                const logo = esc(j.logo || '/image/jobexp3.png');
+                out += `
+                <div class="bg-white border border-gray-300 rounded-lg p-6 flex justify-between items-start shadow-sm">
+                    <div class="flex gap-4">
+                        <img src="${logo}" alt="logo" class="w-20 h-20 object-contain rounded-md border">
+                        <div>
+                            <h3 class="font-semibold text-lg">${title}</h3>
+                            ${ company ? `<p class="text-gray-600 text-sm mt-1">${company}</p>` : '' }
+                            ${ loc ? `<p class="text-gray-500 text-sm mt-1">${loc}</p>` : '' }
+                            <p class="text-sm text-gray-700 mt-3">${desc}</p>
                         </div>
                     </div>
-                </div>
-            @endforeach
-        @endif
+                    <div class="flex flex-col items-end space-y-4">
+                        <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600 transition">View Details</a>
+                        <button onclick="removeSavedJob('${esc(jid)}', this)"
+                                class="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium">
+                            Remove
+                        </button>
+                    </div>
+                </div>`;
+            });
+            container.innerHTML = out;
+        })
+        .catch(err => {
+            console.error('get-saved-jobs error', err);
+            const container = document.getElementById('saved-jobs-list');
+            container.innerHTML = '<div class="text-center text-red-600">Failed to load saved jobs. Please try again later.</div>';
+        });
+    })();
+    // ...existing code...
+    function removeSavedJob(jobId, btn) {
+        if (!jobId) return;
+        const card = btn && btn.closest('.bg-white.border');
+        btn.disabled = true;
+        btn.textContent = 'Removing…';
+        fetch('/db/remove-saved-job.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ job_id: jobId })
+        })
+        .then(r => r.json())
+        .then(j => {
+            if (j && j.success) {
+                // remove card from DOM
+                if (card) card.remove();
+                else btn.textContent = 'Removed';
+            } else {
+                throw new Error(j?.message || 'Remove failed');
+            }
+        })
+        .catch(err => {
+            console.error('removeSavedJob error', err);
+            btn.disabled = false;
+            btn.textContent = 'Remove';
+            alert('Failed to remove saved job. Try again.');
+        });
+    }
+// ...existing code...
+    </script>
 
-    </div>
-    </div>
 
 @endsection

@@ -896,14 +896,16 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                         class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
                     🚀 Apply Now
                 </button>
-                <button onclick="saveJob(${job.id})"
-                        class="bg-[#008000] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition">
+                <button onclick="saveJob('${job.id}', this)"
+                        class="bg-[#008000] save-btn text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition"
+                        data-job-id="${job.id}">
                     💾 Save
                 </button>
             </div>
         </div>`;
             container.innerHTML += cardHTML;
             });
+            loadSavedState();
         })
         .catch(err => {
             console.error('Error loading jobs:', err);
@@ -922,11 +924,94 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             .replace(/'/g, "&#039;");
         }
 
-        // Save Job function (optional)
-        function saveJob(jobId) {
-        alert('Job ID ' + jobId + ' saved!');
-        // Implement actual save logic here
+        // ...existing code...
+        function saveJob(jobId, btnEl) {
+            console.log('saveJob called, jobId=', jobId);
+            try {
+                if (!jobId) return;
+                // disable UI
+                if (btnEl) {
+                    btnEl.disabled = true;
+                    btnEl.dataset.orig = btnEl.innerHTML;
+                    btnEl.classList.add('opacity-70', 'cursor-not-allowed');
+                    btnEl.innerHTML = 'Saving…';
+                }
+
+                // send JSON POST, include credentials
+                fetch('/db/save-job.php', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json' },
+                    // for quick local testing you can temporarily set debug_user_id to bypass session
+                    body: JSON.stringify({ job_id: jobId /*, debug_user_id: 2 */ })
+                })
+                .then(r => r.text().then(t => {
+                    // try parse JSON, otherwise show raw response for debugging
+                    let json = null;
+                    try { json = JSON.parse(t); } catch(e) { throw new Error('Invalid JSON response: ' + t.slice(0,500)); }
+                    return json;
+                }))
+                .then(json => {
+                    if (!json || !json.success) {
+                        // server returned failure — show message + details for debugging
+                        const err = json?.message || 'Save failed';
+                        const details = json?.error ? ' — ' + json.error : '';
+                        throw new Error(err + details);
+                    }
+
+                    // success
+                    if (btnEl) {
+                        btnEl.innerHTML = json.message === 'already_saved' ? 'Saved' : 'Saved';
+                        btnEl.classList.remove('opacity-70', 'cursor-not-allowed');
+                        btnEl.classList.remove('bg-green-600'); // adjust as needed
+                        btnEl.disabled = true;
+                         // style as saved
+                        btnEl.classList.remove('bg-[#008000]');
+                        btnEl.classList.add('bg-gray-300', 'text-gray-700', 'cursor-not-allowed');
+                    }
+                    // refresh saved state so other buttons update (and saved list remains authoritative)
+                    loadSavedState();
+                    console.log('saveJob OK', json);
+                })
+                .catch(err => {
+                    console.error('saveJob error', err);
+                    alert('Failed to save job. ' + err.message);
+                    if (btnEl) {
+                        btnEl.disabled = false;
+                        btnEl.classList.remove('opacity-70', 'cursor-not-allowed');
+                        btnEl.innerHTML = btnEl.dataset.orig || '💾 Save';
+                    }
+                });
+            } catch (e) {
+                console.error(e);
+                if (btnEl) {
+                    btnEl.disabled = false;
+                    btnEl.innerHTML = btnEl.dataset.orig || '💾 Save';
+                }
+            }
         }
+        // add this function near other helpers in the same <script>
+function loadSavedState() {
+    // fetch saved jobs for current guardian, expect {"success":true,"saved":[{"job_id":...},...]}
+    fetch('/db/saved-jobs.php', { credentials: 'same-origin' })
+        .then(r => r.json().catch(() => null))
+        .then(j => {
+            if (!j || !j.success || !Array.isArray(j.saved)) return;
+            const savedIds = new Set(j.saved.map(s => String(s.job_id)));
+            document.querySelectorAll('.save-btn').forEach(btn => {
+                const jid = btn.getAttribute('data-job-id');
+                if (!jid) return;
+                if (savedIds.has(String(jid))) {
+                    btn.textContent = 'Saved';
+                    btn.disabled = true;
+                    btn.classList.remove('bg-[#008000]');
+                    btn.classList.add('bg-gray-300', 'text-gray-700', 'cursor-not-allowed');
+                }
+            });
+        })
+        .catch(() => {/* ignore */});
+}
+        // ...existing code...
         </script>
         <!-- Instruction Section Wrapper -->
         <div class="space-y-8">
