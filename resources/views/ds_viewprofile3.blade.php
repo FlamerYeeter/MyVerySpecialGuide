@@ -25,19 +25,20 @@
             <!-- Profile Card -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
                 <div class="bg-blue-800 text-white flex items-center gap-12 px-8 py-10 rounded-t-2xl">
-                    <div
+                    <div id="profile_initials"
                         class="bg-white text-blue-800 font-bold rounded-full w-24 h-24 flex items-center justify-center text-3xl">
                         JD
                     </div>
                     <div>
-                        <h1 class="text-2xl font-semibold">Juan Dela Cruz</h1>
-                        <p class="flex items-center gap-3 text-lg mt-2"><img
-                                src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
-                            Taguig City, Metro Manila</p>
-                        <p class="flex items-center gap-4 text-base mt-2"><img
-                                src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" alt="Email Icon"
-                                class="w-5 h-5">
-                            juancruz@gmail.com</p>
+                        <h1 id="profile_fullname" class="text-2xl font-semibold">Juan Dela Cruz</h1>
+                        <p id="profile_location" class="flex items-center gap-3 text-lg mt-2">
+                            <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
+                            <span id="profile_location_text">Taguig City, Metro Manila</span>
+                        </p>
+                        <p class="flex items-center gap-4 text-base mt-2">
+                            <img src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" alt="Email Icon" class="w-5 h-5">
+                            <span id="profile_header_email">juancruz@gmail.com</span>
+                        </p>
                     </div>
                 </div>
 
@@ -116,11 +117,33 @@
 document.addEventListener('DOMContentLoaded', () => {
     function el(id){ return document.getElementById(id); }
 
+    // fetch profile first and populate header, then fetch user-work
     fetch('/db/get_profile.php', { credentials: 'same-origin' })
     .then(r => r.json())
     .then(profileResp => {
         if (!profileResp || !profileResp.success) return;
         const u = profileResp.user || {};
+
+        // populate header (same IDs as viewprofile1/2)
+        const initialsEl = el('profile_initials');
+        const fullnameEl = el('profile_fullname');
+        const locationTextEl = el('profile_location_text');
+        const headerEmailEl = el('profile_header_email');
+
+        const fn = (u.FIRST_NAME || u.first_name || '').toString().trim();
+        const ln = (u.LAST_NAME || u.last_name || '').toString().trim();
+        const fullname = (fn + ' ' + ln).trim();
+        if (fullnameEl && fullname) fullnameEl.textContent = fullname;
+
+        let initials = '';
+        if (fn) initials += fn.charAt(0);
+        if (ln) initials += ln.charAt(0);
+        if (!initials) initials = (u.USERNAME || u.EMAIL || '').toString().slice(0,2);
+        if (initialsEl) initialsEl.textContent = initials.toUpperCase();
+
+        if (locationTextEl) locationTextEl.textContent = (u.ADDRESS || u.address || '') || '—';
+        if (headerEmailEl) headerEmailEl.textContent = (u.EMAIL || u.email || '') || '';
+
         const gid = u.ID || u.id || u.USER_ID || u.GUARDIAN_ID || u.guardian_id;
         if (!gid) return;
 

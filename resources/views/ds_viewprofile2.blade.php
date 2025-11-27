@@ -273,6 +273,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             reviewWorkList.textContent = we.length ? we.map(formatWork).join(', ') : (reviewWorkList.textContent || '-');
         }
+        if (reviewWorkplaceList) {
+            const wp = profiles.workplace || [];
+            function formatWorkplace(v) {
+                if (v === null || v === undefined) return '';
+                const s = String(v).trim();
+                // normalize common placeholder
+                if (s.toLowerCase() === 'none' || s === '') return '-';
+                // capitalize first letter
+                return s.charAt(0).toUpperCase() + s.slice(1);
+            }
+            reviewWorkplaceList.textContent = wp.length ? wp.map(formatWorkplace).join(', ') : (reviewWorkplaceList.textContent || '-');
+        }
         // leave Type of Work and Preferred Workplace as before (user_profile job_category/work_experience may be used elsewhere)
         // only render JOB_EXPERIENCE rows here
         if (jobContainer) {
