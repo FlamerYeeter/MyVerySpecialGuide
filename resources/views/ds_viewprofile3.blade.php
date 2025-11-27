@@ -112,5 +112,65 @@
                     </section>
 
         </section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    function el(id){ return document.getElementById(id); }
+
+    fetch('/db/get_profile.php', { credentials: 'same-origin' })
+    .then(r => r.json())
+    .then(profileResp => {
+        if (!profileResp || !profileResp.success) return;
+        const u = profileResp.user || {};
+        const gid = u.ID || u.id || u.USER_ID || u.GUARDIAN_ID || u.guardian_id;
+        if (!gid) return;
+
+        return fetch('/db/get-user-work.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guardian_id: gid })
+        });
+    })
+    .then(r => { if (!r) return; return r.json(); })
+    .then(data => {
+        if (!data || !data.success) return;
+        const profiles = data.profiles || {};
+        const skills = profiles.skills || [];
+        const jobprefs = profiles.job_category || [];
+
+        const skillsContainer = el('review_skills_list');
+        const jobsContainer = el('review_jobprefs_img_container');
+
+        if (skillsContainer) {
+            skillsContainer.innerHTML = '';
+            if (skills.length) {
+                skills.forEach(s => {
+                    const span = document.createElement('span');
+                    span.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
+                    span.textContent = s;
+                    skillsContainer.appendChild(span);
+                });
+            } else {
+                skillsContainer.innerHTML = '<p class="text-gray-600 italic">No skills selected.</p>';
+            }
+        }
+
+        if (jobsContainer) {
+            jobsContainer.innerHTML = '';
+            if (jobprefs.length) {
+                jobprefs.forEach(j => {
+                    const span = document.createElement('span');
+                    span.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
+                    span.textContent = j;
+                    jobsContainer.appendChild(span);
+                });
+            } else {
+                jobsContainer.innerHTML = '<p class="text-gray-600 italic">No job preferences selected.</p>';
+            }
+        }
+    })
+    .catch(err => console.error('profile->work fetch error', err));
+});
+</script>
     </main>
 @endsection

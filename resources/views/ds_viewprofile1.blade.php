@@ -25,19 +25,19 @@
 
                 <!-- Header -->
                 <div class="bg-blue-800 text-white flex items-center gap-12 px-10 py-10 rounded-t-2xl">
-                    <div
+                    <div id="profile_initials"
                         class="bg-white text-blue-800 font-bold rounded-full w-24 h-24 flex items-center justify-center text-3xl">
                         JD
                     </div>
                     <div>
-                        <h1 class="text-2xl font-semibold">Juan Dela Cruz</h1>
-                        <p class="flex items-center gap-3 text-lg mt-2">
+                        <h1 id="profile_fullname" class="text-2xl font-semibold">Juan Dela Cruz</h1>
+                        <p id="profile_location" class="flex items-center gap-3 text-lg mt-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-7 h-7">
-                            Taguig City, Metro Manila
+                            <span id="profile_location_text">Taguig City, Metro Manila</span>
                         </p>
                         <p class="flex items-center gap-3 text-lg mt-2">
                             <img src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" class="w-6 h-6">
-                            juancruz@gmail.com
+                            <span id="profile_header_email">juandelacruz@gmail.com</span>
                         </p>
                     </div>
                 </div>
@@ -358,6 +358,156 @@
                 document.getElementById("retypePass").type = this.checked ? "text" : "password";
             });
         </script>
+        
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/db/get_profile.php', { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(json => {
+            console.log('get_profile response:', json);
+
+            if (!json.success) {
+                console.warn('Profile fetch failed', json);
+                return;
+            }
+
+            const u = json.user || {};
+            const files = json.files || {};
+            const lengths = json.file_lengths || {};
+            console.log('file lengths:', lengths);
+
+            /* ==========================================================
+               HEADER UPDATE (initials, name, location, email)
+               ========================================================== */
+            try {
+                const initialsEl = document.getElementById('profile_initials');
+                const fullnameEl = document.getElementById('profile_fullname');
+                const locationTextEl = document.getElementById('profile_location_text');
+                const headerEmailEl = document.getElementById('profile_header_email');
+
+                const fn = (u.FIRST_NAME || '').trim();
+                const ln = (u.LAST_NAME || '').trim();
+                const fullname = (fn + ' ' + ln).trim();
+
+                if (fullnameEl && fullname) fullnameEl.textContent = fullname;
+
+                // compute initials
+                let initials = '';
+                if (fn) initials += fn.charAt(0);
+                if (ln) initials += ln.charAt(0);
+                if (!initials) {
+                    const fallback = (u.USERNAME || u.EMAIL || '').toString();
+                    initials = fallback.slice(0, 2);
+                }
+                initials = initials.toUpperCase();
+                if (initialsEl) initialsEl.textContent = initials;
+
+                // address/location: write into dedicated span to preserve the icon markup
+                const addr = (u.ADDRESS || '').trim();
+                if (locationTextEl) {
+                    locationTextEl.textContent = addr || '—';
+                } else {
+                    // fallback: create the span if it doesn't exist
+                    const locationEl = document.getElementById('profile_location');
+                    if (locationEl) {
+                        let span = locationEl.querySelector('#profile_location_text');
+                        if (!span) {
+                            span = document.createElement('span');
+                            span.id = 'profile_location_text';
+                            locationEl.appendChild(span);
+                        }
+                        span.textContent = addr || '—';
+                    }
+                }
+
+                // header email
+                if (headerEmailEl) headerEmailEl.textContent = (u.EMAIL || '').toString();
+            } catch (e) {
+                console.warn('header update failed', e);
+            }
+
+            /* ==========================================================
+               FORM POPULATION
+               ========================================================== */
+
+            const set = (id, val) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.value = val ?? '';
+                else if (el.tagName === 'SELECT') el.value = val ?? '';
+            };
+
+            set('first_name', u.FIRST_NAME);
+            set('last_name', u.LAST_NAME);
+            set('age', u.AGE);
+            set('email', u.EMAIL);
+            set('phone', u.CONTACT_NUMBER);
+            set('address', u.ADDRESS);
+            set('r_dsType1', u.TYPES_OF_DS);
+
+            // Guardian
+            set('g_first_name', u.GUARDIAN_FIRST_NAME);
+            set('g_last_name', u.GUARDIAN_LAST_NAME);
+            set('g_email', u.GUARDIAN_EMAIL);
+            set('g_phone', u.GUARDIAN_CONTACT_NUMBER);
+
+            // Relationship dropdown
+            const relVal = (u.RELATIONSHIP_TO_USER || '').trim();
+            const relSelect = document.getElementById('guardian_relationship');
+            if (relSelect && relVal) {
+                const match = Array.from(relSelect.options)
+                    .find(o => (o.value || '').toLowerCase() === relVal.toLowerCase());
+                if (match) relSelect.value = match.value;
+                else {
+                    const opt = document.createElement('option');
+                    opt.value = relVal;
+                    opt.textContent = relVal;
+                    opt.selected = true;
+                    relSelect.appendChild(opt);
+                }
+            }
+
+            // username (never populate password)
+            set('username', u.USERNAME);
+            const pwd = document.getElementById('password');
+            if (pwd) {
+                pwd.value = '';
+                pwd.placeholder = 'Hidden for security';
+            }
+
+            /* ==========================================================
+               FILE LINKS (server-streamed)
+               ========================================================== */
+
+            function makeServerLink(type, label, filename) {
+                const a = document.createElement('a');
+                a.className = 'text-blue-600 underline';
+                a.textContent = label || 'View / Download';
+                a.href = '/db/get_file.php?type=' + encodeURIComponent(type);
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.setAttribute('download', filename || '');
+                return a;
+            }
+
+            const proofEl = document.getElementById('r_proof');
+            const medEl = document.getElementById('r_medical');
+
+            if (proofEl) {
+                proofEl.innerHTML = '';
+                proofEl.appendChild(makeServerLink('proof', 'View / Download', 'proof.pdf'));
+            }
+            if (medEl) {
+                medEl.innerHTML = '';
+                medEl.appendChild(makeServerLink('med', 'View / Download', 'medical.pdf'));
+            }
+
+        })
+        .catch(err => {
+            console.error('profile fetch error', err);
+        });
+});
+</script>
 
     </main>
 @endsection

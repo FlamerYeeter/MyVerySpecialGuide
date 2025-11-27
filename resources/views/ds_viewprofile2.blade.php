@@ -24,20 +24,21 @@
 
             <!-- Profile Card -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
-                <div class="bg-blue-800 text-white flex items-center gap-12 px-8 py-10 rounded-t-2xl">
-                    <div
+                <div class="bg-blue-800 text-white flex items-center gap-12 px-10 py-10 rounded-t-2xl">
+                    <div id="profile_initials"
                         class="bg-white text-blue-800 font-bold rounded-full w-24 h-24 flex items-center justify-center text-3xl">
                         JD
                     </div>
                     <div>
-                        <h1 class="text-2xl font-semibold">Juan Dela Cruz</h1>
-                        <p class="flex items-center gap-3 text-lg mt-2"><img
-                                src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
-                            Taguig City, Metro Manila</p>
-                        <p class="flex items-center gap-3 text-lg mt-2"><img
-                                src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" alt="Email Icon"
-                                class="w-5 h-5">
-                            juancruz@gmail.com</p>
+                        <h1 id="profile_fullname" class="text-2xl font-semibold">Juan Dela Cruz</h1>
+                        <p id="profile_location" class="flex items-center gap-3 text-lg mt-2">
+                            <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-7 h-7">
+                            <span id="profile_location_text">Taguig City, Metro Manila</span>
+                        </p>
+                        <p class="flex items-center gap-3 text-lg mt-2">
+                            <img src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" class="w-6 h-6">
+                            <span id="profile_header_email">juandelacruz@gmail.com</span>
+                        </p>
                     </div>
                 </div>
 
@@ -112,9 +113,9 @@
                             <div class="col-span-1">
 
 <!-- Type of Work Row -->
-                                <p class="flex items-center gap-2 mb-4">
-                                    <span class="block text-lg font-semibold mb-3">Type of Work:</span>
-                                    <span id="review_work_list" class="text-gray-600">
+                                <p class="flex items-center gap-4 mb-4">
+                                    <span class="text-lg font-semibold leading-none">Type of Work:</span>
+                                    <span id="review_work_list" class="text-gray-600 text-lg leading-none break-words max-w-[70%]">
                                         -
                                     </span>
                                 </p>
@@ -206,5 +207,105 @@
                     </div>
 
         </section>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/db/get_profile.php', { credentials: 'same-origin' })
+    .then(r => r.json())
+    .then(json => {
+        if (!json.success) return console.warn('Profile fetch failed', json);
+        const u = json.user || {};
+
+        // Header
+        const initialsEl = document.getElementById('profile_initials');
+        const fullnameEl = document.getElementById('profile_fullname');
+        const locationTextEl = document.getElementById('profile_location_text');
+        const headerEmailEl = document.getElementById('profile_header_email');
+
+        const fn = (u.FIRST_NAME || u.first_name || '').toString().trim();
+        const ln = (u.LAST_NAME || u.last_name || '').toString().trim();
+        const fullname = (fn + ' ' + ln).trim();
+        if (fullnameEl) fullnameEl.textContent = fullname || (fullnameEl.textContent||'');
+        let initials = '';
+        if (fn) initials += fn.charAt(0);
+        if (ln) initials += ln.charAt(0);
+        if (!initials) initials = (u.USERNAME || u.EMAIL || '').toString().slice(0,2);
+        if (initialsEl) initialsEl.textContent = initials.toUpperCase();
+        if (locationTextEl) locationTextEl.textContent = (u.ADDRESS || u.address || '') || '—';
+        if (headerEmailEl) headerEmailEl.textContent = (u.EMAIL || u.email || '') || '';
+
+        // Education placeholders: use aliases provided by get_profile.php
+        const eduEl = document.getElementById('educationLevel');
+        const schoolEl = document.getElementById('schoolName');
+        if (eduEl) eduEl.textContent = (u.EDUCATION_LEVEL || u.education || '-') || '-';
+        if (schoolEl) schoolEl.textContent = (u.SCHOOL_NAME || u.school || '-') || '-';
+
+        // guardian/user id
+        const userId = u.ID || u.id || u.USER_ID || u.GUARDIAN_ID || u.guardian_id;
+        if (!userId) return console.warn('No user/guardian id in profile response');
+
+        // fetch job_experience rows (by guardian_id)
+        return fetch('/db/get-user-work.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ guardian_id: userId })
+        });
+    })
+    .then(async r => {
+        if (!r) return;
+        const json = await r.json();
+        if (!json.success) return console.warn('get-user-work failed', json);
+
+        // populate work_experience (from USER_PROFILE.TYPE = 'work_experience')
+        const profiles = json.profiles || {};
+        const jobs = json.job_experience_rows || [];
+
+        const reviewWorkList = document.getElementById('review_work_list');
+        const reviewWorkplaceList = document.getElementById('review_workplace_list');
+        const jobContainer = document.getElementById('review_job_experiences');
+        if (reviewWorkList) {
+            const we = profiles.work_experience || [];
+            function formatWork(v) {
+                if (v === null || v === undefined) return '';
+                const s = String(v).trim();
+                if (s.toLowerCase() === 'none') return 'None';
+                return s;
+            }
+            reviewWorkList.textContent = we.length ? we.map(formatWork).join(', ') : (reviewWorkList.textContent || '-');
+        }
+        // leave Type of Work and Preferred Workplace as before (user_profile job_category/work_experience may be used elsewhere)
+        // only render JOB_EXPERIENCE rows here
+        if (jobContainer) {
+            jobContainer.innerHTML = '';
+
+            if (!jobs.length) {
+                const p = document.createElement('p');
+                p.className = 'text-gray-600 italic';
+                p.textContent = 'No job experiences added.';
+                jobContainer.appendChild(p);
+            } else {
+                jobs.forEach(j => {
+                    const card = document.createElement('div');
+                    card.className = 'mb-3 p-3 border rounded-md bg-white shadow-sm';
+                    const title = escapeHtml(j.company_name || '') + (j.job_title ? ' — ' + escapeHtml(j.job_title) : '');
+                    const meta = escapeHtml(j.years_experience || '') + (j.work_year ? ' • ' + escapeHtml(j.work_year) : '');
+                    const desc = escapeHtml(j.job_description || '');
+                    const env = j.working_environment ? '<div class="text-xs text-gray-500 mt-2">Environment: ' + escapeHtml(j.working_environment) + '</div>' : '';
+                    card.innerHTML = '<div class="font-semibold">' + title + '</div>' +
+                                     '<div class="text-sm text-gray-600">' + meta + '</div>' +
+                                     '<div class="text-sm text-gray-700 mt-2">' + desc + '</div>' + env;
+                    jobContainer.appendChild(card);
+                });
+            }
+        }
+    })
+    .catch(err => console.error('profile/work fetch error', err));
+
+    function escapeHtml(s) {
+        if (s === null || s === undefined) return '';
+        return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+});
+</script>
     </main>
 @endsection
