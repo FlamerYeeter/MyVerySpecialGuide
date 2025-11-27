@@ -188,18 +188,24 @@
                         <h3 class="text-2xl font-extrabold text-gray-900 leading-tight">${title}</h3>
                         ${ company ? `<p class="text-lg text-gray-700 mt-1">${company}</p>` : '' }
                         ${ loc ? `<p class="text-sm text-gray-500 mt-1 flex items-center gap-2"><img src='https://img.icons8.com/color/48/marker--v1.png' class='w-4 h-4'> ${loc}</p>` : '' }
-                        <p class="text-gray-700 mt-3">${desc}${(j.description && j.description.length > 280) ? '…' : ''}</p>
                       </div>
                     </div>
                     <div class="flex flex-col items-end justify-between gap-4">
                       <div class="flex gap-3">
-                        <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="px-5 py-3 bg-teal-400 text-white rounded-md shadow-md hover:bg-teal-500">Details</a>
-                        <a href="/apply.php?id=${encodeURIComponent(jid)}" class="px-5 py-3 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700">Apply</a>
-                      </div>
-                      <div class="w-full lg:w-auto flex items-center justify-end gap-3">
-                        <div class="w-40 hidden lg:block">
-                        </div>
-                        <button onclick="removeSavedJob('${esc(jid)}', this)" class="px-4 py-2 bg-red-500 text-white rounded-md shadow-sm hover:bg-red-600">Remove</button>
+                        <a href="/job-details?job_id=${encodeURIComponent(jid)}"
+                        class="px-5 py-3 bg-[#55BEBB] text-white rounded-md shadow-md hover:bg-[#47a4a1] font-semibold">
+                        📝 See Details
+                        </a>
+
+                        <a href="/apply.php?id=${encodeURIComponent(jid)}"
+                        class="px-5 py-3 bg-[#2563EB] text-white rounded-md shadow-md hover:bg-[#1e4fc5] font-semibold">
+                        🚀 Apply Now
+                        </a>
+
+                        <button onclick="removeSavedJob('${esc(jid)}', this)"
+                        class="px-4 py-2 bg-[#FF2400] text-white rounded-md shadow-sm hover:bg-[#C41E3A] font-semibold">
+                        🗑️ Remove
+                        </button>
                       </div>
                     </div>
                   </div>`;
