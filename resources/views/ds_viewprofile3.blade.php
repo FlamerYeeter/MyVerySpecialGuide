@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!data || !data.success) return;
         const profiles = data.profiles || {};
         const skills = profiles.skills || [];
-        const jobprefs = profiles.job_category || [];
+        const jobprefs = profiles.job_preference || [];
 
         const skillsContainer = el('review_skills_list');
         const jobsContainer = el('review_jobprefs_img_container');

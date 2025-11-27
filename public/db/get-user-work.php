@@ -38,7 +38,7 @@ try {
     }
 
     // collect USER_PROFILE rows (TYPE can be repeated)
-    $profiles = ['skills' => [], 'job_category' => [], 'work_experience' => [], 'workplace' => []];
+    $profiles = ['skills' => [], 'job_preference' => [], 'work_experience' => [], 'workplace' => []];
 
     $sql = "SELECT TYPE, VALUE FROM user_profile WHERE guardian_id = :gid ORDER BY created_at";
     $stid = oci_parse($conn, $sql);
@@ -49,8 +49,8 @@ try {
         $val  = $row['VALUE'] ?? '';
         if ($type === 'skills') {
             $profiles['skills'][] = $val;
-        } elseif ($type === 'job_category') {
-            $profiles['job_category'][] = $val;
+        } elseif ($type === 'job_preference') {
+            $profiles['job_preference'][] = $val;
         } elseif ($type === 'work_experience') {
             $profiles['work_experience'][] = $val;
         } elseif ($type === 'workplace') {
