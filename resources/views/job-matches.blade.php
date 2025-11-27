@@ -154,16 +154,21 @@
                 <!-- Search Bar -->
                 <div class="relative w-full sm:col-span-2 md:col-span-3">
                 <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Search Job Title</label>
-                <input id="searchJobTitle" type="text" name="search" value="{{ request('search') }}" placeholder="Search by job title (e.g. Sales Assistant, Barista)"
-                class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 
-                text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 
-                focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200"/>
+                <div class="relative">
+                    <!-- Give the input extra right padding so text never sits under the button -->
+                    <input id="searchJobTitle" type="text" name="search" value="{{ request('search') }}" placeholder="Search by job title (e.g. Sales Assistant, Barista)"
+                        class="w-full appearance-none px-6 pr-20 py-4 rounded-2xl bg-white border-4 border-blue-600 
+                        text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 
+                        focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200" />
 
-                <svg xmlns="http://www.w3.org/2000/svg"
-                class="w-7 h-7 text-blue-600 absolute right-6 top-[62%] transform -translate-y-1/2 pointer-events-none"
-                fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z" />
-                </svg>
+                    <!-- Clickable search button positioned inside the input area -->
+                    <button id="searchBtn" type="button" aria-label="Search"
+                        class="absolute right-3 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center bg-white border-2 border-blue-600 rounded-full text-blue-600 hover:bg-blue-50 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             </div>
@@ -2132,7 +2137,13 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
         applySearch(input.value);
       });
     }
-
+    // wire up the clickable search icon/button
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+      searchBtn.addEventListener('click', () => {
+        applySearch(input.value);
+      });
+    }
     // Debounced live filter while typing
     const handler = debounce(()=>applySearch(input.value), 160);
     input.addEventListener('input', handler);
