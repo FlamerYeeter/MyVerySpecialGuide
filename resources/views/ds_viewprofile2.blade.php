@@ -113,13 +113,12 @@
                             <div class="col-span-1">
 
 <!-- Type of Work Row -->
-                                <p class="flex items-center gap-4 mb-4">
-                                    <span class="text-lg font-semibold leading-none">Type of Work:</span>
-                                    <span id="review_work_list" class="text-gray-600 text-lg leading-none break-words max-w-[70%]">
-                                        -
-                                    </span>
-                                </p>
-
+                                <div class="mb-4">
+                                    <div class="flex items-center gap-4">
+                                        <span class="text-lg font-semibold leading-none">Type of Work:</span>
+                                        <div id="review_work_list" class="flex flex-wrap gap-3 text-gray-800"></div>
+                                    </div>
+                                </div>
 <!-- Job Experiences -->
                                 <h4 class="mt-8 text-xl font-semibold text-blue-800 mb-2">Job Experiences</h4>
                                 <div id="review_job_experiences" class="space-y-2 text-gray-800">
@@ -158,13 +157,12 @@
 
 <!-- Preferred Workplace -->
                             <div class="col-span-1">
-
-                                <p class="flex items-center gap-2 mb-4">
-                                    <span class="block text-lg font-semibold mb-3">Preferred Workplace:</span>
-                                    <span id="review_workplace_list" class="text-gray-600">
-                                        -
-                                    </span>
-                                </p>
+                                <div class="mb-4">
+                                    <div class="flex items-center gap-4">
+                                        <span class="text-lg font-semibold leading-none">Preferred Workplace:</span>
+                                        <div id="review_workplace_list" class="flex flex-wrap gap-3 text-gray-800"></div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div id="review_workplace_choice_img_container" class="mt-4 text-center hidden">
@@ -263,28 +261,51 @@ document.addEventListener('DOMContentLoaded', () => {
         const reviewWorkList = document.getElementById('review_work_list');
         const reviewWorkplaceList = document.getElementById('review_workplace_list');
         const jobContainer = document.getElementById('review_job_experiences');
+        // render Type of Work as badges (same look as viewprofile3)
         if (reviewWorkList) {
+            reviewWorkList.innerHTML = '';
             const we = profiles.work_experience || [];
             function formatWork(v) {
                 if (v === null || v === undefined) return '';
                 const s = String(v).trim();
+                if (s === '') return '';
                 if (s.toLowerCase() === 'none') return 'None';
-                return s;
+                return s.charAt(0).toUpperCase() + s.slice(1);
             }
-            reviewWorkList.textContent = we.length ? we.map(formatWork).join(', ') : (reviewWorkList.textContent || '-');
+            if (we.length) {
+                we.forEach(v => {
+                    const span = document.createElement('span');
+                    span.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
+                    span.textContent = formatWork(v);
+                    reviewWorkList.appendChild(span);
+                });
+            } else {
+                reviewWorkList.innerHTML = '<span class="text-gray-600">-</span>';
+            }
         }
+
+        // render Preferred Workplace as badges (single-line where possible)
         if (reviewWorkplaceList) {
+            reviewWorkplaceList.innerHTML = '';
             const wp = profiles.workplace || [];
             function formatWorkplace(v) {
                 if (v === null || v === undefined) return '';
                 const s = String(v).trim();
-                // normalize common placeholder
                 if (s.toLowerCase() === 'none' || s === '') return '-';
-                // capitalize first letter
                 return s.charAt(0).toUpperCase() + s.slice(1);
             }
-            reviewWorkplaceList.textContent = wp.length ? wp.map(formatWorkplace).join(', ') : (reviewWorkplaceList.textContent || '-');
+            if (wp.length) {
+                wp.forEach(v => {
+                    const span = document.createElement('span');
+                    span.className = 'bg-blue-100 text-blue-700 font-medium px-4 py-2 rounded-xl flex items-center gap-2 shadow-sm';
+                    span.textContent = formatWorkplace(v);
+                    reviewWorkplaceList.appendChild(span);
+                });
+            } else {
+                reviewWorkplaceList.innerHTML = '<span class="text-gray-600">-</span>';
+            }
         }
+
         // leave Type of Work and Preferred Workplace as before (user_profile job_category/work_experience may be used elsewhere)
         // only render JOB_EXPERIENCE rows here
         if (jobContainer) {
