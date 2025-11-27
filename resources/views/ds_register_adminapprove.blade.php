@@ -400,8 +400,7 @@
 <!-- Proof of Membership -->
 <div class="mt-8 text-left px-2 sm:px-4">
   <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-    Proof of Membership 
-    <p class="text-gray-600 italic text-sm sm:text-base">(Optional)</p>
+    Proof of Membership
     <button 
       type="button" 
       class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
@@ -414,22 +413,23 @@
 
   <!-- Upload Section -->
   <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-    <div class="flex-1">
-      <p class="font-medium text-gray-800 text-sm sm:text-base">
-        <span id="proofLabel" class="flex items-center gap-2">
-          <span>Upload Proof (Image or PDF)</span> 
-        </span>
-      </p>
-      <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-        (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
-        Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
-      </p>
+  <div class="flex-1">
+    <p class="font-medium text-gray-800 text-sm sm:text-base">
+      <span id="proofLabel" class="flex items-center gap-2">
+        <span>Upload Proof (Image or PDF)</span> 
+      </span>
+    </p>
+    <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+      (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
+      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
+    </p>
 
-      <!-- File Info Display -->
-      <div id="proofDisplay"></div>
-    </div>
+    <!-- File Info Display -->
+    <div id="proofDisplay"></div>
+  </div>
 
-    <!-- Upload Button -->
+  <!-- Upload button + input wrapped so validation message is appended below the button -->
+  <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
     <label
       for="proofFile"
       class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
@@ -437,6 +437,8 @@
       📁 Choose File / Pumili ng File
     </label>
     <input id="proofFile" name="proof" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
+    <!-- showFieldError appends .field-error to the input's parent — this ensures it's placed under the button -->
+    <div class="upload-error w-full text-sm text-right"></div>
   </div>
 </div>
 
@@ -444,7 +446,6 @@
 <div class="mt-8 text-left px-2 sm:px-4">
   <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
     Please upload your medical certificate.
-    <p class="text-gray-600 italic text-sm sm:text-base">(Optional)</p>
     <button 
       type="button" 
       class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
@@ -463,22 +464,23 @@
 
   <!-- Upload Section -->
   <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-    <div class="flex-1">
-      <p class="font-medium text-gray-800 text-sm sm:text-base">
-        <span id="medLabel" class="flex items-center gap-2">
-          <span>Upload File (Image or PDF)</span> 
-        </span>
-      </p>
-      <p id="medHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-        (Mag-upload ng larawan o PDF ng iyong medical certificate.)<br /><br />
-        Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
-      </p>
+  <div class="flex-1">
+    <p class="font-medium text-gray-800 text-sm sm:text-base">
+      <span id="medLabel" class="flex items-center gap-2">
+        <span>Upload File (Image or PDF)</span> 
+      </span>
+    </p>
+    <p id="medHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+      (Mag-upload ng larawan o PDF ng iyong medical certificate.)<br /><br />
+      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
+    </p>
 
-      <!-- File Info Display -->
-      <div id="medDisplay"></div>
-    </div>
+    <!-- File Info Display -->
+    <div id="medDisplay"></div>
+  </div>
 
-    <!-- Upload Button -->
+  <!-- Upload button + input wrapped so validation message is appended below the button -->
+  <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
     <label
       for="medFile"
       class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
@@ -486,6 +488,8 @@
       📁 Choose File / Pumili ng File
     </label>
     <input id="medFile" name="medical_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
+    <!-- validation will be appended here (under the button) -->
+    <div class="upload-error w-full text-sm text-right"></div>
   </div>
 </div>
 
@@ -1172,12 +1176,57 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         const required = {
             personal: ['first_name','last_name','age','email','phone','address'],
             guardian: ['guardian_first','guardian_last','guardian_email','guardian_phone','guardian_relationship'],
-            account: ['username','password','confirmPassword']
+            account: ['username','password','confirmPassword'],
+            uploads: ['proofFile','medFile']
         };
 
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRe = /^\+63\d{10}$/; // expects "+63" + 10 digits (no spaces) -- input enforces this format
         const passwordRe = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+
+        // --- moved helper: check whether a storage key contains meaningful data ---
+        function storedHasData(key) {
+            try {
+                const raw = localStorage.getItem(key) || sessionStorage.getItem(key);
+                if (!raw) return false;
+                const trimmed = String(raw).trim();
+                if (!trimmed) return false;
+                if (trimmed === '[]' || trimmed === '{}' || trimmed === 'null') return false;
+                try {
+                    const parsed = JSON.parse(trimmed);
+                    if (Array.isArray(parsed)) return parsed.length > 0;
+                    if (parsed && typeof parsed === 'object') return Object.keys(parsed).length > 0;
+                    return String(parsed).trim() !== '';
+                } catch (e) {
+                    return trimmed !== '';
+                }
+            } catch (e) { return false; }
+        }
+
+        // --- moved helper: determine if upload exists for proof/med (used both in validation and live-clear) ---
+        function hasUploadedFileFor(id) {
+            try {
+                if (id === 'proofFile') {
+                    const input = document.getElementById('proofFile');
+                    if (input && input.files && input.files.length) return true;
+                    if (storedHasData('admin_uploaded_proof_name') || storedHasData('admin_uploaded_proof_data') || storedHasData('admin_uploaded_proof_type')) return true;
+                    if (storedHasData('uploadedProofs_proof') || storedHasData('uploadedProofs1') || storedHasData('uploadedProofs')) return true;
+                    if (storedHasData('uploadedProofName') || storedHasData('uploaded_proof_name') || storedHasData('proofName')) return true;
+                    return false;
+                }
+
+                if (id === 'medFile') {
+                    const input = document.getElementById('medFile');
+                    if (input && input.files && input.files.length) return true;
+                    if (storedHasData('admin_uploaded_med_name') || storedHasData('admin_uploaded_med_data') || storedHasData('admin_uploaded_med_type')) return true;
+                    if (storedHasData('uploadedProofs_med') || storedHasData('uploadedProofs')) return true;
+                    if (storedHasData('review_certfile_name') || storedHasData('review_certs_name')) return true;
+                    return false;
+                }
+
+                return false;
+            } catch (e) { return false; }
+        }
 
         function showFieldError(id, msg) {
             const el = document.getElementById(id);
@@ -1203,9 +1252,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
         function validateRequired() {
             // clear previous errors
-            [...required.personal, ...required.guardian, ...required.account].forEach(clearFieldError);
+            [...required.personal, ...required.guardian, ...required.account, ...required.uploads].forEach(clearFieldError);
 
             const values = {};
+            // Only gather non-file inputs into values; uploads are checked via hasUploadedFileFor()
             [...required.personal, ...required.guardian, ...required.account].forEach(id => {
                 const el = document.getElementById(id);
                 values[id] = el ? (el.value || '').trim() : '';
@@ -1231,7 +1281,6 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             }
 
             // phone
-            // because the input formatting script forces +63 prefix, we accept +63XXXXXXXXXX
             if (values.phone && !phoneRe.test(values.phone.replace(/\s+/g,''))) {
                 errors.push({ id: 'phone', msg: 'Please enter a valid Philippine number (e.g. +639121234567).' });
             }
@@ -1259,6 +1308,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 errors.push({ id: 'confirmPassword', msg: 'Passwords do not match.' });
             }
 
+            // uploads checks — require proof and medical certificate (either file selected now or previously saved/uploaded)
+            if (!hasUploadedFileFor('proofFile')) {
+                errors.push({ id: 'proofFile', msg: 'Please upload proof of membership.' });
+            }
+            if (!hasUploadedFileFor('medFile')) {
+                errors.push({ id: 'medFile', msg: 'Please upload a medical certificate.' });
+            }
+
             if (errors.length) {
                 // show errors; focus first error and scroll into view
                 const first = errors[0];
@@ -1267,12 +1324,66 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 if (firstEl) {
                     firstEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     firstEl.focus();
+                } else {
+                    // fallback: scroll to top of form
+                    const form = document.getElementById('registrationForm');
+                    if (form) form.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
                 return false;
             }
 
             return true;
         }
+
+        // --- New: attach live listeners so warning text disappears as fields become valid ---
+        function attachLiveClear() {
+            const watchIds = [...required.personal, ...required.guardian, ...required.account];
+            watchIds.forEach(id => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.addEventListener('input', () => {
+                    const v = (el.value || '').trim();
+                    let ok = true;
+                    if (id === 'age') ok = v !== '' && Number(v) > 0;
+                    else if (id === 'email') ok = emailRe.test(v);
+                    else if (id === 'phone') ok = phoneRe.test(v.replace(/\s+/g,''));
+                    else if (id === 'password') ok = passwordRe.test(v);
+                    else if (id === 'confirmPassword') {
+                        const pw = (document.getElementById('password')?.value || '').trim();
+                        ok = pw && v && pw === v;
+                    } else if (id === 'guardian_relationship') ok = v !== '';
+                    else ok = v !== '';
+                    if (ok) clearFieldError(id);
+                });
+
+                // also clear on blur to cover paste/select scenarios
+                el.addEventListener('blur', () => {
+                    const evt = new Event('input');
+                    el.dispatchEvent(evt);
+                });
+            });
+
+            // file inputs: clear when a file is selected (or when legacy storage detected)
+            ['proofFile','medFile'].forEach(fid => {
+                const inp = document.getElementById(fid);
+                if (inp) {
+                    inp.addEventListener('change', () => {
+                        if (hasUploadedFileFor(fid)) clearFieldError(fid);
+                    });
+                }
+            });
+
+            // also listen for storage events (in case uploads are set by other scripts)
+            window.addEventListener('storage', (e) => {
+                if (!e) return;
+                if (e.key && /proof|med|uploadedProofs|admin_uploaded/i.test(e.key)) {
+                    ['proofFile','medFile'].forEach(fid => { if (hasUploadedFileFor(fid)) clearFieldError(fid); });
+                }
+            });
+        }
+
+        // init live clearing
+        attachLiveClear();
 
         btn.addEventListener('click', function() {
             try {
@@ -1333,16 +1444,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 } catch (e) {}
 
                window.location.href = '{{ route("registereducation") }}';
-              //  window.location.href = '{{ route("registerreview1") }}';
-
             } catch (err) {
                 console.error('[adminapprove] submit failed', err);
-                // btn.disabled = false;
                 btn.classList.remove('opacity-60');
             }
         });
     })();
 </script>
+
 </body>
 
 </html>
