@@ -30,12 +30,27 @@
         <!-- Title -->
         <h3
             class="text-5xl sm:text-4xl font-extrabold text-[#1E3A8A] mb-8 text-center tracking-wide flex items-center justify-center gap-3">
-            <img src="https://img.icons8.com/ios-filled/50/1E3A8A/search--v1.png" alt="Search Icon" class="w-10 h-10">
+            <!-- <img src="https://img.icons8.com/ios-filled/50/1E3A8A/search--v1.png" alt="Search Icon" class="w-10 h-10"> -->
             Filter Jobs
         </h3>
 
+                <!-- Instruction -->
+        <div class="mt-12 bg-blue-50 border-l-8 border-blue-500 rounded-2xl p-6 text-center shadow-md">
+            <p class="text-xl font-bold text-[#1E3A8A] mb-2 flex items-center justify-center gap-2">
+                <img src="https://img.icons8.com/color/48/compass--v1.png" alt="Compass Icon" class="w-7 h-7">
+                How to use the filter:
+            </p>
+            <p class="text-lg text-gray-800 font-medium leading-relaxed">
+                Click the dropdowns above and choose what you like — the system will show jobs that match your choice.
+            </p>
+            <p class="text-base text-gray-600 italic mt-1">
+                (Piliin ang mga opsyon sa itaas. Ipapakita ng system ang mga trabahong akma sa iyong pinili.)
+            </p>
+        </div>
+
+
         <!-- Filter Form -->
-        <form method="GET" class="w-full space-y-6">
+        <form method="GET" class="mt-8 w-full space-y-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
                 <!-- Filter Dropdown (Industry) -->
                 {{-- <div class="relative w-full">
@@ -152,7 +167,7 @@
                 </div>
 
                 <!-- Search Bar -->
-                <div class="relative w-full sm:col-span-2 md:col-span-3">
+                <div class="mt-4 relative w-full sm:col-span-2 md:col-span-3">
                 <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Search Job Title</label>
                 <div class="relative">
                     <!-- Give the input extra right padding so text never sits under the button -->
@@ -174,19 +189,6 @@
             </div>
         </form>
 
-        <!-- Instruction -->
-        <div class="mt-12 bg-blue-50 border-l-8 border-blue-500 rounded-2xl p-6 text-center shadow-md">
-            <p class="text-xl font-bold text-[#1E3A8A] mb-2 flex items-center justify-center gap-2">
-                <img src="https://img.icons8.com/color/48/compass--v1.png" alt="Compass Icon" class="w-7 h-7">
-                How to use the filter:
-            </p>
-            <p class="text-lg text-gray-800 font-medium leading-relaxed">
-                Click the dropdowns above and choose what you like — the system will show jobs that match your choice.
-            </p>
-            <p class="text-base text-gray-600 italic mt-1">
-                (Piliin ang mga opsyon sa itaas. Ipapakita ng system ang mga trabahong akma sa iyong pinili.)
-            </p>
-        </div>
 
         <!-- location filter removed per request -->
         <!-- Filter is automatic now: selects will submit the form on change -->
@@ -934,10 +936,10 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 <div class="flex items-start gap-4">
 
                     <div
-                        class="flex items-center justify-center bg-white w-16 h-16 rounded-full shadow-md border-4 border-[#2563EB] overflow-hidden">
-                        <img src="https://img.icons8.com/color/96/medical-doctor.png" alt="Therapist Icon"
-                            class="w-10 h-10 object-contain">
-                    </div>
+    class="flex items-center justify-center bg-white w-16 h-16 rounded-full shadow-md border-4 border-[#2563EB] overflow-hidden">
+    <img src="https://img.icons8.com/color/96/resume.png" alt="Application Icon"
+        class="w-10 h-10 object-contain">
+</div>
 
                     <div>
                          <p class="text-xl text-gray-900 font-semibold leading-snug">

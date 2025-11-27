@@ -48,10 +48,10 @@
             Saved Jobs
           </a>
 
-          <a href="{{ route('assessment') }}"
+          <!-- <a href="{{ route('assessment') }}"
             class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition {{ Request::routeIs('assessment') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
             Assessment Progress
-          </a>
+          </a> -->
 
           <a href="{{ route('whythisjob') }}"
             class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition {{ Request::routeIs('whythisjob') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
@@ -93,10 +93,11 @@
       <div id="mobileNav" class="hidden w-full flex-col items-center mt-4 space-y-3 sm:hidden">
         <a href="{{ route('job.matches') }}"
           class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Jobs</a>
-        <a href="#"
+        <!-- <a href="#"
           class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Saved Jobs</a>
-        <a href="{{ route('career.goals.progress') }}"
-          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Goals & Progress</a>
+        -->
+          <a href="{{ route('career.goals.progress') }}"  
+          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Assessment Progress</a>
         <a href="{{ route('why.this.job.1') }}"
           class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Why this Job & How to Get there</a>
 
