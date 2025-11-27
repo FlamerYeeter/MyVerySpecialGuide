@@ -309,16 +309,37 @@
       skills1_selected: localStorage.getItem('skills1_selected')
     };
 
-    debugger;
 
     fetch('db/registration-data.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
-    }).catch(console.error);
-
-    // ✅ Show success modal
-    successModal.classList.remove('hidden');
+    })
+    .then(response => {
+      if (!response.ok) {
+        if (response.status === 500) {
+          // Handle 500 error
+          console.error('Server error occurred');
+          // Optionally show error modal or message
+          // errorModal.classList.remove('hidden');
+          throw new Error('Server error occurred');
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    })
+    .then(data => {
+      // ✅ Show success modal
+      successModal.classList.remove('hidden');
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      // Handle other errors (including 500 errors)
+      if (error.message.includes('Server error')) {
+        // Show server error message
+        // errorModal.classList.remove('hidden');
+      }
+    });
   });
 
   // ✅ Redirect to login after clicking OK

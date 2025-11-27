@@ -197,7 +197,7 @@ if ($allGood) {
     $work_type        = json_decode($data['selected_work_experience'] ?? '[]', true);
     $skills1_selected = json_decode($data['skills1_selected'] ?? '[]', true);
     $job_category     = json_decode($data['jobPreferences'] ?? '[]', true);
-    $workplace     = json_decode($data['workplace'] ?? '[]', true);
+    $workplace        = json_decode($data['workplace'] ?? '[]', true);
 
     foreach ($work_type as $v) insertGuardianDetail($conn, $user_guardian_id, 'work_experience', $v);
     foreach ($skills1_selected as $v) insertGuardianDetail($conn, $user_guardian_id, 'skills', $v);
