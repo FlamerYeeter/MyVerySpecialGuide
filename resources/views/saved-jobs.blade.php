@@ -150,54 +150,70 @@
     <script>
     (function(){
         function esc(s){ return s ? String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') : ''; }
+        const container = document.getElementById('saved-jobs-list');
         fetch('/db/saved-jobs.php', { credentials: 'same-origin' })
         .then(r => r.json())
         .then(json => {
-            const container = document.getElementById('saved-jobs-list');
             if (!json || !json.success || !Array.isArray(json.saved) || json.saved.length === 0) {
-                container.innerHTML = '<div class="bg-yellow-50 border border-yellow-200 rounded p-6 text-center text-gray-600">You have no saved jobs yet.</div>';
+                container.innerHTML = `
+                  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center text-gray-700">
+                    <p class="text-xl font-semibold mb-2">No Saved Jobs Yet</p>
+                    <p class="text-sm">Save jobs from the Jobs page and they'll appear here.</p>
+                  </div>`;
                 return;
             }
-            let out = '';
-            json.saved.forEach(j => {
-                const jid = esc(j.job_id || '');
+
+            // Build modern cards, skip removed entries (server can return j.removed = true)
+            const rows = json.saved.filter(j => !(j.removed || j.is_removed || j.status === 'removed'));
+            if (rows.length === 0) {
+                container.innerHTML = '<div class="text-center text-gray-600">You have no active saved jobs.</div>';
+                return;
+            }
+
+            container.innerHTML = rows.map(j => {
+                const jid = esc(j.job_id || j.JP_ID || '');
                 const title = esc(j.job_role || 'Untitled Job');
                 const company = esc(j.company_name || '');
                 const loc = esc(j.address || '');
-                const desc = esc((j.description || '').substring(0, 500));
+                const desc = esc((j.description || '').replace(/\s+/g,' ').trim()).slice(0, 280);
                 const logo = esc(j.logo || '/image/jobexp3.png');
-                out += `
-                <div class="bg-white border border-gray-300 rounded-lg p-6 flex justify-between items-start shadow-sm">
-                    <div class="flex gap-4">
-                        <img src="${logo}" alt="logo" class="w-20 h-20 object-contain rounded-md border">
-                        <div>
-                            <h3 class="font-semibold text-lg">${title}</h3>
-                            ${ company ? `<p class="text-gray-600 text-sm mt-1">${company}</p>` : '' }
-                            ${ loc ? `<p class="text-gray-500 text-sm mt-1">${loc}</p>` : '' }
-                            <p class="text-sm text-gray-700 mt-3">${desc}</p>
+
+                return `
+                  <div data-job-id="${jid}" class="job-card bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col lg:flex-row justify-between gap-6 transition-transform hover:scale-[1.01]">
+                    <div class="flex items-start gap-4 lg:gap-6">
+                      <div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 border bg-gray-50">
+                        <img src="${logo}" alt="${title} logo" class="w-full h-full object-cover">
+                      </div>
+                      <div class="min-w-0">
+                        <h3 class="text-2xl font-extrabold text-gray-900 leading-tight">${title}</h3>
+                        ${ company ? `<p class="text-lg text-gray-700 mt-1">${company}</p>` : '' }
+                        ${ loc ? `<p class="text-sm text-gray-500 mt-1 flex items-center gap-2"><img src='https://img.icons8.com/color/48/marker--v1.png' class='w-4 h-4'> ${loc}</p>` : '' }
+                        <p class="text-gray-700 mt-3">${desc}${(j.description && j.description.length > 280) ? '…' : ''}</p>
+                      </div>
+                    </div>
+                    <div class="flex flex-col items-end justify-between gap-4">
+                      <div class="flex gap-3">
+                        <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="px-5 py-3 bg-teal-400 text-white rounded-md shadow-md hover:bg-teal-500">Details</a>
+                        <a href="/apply.php?id=${encodeURIComponent(jid)}" class="px-5 py-3 bg-indigo-600 text-white rounded-md shadow-md hover:bg-indigo-700">Apply</a>
+                      </div>
+                      <div class="w-full lg:w-auto flex items-center justify-end gap-3">
+                        <div class="w-40 hidden lg:block">
                         </div>
+                        <button onclick="removeSavedJob('${esc(jid)}', this)" class="px-4 py-2 bg-red-500 text-white rounded-md shadow-sm hover:bg-red-600">Remove</button>
+                      </div>
                     </div>
-                    <div class="flex flex-col items-end space-y-4">
-                        <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600 transition">View Details</a>
-                        <button onclick="removeSavedJob('${esc(jid)}', this)"
-                                class="bg-red-500 text-white px-4 py-2 rounded-md text-sm font-medium">
-                            Remove
-                        </button>
-                    </div>
-                </div>`;
-            });
-            container.innerHTML = out;
+                  </div>`;
+            }).join('\n');
         })
         .catch(err => {
             console.error('get-saved-jobs error', err);
-            const container = document.getElementById('saved-jobs-list');
             container.innerHTML = '<div class="text-center text-red-600">Failed to load saved jobs. Please try again later.</div>';
         });
     })();
     // ...existing code...
     function removeSavedJob(jobId, btn) {
         if (!jobId) return;
-        const card = btn && btn.closest('.bg-white.border');
+        const card = btn && btn.closest('[data-job-id]');
         btn.disabled = true;
         btn.textContent = 'Removing…';
         fetch('/db/remove-saved-job.php', {
@@ -209,9 +225,13 @@
         .then(r => r.json())
         .then(j => {
             if (j && j.success) {
-                // remove card from DOM
-                if (card) card.remove();
-                else btn.textContent = 'Removed';
+                // animate out then remove
+                if (card) {
+                    card.style.transition = 'opacity 220ms, transform 220ms';
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(8px)';
+                    setTimeout(()=> card.remove(), 260);
+                } else btn.textContent = 'Removed';
             } else {
                 throw new Error(j?.message || 'Remove failed');
             }
@@ -223,8 +243,8 @@
             alert('Failed to remove saved job. Try again.');
         });
     }
-// ...existing code...
     </script>
+
 
 
 @endsection

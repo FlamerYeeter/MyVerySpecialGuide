@@ -16,7 +16,7 @@ try {
         exit;
     }
 
-    // Join saved jobs to JOB_POSTINGS (use MVSG schema if needed)
+    // Join saved jobs to JOB_POSTINGS (schema-qualified)
     $sql = "
       SELECT sj.JOB_ID,
              sj.CREATED_AT,
@@ -25,7 +25,7 @@ try {
              jp.COMPANY_NAME      AS COMPANY_NAME,
              jp.ADDRESS           AS LOCATION,
              jp.JOB_DESCRIPTION   AS DESCRIPTION,
-             jp.COMPANY_IMAGE     AS COMPANY_IMAGE /* BLOB - not converted here */
+             jp.COMPANY_IMAGE     AS COMPANY_IMAGE
       FROM MVSG.SAVED_JOBS sj
       JOIN MVSG.JOB_POSTINGS jp ON jp.ID = sj.JOB_ID
       WHERE sj.GUARDIAN_ID = :gid
@@ -35,8 +35,8 @@ try {
     $stid = oci_parse($conn, $sql);
     if (!$stid) {
         $err = oci_error($conn);
-        echo json_encode(['success' => false, 'message' => 'Prepare failed', 'error' => $err['message'] ?? $err]);
         oci_close($conn);
+        echo json_encode(['success' => false, 'message' => 'Prepare failed', 'error' => $err['message'] ?? $err]);
         exit;
     }
 
@@ -51,15 +51,40 @@ try {
 
     $rows = [];
     while (($r = oci_fetch_assoc($stid)) !== false) {
+        // COMPANY_IMAGE may come as an OCI-Lob object; convert to base64 if present
+        $logoSrc = null;
+        if (!empty($r['COMPANY_IMAGE'])) {
+            $blob = $r['COMPANY_IMAGE'];
+            try {
+                if (is_object($blob) && method_exists($blob, 'load')) {
+                    $imageContent = $blob->load();
+                    if ($imageContent !== false && $imageContent !== null && strlen($imageContent) > 0) {
+                        // try to guess PNG/JPEG; default to png
+                        $mime = 'image/png';
+                        // very small heuristic: check JPEG magic bytes
+                        if (substr($imageContent, 0, 3) === "\xFF\xD8\xFF") $mime = 'image/jpeg';
+                        $logoSrc = "data:$mime;base64," . base64_encode($imageContent);
+                    }
+                }
+            } catch (Throwable $e) {
+                // ignore blob load errors and fallback to null
+                $logoSrc = null;
+            }
+        }
+
+        // fallback placeholder
+        if (!$logoSrc) {
+            $logoSrc = "/image/jobexp3.png";
+        }
+
         $rows[] = [
-            'job_id'      => $r['JOB_ID'] ?? null,
+            'job_id'      => $r['JOB_ID'] ?? $r['JP_ID'] ?? null,
             'created_at'  => isset($r['CREATED_AT']) ? (string)$r['CREATED_AT'] : null,
             'job_role'    => $r['JOB_TITLE'] ?? null,
             'company_name'=> $r['COMPANY_NAME'] ?? null,
             'address'     => $r['LOCATION'] ?? null,
             'description' => $r['DESCRIPTION'] ?? null,
-            // COMPANY_IMAGE is BLOB — return null and let client use default or implement blob->base64 if desired
-            'logo'        => null,
+            'logo'        => $logoSrc,
         ];
     }
 
