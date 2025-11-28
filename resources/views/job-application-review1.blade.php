@@ -31,27 +31,22 @@
             $jobType = data_get($job, 'type', 'Unknown Description');
         @endphp
 
-        <div
-            class="bg-[#F0F9FF] border-[3px] border-[#1E40AF] rounded-3xl p-10 flex flex-col sm:flex-row items-center gap-10 shadow-lg">
-            <!-- Company Logo / Placeholder -->
-            <div class="flex items-center justify-center">
-                @if (!empty($company->logo))
-                    <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
-                        class="w-36 h-36 rounded-2xl border-2 border-gray-300 object-cover">
-                @else
-                    <div class="w-36 h-36 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
-                        <i class="ri-building-4-fill text-[#1E40AF] text-7xl"></i>
-                    </div>
-                @endif
-            </div>
-            <div class="flex flex-col justify-center leading-snug text-center sm:text-left max-w-3xl">
-                <h3 class="text-4xl font-extrabold text-black">{{ $jobTitle }}</h3>
-                <p class="text-gray-700 text-2xl font-semibold mt-2">{{ $jobCompany }}</p>
-                <p class="text-gray-600 text-xl mt-1">{{ $jobAddress }}</p>
-                <p class="text-gray-600 text-lg mt-3 leading-relaxed">{{ $jobType }}</p>
-                <!-- Job Description ito dapat dba? -->
-            </div>
-        </div>
+      <div
+          class="bg-[#F0F9FF] border-[3px] border-[#1E40AF] rounded-3xl p-10 flex flex-col sm:flex-row items-center gap-10 shadow-lg">
+          <!-- Company Logo / Placeholder -->
+          <div class="flex items-center justify-center">
+              <img id="jobLogo" src="https://via.placeholder.com/150?text=Logo" alt="Company Logo"
+                  class="w-36 h-36 rounded-2xl border-2 border-gray-300 object-cover">
+          </div>
+
+          <!-- Job Info -->
+          <div class="flex flex-col justify-center leading-snug text-center sm:text-left max-w-3xl">
+              <h3 id="jobTitle" class="text-4xl font-extrabold text-black">Job Title</h3>
+              <p id="jobCompany" class="text-gray-700 text-2xl font-semibold mt-2">Company Name</p>
+              <p id="jobLocation" class="text-gray-600 text-xl mt-1">Location</p>
+              <p id="jobDescription" class="text-gray-600 text-lg mt-3 leading-relaxed">Description</p>
+          </div>
+      </div>
     </section>
 
     <section class="max-w-6xl mx-auto p-10 space-y-14">
@@ -124,7 +119,20 @@
                     class="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-xl text-2xl font-semibold">Edit</button>
                 <h3 class="text-3xl font-bold text-[#1E40AF] border-b-4 border-blue-200 pb-3 mb-8 text-center sm:text-left">
                     Required Documents</h3>
-                <ul id="rev-doc-list" class="list-disc list-inside text-lg space-y-1"></ul>
+
+                <!-- Rendered slots (same UI as application1) -->
+                <div id="rev-required-slots" class="space-y-4"></div>
+
+                <!-- Fallback list (kept for compatibility) -->
+                <ul id="rev-doc-list" class="list-disc list-inside text-lg space-y-1 hidden"></ul>
+            </div>
+
+            <!-- File preview modal for review page -->
+            <div id="reviewFileModal" class="hidden fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 p-4">
+            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full overflow-hidden relative">
+                <button id="reviewFileModalClose" class="absolute top-3 right-3 bg-gray-200 px-3 py-1 rounded">✕</button>
+                <div id="reviewFileModalContent" class="p-4 min-h-[320px] flex items-center justify-center"></div>
+            </div>
             </div>
 
             <!-- FINAL CONFIRMATION INFO BOX -->
@@ -197,94 +205,362 @@
                 });
             }
         </script>
+        @php
+            // We no longer use CSV files here — the page will request jobs from
+            // public/db/get-jobs.php on the client. Keep only job_id for JS.
+            // accept either job_id or id (URL may use ?id=...)
+            $job_id = request('job_id') ?? request('id') ?? '';
+        @endphp
 
+        @php
+            // Try to fetch the single job server-side (so the page can render immediately)
+            $job = null;
+            if (!empty($job_id)) {
+                try {
+                    $oraclePath = base_path('public/db/oracledb.php');
+                    if (file_exists($oraclePath)) {
+                        require_once $oraclePath; // provides getOracleConnection()
+                        $conn = getOracleConnection();
+                        if ($conn) {
+                            // Basic job row
+                            $sql = "SELECT ID, COMPANY_NAME, JOB_ROLE, JOB_DESCRIPTION, ADDRESS, JOB_TYPE, EMPLOYEE_CAPACITY FROM JOB_POSTINGS WHERE ID = :job_id";
+                            $stid = oci_parse($conn, $sql);
+                            oci_bind_by_name($stid, ':job_id', $job_id);
+                            oci_execute($stid);
+                            $row = oci_fetch_assoc($stid);
+                            if ($row) {
+                                // skills
+                                $skills = [];
+                                $pSql = "SELECT VALUE, TYPE FROM JOB_PROFILE WHERE JOB_POSTING_ID = :job_id AND VALUE IS NOT NULL AND TYPE IN ('skills','job-position','role')";
+                                $pstid = oci_parse($conn, $pSql);
+                                oci_bind_by_name($pstid, ':job_id', $job_id);
+                                @oci_execute($pstid);
+                                while ($p = @oci_fetch_assoc($pstid)) {
+                                    $t = strtolower($p['TYPE'] ?? '');
+                                    if ($t === 'skills') $skills[] = $p['VALUE'];
+                                }
+                                @oci_free_statement($pstid);
 
-    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-        {{-- <script type="module">
-            import {
-                signInWithServerToken
-            } from "{{ asset('js/job-application-firebase.js') }}";
-            (function() {
-                // Guard: require signed-in user before rendering review values
-                async function guardAndInit() {
-                    try {
-                        try {
-                            <!-- firebase.token removed -->
-                        } catch (e) {
-                            console.debug('signInWithServerToken failed', e);
-                        }
-                        const mod = await import('{{ asset('js/job-application-firebase.js') }}');
-                        console.debug('Auth guard: waiting for sign-in resolution (7s)');
-                        const signed = await mod.isSignedIn(7000);
-                        console.debug('Auth guard: isSignedIn ->', signed);
-                        if (!signed) {
-                            if (window.__SERVER_AUTH) {
-                                console.info('Auth guard: server session present, not redirecting');
-                                return;
+                                // image (match get-jobs.php behavior)
+                                $imgSql = "SELECT COMPANY_IMAGE FROM JOB_POSTINGS WHERE ID = :job_id";
+                                $imgSt = oci_parse($conn, $imgSql);
+                                oci_bind_by_name($imgSt, ':job_id', $job_id);
+                                @oci_execute($imgSt);
+                                $imgRow = @oci_fetch_assoc($imgSt);
+                                if ($imgRow && $imgRow['COMPANY_IMAGE'] !== null) {
+                                    $blob = $imgRow['COMPANY_IMAGE'];
+                                    $imageContent = $blob->load();
+                                    $logoSrc = "data:image/png;base64," . base64_encode($imageContent);
+                                } else {
+                                    $logoSrc = "https://via.placeholder.com/150?text=Logo";
+                                }
+                                @oci_free_statement($imgSt);
+
+                                $job = [
+                                    'id' => $row['ID'],
+                                    'company_name' => $row['COMPANY_NAME'] ?? '',
+                                    'job_role' => $row['JOB_ROLE'] ?? '',
+                                    'description' => $row['JOB_DESCRIPTION'] ?? '',
+                                    'address' => $row['ADDRESS'] ?? '',
+                                    'job_type' => $row['JOB_TYPE'] ?? '',
+                                    'skills' => $skills,
+                                    'openings' => $row['EMPLOYEE_CAPACITY'] ?? 10,
+                                    'applied' => 0,
+                                    'logo' => $logoSrc
+                                ];
                             }
-                            const current = window.location.pathname + window.location.search;
-                            console.info('Auth guard: not signed, redirecting to login');
-                            window.location.href = 'login?redirect=' + encodeURIComponent(current);
-                            return;
+                            @oci_free_statement($stid);
+                            @oci_close($conn);
                         }
-
-                        // load step1 and step2 (prefer sessionStorage, fallback to localStorage)
-                        const step1 = JSON.parse(sessionStorage.getItem('jobApplication_step1') || localStorage.getItem(
-                            'jobApplication_step1') || '{}');
-                        const step2 = JSON.parse(sessionStorage.getItem('jobApplication_step2') || localStorage.getItem(
-                            'jobApplication_step2') || '{}');
-
-                        // small DOM guard helper
-                        const setText = (id, value) => {
-                            const el = document.getElementById(id);
-                            if (!el) return;
-                            el.textContent = value;
-                        };
-
-                        // populate personal
-                        setText('rv_full_name', ((step1.first_name || '') + ' ' + (step1.last_name || '')).trim() ||
-                            '-');
-                        setText('rv_email', step1.email || '-');
-                        setText('rv_phone', step1.phone_number || '-');
-                        setText('rv_dob', step1.date_of_birth || '-');
-                        setText('rv_gender', step1.gender || '-');
-                        setText('rv_address', step1.address || '-');
-
-                        // populate work experience
-                        setText('rv_job_title', step1.job_title || '-');
-                        setText('rv_company', step1.company_employer || '-');
-                        const sd = step1.start_date || '';
-                        const ed = step1.end_date || '';
-                        // fix precedence: ensure (sd || ed) is evaluated for the ternary
-                        setText('rv_work_dates', (sd || ed) ? (sd + (ed ? ' - ' + ed : '')) : '-');
-                        setText('rv_work_desc', step1.job_description || '-');
-
-                        // Next => Review 2 (preserve job_id)
-                        document.getElementById('toReview2').addEventListener('click', function() {
-                            const jobId = "{{ request('job_id') }}";
-                            const base = "{{ route('job.application.review2') }}";
-                            const nextUrl = jobId ? base + '?job_id=' + encodeURIComponent(jobId) : base;
-                            window.location.href = nextUrl;
-                        });
-
-                        // Edit links: ensure they include job_id if present
-                        const jobId = "{{ request('job_id') }}";
-                        if (jobId) {
-                            const edit1 = document.getElementById('edit-step1');
-                            const edit1b = document.getElementById('edit-step1-2');
-                            if (edit1) edit1.href = "{{ route('job.application.1') }}" + '?job_id=' +
-                                encodeURIComponent(jobId);
-                            if (edit1b) edit1b.href = "{{ route('job.application.1') }}" + '?job_id=' +
-                                encodeURIComponent(jobId);
-                        }
-                    } catch (err) {
-                        console.error('Auth guard or review init failed', err);
                     }
-                }
-                guardAndInit();
-            })();
-        </script> --}}
-    </section>
+               } catch (\Throwable $e) {
+                   // ignore server-side lookup failures — client-side fetch will run as fallback
+               }
+           }
+       @endphp
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // inject server values safely
+    const serverJob = {!! json_encode($job ?? null, JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) !!};
+    const jobId = {!! json_encode($job_id ?? '', JSON_HEX_TAG|JSON_HEX_AMP|JSON_HEX_APOS|JSON_HEX_QUOT) !!};
+
+    function setText(id, v) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = (v === undefined || v === null || String(v).trim() === '') ? '' : String(v);
+    }
+
+    function loadSavedStep1() {
+        const keys = ['jobApplication_step1','jobApplication_step_1','jobApplication-step1','step1','application_step1'];
+        for (const k of keys) {
+            try {
+                const raw = sessionStorage.getItem(k) || localStorage.getItem(k);
+                if (!raw) continue;
+                const obj = JSON.parse(raw);
+                if (obj && typeof obj === 'object') return obj;
+            } catch (e) { /* ignore */ }
+        }
+        // fallback: gather individual keys
+        const candidates = ['firstName','lastName','email','age','phone','address','first_name','last_name','email_address','phone_number'];
+        const out = {};
+        let found = false;
+        for (const k of candidates) {
+            try {
+                const v = sessionStorage.getItem(k) || localStorage.getItem(k);
+                if (v !== null && v !== undefined) { out[k] = v; found = true; }
+            } catch (e) {}
+        }
+        return found ? out : null;
+    }
+
+    function pick(obj, keys) {
+        if (!obj) return '';
+        for (const k of keys) {
+            if (Object.prototype.hasOwnProperty.call(obj, k) && obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== '') return obj[k];
+        }
+        return '';
+    }
+
+    // populate fields
+    const saved = loadSavedStep1();
+    if (saved) {
+        setText('rev-firstname', pick(saved, ['firstName','first_name','FIRST_NAME']));
+        setText('rev-lastname',  pick(saved, ['lastName','last_name','LAST_NAME']));
+        setText('rev-email',     pick(saved, ['email','EMAIL','email_address','EMAIL_ADDRESS']));
+        setText('rev-age',       pick(saved, ['age','AGE']));
+        setText('rev-phone',     pick(saved, ['phone','phone_number','CONTACT_NUMBER','contact_number']));
+        setText('rev-address',   pick(saved, ['address','ADDRESS','complete_address']));
+    }
+
+    // minimal doc list renderer (safe)
+    function populateDocs(obj) {
+        const listEl = document.getElementById('rev-doc-list');
+        if (!listEl) return;
+        listEl.innerHTML = '';
+        const docs = (obj && Array.isArray(obj.uploadedFiles) ? obj.uploadedFiles.slice() : []);
+        if (docs.length === 0) {
+            const li = document.createElement('li'); li.textContent = 'No documents uploaded'; listEl.appendChild(li); return;
+        }
+        docs.forEach(d => {
+            const li = document.createElement('li');
+            li.textContent = (typeof d === 'string') ? d : (d.name || 'Uploaded file');
+            listEl.appendChild(li);
+        });
+    }
+
+    // job card rendering
+    function normalizeJob(j) {
+        if (!j) return null;
+        return {
+            role: j.job_role || j.job_title || j.title || '',
+            company: j.company_name || j.company || '',
+            address: j.address || j.location || '',
+            description: j.description || j.job_description || '',
+            logo: j.logo || j.company_image || j.company_logo || null
+        };
+    }
+    function renderJob(j) {
+        if (!j) return;
+        const nj = normalizeJob(j);
+        setText('jobTitle', nj.role || 'Job Title');
+        setText('jobCompany', nj.company || '');
+        setText('jobLocation', nj.address || '');
+        const desc = document.getElementById('jobDescription'); if (desc) desc.textContent = nj.description || '';
+        const logo = document.getElementById('jobLogo');
+        if (logo) {
+            let src = nj.logo || '';
+            if (src && typeof src === 'string' && !/^data:|^https?:\/\//i.test(src)) {
+                if (/^[A-Za-z0-9+/=]+$/.test(src) && src.length > 100) src = 'data:image/png;base64,' + src;
+                else src = '';
+            }
+            logo.src = src || 'https://via.placeholder.com/150?text=Logo';
+            logo.onerror = () => { logo.src = 'https://via.placeholder.com/150?text=Logo'; };
+        }
+    }
+
+    if (serverJob) renderJob(serverJob);
+    else if (saved) {
+        // attempt approximate job from saved payload
+        const approx = { job_role: pick(saved, ['job_title','jobTitle']), company_name: pick(saved, ['company','company_employer']), address: pick(saved, ['address','location']), description: pick(saved, ['job_description','description']) };
+        if (approx.job_role || approx.company_name) renderJob(approx);
+    }
+
+    populateDocs(saved || serverJob || {});
+
+    // signal other scripts
+    window.dispatchEvent(new CustomEvent('jobReview:storageLoaded'));
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const SLOT_CONTAINER_ID = 'rev-required-slots';
+    const LS_PREFIX = 'jobreq_';
+
+    function readSavedPayload() {
+        try {
+            const raw = sessionStorage.getItem('jobApplication_step1') || localStorage.getItem('jobApplication_step1');
+            if (raw) return JSON.parse(raw);
+        } catch (e) {}
+        return null;
+    }
+
+    function readPersistedSlotsFromLS() {
+        const out = [];
+        try {
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key || !key.startsWith(LS_PREFIX)) continue;
+                const parts = key.slice(LS_PREFIX.length).split('_');
+                const field = parts[0];
+                const name = localStorage.getItem(LS_PREFIX + field + '_name');
+                const data = localStorage.getItem(LS_PREFIX + field + '_data');
+                const type = localStorage.getItem(LS_PREFIX + field + '_type') || '';
+                if (name) out.push({ key: field, name: name, data: data || null, type: type });
+            }
+        } catch (e) {}
+        return out;
+    }
+
+    function clearPersistedKey(key) {
+        try {
+            localStorage.removeItem(LS_PREFIX + key + '_name');
+            localStorage.removeItem(LS_PREFIX + key + '_data');
+            localStorage.removeItem(LS_PREFIX + key + '_type');
+        } catch (e) {}
+    }
+
+    function openReviewModal(url, type) {
+        const modal = document.getElementById('reviewFileModal');
+        const content = document.getElementById('reviewFileModalContent');
+        if (!modal || !content) return;
+        content.innerHTML = '';
+        if ((type && type.indexOf('image/') === 0) || (typeof url === 'string' && url.indexOf('data:image/') === 0)) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.className = 'max-h-[70vh] max-w-full rounded';
+            content.appendChild(img);
+        } else if ((type && type.indexOf('pdf') !== -1) || (typeof url === 'string' && url.slice(-4).toLowerCase() === '.pdf')) {
+            const iframe = document.createElement('iframe');
+            iframe.src = url;
+            iframe.className = 'w-full h-[70vh] border-0';
+            content.appendChild(iframe);
+        } else {
+            const a = document.createElement('a');
+            a.href = url;
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            a.textContent = 'Open file in new tab';
+            a.className = 'text-blue-600 underline';
+            content.appendChild(a);
+        }
+        modal.classList.remove('hidden');
+    }
+
+    const modalClose = document.getElementById('reviewFileModalClose');
+    if (modalClose) modalClose.addEventListener('click', function () {
+        const modal = document.getElementById('reviewFileModal');
+        if (modal) modal.classList.add('hidden');
+    });
+
+    function createSlotNode(item) {
+        // map keys to display labels
+        const formatKeyLabel = (k) => {
+            if (!k) return '';
+            const key = String(k).toLowerCase();
+            if (key === 'pwd') return 'PWD';
+            if (key === 'medical') return 'Medical';
+            if (key === 'resume') return 'Resume';
+            return key.charAt(0).toUpperCase() + key.slice(1);
+        };
+        const wrap = document.createElement('div');
+        wrap.className = 'required-slot flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm';
+
+        const left = document.createElement('div');
+        left.className = 'flex-1 min-w-0 text-center sm:text-left';
+
+        const title = document.createElement('div');
+        title.className = 'text-lg font-semibold text-gray-800';
+        title.textContent = item.name;
+
+        const subtitle = document.createElement('div');
+        subtitle.className = 'text-sm text-gray-600 truncate';
+        subtitle.textContent = formatKeyLabel(item.key || '');
+
+        left.appendChild(title);
+        left.appendChild(subtitle);
+
+        const actions = document.createElement('div');
+        actions.className = 'flex gap-2 items-center flex-none';
+
+        const viewBtn = document.createElement('button');
+        viewBtn.type = 'button';
+        viewBtn.className = 'bg-gray-700 text-white text-sm px-3 py-1 rounded-md';
+        viewBtn.textContent = 'View';
+        viewBtn.disabled = !item.data;
+        viewBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (!item.data) return;
+            openReviewModal(item.data, item.type || '');
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.className = 'bg-red-500 text-white text-sm px-3 py-1 rounded-md';
+        removeBtn.textContent = 'Remove';
+        removeBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (item.key) {
+                clearPersistedKey(item.key);
+            }
+            renderSlots();
+        });
+
+        actions.appendChild(viewBtn);
+        actions.appendChild(removeBtn);
+
+        wrap.appendChild(left);
+        wrap.appendChild(actions);
+        return wrap;
+    }
+
+    function renderSlots() {
+        const container = document.getElementById(SLOT_CONTAINER_ID);
+        if (!container) return;
+        container.innerHTML = '';
+
+        const payload = readSavedPayload();
+        let docs = [];
+        if (payload && Array.isArray(payload.uploadedFiles) && payload.uploadedFiles.length) {
+            docs = payload.uploadedFiles.map(function (d) {
+                if (typeof d === 'string') return { key: '', name: d, data: null, type: '' };
+                return { key: d.key || d.name || '', name: d.name || d.label || 'Uploaded file', data: d.data || d.url || null, type: d.type || '' };
+            });
+        }
+
+        if (docs.length === 0) {
+            const persisted = readPersistedSlotsFromLS();
+            docs = persisted;
+        }
+
+        if (!docs || docs.length === 0) {
+            const p = document.createElement('p');
+            p.className = 'text-gray-600';
+            p.textContent = 'No documents uploaded';
+            container.appendChild(p);
+            return;
+        }
+
+        docs.forEach(function (it) {
+            const node = createSlotNode(it);
+            container.appendChild(node);
+        });
+    }
+
+    renderSlots();
+});
+</script>
+
+    </section>
     </div>
 @endsection

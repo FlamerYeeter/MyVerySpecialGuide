@@ -888,11 +888,11 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
             <!-- Action Buttons -->
             <div class="flex flex-wrap justify-center gap-6 mt-10">
-                <button onclick="location.href='job-details?id=${job.id}'"
+                <button onclick="location.href='/job-details?job_id=${encodeURIComponent(job.id)}'"
                         class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
                     📝 See Details
                 </button>
-                <button onclick="location.href='apply.php?id=${job.id}'"
+                <button onclick="location.href='/job-application-1?job_id=${encodeURIComponent(job.id)}'"
                         class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
                     🚀 Apply Now
                 </button>

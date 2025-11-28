@@ -24,80 +24,96 @@
     <section class="max-w-6xl mx-auto mt-14 px-6">
         <h2 class="text-4xl font-extrabold text-[#1E40AF] mb-10 text-center">You Are Applying For</h2>
         @php
-            // reuse job-details CSV parsing to show the selected job on the application page
-            $csv_path = public_path('postings.csv');
-            $job = null;
-            $job_id = request('job_id');
-            if ($job_id !== null && file_exists($csv_path)) {
-                if (($handle = fopen($csv_path, 'r')) !== false) {
-                    $header = fgetcsv($handle);
-                    if ($header === false) {
-                        fclose($handle);
-                    }
-                    $cols = array_map(
-                        function ($h) {
-                            return trim($h);
-                        },
-                        $header ?: [],
-                    );
-                    $numCols = count($cols);
-                    $i = 0;
-                    $maxRows = 5000;
-                    while (($row = fgetcsv($handle)) !== false) {
-                        if ($numCols > 0) {
-                            if (count($row) < $numCols) {
-                                $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
-                            } elseif (count($row) > $numCols) {
-                                $row = array_slice($row, 0, $numCols);
-                            }
-                            if (count($row) !== $numCols) {
-                                $i++;
-                                continue;
-                            }
-                        }
-                        if ($i >= $maxRows) {
-                            break;
-                        }
-                        if ($i == intval($job_id)) {
-                            $assoc = $numCols ? (array_combine($cols, $row) ?: []) : [];
-                            $job = [
-                                'title' => $assoc['Title'] ?? ($assoc['jobpost'] ?? ''),
-                                'company' => $assoc['Company'] ?? '',
-                                'location' => $assoc['Location'] ?? '',
-                                'job_description' => $assoc['JobDescription'] ?? ($assoc['JobRequirment'] ?? ''),
-                            ];
-                            break;
-                        }
-                        $i++;
-                    }
-                    fclose($handle);
-                }
-            }
+            // We no longer use CSV files here — the page will request jobs from
+            // public/db/get-jobs.php on the client. Keep only job_id for JS.
+            // accept either job_id or id (URL may use ?id=...)
+            $job_id = request('job_id') ?? request('id') ?? '';
         @endphp
 
-        <div
-            class="bg-[#F0F9FF] border-[3px] border-[#1E40AF] rounded-3xl p-10 flex flex-col sm:flex-row items-center gap-10 shadow-lg">
-            <!-- Company Logo / Placeholder -->
-            <div class="flex items-center justify-center">
-                @if (!empty($company->logo))
-                    <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
-                        class="w-36 h-36 rounded-2xl border-2 border-gray-300 object-cover">
-                @else
-                    <div class="w-36 h-36 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
-                        <i class="ri-building-4-fill text-[#1E40AF] text-7xl"></i>
-                    </div>
-                @endif
-            </div>
+        @php
+            // Try to fetch the single job server-side (so the page can render immediately)
+            $job = null;
+            if (!empty($job_id)) {
+                try {
+                    $oraclePath = base_path('public/db/oracledb.php');
+                    if (file_exists($oraclePath)) {
+                        require_once $oraclePath; // provides getOracleConnection()
+                        $conn = getOracleConnection();
+                        if ($conn) {
+                            // Basic job row
+                            $sql = "SELECT ID, COMPANY_NAME, JOB_ROLE, JOB_DESCRIPTION, ADDRESS, JOB_TYPE, EMPLOYEE_CAPACITY FROM JOB_POSTINGS WHERE ID = :job_id";
+                            $stid = oci_parse($conn, $sql);
+                            oci_bind_by_name($stid, ':job_id', $job_id);
+                            oci_execute($stid);
+                            $row = oci_fetch_assoc($stid);
+                            if ($row) {
+                                // skills
+                                $skills = [];
+                                $pSql = "SELECT VALUE, TYPE FROM JOB_PROFILE WHERE JOB_POSTING_ID = :job_id AND VALUE IS NOT NULL AND TYPE IN ('skills','job-position','role')";
+                                $pstid = oci_parse($conn, $pSql);
+                                oci_bind_by_name($pstid, ':job_id', $job_id);
+                                @oci_execute($pstid);
+                                while ($p = @oci_fetch_assoc($pstid)) {
+                                    $t = strtolower($p['TYPE'] ?? '');
+                                    if ($t === 'skills') $skills[] = $p['VALUE'];
+                                }
+                                @oci_free_statement($pstid);
 
-            <!-- Job Info -->
-            <div class="flex flex-col justify-center leading-snug text-center sm:text-left max-w-3xl">
-                <h3 class="text-4xl font-extrabold text-black">{{ $job['title'] ?? 'Job Title' }}</h3>
-                <p class="text-gray-700 text-2xl font-semibold mt-2">{{ $job['company'] ?? 'Company Name' }}</p>
-                <p class="text-gray-600 text-xl mt-1">{{ $job['location'] ?? 'Location' }}</p>
-                <p class="text-gray-600 text-lg mt-3 leading-relaxed">
-                    {{ Str::limit($job['job_description'] ?? 'Description', 200) }}</p>
-            </div>
-        </div>
+                                // image (match get-jobs.php behavior)
+                                $imgSql = "SELECT COMPANY_IMAGE FROM JOB_POSTINGS WHERE ID = :job_id";
+                                $imgSt = oci_parse($conn, $imgSql);
+                                oci_bind_by_name($imgSt, ':job_id', $job_id);
+                                @oci_execute($imgSt);
+                                $imgRow = @oci_fetch_assoc($imgSt);
+                                if ($imgRow && $imgRow['COMPANY_IMAGE'] !== null) {
+                                    $blob = $imgRow['COMPANY_IMAGE'];
+                                    $imageContent = $blob->load();
+                                    $logoSrc = "data:image/png;base64," . base64_encode($imageContent);
+                                } else {
+                                    $logoSrc = "https://via.placeholder.com/150?text=Logo";
+                                }
+                                @oci_free_statement($imgSt);
+
+                                $job = [
+                                    'id' => $row['ID'],
+                                    'company_name' => $row['COMPANY_NAME'] ?? '',
+                                    'job_role' => $row['JOB_ROLE'] ?? '',
+                                    'description' => $row['JOB_DESCRIPTION'] ?? '',
+                                    'address' => $row['ADDRESS'] ?? '',
+                                    'job_type' => $row['JOB_TYPE'] ?? '',
+                                    'skills' => $skills,
+                                    'openings' => $row['EMPLOYEE_CAPACITY'] ?? 10,
+                                    'applied' => 0,
+                                    'logo' => $logoSrc
+                                ];
+                            }
+                            @oci_free_statement($stid);
+                            @oci_close($conn);
+                        }
+                    }
+               } catch (\Throwable $e) {
+                   // ignore server-side lookup failures — client-side fetch will run as fallback
+               }
+           }
+       @endphp
+
+
+      <div
+          class="bg-[#F0F9FF] border-[3px] border-[#1E40AF] rounded-3xl p-10 flex flex-col sm:flex-row items-center gap-10 shadow-lg">
+          <!-- Company Logo / Placeholder -->
+          <div class="flex items-center justify-center">
+              <img id="jobLogo" src="https://via.placeholder.com/150?text=Logo" alt="Company Logo"
+                  class="w-36 h-36 rounded-2xl border-2 border-gray-300 object-cover">
+          </div>
+
+          <!-- Job Info -->
+          <div class="flex flex-col justify-center leading-snug text-center sm:text-left max-w-3xl">
+              <h3 id="jobTitle" class="text-4xl font-extrabold text-black">Job Title</h3>
+              <p id="jobCompany" class="text-gray-700 text-2xl font-semibold mt-2">Company Name</p>
+              <p id="jobLocation" class="text-gray-600 text-xl mt-1">Location</p>
+              <p id="jobDescription" class="text-gray-600 text-lg mt-3 leading-relaxed">Description</p>
+          </div>
+      </div>
     </section>
 
 
@@ -312,7 +328,8 @@
 </div>
             <!-- ================= SUBMIT BUTTON ================= -->
             <div class="flex justify-center mt-6">
-                <a href="/job-application-review1"
+                {{-- Preserve job_id when navigating to the review page (if present) --}}
+                <a href="/job-application-review1{{ $job_id ? ('?job_id=' . urlencode($job_id)) : '' }}"
                    class="bg-[#1E40AF] text-white text-3xl font-bold px-16 py-6 rounded-2xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition inline-block text-center">
                     Click to Review Application
                 </a>
@@ -552,7 +569,7 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
         <script>
             (function() {
                 // Helper: safely read request('job_id') from blade into JS
-                const jobId = "{{ request('job_id') ?? '' }}";
+                const jobId = {!! json_encode($job_id) !!};
 
                 // attach handler when DOM is ready
                 document.addEventListener('DOMContentLoaded', function() {
@@ -951,6 +968,226 @@ document.addEventListener('DOMContentLoaded', function () {
   function lockBodyLock(visible) { document.body.style.overflow = visible ? 'hidden' : ''; }
   // hook your modal open/close if needed (example when using openModal/closeModalLocal)
   // e.g. wrap openModal to call lockBodyLock(true) and close handlers to call lockBodyLock(false)
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const btn = document.getElementById('autofillPersonal');
+  if (!btn) return;
+
+  btn.addEventListener('click', async function (e) {
+    e.preventDefault();
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = 'Loading…';
+
+    try {
+      const res = await fetch('/db/get_profile.php', { credentials: 'same-origin' });
+      const json = await res.json();
+      if (!json || !json.success || !json.user) throw new Error(json && json.error ? json.error : 'No profile returned');
+
+      const u = json.user || {};
+
+      // helper to pick first existing key variant
+      const pick = (obj, keys) => {
+        for (const k of keys) {
+          if (obj[k] !== undefined && obj[k] !== null && String(obj[k]).trim() !== '') return obj[k];
+        }
+        return '';
+      };
+
+      // map server keys to form fields
+      const fieldMap = {
+        firstName: ['FIRST_NAME', 'first_name', 'firstName'],
+        lastName:  ['LAST_NAME', 'last_name', 'lastName'],
+        email:     ['EMAIL', 'email', 'EMAIL_ADDRESS'],
+        age:       ['AGE', 'age'],
+        phone:     ['CONTACT_NUMBER', 'contact_number', 'contactNumber', 'PHONE_NUMBER'],
+        address:   ['ADDRESS', 'address']
+      };
+
+      const setField = (name, value) => {
+        const byName = document.querySelector(`[name="${name}"]`);
+        const byId   = document.getElementById(name);
+        if (byName) byName.value = value;
+        else if (byId) byId.value = value;
+      };
+
+      setField('firstName', pick(u, fieldMap.firstName));
+      setField('lastName',  pick(u, fieldMap.lastName));
+      setField('email',     pick(u, fieldMap.email));
+      setField('age',       pick(u, fieldMap.age));
+      setField('phone',     pick(u, fieldMap.phone));
+      setField('address',   pick(u, fieldMap.address));
+
+    } catch (err) {
+      console.error('Autofill failed', err);
+      alert('Could not load profile. Please make sure you are logged in.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = orig;
+    }
+  });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // job_id from the URL
+    const jobId = {!! json_encode($job_id) !!};
+    // server-side lookup result (if found) — will be null if not found
+    const serverJob = {!! json_encode($job) !!};
+
+    // If the server already resolved the job, render it immediately and skip client fetch.
+    if (serverJob && Object.keys(serverJob).length) {
+        try { fill(serverJob); } catch (e) { console.error(e); }
+        return;
+    }
+
+    if (!jobId) return;
+
+    const payload = { user_id: localStorage.getItem('user_id') || '' };
+    fetch('/db/get-jobs.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(json => {
+        if (!json || !json.success || !Array.isArray(json.jobs)) {
+            console.warn('get-jobs returned no jobs or failed');
+            return;
+        }
+        // find by id (string/int compatible)
+        let job = json.jobs.find(j => String(j.id) === String(jobId));
+        if (!job) {
+            // legacy fallback: treat jobId as numeric index into array
+            const idx = parseInt(jobId, 10);
+            if (!Number.isNaN(idx) && json.jobs[idx]) {
+                job = json.jobs[idx];
+            }
+        }
+        if (!job) {
+            console.warn('Job not found for id:', jobId);
+            return;
+        }
+        fill(job);
+    })
+    .catch(err => console.error('Failed to load job from Oracle:', err));
+
+    function escapeHtml(s) {
+        if (s === null || s === undefined) return '';
+        return String(s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function fill(job) {
+        if (!job) return;
+        const titleEl = document.getElementById('jobTitle');
+        const companyEl = document.getElementById('jobCompany');
+        const locationEl = document.getElementById('jobLocation');
+        const descEl = document.getElementById('jobDescription');
+        const logoEl = document.getElementById('jobLogo');
+
+        if (titleEl) titleEl.textContent = job.job_role || job.job_title || job.title || 'Job Title';
+        if (companyEl) companyEl.textContent = job.company_name || job.company || '';
+        if (locationEl) locationEl.textContent = job.address || job.location || '';
+        if (descEl) descEl.innerHTML = escapeHtml(job.description || job.job_description || '').replace(/\n/g, '<br>');
+
+        // choose logo: prefer data URI or full URL
+        const logoCandidates = [job.logo, job.logo_url, job.company_logo, job.company_image, job.logo_src];
+        let logo = logoCandidates.find(x => x && String(x).trim() !== '');
+        if (logo && typeof logo === 'string') {
+            if (!/^data:/.test(logo) && !/^https?:\/\//i.test(logo)) {
+                if (/^[A-Za-z0-9+/=]+$/.test(logo) && logo.length > 100) {
+                    logo = 'data:image/png;base64,' + logo;
+                } else {
+                    logo = null;
+                }
+            }
+        } else {
+            logo = null;
+        }
+
+        if (logo) {
+            logoEl.src = logo;
+        } else {
+            logoEl.src = "https://via.placeholder.com/150?text=Logo";
+        }
+        logoEl.onerror = function () { this.src = "https://via.placeholder.com/150?text=Logo"; };
+    }
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  // attach to the review link (preserves existing href with job_id)
+  const toReview = document.querySelector('a[href^="/job-application-review1"]');
+  if (!toReview) return;
+
+  toReview.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    // Collect current form values (names used in this page)
+    const data = {
+      firstName: (document.querySelector('[name="firstName"]') || {}).value || '',
+      lastName:  (document.querySelector('[name="lastName"]')  || {}).value || '',
+      email:     (document.querySelector('[name="email"]')     || {}).value || '',
+      age:       (document.querySelector('[name="age"]')       || {}).value || '',
+      phone:     (document.querySelector('[name="phone"]')     || {}).value || '',
+      address:   (document.querySelector('[name="address"]')   || {}).value || '',
+      // optionally include other fields you may need
+      saved_at: new Date().toISOString()
+    };
+
+    try {
+      // Gather any persisted required-document uploads stored using LS_PREFIX 'jobreq_'
+      const uploads = [];
+      try {
+        const prefix = 'jobreq_';
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (!key || !key.startsWith(prefix)) continue;
+          // expected keys like jobreq_medical_name / jobreq_medical_data / jobreq_medical_type
+          const parts = key.slice(prefix.length).split('_'); // e.g. ['medical','name']
+          if (parts.length < 2) continue;
+          const field = parts[0]; // e.g. medical
+          // read name/data/type consistently
+          const name = localStorage.getItem(prefix + field + '_name') || null;
+          const dataUrl = localStorage.getItem(prefix + field + '_data') || null;
+          const type = localStorage.getItem(prefix + field + '_type') || null;
+          // add once per field if name present
+          if (name && (dataUrl || type)) {
+            // avoid duplicates
+            if (!uploads.find(u => u.key === field)) {
+              uploads.push({ key: field, name: name, type: type || '', data: dataUrl || '' });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('could not read persisted uploads', err);
+      }
+
+      // include uploads in the saved step payload so review page can show them
+      data.uploadedFiles = uploads;
+
+      const json = JSON.stringify(data);
+      sessionStorage.setItem('jobApplication_step1', json);
+      localStorage.setItem('jobApplication_step1', json);
+    } catch (err) {
+      console.warn('Could not persist application step1', err);
+    }
+
+    // navigate to the review URL that the anchor already points to
+    // (use href so job_id query param is preserved)
+    const href = toReview.getAttribute('href');
+    window.location.href = href;
+  });
 });
 </script>
     @endsection
