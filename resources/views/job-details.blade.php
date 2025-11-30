@@ -6,262 +6,8 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 
     @php
-        $csv_path = public_path('postings.csv');
         $job = null;
-        $job_id = request('job_id');
-
-        // First prefer precomputed recommendations.json if present (job-matches may be using it)
-        $json_path = public_path('recommendations.json');
-        if ($job_id !== null && file_exists($json_path)) {
-            $rows = json_decode(@file_get_contents($json_path), true) ?: [];
-            // Try to find by explicit job_id field (string/int) or by array index
-            foreach ($rows as $idx => $r) {
-                if (isset($r['job_id']) && (string) $r['job_id'] === (string) $job_id) {
-                    $job = [
-                        'title' =>
-                            trim($r['Title'] ?? ($r['title'] ?? '')) ?:
-                            (strlen(trim($r['job_description'] ?? ''))
-                                ? Str::limit($r['job_description'], 80)
-                                : 'Untitled Job'),
-                        'company' => trim($r['Company'] ?? ($r['company'] ?? '')),
-                        'job_description' => $r['job_description'] ?? ($r['description'] ?? ''),
-                        'job_requirement' => $r['resume'] ?? ($r['job_requirement'] ?? ''),
-                        'location' => $r['location'] ?? '',
-                        'hours' => $r['formatted_work_type'] ?? ($r['hours'] ?? ''),
-                        'salary' => $r['salary'] ?? ($r['Salary'] ?? null),
-                        'start_date' => $r['original_listed_time'] ?? null,
-                        'deadline' => $r['deadline'] ?? null,
-                        'announcement_code' => $r['announcement_code'] ?? '',
-                        'job_posting_url' => $r['job_posting_url'] ?? '',
-                        'application_url' => $r['application_url'] ?? '',
-                        'fit_level' => $r['fit_level'] ?? '',
-                        'growth_potential' => $r['growth_potential'] ?? '',
-                        'work_environment' => $r['work_environment'] ?? '',
-                    ];
-                    break;
-                }
-                // also allow numeric index match when JSON uses array positions as job ids
-                if ((string) $idx === (string) $job_id) {
-                    $r = $rows[$idx];
-                    $job = [
-                        'title' =>
-                            trim($r['Title'] ?? ($r['title'] ?? '')) ?:
-                            (strlen(trim($r['job_description'] ?? ''))
-                                ? Str::limit($r['job_description'], 80)
-                                : 'Untitled Job'),
-                        'company' => trim($r['Company'] ?? ($r['company'] ?? '')),
-                        'job_description' => $r['job_description'] ?? ($r['description'] ?? ''),
-                        'job_requirement' => $r['resume'] ?? ($r['job_requirement'] ?? ''),
-                        'location' => $r['location'] ?? '',
-                        'hours' => $r['formatted_work_type'] ?? ($r['hours'] ?? ''),
-                        'salary' => $r['salary'] ?? ($r['Salary'] ?? null),
-                        'start_date' => $r['original_listed_time'] ?? null,
-                        'deadline' => $r['deadline'] ?? null,
-                        'announcement_code' => $r['announcement_code'] ?? '',
-                        'job_posting_url' => $r['job_posting_url'] ?? '',
-                        'application_url' => $r['application_url'] ?? '',
-                        'fit_level' => $r['fit_level'] ?? '',
-                        'growth_potential' => $r['growth_potential'] ?? '',
-                        'work_environment' => $r['work_environment'] ?? '',
-                    ];
-                    break;
-                }
-            }
-        }
-
-        // If not found in recommendations.json, fall back to CSV parsing
-        if ($job === null && $job_id !== null && file_exists($csv_path)) {
-            if (($handle = fopen($csv_path, 'r')) !== false) {
-                $header = fgetcsv($handle);
-                $cols = array_map(
-                    function ($h) {
-                        return trim($h);
-                    },
-                    $header ?: [],
-                );
-                $numCols = count($cols);
-                if ($numCols === 0) {
-                    fclose($handle);
-                    return;
-                }
-                // same inference helpers as job-matches
-                $infer_fit_level = function (string $text) {
-                    $t = strtolower($text);
-                    $excellent = [
-                        'excellent',
-                        'perfect',
-                        'highly suitable',
-                        'highly qualified',
-                        'strong match',
-                        'ideal',
-                    ];
-                    foreach ($excellent as $k) {
-                        if (strpos($t, $k) !== false) {
-                            return 'Excellent Fit';
-                        }
-                    }
-                    $good = ['good fit', 'good', 'suitable', 'appropriate', 'fit'];
-                    foreach ($good as $k) {
-                        if (strpos($t, $k) !== false) {
-                            return 'Good Fit';
-                        }
-                    }
-                    return '';
-                };
-                $infer_growth_potential = function (string $text) {
-                    $t = strtolower($text);
-                    $high = [
-                        'promotion',
-                        'career growth',
-                        'growth',
-                        'advance',
-                        'development',
-                        'opportunity',
-                        'career advancement',
-                        'leadership',
-                    ];
-                    foreach ($high as $k) {
-                        if (strpos($t, $k) !== false) {
-                            return 'High Potential';
-                        }
-                    }
-                    $medium = ['entry level', 'entry-level', 'trainee', 'starter', 'mid-level'];
-                    foreach ($medium as $k) {
-                        if (strpos($t, $k) !== false) {
-                            return 'Medium Potential';
-                        }
-                    }
-                    return '';
-                };
-                $infer_work_environment = function (string $text) {
-                    $t = strtolower($text);
-                    $quiet = ['quiet', 'calm', 'low noise', 'private', 'peaceful', 'indoor quiet'];
-                    foreach ($quiet as $k) {
-                        if (strpos($t, $k) !== false) {
-                            return 'Quiet';
-                        }
-                    }
-                    $busy = ['busy', 'fast-paced', 'high energy', 'crowd', 'bustling', 'active environment'];
-                    foreach ($busy as $k) {
-                        if (strpos($t, $k) !== false) {
-                            return 'Busy';
-                        }
-                    }
-                    return '';
-                };
-
-                $i = 0;
-                $maxRows = 5000;
-                while (($row = fgetcsv($handle)) !== false) {
-                    if (count($row) < $numCols) {
-                        $row = array_merge($row, array_fill(0, $numCols - count($row), ''));
-                    } elseif (count($row) > $numCols) {
-                        $row = array_slice($row, 0, $numCols);
-                    }
-                    if (count($row) !== $numCols) {
-                        continue;
-                    }
-                    if ($i >= $maxRows) {
-                        break;
-                    }
-                    // Build associative row and try to match by explicit job_id-like columns first
-                    $assoc = array_combine($cols, $row) ?: [];
-                    $found = false;
-                    // normalize keys to lower for lookup
-                    $normRow = [];
-                    foreach ($assoc as $k => $v) {
-                        $normRow[strtolower(preg_replace('/[^a-z0-9]+/i', '_', trim((string) $k)))] = $v;
-                    }
-                    $candidateJobId = null;
-                    if (isset($normRow['job_id'])) {
-                        $candidateJobId = (string) $normRow['job_id'];
-                    } elseif (isset($normRow['jobid'])) {
-                        $candidateJobId = (string) $normRow['jobid'];
-                    } elseif (isset($normRow['id'])) {
-                        $candidateJobId = (string) $normRow['id'];
-                    }
-                    // If provided job_id matches a field in the row, select this row. Otherwise, fall back to numeric index match.
-                    if (
-                        $candidateJobId !== null &&
-                        (string) $job_id !== '' &&
-                        (string) $candidateJobId === (string) $job_id
-                    ) {
-                        $found = true;
-                    } elseif (is_numeric($job_id) && intval($job_id) === $i) {
-                        $found = true;
-                    }
-                    if ($found) {
-                        $textForInference = trim(
-                            ($assoc['JobDescription'] ?? '') .
-                                ' ' .
-                                ($assoc['JobRequirment'] ?? '') .
-                                ' ' .
-                                ($assoc['jobpost'] ?? ''),
-                        );
-                        $inferred_fit = $infer_fit_level($textForInference);
-                        $inferred_growth = $infer_growth_potential($textForInference);
-                        $inferred_env = $infer_work_environment($textForInference);
-                        // Robust field extraction with multiple header fallbacks
-                        $title = trim(
-                            $assoc['title'] ?? ($assoc['Title'] ?? ($assoc['jobpost'] ?? ($assoc['job_title'] ?? ''))),
-                        );
-                        $company = trim($assoc['company_name'] ?? ($assoc['Company'] ?? ($assoc['Employer'] ?? '')));
-                        $description = trim(
-                            $assoc['description'] ??
-                                ($assoc['JobDescription'] ?? ($assoc['JobRequirment'] ?? ($assoc['jobpost'] ?? ''))),
-                        );
-                        $requirement = trim(
-                            $assoc['job_requirement'] ??
-                                ($assoc['JobRequirment'] ?? ($assoc['RequiredQual'] ?? ($assoc['skills_desc'] ?? ''))),
-                        );
-                        $location = trim($assoc['location'] ?? ($assoc['Location'] ?? ($assoc['City'] ?? '')));
-                        // hours: prefer formatted_work_type (Full-time/Part-time) or Duration/Term, or parse 'Expected hours' from description
-                        $hours = trim(
-                            $assoc['formatted_work_type'] ??
-                                ($assoc['Duration'] ?? ($assoc['Term'] ?? ($assoc['Hours'] ?? ''))),
-                        );
-                        if ($hours === '') {
-                            if (preg_match('/Expected hours:\s*([^\r\n]+)/i', $description, $m)) {
-                                $hours = trim($m[1]);
-                            }
-                        }
-                        // salary: prefer normalized or max/min
-                        $salary = $assoc['normalized_salary'] ?? ($assoc['max_salary'] ?? ($assoc['Salary'] ?? ''));
-                        $start_date = $assoc['StartDate'] ?? ($assoc['original_listed_time'] ?? '');
-                        $deadline = $assoc['Deadline'] ?? ($assoc['expiry'] ?? ($assoc['closed_time'] ?? ''));
-                        $announcement_code = $assoc['AnnouncementCode'] ?? ($assoc['announcement_code'] ?? '');
-                        $job_posting_url =
-                            $assoc['job_posting_url'] ??
-                            ($assoc['job_posting_url'] ?? ($assoc['job_posting_link'] ?? ''));
-                        $application_url = $assoc['application_url'] ?? ($assoc['application_url'] ?? '');
-
-                        $job = [
-                            'title' => $title ?: ($description ? Str::limit($description, 80) : 'Untitled Job'),
-                            'company' => $company,
-                            'job_description' => $description,
-                            'job_requirement' => $requirement,
-                            'location' => $location,
-                            'hours' => $hours,
-                            'salary' => $salary,
-                            'start_date' => $start_date,
-                            'deadline' => $deadline,
-                            'announcement_code' => $announcement_code,
-                            'job_posting_url' => $job_posting_url,
-                            'application_url' => $application_url,
-                            'fit_level' => $assoc['fit_level'] ?? ($assoc['FitLevel'] ?? $inferred_fit),
-                            'growth_potential' =>
-                                $assoc['growth_potential'] ?? ($assoc['GrowthPotential'] ?? $inferred_growth),
-                            'work_environment' =>
-                                $assoc['work_environment'] ??
-                                ($assoc['WorkEnvironment'] ?? ($inferred_env ?? $location)),
-                        ];
-                        break;
-                    }
-                    $i++;
-                }
-                fclose($handle);
-            }
-        }
+        $job_id = request('job_id') ?? request('id') ?? '';
     @endphp
 
 
@@ -326,20 +72,22 @@
 
             <!-- Company Logo -->
             <div class="flex items-center justify-center sm:justify-start w-full sm:w-auto">
-                @if (!empty($company->logo))
-                    <img src="{{ asset('storage/' . $company->logo) }}" alt="Company Logo"
-                        class="w-24 h-24 rounded-xl border border-gray-300 object-cover">
-                @else
-                    <div class="w-24 h-24 flex items-center justify-center rounded-xl border-4 border-gray-300 bg-gray-50">
-                        <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
-                    </div>
-                @endif
+                {{-- Always render both; server may provide a URL but client fetch will override with blob/data-uri --}}
+                <img id="job-logo-img"
+                     src="{{ !empty($company->logo) ? asset('storage/' . $company->logo) : '' }}"
+                     alt="Company Logo"
+                     class="w-24 h-24 rounded-xl border border-gray-300 object-cover {{ empty($company->logo) ? 'hidden' : '' }}">
+
+                <div id="job-logo-fallback"
+                     class="w-24 h-24 flex items-center justify-center rounded-xl border-4 border-gray-300 bg-gray-50 {{ empty($company->logo) ? '' : 'hidden' }}">
+                    <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
+                </div>
             </div>
 
             <!-- Job Information -->
             <div class="flex flex-col items-center sm:items-start text-center sm:text-left flex-grow">
-                <h3 class="text-2xl sm:text-3xl font-bold text-black">Pet Care Assistant</h3>
-               <p class="flex items-center text-xl text-gray-700 gap-2">
+                <h3 id="job-title" class="text-2xl sm:text-3xl font-bold text-black">Pet Care Assistant</h3>
+               <p id="job-location" class="flex items-center text-xl text-gray-700 gap-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
                             BGC, Taguig City, Metro Manila
                         </p>
@@ -351,28 +99,34 @@
 
             <!-- LEFT CONTENT -->
             <div class="col-span-2 space-y-6">
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-job-description" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Job Description</h4>
+                    <div id="job-description-content" class="text-gray-700"></div>
                 </div>
 
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-why-join" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Why Join Us?</h4>
+                    <div id="why-join-content" class="text-gray-700"></div>
                 </div>
 
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-key-resp" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Key Responsibilities</h4>
+                    <div id="key-responsibilities-content" class="text-gray-700"></div>
                 </div>
 
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-looking-for" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Who we are Looking for</h4>
+                    <div id="looking-for-content" class="text-gray-700"></div>
                 </div>
 
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-working-env" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Working Environment</h4>
+                    <div id="working-environment-content" class="text-gray-700"></div>
                 </div>
 
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-qualifications" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Qualifications</h4>
+                    <div id="qualifications-content" class="text-gray-700"></div>
                 </div>
             </div>
 
@@ -382,99 +136,83 @@
             <div class="space-y-6">
 
                 <!-- About this role -->
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-about-role" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-3">About this Role</h4>
                     <div class="h-5 bg-gray-200 mb-2">
-                        <div class="h-5 bg-[#88BF02] w-1/2"></div>
+                        <div id="capacity-bar" class="h-5 bg-[#88BF02] w-0"></div>
                     </div>
                     <p class="text-lg font-semibold mb-3">
-                        <span class="text-black">5 applied</span>
-                        <span class="text-gray-600"> of 10 capacity</span>
+                        <span id="applied-count" class="text-black">0 applied</span>
+                        <span class="text-gray-600"> of </span>
+                        <span id="openings-count" class="text-gray-600 font-semibold">0 capacity</span>
                     </p>
                     <div class="grid grid-cols-2 gap-y-2 text-base">
                         <p class="text-gray-500 font-medium">Apply Before</p>
-                        <p class="text-right text-gray-800 font-semibold">September 20, 2025</p>
+                        <p id="apply-before" class="text-right text-gray-800 font-semibold">-</p>
 
                         <p class="text-gray-500 font-medium">Job Posted On</p>
-                        <p class="text-right text-gray-800 font-semibold">August 30, 2025</p>
+                        <p id="job-post-date" class="text-right text-gray-800 font-semibold">-</p>
 
                         <p class="text-gray-500 font-medium">Job Type</p>
-                        <p class="text-right text-gray-800 font-semibold">Full-Time</p>
+                        <p id="job-type" class="text-right text-gray-800 font-semibold">-</p>
                     </div>
                 </div>
 
                 <!-- Required Skills -->
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-skills" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-lg font-bold text-black mb-3">Required Skills</h4>
-                    <div class="flex flex-wrap gap-4">
-                        <span
-                            class="text-[#2563EB] border border-[#2563EB] text-sm font-semibold px-3 py-1 rounded-md">Teamwork</span>
-                        <span
-                            class="text-[#2563EB] border border-[#2563EB] text-sm font-semibold px-3 py-1 rounded-md">Cleaning</span>
-                        <span
-                            class="text-[#2563EB] border border-[#2563EB] text-sm font-semibold px-3 py-1 rounded-md">Patience</span>
-                        <span
-                            class="text-[#2563EB] border border-[#2563EB] text-sm font-semibold px-3 py-1 rounded-md">Empathy</span>
-                    </div>
+                    <div id="skills-container" class="flex flex-wrap gap-4"></div>
                 </div>
 
                 <!-- Job Positions -->
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-positions" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-lg  font-bold text-black mb-3">Job Positions</h4>
-                    <p class="text-left text-gray-800 font-semibold">No Job Position Input</p>
+                    <p id="job-positions" class="text-left text-gray-800 font-semibold">No Job Position Input</p>
                 </div>
 
                 <!-- Job Program -->
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-program" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-lg  font-bold text-black mb-3">Job Program</h4>
                     <p class="text-[#88BF02] border border-[#88BF02] px-3 py-1 rounded-md font-semibold inline-block">Love
                         ’Em Down</p>
                 </div>
 
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                <div id="box-hiring-manager" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-lg  font-bold text-black mb-3">Hiring Manager</h4>
                     <div class="flex items-center gap-3">
-                        <!-- Profile Image Placeholder -->
-                        <div
-                            class="w-12 h-12 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
+                        <div id="manager-avatar" class="w-12 h-12 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
                             <i class="ri-user-line text-gray-400 text-2xl"></i>
-                            <!--
-                                   <img src="path-to-profile.jpg" alt="Profile" class="w-full h-full object-cover hidden"
-                                    onerror="this.classList.add('hidden'); this.previousElementSibling.classList.remove('hidden');" />
-                                    -->
                         </div>
 
                         <!-- Name and Title -->
                         <div class="flex flex-col">
-                            <p class="font-medium text-base text-gray-800">John Carlo Garcia</p>
-                            <p class="text-gray-500 text-xs">Human Resources Manager</p>
+                            <p id="manager-name" class="font-medium text-base text-gray-800">John Carlo Garcia</p>
+                            <p id="manager-role" class="text-gray-500 text-xs">Human Resources Manager</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Contact Details -->
-                <div class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                                <div id="box-contact" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-lg  font-bold text-black mb-3">Contact Details</h4>
-                    <p class="text-sm font-regular text-gray-600 flex items-start gap-4">
+                    <p id="contact-address" class="text-sm font-regular text-gray-600 flex items-start gap-4">
                         <i class="ri-map-pin-line text-black text-lg"></i>
                         Lot 8 Blk W-39E Quezon Avenue, cor Jose Abad Santos St., Quezon City, Metro Manila
                     </p>
-                    <p class="mt-2 text-sm font-regular text-gray-600 flex items-start gap-4">
+                    <p id="contact-phone" class="mt-2 text-sm font-regular text-gray-600 flex items-start gap-4">
                         <i class="ri-phone-line text-black text-lg"></i> +63 5587 1234
                     </p>
-                    <p class="mt-2 text-sm font-regular text-gray-600 flex items-start gap-4">
+                    <p id="contact-email" class="mt-2 text-sm font-regular text-gray-600 flex items-start gap-4">
                         <i class="ri-mail-line text-black text-lg"></i> Juan.Carl@shakeys.com
                     </p>
-                    <p class="mt-2  text-sm font-regular text-gray-600 flex items-start gap-4">
+                    <p id="contact-industry" class="mt-2  text-sm font-regular text-gray-600 flex items-start gap-4">
                         <i class="ri-building-4-line text-black text-lg"></i> Restaurant
                     </p>
-                    <a href="https://www.shakeyspizza.ph/sustainability/people" target="_blank"
-                        class="mt-2  text-blue-500 text-sm flex items-center gap-4 hover:underline">
-                        <i class="ri-link text-black text-lg"></i> https://www.shakeyspizza.ph/
+                    <a id="company-website" href="#" target="_blank" class="mt-2  text-blue-500 text-sm flex items-center gap-4 hover:underline">
+                        <i class="ri-link text-black text-lg"></i> <span id="company-website-text">https://www.shakeyspizza.ph/</span>
                     </a>
-                    <a href="https://maps.app.goo.gl/xTquSe3sPdryda7" target="_blank"
-                        class="mt-2  text-blue-500 text-sm flex items-center gap-4 hover:underline">
-                        <i class="ri-map-2-line text-black text-lg"></i> Google Maps
+                    <a id="company-map" href="#" target="_blank" class="mt-2  text-blue-500 text-sm flex items-center gap-4 hover:underline">
+                        <i class="ri-map-2-line text-black text-lg"></i> <span id="company-map-text">Google Maps</span>
                     </a>
                 </div>
             </div>
@@ -514,163 +252,260 @@
         }
     </script>
 
+<script type="module">
+    (function () {
+        const jobId = {!! json_encode((string)$job_id) !!};
+        if (!jobId) return;
 
+        // Try current project's endpoint first, fallback to api/get-job-details.php
+        // Call the working endpoint directly (use `id` param that the endpoint expects)
+        const endpoints = [
+            '/db/get-job-details.php?id=' + encodeURIComponent(String(jobId))
+        ];
 
-    <!-- Job Details Section -->
-    @if ($job)
-        <section class="max-w-5xl mx-auto mt-10 px-4">
-            <div class="flex flex-col items-center">
-                <img src="/images/ipetclub.png" alt="iPet Club" class="w-40 h-40 object-contain mb-4">
-                <div class="flex space-x-4 mb-6">
-                    @php
-                        // Try Firestore approvals when uid param provided, else fall back to local file
-                        $guardianApprovals = [];
-                        $uidParam = request()->query('uid');
-                        if (!empty($uidParam)) {
-                            try {
-                                $fs = app(
-                                    \App\Http\Controllers\GuardianJobController::class,
-                                )->fetchApprovalsFromFirestore($uidParam);
-                                if (is_array($fs)) {
-                                    $guardianApprovals = $fs;
-                                }
-                            } catch (\Throwable $e) {
-                                logger()->warning('Firestore fetch failed in job-details: ' . $e->getMessage());
-                            }
-                        }
-                        if (empty($guardianApprovals)) {
-                            $approvals_path = storage_path('app/guardian_job_approvals.json');
-                            if (file_exists($approvals_path)) {
-                                $guardianApprovals = json_decode(file_get_contents($approvals_path), true) ?: [];
-                            }
-                        }
-                        $isApproved = false;
-                        $isFlagged = false;
-                        $approvalRec = null;
-                        // Normalize 'p' prefix (used by some client-side renderers) and keep multiple possible keys
-                        $jid = (string) $job_id;
-                        if (is_string($jid) && preg_match('/^p(\d+)$/i', $jid, $m)) {
-                            $jid = (string) intval($m[1]);
-                        }
-                        // Try multiple possible keys because job ids may be stored as numeric index, explicit job_id column, or prefixed (e.g. 'p0')
-                        $possibleKeys = [$jid];
-                        if (is_numeric($jid)) {
-                            $possibleKeys[] = (string) intval($jid);
-                            $possibleKeys[] = 'p' . (string) intval($jid);
-                        }
-                        // If job row/raw info present, try common raw id fields and row_index
-                        if (!empty($job['raw']) && is_array($job['raw'])) {
-                            $raw = $job['raw'];
-                            if (isset($raw['job_id'])) {
-                                $possibleKeys[] = (string) $raw['job_id'];
-                            }
-                            if (isset($raw['jobid'])) {
-                                $possibleKeys[] = (string) $raw['jobid'];
-                            }
-                            if (isset($raw['id'])) {
-                                $possibleKeys[] = (string) $raw['id'];
-                            }
-                        }
-                        if (isset($job['row_index'])) {
-                            $possibleKeys[] = (string) $job['row_index'];
-                        }
-                        // normalize and dedupe
-                        $possibleKeys = array_values(
-                            array_unique(
-                                array_filter($possibleKeys, function ($x) {
-                                    return strlen((string) $x) > 0;
-                                }),
-                            ),
-                        );
-                        foreach ($possibleKeys as $k) {
-                            if (isset($guardianApprovals[$k])) {
-                                $approvalRec = $guardianApprovals[$k];
-                                $st = $approvalRec['status'] ?? '';
-                                if ($st === 'approved') {
-                                    $isApproved = true;
-                                }
-                                if ($st === 'flagged') {
-                                    $isFlagged = true;
-                                }
-                                break;
-                            }
-                        }
-                    @endphp
+        function safeText(v, fallback = '-') {
+            if (v === null || v === undefined || v === '') return fallback;
+            return String(v);
+        }
 
-                    @if ($isApproved)
-                        <a href="{{ route('job.application.1', ['job_id' => $job_id]) }}"
-                            class="bg-pink-500 text-white px-6 py-2 rounded hover:bg-pink-600 transition">Apply</a>
-                    @else
-                        <button class="bg-gray-300 text-gray-700 px-6 py-2 rounded" disabled
-                            title="This job is pending guardian approval">Apply (Pending Guardian)</button>
-                    @endif
+        function asArray(v) {
+            if (!v) return [];
+            if (Array.isArray(v)) return v;
+            if (typeof v === 'string') {
+                // try JSON list
+                try {
+                    const parsed = JSON.parse(v);
+                    if (Array.isArray(parsed)) return parsed;
+                } catch (e) {}
+                // comma separated fallback
+                return v.split(',').map(x => x.trim()).filter(Boolean);
+            }
+            return [v];
+        }
 
-                    <button class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Saved</button>
-                </div>
-            </div>
-            <div class="bg-white rounded-lg p-6 shadow-sm">
-                <h2 class="text-2xl font-bold text-gray-800">{{ $job['title'] ?: $job['job_description'] }}</h2>
-                @if (!empty($job['company']))
-                    <p class="text-sm text-gray-700 font-medium">{{ $job['company'] }}</p>
-                @endif
-                <div class="flex items-center text-gray-600 text-sm space-x-3 mt-2">
-                    @if (!empty($job['location']))
-                        <span class="bg-gray-100 text-xs px-3 py-1 rounded">{{ $job['location'] }}</span>
-                    @endif
-                    @if (!empty($job['start_date']))
-                        <span class="bg-gray-100 text-xs px-3 py-1 rounded">Starts: {{ $job['start_date'] }}</span>
-                    @endif
-                </div>
-                <div class="mt-5">
-                    <h3 class="font-semibold text-gray-700">Job Description:</h3>
-                    <p class="text-gray-700 text-sm mt-2">{{ $job['job_description'] ?? ($job['description'] ?? '') }}</p>
-                </div>
-                <div class="mt-5">
-                    <h3 class="font-semibold text-gray-700">Resume Example:</h3>
-                    <p class="text-gray-600 text-sm mt-2">{{ $job['job_requirement'] }}</p>
-                </div>
-                <div class="mt-5">
-                    <h3 class="font-semibold text-gray-700">Job Fit Level & Potential</h3>
-                    <div class="flex flex-wrap gap-2 mt-2">
-                        {{-- no direct fit/growth data in CSV; show placeholders if available --}}
-                        @if (!empty($job['announcement_code']))
-                            <span class="bg-green-100 text-green-700 text-xs px-3 py-1 rounded">Code:
-                                {{ $job['announcement_code'] }}</span>
-                        @endif
-                        @if (!empty($job['salary']))
-                            <span class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded">Salary:
-                                {{ $job['salary'] }}</span>
-                        @endif
-                    </div>
-                </div>
-                <p class="text-xs text-gray-500 mt-4">Deadline: {{ $job['deadline'] ?? '-' }}</p>
-                @if ($approvalRec)
-                    <div class="mt-4 p-3 border rounded bg-gray-50">
-                        <div class="text-sm font-semibold">Guardian Review Status: <span
-                                class="inline-block px-2 py-1 rounded text-white {{ $isApproved ? 'bg-green-600' : ($isFlagged ? 'bg-red-600' : 'bg-yellow-600') }}">{{ $approvalRec['status'] ?? 'pending' }}</span>
-                        </div>
-                        <div class="text-xs text-gray-600 mt-1">Actioned by: {{ $approvalRec['actioned_by'] ?? '-' }}
-                            &middot; At: {{ $approvalRec['actioned_at'] ?? '-' }}</div>
-                        @if (!empty($approvalRec['feedback']))
-                            <div class="mt-2 text-sm">Feedback: {{ Str::limit($approvalRec['feedback'], 500) }}</div>
-                        @endif
-                    </div>
-                @endif
-            </div>
-        </section>
-    @else
-        
-    @endif
+        function setHtml(id, val) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (!val || (Array.isArray(val) && val.length === 0) ) {
+                el.innerHTML = '<span class="text-gray-500">No information provided</span>';
+                return;
+            }
+            if (Array.isArray(val)) {
+                el.innerHTML = '<ul class="list-disc pl-5">' + val.map(x => '<li>' + String(x) + '</li>').join('') + '</ul>';
+            } else {
+                el.innerHTML = String(val).replace(/\n/g, '<br/>');
+            }
+        }
 
-    <!-- Ensure global Firebase config is present and require login for actions on this page -->
-    {{-- Firebase removed: firebase-config-global.js intentionally omitted --}}
-    <script>
-        @auth
-        window.__SERVER_AUTH = true;
-        @else
-            window.__SERVER_AUTH = false;
-        @endauth
-    </script>
+        async function tryFetch(url) {
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                const text = await res.text();
+                if (!res.ok) throw new Error('Fetch failed: ' + res.status + ' ' + text.slice(0,200));
+                const json = JSON.parse(text);
+                return json;
+            } catch (err) {
+                console.debug('[job-details] fetch failed for', url, err);
+                return null;
+            }
+        }
+
+        async function fetchJob() {
+            try {
+                let json = null;
+                for (const u of endpoints) {
+                    json = await tryFetch(u);
+                    if (json) break;
+                }
+                if (!json) throw new Error('All job endpoints failed');
+
+                // If endpoint returns wrapper { success: true, job: {...} } prefer job
+                const payload = json.job ? json.job : (json.data ? json.data : json);
+
+                // Normalize fields across possible backends
+                const j = {
+                    id: payload.id ?? payload.ID ?? payload.job_id ?? payload.jobId ?? null,
+                    title: payload.title ?? payload.job_role ?? payload.role ?? payload.job_title ?? payload.JOB_ROLE ?? '',
+                    job_description: payload.job_description ?? payload.description ?? payload.JOB_DESCRIPTION ?? '',
+                    why_join_us: payload.why_join_us ?? payload.why_join ?? payload.WHY_JOIN_US ?? '',
+                    key_responsibilities: payload.key_responsibilities ?? payload.key_responsibility ?? payload.KEY_RESPONSIBILITIES ?? '',
+                    who_we_are_looking_for: payload.what_we_are_looking_for ?? payload.who_we_are_looking_for ?? payload.WHAT_WE_ARE_LOOKING_FOR ?? '',
+                    working_environment: payload.working_environment ?? payload.WORKING_ENVIRONMENT ?? '',
+                    qualifications: payload.qualifications ?? payload.QUALIFICATIONS ?? '',
+                    address: payload.address ?? (payload.company && payload.company.address) ?? payload.ADDRESS ?? '',
+                    phone: payload.phone ?? payload.contact_number ?? payload.PHONE ?? '',
+                    email: payload.email ?? payload.job_email ?? payload.EMAIL ?? '',
+                    website_link: payload.website_link ?? (payload.company && payload.company.website_link) ?? payload.WEBSITE_LINK ?? '',
+                    map_link: payload.map_link ?? payload.MAP_LINK ?? '',
+                    job_type: payload.job_type ?? payload.JOB_TYPE ?? '',
+                    job_post_date: payload.job_post_date ?? payload.JOB_POST_DATE ?? payload.posted_at ?? '',
+                    apply_before: payload.apply_before ?? payload.APPLY_BEFORE ?? '',
+                    openings: payload.openings ?? payload.employee_capacity ?? payload.EMPLOYEE_CAPACITY ?? 0,
+                    applied: payload.applied ?? payload.applied_count ?? 0,
+                    skills: asArray(payload.skills ?? payload.required_skills ?? payload.SKILLS ?? payload.REQUIRED_SKILLS ?? []),
+                    job_positions: asArray(payload.job_positions ?? payload.positions ?? payload.JOB_POSITIONS ?? payload.POSITIONS ?? []),
+                    company: payload.company ?? {
+                        id: payload.company_id ?? payload.COMPANY_ID ?? null,
+                        name: payload.company_name_official ?? payload.COMPANY_OFFICIAL_NAME ?? payload.company_name ?? payload.COMPANY_NAME ?? payload.company_name_from_job ?? ''
+                    },
+                    managers: payload.managers ?? payload.manager ?? payload.managers_list ?? []
+                };
+
+                // Company image detection
+                const possibleImage = payload.company_image ?? payload.company_image_data_uri ?? payload.company.logo ?? (payload.company && (payload.company.logo || payload.company.COMPANY_IMAGE || payload.company.COMPANY_PROOF)) ?? null;
+                j.company_image = possibleImage;
+
+                // Header
+                document.getElementById('job-title').textContent = safeText(j.title, 'Untitled Job');
+
+                // Location
+                const jobLocationEl = document.getElementById('job-location');
+                if (j.address) {
+                    // replace trailing text child (keeps icon)
+                    if (jobLocationEl && jobLocationEl.lastChild) {
+                        jobLocationEl.lastChild.textContent = ' ' + j.address;
+                    } else if (jobLocationEl) {
+                        jobLocationEl.textContent = j.address;
+                    }
+                }
+
+                // Logo
+                const imgEl = document.getElementById('job-logo-img');
+                const fallback = document.getElementById('job-logo-fallback');
+                if (j.company_image && imgEl) {
+                    // if it's already a data URI or absolute URL use directly
+                    imgEl.src = j.company_image;
+                    imgEl.classList.remove('hidden');
+                    if (fallback) fallback.style.display = 'none';
+                } else if (imgEl && fallback) {
+                    imgEl.classList.add('hidden');
+                    fallback.style.display = 'flex';
+                }
+
+                // Left column content
+                setHtml('job-description-content', j.job_description);
+                setHtml('why-join-content', j.why_join_us);
+                setHtml('key-responsibilities-content', j.key_responsibilities);
+                setHtml('looking-for-content', j.who_we_are_looking_for);
+                setHtml('working-environment-content', j.working_environment);
+                setHtml('qualifications-content', j.qualifications);
+
+                // Counts & progress
+                const openings = parseInt(j.openings) || 0;
+                const applied = parseInt(j.applied) || 0;
+                const capEl = document.getElementById('openings-count');
+                const appliedEl = document.getElementById('applied-count');
+                const bar = document.getElementById('capacity-bar');
+                if (capEl) capEl.textContent = openings + ' capacity';
+                if (appliedEl) appliedEl.textContent = applied + ' applied';
+                if (bar) {
+                    const pct = openings > 0 ? Math.min(100, Math.round((applied / openings) * 100)) : 0;
+                    bar.style.width = pct + '%';
+                }
+
+                // Dates & type
+                document.getElementById('apply-before').textContent = safeText(j.apply_before, '-');
+                document.getElementById('job-post-date').textContent = safeText(j.job_post_date, '-');
+                document.getElementById('job-type').textContent = safeText(j.job_type, '-');
+
+                // Skills
+                const skillsContainer = document.getElementById('skills-container');
+                skillsContainer.innerHTML = '';
+                if (j.skills && j.skills.length) {
+                    j.skills.forEach(s => {
+                        const span = document.createElement('span');
+                        span.className = 'text-[#2563EB] border border-[#2563EB] text-sm font-semibold px-3 py-1 rounded-md';
+                        span.textContent = s;
+                        skillsContainer.appendChild(span);
+                    });
+                } else {
+                    skillsContainer.innerHTML = '<span class="text-gray-500">No skills listed</span>';
+                }
+
+                // Job positions
+                const posEl = document.getElementById('job-positions');
+                if (j.job_positions && j.job_positions.length) {
+                    posEl.textContent = j.job_positions.join(', ');
+                } else {
+                    posEl.textContent = 'No Job Position Input';
+                }
+
+                // Hiring manager: prefer first in managers array, else check payload.manager
+                let mgr = null;
+                if (Array.isArray(j.managers) && j.managers.length) {
+                    mgr = j.managers[0];
+                } else if (payload.manager) {
+                    mgr = payload.manager;
+                }
+                if (mgr) {
+                    const fullName = mgr.full_name ?? ((mgr.first_name || '') + ' ' + (mgr.last_name || '')) ?? mgr.FIRST_NAME ?? '';
+                    document.getElementById('manager-name').textContent = safeText(fullName, 'Hiring Manager');
+                    document.getElementById('manager-role').textContent = safeText(mgr.role ?? mgr.ROLE ?? '', '');
+                    if (mgr.avatar || mgr.avatar_url || mgr.avatarUrl) {
+                        const img = document.createElement('img');
+                        img.src = mgr.avatar || mgr.avatar_url || mgr.avatarUrl;
+                        img.alt = 'Manager';
+                        img.className = 'w-full h-full object-cover';
+                        const avatarHolder = document.getElementById('manager-avatar');
+                        avatarHolder.innerHTML = '';
+                        avatarHolder.appendChild(img);
+                    }
+                }
+
+                // Contact details
+                if (j.address) {
+                    const addrEl = document.getElementById('contact-address');
+                    if (addrEl && addrEl.lastChild) addrEl.lastChild.textContent = ' ' + j.address;
+                }
+                if (j.phone) {
+                    const phoneEl = document.getElementById('contact-phone');
+                    if (phoneEl && phoneEl.lastChild) phoneEl.lastChild.textContent = ' ' + j.phone;
+                }
+                if (j.email) {
+                    const emailEl = document.getElementById('contact-email');
+                    if (emailEl && emailEl.lastChild) emailEl.lastChild.textContent = ' ' + j.email;
+                }
+                if (j.company && j.company.industry) {
+                    const indEl = document.getElementById('contact-industry');
+                    if (indEl && indEl.lastChild) indEl.lastChild.textContent = ' ' + j.company.industry;
+                }
+
+                // website & map
+                const websiteA = document.getElementById('company-website');
+                const websiteText = document.getElementById('company-website-text');
+                if (j.website_link) {
+                    websiteA.href = j.website_link;
+                    websiteText.textContent = j.website_link;
+                } else if (j.company && (j.company.website || j.company.website_link)) {
+                    const w = j.company.website || j.company.website_link;
+                    websiteA.href = w;
+                    websiteText.textContent = w;
+                } else {
+                    websiteA.style.display = 'none';
+                }
+
+                const mapA = document.getElementById('company-map');
+                if (j.map_link) {
+                    mapA.href = j.map_link;
+                    document.getElementById('company-map-text').textContent = 'Open in maps';
+                } else {
+                    mapA.style.display = 'none';
+                }
+
+            } catch (err) {
+                console.warn('Job fetch error', err);
+                const fallback = '<span class="text-gray-500">Unable to load details. Check console/network for fetch response.</span>';
+                ['job-description-content','why-join-content','key-responsibilities-content','looking-for-content','working-environment-content','qualifications-content'].forEach(id=>{
+                    const el = document.getElementById(id);
+                    if (el && !el.innerHTML.trim()) el.innerHTML = fallback;
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchJob);
+    })();
+</script>
+
     {{-- <script type="module">
         (async function() {
             try {
