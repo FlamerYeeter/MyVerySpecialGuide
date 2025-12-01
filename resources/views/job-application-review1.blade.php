@@ -173,38 +173,152 @@
             <span>Back to Top</span>
         </button>
 
-        <script>
-            // Enable submit button only when checkbox is checked
-            const confirmCheck = document.getElementById('confirmCheck');
-            const submitBtn = document.getElementById('reviewSubmitBtn');
+<script>
+    // Enable submit button only when checkbox is checked
+    const confirmCheck = document.getElementById('confirmCheck');
+    const submitBtn = document.getElementById('reviewSubmitBtn');
 
-            confirmCheck.addEventListener('change', () => {
-                submitBtn.disabled = !confirmCheck.checked;
-            });
+    confirmCheck.addEventListener('change', () => {
+        submitBtn.disabled = !confirmCheck.checked;
+    });
 
-            submitBtn.addEventListener('click', () => {
-                alert('Application submitted successfully!');
-                // document.getElementById('applicationForm').submit();
-            });
+    // helper: convert dataURL to Blob
+    function dataURLtoBlob(dataurl) {
+        if (!dataurl || dataurl.indexOf('data:') !== 0) return null;
+        const arr = dataurl.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) u8arr[n] = bstr.charCodeAt(n);
+        return new Blob([u8arr], { type: mime });
+    }
 
-            // Show/hide the Back to Top button
-            const backToTopBtn = document.getElementById("backToTopBtn");
-            window.addEventListener("scroll", () => {
-                if (window.scrollY > 300) {
-                    backToTopBtn.classList.remove("hidden");
-                } else {
-                    backToTopBtn.classList.add("hidden");
+    submitBtn.addEventListener('click', async (ev) => {
+        ev.preventDefault();
+
+        if (!confirmCheck.checked) return;
+
+        submitBtn.disabled = true;
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = 'Submitting…';
+
+        try {
+            // gather saved payload (step1)
+            let saved = null;
+            try {
+                saved = JSON.parse(sessionStorage.getItem('jobApplication_step1') || localStorage.getItem('jobApplication_step1') || 'null');
+            } catch (e) { saved = null; }
+
+            // collect persisted required uploads (localStorage prefix used across pages)
+            const uploads = {};
+            try {
+                const prefix = 'jobreq_';
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (!key || !key.startsWith(prefix)) continue;
+                    const parts = key.slice(prefix.length).split('_'); // e.g. ['medical','name']
+                    if (parts.length < 2) continue;
+                    const field = parts[0]; // medical || resume || pwd
+                    const suffix = parts.slice(1).join('_'); // name | data | type
+                    uploads[field] = uploads[field] || {};
+                    uploads[field][suffix] = localStorage.getItem(prefix + field + '_' + suffix);
                 }
+            } catch (e) { /* ignore */ }
+
+            const fd = new FormData();
+
+            // Job & user identifiers
+            fd.append('job_id', typeof jobId !== 'undefined' ? jobId : '');
+            // attempt to send logged-in user id (if available in localStorage)
+            fd.append('guardian_id', localStorage.getItem('user_id') || '');
+
+            // basic personal fields (fallbacks to various key names)
+            const firstName = (saved && (saved.firstName || saved.first_name || saved.FIRST_NAME)) || document.getElementById('rev-firstname')?.textContent || '';
+            const lastName = (saved && (saved.lastName || saved.last_name || saved.LAST_NAME)) || document.getElementById('rev-lastname')?.textContent || '';
+            const email = (saved && (saved.email || saved.EMAIL || saved.email_address)) || document.getElementById('rev-email')?.textContent || '';
+            const age = (saved && (saved.age || saved.AGE)) || document.getElementById('rev-age')?.textContent || '';
+            const phone = (saved && (saved.phone || saved.phone_number || saved.PHONE_NUMBER)) || document.getElementById('rev-phone')?.textContent || '';
+            const address = (saved && (saved.address || saved.ADDRESS || saved.complete_address)) || document.getElementById('rev-address')?.textContent || '';
+
+            fd.append('first_name', firstName);
+            fd.append('last_name', lastName);
+            fd.append('email', email);
+            if (age) fd.append('age', age);
+            fd.append('phone_number', phone);
+            fd.append('complete_address', address);
+
+            // attach files — prefer persisted localStorage jobreq_* entries, else check saved.uploadedFiles
+            const attachFromLocalStorage = (key, formKey) => {
+                if (!uploads[key] || !uploads[key].data) return false;
+                const blob = dataURLtoBlob(uploads[key].data);
+                if (!blob) return false;
+                const filename = uploads[key].name || (key + '.bin');
+                fd.append(formKey, blob, filename);
+                return true;
+            };
+
+            const attachFromSavedArray = (nameHint, formKey) => {
+                if (!saved || !Array.isArray(saved.uploadedFiles)) return false;
+                for (const it of saved.uploadedFiles) {
+                    // file objects may be { key, name, data, type } or plain strings
+                    if (typeof it === 'string') continue;
+                    const keyMatch = (it.key || '').toLowerCase();
+                    const nameLower = (it.name || it.label || '').toLowerCase();
+                    if (keyMatch.includes(nameHint) || nameLower.includes(nameHint) || (it.name && it.name.toLowerCase().includes(nameHint))) {
+                        if (it.data) {
+                            const blob = dataURLtoBlob(it.data);
+                            if (blob) {
+                                fd.append(formKey, blob, it.name || (nameHint + '.bin'));
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            };
+
+            // medical -> MEDICAL_CERTIFICATE
+            if (!attachFromLocalStorage('medical', 'medical')) attachFromSavedArray('medical', 'medical');
+            // resume -> RESUME_CV
+            if (!attachFromLocalStorage('resume', 'resume')) attachFromSavedArray('resume', 'resume');
+            // pwd -> PWD_ID
+            if (!attachFromLocalStorage('pwd', 'pwd')) attachFromSavedArray('pwd', 'pwd');
+
+            // send to server endpoint (public/db/submit-application.php)
+            const res = await fetch('/db/submit-application.php', {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin'
             });
 
-            // Smooth scroll to top
-            function scrollToTop() {
-                window.scrollTo({
-                    top: 0,
-                    behavior: "smooth"
-                });
+            const json = await res.json();
+            if (json && json.success) {
+                alert('Application submitted successfully!');
+                // Optionally clear persisted step1/localStorage jobreq entries
+                try {
+                    sessionStorage.removeItem('jobApplication_step1');
+                    localStorage.removeItem('jobApplication_step1');
+                    ['medical','resume','pwd'].forEach(k => {
+                        localStorage.removeItem('jobreq_' + k + '_name');
+                        localStorage.removeItem('jobreq_' + k + '_data');
+                        localStorage.removeItem('jobreq_' + k + '_type');
+                    });
+                } catch (e) {}
+                // redirect or update UI as needed
+                if (json.redirect) window.location.href = json.redirect;
+            } else {
+                throw new Error((json && json.error) ? json.error : 'Submission failed');
             }
-        </script>
+        } catch (err) {
+            console.error(err);
+            alert('Failed to submit application: ' + (err.message || err));
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+        }
+    });
+</script>
         @php
             // We no longer use CSV files here — the page will request jobs from
             // public/db/get-jobs.php on the client. Keep only job_id for JS.
