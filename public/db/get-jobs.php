@@ -4,26 +4,57 @@ header('Content-Type: application/json');
 
 require_once 'oracledb.php'; // contains getOracleConnection()
 
-// ——— READ & VALIDATE JSON ———
-$json = file_get_contents('php://input');
-$data = json_decode($json, true);
-if (!$data) {
-    http_response_code(400);
-    die(json_encode(['success' => false, 'error' => 'Invalid JSON']));
+// ——— READ & VALIDATE JSON (but tolerate empty body) ———
+$raw = file_get_contents('php://input');
+$data = json_decode($raw, true);
+if (!is_array($data)) $data = [];
+
+// allow user id from JSON, GET param, or session (guardian_id == user id)
+$user_id = null;
+if (!empty($data['user_id'])) {
+    $user_id = preg_replace('/\D/', '', (string)$data['user_id']);
+} elseif (!empty($_GET['user_id'])) {
+    $user_id = preg_replace('/\D/', '', (string)$_GET['user_id']);
+} elseif (!empty($_SESSION['user_id'])) {
+    $user_id = preg_replace('/\D/', '', (string)$_SESSION['user_id']);
 }
+// normalize empty -> null
+if ($user_id === '') $user_id = null;
 
 $conn = getOracleConnection();
 if (!$conn) {
-    echo json_encode(['success' => false, 'message' => 'DB connection failed']);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'DB connection failed']);
     exit;
 }
 
-$user_id = $data['user_id'];
-
+// SQL: content matches for the provided guardian (if any) + global collab counts (all saved/applications)
 $sql = "
-SELECT *
-FROM (
-    SELECT 
+WITH
+  co_counts AS (
+    SELECT job_id, COUNT(DISTINCT guardian_id) AS CO_COUNT
+    FROM (
+      SELECT JOB_ID   AS job_id, GUARDIAN_ID FROM MVSG.SAVED_JOBS
+      UNION ALL
+      SELECT JOB_POSTING_ID AS job_id, GUARDIAN_ID FROM MVSG.APPLICATIONS
+    )
+    GROUP BY job_id
+  ),
+  max_co AS (
+    SELECT NVL(MAX(CO_COUNT),0) AS MAX_CO FROM co_counts
+  ),
+  content_match AS (
+    SELECT jp.JOB_POSTING_ID AS job_id, COUNT(*) AS MATCH_COUNT
+    FROM MVSG.JOB_PROFILE jp
+    JOIN MVSG.USER_PROFILE up
+      ON LOWER(up.VALUE) = LOWER(jp.VALUE)
+    WHERE (:user_id IS NOT NULL AND up.GUARDIAN_ID = :user_id)
+    GROUP BY jp.JOB_POSTING_ID
+  ),
+  base_jobs AS (
+    SELECT *
+    FROM (
+      SELECT 
         jp.ID,
         jp.COMPANY_NAME,
         jp.JOB_ROLE,
@@ -31,57 +62,56 @@ FROM (
         jp.ADDRESS,
         jp.JOB_TYPE,
         jp.EMPLOYEE_CAPACITY,
-        PRIORITY,
-        jp.JOB_POST_DATE,
-        ROW_NUMBER() OVER (PARTITION BY jp.ID ORDER BY PRIORITY) AS rn
-    FROM (
-        -- Priority 1: profile match
-        SELECT 
-            jp.ID,
-            jp.COMPANY_NAME,
-            jp.JOB_ROLE,
-            jp.JOB_DESCRIPTION,
-            jp.ADDRESS,
-            jp.JOB_TYPE,
-            jp.EMPLOYEE_CAPACITY,
-            1 AS PRIORITY,
-            jp.JOB_POST_DATE
-        FROM JOB_POSTINGS jp
-        INNER JOIN JOB_PROFILE JPR
-            ON JPR.JOB_POSTING_ID = jp.ID
-        INNER JOIN USER_PROFILE UP
-            ON UP.VALUE = JPR.VALUE
-        INNER JOIN USER_GUARDIAN UG
-            ON UG.ID = UP.GUARDIAN_ID
-        WHERE UG.ID = :user_id
+        1 AS PRIORITY,
+        jp.JOB_POST_DATE
+      FROM MVSG.JOB_POSTINGS jp
+      INNER JOIN MVSG.JOB_PROFILE JPR ON JPR.JOB_POSTING_ID = jp.ID
+      INNER JOIN MVSG.USER_PROFILE UP ON UP.VALUE = JPR.VALUE
+      INNER JOIN MVSG.USER_GUARDIAN UG ON UG.ID = UP.GUARDIAN_ID
+      WHERE (:user_id IS NOT NULL AND UG.ID = :user_id)
 
-        UNION ALL
+      UNION ALL
 
-        -- Priority 2: address match only
-        SELECT 
-            jp.ID,
-            jp.COMPANY_NAME,
-            jp.JOB_ROLE,
-            jp.JOB_DESCRIPTION,
-            jp.ADDRESS,
-            jp.JOB_TYPE,
-            jp.EMPLOYEE_CAPACITY,
-            2 AS PRIORITY,
-            jp.JOB_POST_DATE
-        FROM JOB_POSTINGS jp
-        INNER JOIN USER_GUARDIAN UG
-            ON UG.ADDRESS = jp.ADDRESS
-        WHERE UG.ID = :user_id
-    ) jp
-)
-WHERE rn = 1
-ORDER BY PRIORITY, JOB_POST_DATE DESC
-
+      SELECT 
+        jp.ID,
+        jp.COMPANY_NAME,
+        jp.JOB_ROLE,
+        jp.JOB_DESCRIPTION,
+        jp.ADDRESS,
+        jp.JOB_TYPE,
+        jp.EMPLOYEE_CAPACITY,
+        2 AS PRIORITY,
+        jp.JOB_POST_DATE
+      FROM MVSG.JOB_POSTINGS jp
+      INNER JOIN MVSG.USER_GUARDIAN UG ON UG.ADDRESS = jp.ADDRESS
+      WHERE (:user_id IS NOT NULL AND UG.ID = :user_id)
+    ) t
+  )
+SELECT bj.*,
+       NVL(cm.MATCH_COUNT,0) AS CONTENT_MATCHES,
+       NVL(cc.CO_COUNT,0)   AS COLLAB_COUNT,
+       CASE WHEN mc.MAX_CO > 0 THEN NVL(cc.CO_COUNT,0) / mc.MAX_CO ELSE 0 END AS COLLAB_SCORE_RAW,
+       LEAST(1, NVL(cm.MATCH_COUNT,0) / 5) AS CONTENT_SCORE_RAW,
+       mc.MAX_CO AS DEBUG_MAX_CO
+FROM (
+  SELECT bj2.*, ROW_NUMBER() OVER (PARTITION BY bj2.ID ORDER BY PRIORITY) AS rn
+  FROM base_jobs bj2
+) bj
+LEFT JOIN content_match cm ON cm.job_id = bj.ID
+LEFT JOIN co_counts cc ON cc.job_id = bj.ID
+LEFT JOIN max_co mc ON 1=1
+WHERE bj.rn = 1
+ORDER BY bj.PRIORITY, bj.JOB_POST_DATE DESC
 ";
 
 $stid = oci_parse($conn, $sql);
-oci_bind_by_name($stid, ':user_id', $user_id);
-oci_execute($stid);
+oci_bind_by_name($stid, ':user_id', $user_id, -1);
+if (!@oci_execute($stid)) {
+    $e = oci_error($stid) ?: oci_error($conn);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Query failed', 'oci' => $e]);
+    exit;
+}
 
 $jobs = [];
 
@@ -90,37 +120,32 @@ while ($row = oci_fetch_assoc($stid)) {
 
     // Fetch skills from JOB_PROFILE
     $profileSql = "
-        SELECT VALUE, TYPE 
-        FROM JOB_PROFILE 
-        WHERE JOB_POSTING_ID = :job_id 
-        AND VALUE IS NOT NULL
-        AND TYPE IN ('skills', 'job-position', 'role')
+        SELECT VALUE, TYPE
+        FROM MVSG.JOB_PROFILE
+        WHERE JOB_POSTING_ID = :job_id
+          AND VALUE IS NOT NULL
+          AND TYPE IN ('skills','job-position','role')
     ";
     $pstid = oci_parse($conn, $profileSql);
-    oci_bind_by_name($pstid, ':job_id', $jobId);
+    oci_bind_by_name($pstid, ':job_id', $jobId, -1);
     oci_execute($pstid);
 
-    $skills = [];
-    $jobTypes = [];
+    $skills = []; $jobTypes = [];
     while ($p = oci_fetch_assoc($pstid)) {
-        $type = strtolower($p['TYPE']);
-        if (strpos($type, 'role') !== false || $type === 'job-position') {
-            $jobTypes[] = $p['VALUE'];
-        } elseif ($type === 'skills') {
-            $skills[] = $p['VALUE'];
-        }
+        $type = strtolower($p['TYPE'] ?? '');
+        if (strpos($type, 'role') !== false || $type === 'job-position') $jobTypes[] = $p['VALUE'];
+        elseif ($type === 'skills') $skills[] = $p['VALUE'];
     }
     oci_free_statement($pstid);
 
-    // === Fetch COMPANY_IMAGE separately ===
-    $imgSql = "SELECT COMPANY_IMAGE FROM JOB_POSTINGS WHERE ID = :job_id";
+    // Fetch COMPANY_IMAGE as before
+    $imgSql = "SELECT COMPANY_IMAGE FROM MVSG.JOB_POSTINGS WHERE ID = :job_id";
     $imgStid = oci_parse($conn, $imgSql);
-    oci_bind_by_name($imgStid, ':job_id', $jobId);
+    oci_bind_by_name($imgStid, ':job_id', $jobId, -1);
     oci_execute($imgStid);
     $imgRow = oci_fetch_assoc($imgStid);
-
     if ($imgRow && $imgRow['COMPANY_IMAGE'] !== null) {
-        $blob = $imgRow['COMPANY_IMAGE']; // OCI-Lob object
+        $blob = $imgRow['COMPANY_IMAGE'];
         $imageContent = $blob->load();
         $logoSrc = "data:image/png;base64," . base64_encode($imageContent);
     } else {
@@ -128,22 +153,40 @@ while ($row = oci_fetch_assoc($stid)) {
     }
     oci_free_statement($imgStid);
 
+    // ensure numeric non-null values by explicit casts/fallbacks
+    $contentScoreRaw = isset($row['CONTENT_SCORE_RAW']) ? floatval($row['CONTENT_SCORE_RAW']) : 0.0;
+    $collabScoreRaw  = isset($row['COLLAB_SCORE_RAW'])  ? floatval($row['COLLAB_SCORE_RAW'])  : 0.0;
+    $contentMatches  = isset($row['CONTENT_MATCHES'])  ? intval($row['CONTENT_MATCHES']) : 0;
+    $collabCount     = isset($row['COLLAB_COUNT'])     ? intval($row['COLLAB_COUNT']) : 0;
+    $debugMaxCo      = isset($row['DEBUG_MAX_CO'])     ? intval($row['DEBUG_MAX_CO']) : 0;
+
+    // Blend: 70% content, 30% collaborative
+    $computedScore = round((0.7 * $contentScoreRaw + 0.3 * $collabScoreRaw) * 100, 2);
+
     $jobs[] = [
-        'id'            => $jobId,
-        'company_name'  => $row['COMPANY_NAME'] ?? 'Null',
-        'job_role'      => $row['JOB_ROLE'] ?? 'Service Crew',
-        'description'   => $row['JOB_DESCRIPTION'] ?? '',
-        'address'       => $row['ADDRESS'] ?? 'Null',
-        'job_type'      => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? 'Full Time'),
-        'skills'        => $skills,
-        'openings'      => $row['EMPLOYEE_CAPACITY'] ?? 10,
-        'applied'       => 0,
-        'logo'          => $logoSrc
+        'id'                    => $jobId,
+        'company_name'          => $row['COMPANY_NAME'] ?? null,
+        'job_role'              => $row['JOB_ROLE'] ?? null,
+        'description'           => $row['JOB_DESCRIPTION'] ?? '',
+        'address'               => $row['ADDRESS'] ?? null,
+        'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),
+        'skills'                => $skills,
+        'openings'              => $row['EMPLOYEE_CAPACITY'] ?? null,
+        'logo'                  => $logoSrc,
+        // hybrid signals (guaranteed numeric)
+        'content_score'         => round($contentScoreRaw * 100, 2),
+        'collab_score'          => round(min(1.0, $collabScoreRaw) * 100, 2),
+        'computed_score'        => $computedScore,
+        // debug fields (guaranteed numeric)
+        'debug_content_matches' => $contentMatches,
+        'debug_collab_count'    => $collabCount,
+        'debug_max_co'          => $debugMaxCo
     ];
 }
+
 
 oci_free_statement($stid);
 oci_close($conn);
 
-echo json_encode(['success' => true, 'jobs' => $jobs]);
+echo json_encode(['success' => true, 'user_id' => $user_id, 'jobs' => $jobs]);
 ?>
