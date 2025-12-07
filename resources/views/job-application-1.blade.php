@@ -849,19 +849,34 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
       bigInput.addEventListener('change', (e) => {
         const files = Array.from(e.target.files || []).slice(0, 3);
         if (!files.length) return;
-        // For each file, find first checked requirement that currently has no stored file
-        files.forEach(file => {
-          const targetDef = defs.find(d => {
-            const chk = document.getElementById(d.checkboxId);
-            return chk && chk.checked && !(stored[d.key] && stored[d.key].name);
-          });
-          if (targetDef) {
-            assignFileToKey(targetDef.key, file);
-          } else {
-            // if no checked empty slot exists, queue as pending
-            if (pendingFiles.length < 3) pendingFiles.push(file);
-          }
+
+        // Get checked definitions in order
+        const checkedDefs = defs.filter(d => {
+          const chk = document.getElementById(d.checkboxId);
+          return chk && chk.checked;
         });
+
+        // Mark already-occupied keys so we don't overwrite them synchronously
+        const occupied = new Set();
+        defs.forEach(d => { if (stored[d.key] && stored[d.key].name) occupied.add(d.key); });
+
+        // Assign files to available checked slots in order, reserving keys synchronously
+        let fileIndex = 0;
+        for (let i = 0; i < checkedDefs.length && fileIndex < files.length; i++) {
+          const def = checkedDefs[i];
+          if (occupied.has(def.key)) continue;
+          // reserve and assign
+          occupied.add(def.key);
+          assignFileToKey(def.key, files[fileIndex]);
+          fileIndex++;
+        }
+
+        // Any remaining files go to pending queue (kept for later assignment)
+        while (fileIndex < files.length && pendingFiles.length < 3) {
+          pendingFiles.push(files[fileIndex]);
+          fileIndex++;
+        }
+
         e.target.value = '';
         renderSlots();
         updateBigUploadContentVisibility();
