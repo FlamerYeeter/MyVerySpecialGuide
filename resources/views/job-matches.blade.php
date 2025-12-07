@@ -857,7 +857,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             <!-- Skills Section -->
             ${job.skills && job.skills.length > 0 ? `
             <div class="mt-8">
-                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills you will Use</h3>
+                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills</h3>
                 <div class="flex flex-wrap gap-4">
                     ${job.skills.map(skill => 
                     `<span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">${escapeHtml(skill)}</span>`
