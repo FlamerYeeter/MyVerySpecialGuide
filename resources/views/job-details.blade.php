@@ -12,8 +12,8 @@
 
 
     <!-- Back Button -->
-    <div class="bg-yellow-400 py-5 px-6 sm:px-10">
-        <div class="flex items-center space-x-3">
+    <div class="bg-yellow-400 w-full py-6 px-6 sm:px-10 lg:px-24">
+        <div class="flex justify-start items-center space-x-3 max-w-[1600px] mx-auto">
             <a href="{{ route('job.matches') }}"
                 class="flex items-center space-x-3 text-[#1E40AF] font-bold text-xl sm:text-3xl hover:underline focus:outline-none transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
@@ -29,7 +29,7 @@
     <div class="bg-green-100 border-[4px] border-green-400 rounded-lg p-5 mt-14 mx-4 sm:mx-10">
         <div class="flex items-center gap-6">
             <img src="{{ asset('image/bulb.png') }}" alt="Lightbulb Icon"
-                class="w-14 h-14 sm:w-16 sm:h-16 object-contain flex-shrink-0">
+                class="w-8 h-8 sm:w-12 sm:h-12 object-contain flex-shrink-0">
 
             <!-- Text Section -->
             <div class="flex flex-col justify-center leading-snug">
@@ -47,16 +47,16 @@
     <div class="bg-gray-50 border-[4px] border-gray-300 rounded-lg p-5 mt-8 mx-4 sm:mx-10">
         <div class="flex items-center gap-6">
             <!-- Info Icon -->
-            <i class="ri-information-line text-[#1E40AF] text-[2.8rem] sm:text-[3.5rem] flex-shrink-0"></i>
+            <i class="ri-information-line text-[#1E40AF] text-[2.8rem] sm:text-[2.8rem] flex-shrink-0"></i>
 
             <!-- Text Content -->
             <div class="flex flex-col justify-center leading-snug">
                 <p class="text-2xl sm:text-2xl text-black font-semibold">
-                    Click the <span class="text-blue-600 font-bold">“Back to Jobs”</span> button to go to the application form for
-                    this job.
+                    Click the <span class="text-blue-600 font-bold">“Back to Jobs”</span> button to go back to the 
+                    displayed hiring jobs.
                 </p>
                 <p class="mt-2 italic text-gray-700 text-xl">
-                    (Pindutin ang Back to Jobs button upang mapunta sa application form para sa trabahong ito.)
+                    (Pindutin ang Back to Jobs button upang bumalik muli at makita ang mga hiring na trabaho.)
                 </p>
             </div>
         </div>
@@ -87,7 +87,7 @@
             <!-- Job Information -->
             <div class="flex flex-col items-center sm:items-start text-center sm:text-left flex-grow">
                 <h3 id="job-title" class="text-2xl sm:text-3xl font-bold text-black">Pet Care Assistant</h3>
-               <p id="job-location" class="flex items-center text-xl text-gray-700 gap-2">
+               <p id="job-location" class="mt-2 flex items-center text-xl text-gray-700 gap-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
                             BGC, Taguig City, Metro Manila
                         </p>

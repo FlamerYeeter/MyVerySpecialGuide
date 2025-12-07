@@ -151,7 +151,7 @@
 
  <!-- Work Environment Info -->
                     <section class="border-b border-gray-200 pb-8 mb-8">
-                        <h3 class="text-blue-800 text-3xl font-bold mb-8">Work Environment</h3>
+                        <h3 class="text-blue-800 text-3xl font-bold mb-8">Preferred Work Environment</h3>
 
                         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -159,7 +159,6 @@
                             <div class="col-span-1">
                                 <div class="mb-4">
                                     <div class="flex items-center gap-4">
-                                        <span class="text-lg font-semibold leading-none">Preferred Workplace:</span>
                                         <div id="review_workplace_list" class="flex flex-wrap gap-3 text-gray-800"></div>
                                     </div>
                                 </div>

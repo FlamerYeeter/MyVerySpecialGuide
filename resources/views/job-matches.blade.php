@@ -1014,7 +1014,7 @@ function loadSavedState() {
         // ...existing code...
         </script>
         <!-- Instruction Section Wrapper -->
-        <div class="space-y-8">
+        <div class="mt-8 space-y-8">
 
             <!-- Apply Button Instruction -->
             <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-3xl border-l-8 border-[#2563EB] p-8 shadow-lg">
