@@ -88,6 +88,42 @@ try {
         ];
     }
 
+    // --- new: record view interactions (once per session) -------------------------
+    try {
+        if (!isset($_SESSION['ui_logged_saved_view']) || !is_array($_SESSION['ui_logged_saved_view'])) {
+            $_SESSION['ui_logged_saved_view'] = [];
+        }
+
+        // Prepare an insert statement; rely on DB identity for ID if available
+        $insSql = "INSERT INTO MVSG.USER_INTERACTIONS (GUARDIAN_ID, JOB_ID, INTERACTION_TYPE, INTERACTION_AT, META)
+                VALUES (:gid, :jid, :itype, SYSTIMESTAMP, :meta)";
+        $insStmt = @oci_parse($conn, $insSql);
+
+        foreach ($rows as $r) {
+            $jid = $r['job_id'] ?? null;
+            if (!$jid) continue;
+            // Avoid repeated inserts for the same job during this session
+            if (in_array((string)$jid, $_SESSION['ui_logged_saved_view'], true)) continue;
+
+            if ($insStmt) {
+                $itype = 'view';
+                $meta = json_encode(['source' => 'saved_list', 'note' => 'user fetched saved jobs']);
+                oci_bind_by_name($insStmt, ':gid', $guardianId);
+                oci_bind_by_name($insStmt, ':jid', $jid);
+                oci_bind_by_name($insStmt, ':itype', $itype);
+                oci_bind_by_name($insStmt, ':meta', $meta);
+                // execute but do not let a failure break the response
+                @oci_execute($insStmt);
+                // mark as logged in session
+                $_SESSION['ui_logged_saved_view'][] = (string)$jid;
+            }
+        }
+        if ($insStmt) @oci_free_statement($insStmt);
+    } catch (Throwable $e) {
+        // ignore logging failures — they should not affect primary API
+    }
+    // ---------------------------------------------------------------------------
+
     oci_free_statement($stid);
     oci_close($conn);
 

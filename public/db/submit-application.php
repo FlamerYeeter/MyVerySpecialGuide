@@ -214,6 +214,39 @@ try {
         throw new Exception('Commit failed: ' . ($e['message'] ?? 'unknown'));
     }
 
+    // --- record apply interaction (best-effort, do not break main flow) ----------------
+    try {
+        // only log if we have both guardian and job (USER_INTERACTIONS likely requires NOT NULL FKs)
+        if (!empty($guardian_id) && !empty($job_id)) {
+            if (!isset($_SESSION['ui_logged_apply']) || !is_array($_SESSION['ui_logged_apply'])) {
+                $_SESSION['ui_logged_apply'] = [];
+            }
+            // avoid duplicate logs within session for same application/job
+            $sid = (string)($new_id ?: $job_id);
+            if (!in_array($sid, $_SESSION['ui_logged_apply'], true)) {
+                $insSql = "INSERT INTO MVSG.USER_INTERACTIONS (GUARDIAN_ID, JOB_ID, INTERACTION_TYPE, INTERACTION_AT, META)
+                           VALUES (:gid, :jid, :itype, SYSTIMESTAMP, :meta)";
+                $insStmt = @oci_parse($conn, $insSql);
+                if ($insStmt) {
+                    $itype = 'apply';
+                    $meta = json_encode(['source' => 'application_form', 'application_id' => $new_id ?: null]);
+                    oci_bind_by_name($insStmt, ':gid', $guardian_id);
+                    oci_bind_by_name($insStmt, ':jid', $job_id);
+                    oci_bind_by_name($insStmt, ':itype', $itype);
+                    oci_bind_by_name($insStmt, ':meta', $meta);
+                    // execute but do not let a failure break the response
+                    @oci_execute($insStmt);
+                    @oci_free_statement($insStmt);
+                }
+                // mark as logged in this session
+                $_SESSION['ui_logged_apply'][] = $sid;
+            }
+        }
+    } catch (Throwable $e) {
+        // ignore logging failures — they should not affect primary API
+    }
+    // ---------------------------------------------------------------------------
+
     // free resources
     $medBlob->free();
     $resBlob->free();
