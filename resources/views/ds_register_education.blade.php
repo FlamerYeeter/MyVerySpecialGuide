@@ -113,7 +113,8 @@
             </div>
         </div>
 
-        <form class="mt-10 max-w-3xl mx-auto">
+        <form id="educationForm" class="mt-10 max-w-3xl mx-auto" novalidate>
+            @csrf
             <!-- Education Question -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
                 <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Education</h2>
@@ -233,7 +234,7 @@
             </div>
 
             <!-- Hidden input for education level (collected by register.js) -->
-            <input id="edu_level" type="hidden" value="" />
+            <input id="edu_level" name="edu_level" type="hidden" value="" />
 
             <!-- School Name -->
             <div class="text-left px-2 sm:px-4 mt-16">
@@ -255,263 +256,92 @@
                     class="w-full border border-gray-300 rounded-lg p-3 sm:p-4 text-sm sm:text-base 
            focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none transition-all duration-200" />
             </div>
+<!-- Certificates -->
+<div class="mt-8 text-left px-2 sm:px-4">
+  <label for="certs" class="font-semibold text-base sm:text-lg flex items-center gap-2">
+    Do you have any certificates or special trainings?
+    <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+      data-tts-en="Do you have any certificates or special trainings?"
+      data-tts-tl="May mga certificate o special training ka ba?" aria-label="Play audio for other option">🔊</button>
+  </label>
 
-            <!-- Certificates -->
-            <div class="mt-8 text-left px-2 sm:px-4">
-                <!-- Main Label -->
-                <label for="certs" class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                    Do you have any certificates or special trainings?
-                    <button type="button" aria-label="Play audio for Other option"
-                        class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                         data-tts-en="Do you have any certificates or special trainings?"
-                         data-tts-tl="May mga certificate o special training ka ba?"
-                        aria-label="Play audio for other option">🔊
-                    </button>
-                </label>
+  <p class="text-gray-600 italic text-sm sm:text-base mb-2">(May mga certificate o special training ka ba?)</p>
 
-                <!-- Translation -->
-                <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-                    (May mga certificate o special training ka ba?)
-                </p>
-
-   <!-- Radio Buttons -->
   <div class="flex items-center gap-6 mt-2">
-  <label class="flex items-center gap-2 cursor-pointer">
-    <input
-      type="radio"
-      id="certYes"
-      name="certs"
-      value="yes"
-      class="text-blue-600 focus:ring-blue-400 w-5 h-5"
-    />
-    <span class="text-gray-800 text-sm sm:text-base">Yes</span>
-  </label>
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input type="radio" id="certYes" name="certs" value="yes" class="text-blue-600 focus:ring-blue-400 w-5 h-5" />
+      <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+    </label>
 
-  <label class="flex items-center gap-2 cursor-pointer">
-    <input
-      type="radio"
-      id="certNo"
-      name="certs"
-      value="no"
-      class="text-blue-600 focus:ring-blue-400 w-5 h-5"
-    />
-    <span class="text-gray-800 text-sm sm:text-base">No</span>
-  </label>
-</div>
-
-  <br>
-
-<!-- Certificate & Training Input Section -->
-<div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 mb-4">
-
-  <!-- Header row -->
-  <div class="flex items-center justify-between mb-3">
-    <h3 class="font-semibold text-[#1E40AF] text-base sm:text-lg flex items-center gap-2">
-      Certificate / Training Details
-    </h3>
-
-    <button
-      type="button"
-      class="remove-job text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 
-             px-3 py-1.5 rounded-lg font-medium transition-colors duration-200"
-    >
-      Remove
-    </button>
+    <label class="flex items-center gap-2 cursor-pointer">
+      <input type="radio" id="certNo" name="certs" value="no" class="text-blue-600 focus:ring-blue-400 w-5 h-5" />
+      <span class="text-gray-800 text-sm sm:text-base">No</span>
+    </label>
   </div>
 
-  <p class="text-gray-600 italic text-xs sm:text-sm mb-4">
-    I-type ang impormasyon tungkol sa certificate o training.
-  </p>
+  <!-- dynamic certificates section (initially hidden) -->
+  <div id="cert_section" class="hidden mt-6">
+    <input id="certificates" name="certificates" type="hidden" value="[]" />
 
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8"> 
-    <!-- Certificate Name -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-        <img
-          src="https://img.icons8.com/fluency/24/document.png"
-          alt="Certificate icon"
-          class="w-5 h-5"
-        />
-        Name of Certificate / Training
-      </label>
-      <input
-        type="text"
-        name="certificate_name"
-        placeholder="e.g. Food Safety Training"
-        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-      />
-      <p class=" italic text-xs text-gray-500 mt-1">
-        (Pangalan ng training o certificate)
-      </p>
-    </div>
+    <div id="certs_container" class="space-y-4"></div>
 
-    <!-- Organization -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-        <img
-          src="https://img.icons8.com/fluency/24/company.png"
-          alt="Organization icon"
-          class="w-5 h-5"
-        />
-        Issued By
-      </label>
-      <input
-        type="text"
-        name="issued_by"
-        placeholder="e.g. TESDA, Training Center"
-        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-      />
-      <p class="italic text-xs text-gray-500 mt-1">
-        (Sino ang nagbigay ng training)
-      </p>
-    </div>
+    <template id="cert_template">
+      <div class="cert_item bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
+        <div class="flex items-start justify-between mb-3">
+          <h3 class="font-semibold text-[#1E40AF] text-base sm:text-lg">Certificate / Training Details</h3>
+          <button type="button" class="remove-cert text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium">Remove</button>
+        </div>
 
-    <!-- Date Completed -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-        <img
-          src="https://img.icons8.com/fluency/24/calendar.png"
-          alt="Calendar icon"
-          class="w-5 h-5"
-        />
-        Date Completed
-      </label>
-      <input
-        type="date"
-        name="date_completed"
-        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-      />
-      <p class="italic text-xs text-gray-500 mt-1">
-        (Petsa kung kailan natapos)
-      </p>
-    </div>
+        <p class="text-gray-600 italic text-xs sm:text-sm mb-4">I-type ang impormasyon tungkol sa certificate o training.</p>
 
-    <!-- Simple Description -->
-    <div>
-      <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-        <img
-          src="https://img.icons8.com/fluency/24/idea.png"
-          alt="Idea icon"
-          class="w-5 h-5"
-        />
-        What did you learn?
-      </label>
-      <input
-        type="text"
-        name="training_description"
-        placeholder="e.g. How to clean, serve food, follow rules"
-        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-      />
-      <p class="italic text-xs text-gray-500 mt-1">
-        (Maikling paliwanag ng natutunan)
-      </p>
-    </div>
-  </div>
-</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <img src="https://img.icons8.com/fluency/24/document.png" alt="Certificate icon" class="w-5 h-5" />
+              Name of Certificate / Training
+            </label>
+            <input type="text" name="certificate_name" class="certificate_name w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" placeholder="e.g. Food Safety Training" />
+            <p class="italic text-xs text-gray-500 mt-1">(Pangalan ng training o certificate)</p>
+          </div>
 
-   <!-- Add Another Work Exp Button -->
-                <div class="mt-6 text-center mb-8">
-                    <button id="addJobBtn" type="button"
-                        class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Another Certificate / Training
-                    </button>
-                </div>
-               
-    <!-- File Upload -->
-    <div id="fileuploadSection"
-  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-><!-- 🔹 FILE UPLOAD SECTION -->
-<div
-  class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
->
-  <div class="flex-1">
-    <p class="font-medium text-gray-800 text-sm sm:text-base">
-      <span id="proofLabel" class="flex items-center gap-2">
-        <span>Upload Proof of Certificate or Training  (Image or PDF)</span>
-      </span>
-    </p>
-    <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-      (Mag-upload ng larawan o PDF bilang patunay ng Certificate o Training)<br /><br />
-      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
-      <b>5MB</b><br />
-    </p>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <img src="https://img.icons8.com/fluency/24/company.png" alt="Organization icon" class="w-5 h-5" />
+              Issued By
+            </label>
+            <input type="text" name="issued_by" class="issued_by w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" placeholder="e.g. TESDA, Training Center" />
+            <p class="italic text-xs text-gray-500 mt-1">(Sino ang nagbigay ng training)</p>
+          </div>
 
-    <!-- File preview details -->
-    <div
-      id="proofFileInfo"
-      class="mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm hidden"
-    >
-      <div class="flex items-center justify-between gap-4 p-2 border rounded-lg shadow-sm bg-white">
-  <!-- File icon + name -->
-  <div class="flex items-center gap-2">
-    <span id="proofFileIcon" class="text-2xl">📄</span>
-    <span
-      id="proofFileName"
-      class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"
-    ></span>
-  </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Calendar icon" class="w-5 h-5" />
+              Date Completed
+            </label>
+            <input type="date" name="date_completed" class="date_completed w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+            <p class="italic text-xs text-gray-500 mt-1">(Petsa kung kailan natapos)</p>
+          </div>
 
-  <!-- Buttons -->
-  <div class="flex gap-3">
-    <button
-      id="proofViewBtn"
-      type="button"
-      class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
-    >
-      View / Tingnan
-    </button>
-    <button
-      id="proofRemoveBtn"
-      type="button"
-      class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
-    >
-      Remove / Alisin
-    </button>
-  </div>
-</div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+              <img src="https://img.icons8.com/fluency/24/idea.png" alt="Idea icon" class="w-5 h-5" />
+              What did you learn?
+            </label>
+            <input type="text" name="training_description" class="training_description w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" placeholder="e.g. How to clean, serve food, follow rules" />
+            <p class="italic text-xs text-gray-500 mt-1">(Maikling paliwanag ng natutunan)</p>
+          </div>
+        </div>
+      </div>
+    </template>
 
+    <div class="mt-6 text-center mb-8">
+      <button id="addCertBtn" type="button" class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Add Another Certificate / Training
+      </button>
     </div>
   </div>
 
-  <!-- Upload button -->
-  <label
-    for="proof"
-    class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
-                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
-  >
-    📁 Choose File / Pumili ng File
-  </label>
-
-  <input
-    id="proof"
-    name="proof"
-    type="file"
-    accept=".jpg,.jpeg,.png,.pdf"
-    class="hidden"
-    multiple
-  />
-</div>
-
-<!-- 🔹 MODAL PREVIEW -->
-<div
-  id="fileModal"
-  class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50"
->
-  <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
-    <button
-      id="closeModalBtn"
-      class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl"
-    >
-      ×
-    </button>
-    <div id="modalContent" class="p-2 text-center"></div>
-            </div>
-  </div>
-  </div>
 
                 <script>
                     (function() {
@@ -663,8 +493,8 @@
             <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
                 <div id="educError" class="text-red-600 text-sm text-center"></div>
                 <button id="educNext" type="button"
-                    class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
-                    Next →
+                      class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
+                      Next →
                 </button>
                 <p class="text-gray-600 text-[11px] sm:text-sm mt-2 text-center leading-snug">
                     Click <span class="text-[#1E40AF] font-medium">"Next"</span> to move to the next page<br>
@@ -1081,154 +911,102 @@
 
 })();
 </script>
-        
+
 <script>
-    (function () {
-        const btn = document.getElementById('educNext');
-        if (!btn) return;
+document.addEventListener('DOMContentLoaded', function(){
+  (function(){
+    const formEl = document.getElementById('educationForm');
+    const btn = document.getElementById('educNext');
+    const nextUrl = '{{ route("registerworkexpinfo") }}';
+    if (!formEl || !btn) return;
 
-        btn.addEventListener('click', function () {
-            try {
-                // --- validation BEFORE saving/redirect ---
-                const clearFieldError = (id) => {
-                    const el = document.getElementById(id);
-                    if (!el) return;
-                    el.classList.remove('border-red-500');
-                    const err = el.parentNode && el.parentNode.querySelector('.field-error');
-                    if (err) err.remove();
-                };
-                const showFieldError = (id, msg) => {
-                    const el = document.getElementById(id);
-                    if (!el) return;
-                    el.classList.add('border-red-500');
-                    let err = el.parentNode.querySelector('.field-error');
-                    if (!err) {
-                        err = document.createElement('p');
-                        err.className = 'field-error mt-1 text-sm text-red-600 italic';
-                        el.parentNode.appendChild(err);
-                    }
-                    err.textContent = msg;
-                };
-                // clear previous inline errors
-                ['school_name','review_other','proof'].forEach(clearFieldError);
-                const errDiv = document.getElementById('educError');
-                if (errDiv) errDiv.textContent = '';
+    function showSummary(msg){ const e = document.getElementById('educError'); if (e) e.textContent = msg || ''; }
+    function clearInline(){
+      ['school_name','review_other','proof','edu_level','certificates'].forEach(id=>{
+        const el = document.getElementById(id);
+        if (el) el.classList.remove('border-red-500');
+        if (el && el.parentNode) {
+          const old = el.parentNode.querySelector('.field-error');
+          if (old) old.remove();
+        }
+      });
+    }
 
-                // Collect current values (same as existing)
-                const data = {};
-                document.querySelectorAll('input[id], select[id], textarea[id]').forEach(el => {
-                    const id = el.id;
-                    if (!id) return;
-                    data[id] = el.type === 'checkbox' ? !!el.checked : el.value || '';
-                });
+    function validate(){
+      clearInline();
+      showSummary('');
+      const errors = [];
+      const eduVal = (document.getElementById('edu_level') && document.getElementById('edu_level').value || '').toString().trim();
+      if (!eduVal) errors.push({ id: 'edu_level', msg: 'Please select your highest education.' });
+      const school = (document.getElementById('school_name') && document.getElementById('school_name').value || '').toString().trim();
+      if (!school) errors.push({ id: 'school_name', msg: 'Please enter your school name.' });
 
-                // determine selected education
-                let educationValuex = '';
-                const selectedCard = document.querySelector('.education-card.selected');
-                if (selectedCard) {
-                    const onclickAttr = selectedCard.getAttribute('onclick');
-                    const match = onclickAttr?.match(/selectEducationChoice\(this,\s*'([^']+)'\)/);
-                    if (match && match[1]) {
-                        educationValuex = match[1];
-                    }
-                } else {
-                    // maybe hidden input holds it
-                    const hidden = document.getElementById('edu_level');
-                    educationValuex = hidden ? (hidden.value || '') : educationValuex;
-                }
-                // if 'other' selected, insist on review_other text
-                const otherText = (document.getElementById('review_other') || {}).value || '';
+      const certSel = document.querySelector('input[name="certs"]:checked');
+      const certValue = certSel ? certSel.value : null;
+      if (certValue === 'yes') {
+        let ok = false;
+        try {
+          const raw = document.getElementById('certificates') ? document.getElementById('certificates').value : '[]';
+          const arr = JSON.parse(raw || '[]');
+          if (Array.isArray(arr) && arr.length) {
+            ok = arr.some(it => it && (String(it.certificate_name||'').trim() || String(it.issued_by||'').trim() || String(it.date_completed||'').trim() || String(it.training_description||'').trim()));
+          }
+        } catch(e){ ok = false; }
+        if (!ok) errors.push({ id: 'certificates', msg: 'Please add at least one Certificate / Training entry.' });
+      }
+      return errors;
+    }
 
-                // certificate radio
-                const selectedReviewCerts = document.querySelector('input[name="certs"]:checked');
-                const reviewCertsValue = selectedReviewCerts ? selectedReviewCerts.value : '';
+    function saveAndRedirect(){
+      try {
+        btn.classList.add('opacity-60');
+        const eduObj = {
+          edu_level: (document.getElementById('edu_level')?.value||'').toString(),
+          edu_other_text: (document.getElementById('review_other')?.value||'').toString(),
+          school_name: (document.getElementById('school_name')?.value||'').toString(),
+          certs: (document.querySelector('input[name="certs"]:checked')?.value||'').toString(),
+          certificates: []
+        };
+        try {
+          const raw = document.getElementById('certificates') ? document.getElementById('certificates').value : '[]';
+          const arr = JSON.parse(raw || '[]');
+          if (Array.isArray(arr)) eduObj.certificates = arr;
+        } catch (e) { eduObj.certificates = []; }
 
-                // file presence check (either input files or stored base64)
-                const proofInput = document.getElementById('proof');
-                let savedProofs = [];
-                try { savedProofs = JSON.parse(localStorage.getItem('uploadedProofs_proof') || '[]') || []; } catch (e) { savedProofs = []; }
-                const proofHasFile = (proofInput && proofInput.files && proofInput.files.length) || (Array.isArray(savedProofs) && savedProofs.length > 0);
+        localStorage.setItem('education_profile', JSON.stringify(eduObj));
+        localStorage.setItem('edu_level', eduObj.edu_level);
+        localStorage.setItem('school_name', eduObj.school_name);
+        localStorage.setItem('review_certs', eduObj.certs);
+        localStorage.setItem('education_certificates', JSON.stringify(eduObj.certificates));
 
-                const errors = [];
+        // route expects GET — follow workexp page behavior
+        window.location.href = nextUrl;
+      } catch (err) {
+        console.error('education save failed', err);
+        btn.classList.remove('opacity-60');
+      }
+    }
 
-                if (!educationValuex) {
-                    errors.push({ id: null, msg: 'Please select your highest education.' });
-                } else if (educationValuex === 'other' && !otherText.trim()) {
-                    errors.push({ id: 'review_other', msg: 'Please specify your education.' });
-                }
+    btn.addEventListener('click', function(ev){
+      ev.preventDefault();
+      const errs = validate();
+      if (errs.length) {
+        showSummary(errs[0].msg);
+        if (btn) btn.classList.remove('opacity-60');
+        const el = document.getElementById(errs[0].id) || document.getElementById('edu_level') || document.getElementById('school_name');
+        if (el && typeof el.scrollIntoView === 'function') el.scrollIntoView({behavior:'smooth', block:'center'});
+        return;
+      }
+      saveAndRedirect();
+    });
 
-                if (!data.school_name || !data.school_name.trim()) {
-                    errors.push({ id: 'school_name', msg: 'Please enter your school name.' });
-                }
-
-                if (reviewCertsValue === 'yes' && !proofHasFile) {
-                    errors.push({ id: 'proof', msg: 'Please upload your certificate or proof.' });
-                }
-
-                if (errors.length) {
-                    // show first error in educError summary and inline for field-specific ones
-                    const first = errors[0];
-                    if (errDiv) errDiv.textContent = first.msg;
-                    errors.forEach(e => {
-                        if (e.id) showFieldError(e.id, e.msg);
-                    });
-                    // scroll to relevant element (field-specific or top)
-                    let scrollToEl = null;
-                    if (first.id) scrollToEl = document.getElementById(first.id);
-                    if (!scrollToEl) scrollToEl = document.getElementById('edu_level') || document.getElementById('school_name') || document.getElementById('educNext');
-                    if (scrollToEl) scrollToEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    // undo visual "working" state if any and stop
-                    btn.classList.remove('opacity-60');
-                    return;
-                }
-                // --- end validation ---
-
-                btn.classList.add('opacity-60');
-
-                // Build draft object (unchanged)
-                // Get selected education card value (final)
-                if (educationValuex === 'other') {
-                    // prefer entered other text
-                    educationValuex = otherText || educationValuex;
-                }
-
-                const draft = {
-                    schoolName: data.school_name || '',
-                    reviewCerts: reviewCertsValue,
-                    educationLevel: educationValuex,
-                    otherFields: data.review_other || ''
-                };
-
-                // Save to localStorage
-                try {
-                    localStorage.setItem('rpi_personal2', JSON.stringify(draft));
-                } catch (err) {
-                    console.warn('Could not save rpi_personal2', err);
-                }
-
-                console.info('[adminapprove] saved rpi_personal2 draft', draft);
-
-                // Dispatch event for other scripts
-                try {
-                    window.dispatchEvent(new CustomEvent('mvsg:adminSaved', {
-                        detail: {
-                            key: 'rpi_personal2',
-                            data: draft
-                        }
-                    }));
-                } catch (e) {}
-
-                // Redirect only after validation passed & draft saved
-                window.location.href = '{{ route("registerworkexpinfo") }}';
-
-            } catch (err) {
-                console.error('[education] submit failed', err);
-                btn.classList.remove('opacity-60');
-            }
-        });
-    })();
+    formEl.addEventListener('submit', function(ev){
+      ev.preventDefault();
+      btn.click();
+    });
+  })();
+});
 </script>
-     
        <script>
             window.addEventListener("DOMContentLoaded", () => {
                 const fileInput = document.getElementById("proof");
@@ -1315,6 +1093,99 @@
 
                 });
                 </script>
+
+<script>
+(function(){
+  const section = document.getElementById('cert_section');
+  const container = document.getElementById('certs_container');
+  const tpl = document.getElementById('cert_template');
+  const hidden = document.getElementById('certificates');
+  const addBtn = document.getElementById('addCertBtn');
+  const radios = Array.from(document.querySelectorAll('input[name="certs"]'));
+
+  if (!section || !container || !tpl || !hidden || !addBtn || !radios.length) return;
+
+  function parseHidden(){ try{ return JSON.parse(hidden.value || '[]'); }catch(e){ return []; } }
+  function writeHidden(arr){ try{ hidden.value = JSON.stringify(arr || []); }catch(e){ hidden.value = '[]'; } }
+
+  function debounce(fn, wait){ let t; return function(){ clearTimeout(t); t = setTimeout(()=>fn.apply(this, arguments), wait); }; }
+
+  function syncFromUI(){
+    const list = [];
+    Array.from(container.children).forEach(block => {
+      const name = block.querySelector('input[name="certificate_name"]')?.value?.trim() || '';
+      const issued = block.querySelector('input[name="issued_by"]')?.value?.trim() || '';
+      const date = block.querySelector('input[name="date_completed"]')?.value?.trim() || '';
+      const desc = block.querySelector('input[name="training_description"]')?.value?.trim() || '';
+      if (name || issued || date || desc) list.push({ certificate_name: name, issued_by: issued, date_completed: date, training_description: desc });
+    });
+    writeHidden(list);
+  }
+
+  const debouncedSync = debounce(syncFromUI, 150);
+
+  function buildEntry(item){
+    const node = tpl.content.firstElementChild.cloneNode(true);
+    if (item) {
+      node.querySelector('input[name="certificate_name"]').value = item.certificate_name || '';
+      node.querySelector('input[name="issued_by"]').value = item.issued_by || '';
+      node.querySelector('input[name="date_completed"]').value = item.date_completed || '';
+      node.querySelector('input[name="training_description"]').value = item.training_description || '';
+    }
+    const removeBtn = node.querySelector('.remove-cert');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', function(){
+        node.remove();
+        debouncedSync();
+      });
+    }
+    node.querySelectorAll('input').forEach(i => i.addEventListener('input', debouncedSync));
+    return node;
+  }
+
+  function addCert(item){
+    container.appendChild(buildEntry(item || {}));
+    debouncedSync();
+    // focus first input of newly added
+    const last = container.lastElementChild;
+    if (last) last.querySelector('input[name="certificate_name"]')?.focus();
+  }
+
+  addBtn.addEventListener('click', function(){ addCert(); });
+
+  radios.forEach(r => r.addEventListener('change', function(ev){
+    if (ev.target.value === 'yes') {
+      section.classList.remove('hidden');
+      // restore saved hidden values if any, else ensure one empty entry
+      const saved = parseHidden();
+      if (container.children.length === 0) {
+        if (saved && saved.length) saved.forEach(s => addCert(s));
+        else addCert();
+      }
+    } else {
+      section.classList.add('hidden');
+      container.innerHTML = '';
+      writeHidden([]);
+    }
+  }));
+
+  // init on load
+  document.addEventListener('DOMContentLoaded', function(){
+    const sel = document.querySelector('input[name="certs"]:checked');
+    const saved = parseHidden();
+    if (sel && sel.value === 'yes') {
+      section.classList.remove('hidden');
+      if (saved && saved.length) saved.forEach(s => addCert(s));
+      else addCert();
+    } else {
+      section.classList.add('hidden');
+      container.innerHTML = '';
+      writeHidden([]);
+    }
+  });
+})();
+</script>
+
 
 </body>
 

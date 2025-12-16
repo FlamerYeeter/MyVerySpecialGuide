@@ -2400,6 +2400,249 @@ document.addEventListener("DOMContentLoaded", () => {
 
 })();
 </script>
+
+<script>
+/*
+  Render certificate/training entries (text fields) in review view.
+  Reads from several possible sources and falls back to rpi_personal2 draft keys.
+*/
+(function(){
+  const containerId = 'certificateReview';
+
+  function tryParse(v){
+    if(!v && v !== 0) return null;
+    if(typeof v === 'object') return v;
+    try { return JSON.parse(v); } catch(e) { return String(v).trim(); }
+  }
+
+  function readFromLocalCandidates(){
+    const keys = [
+      'certificates', 'certificates_list', 'education_certificates',
+      'review_certificates', 'review_certs_list', 'uploadedCertificates',
+      'rpi_personal2', 'rpi_personal', 'registrationDraft'
+    ];
+    for(const k of keys){
+      try{
+        const raw = localStorage.getItem(k);
+        if(!raw) continue;
+        const parsed = tryParse(raw);
+        // normalized: array of objects or single object
+        if(Array.isArray(parsed) && parsed.length) return { source: k, data: parsed };
+        if(parsed && typeof parsed === 'object'){
+          // common shape: { certificates: [...] } or schoolWorkInfo.certificates
+          if(Array.isArray(parsed.certificates) && parsed.certificates.length) return { source:k, data: parsed.certificates };
+          if(Array.isArray(parsed.schoolWorkInfo && parsed.schoolWorkInfo.certificates) && parsed.schoolWorkInfo.certificates.length) return { source:k, data: parsed.schoolWorkInfo.certificates };
+          // possibly the object itself is a single certificate entry
+          const maybe = [];
+          const fields = ['certificate_name','issued_by','date_completed','training_description','name','issuer','date','description'];
+          const hasField = fields.some(f => parsed[f]);
+          if(hasField) { maybe.push(parsed); return { source:k, data: maybe }; }
+        }
+        // string form: comma separated JSON-like or CSV -> ignore
+      }catch(e){}
+    }
+    return { source: null, data: [] };
+  }
+
+  function normalizeEntries(raw){
+    if(!raw) return [];
+    const out = [];
+    for(const it of raw){
+      if(!it) continue;
+      if(typeof it === 'string'){
+        // try parse object inside string
+        const p = tryParse(it);
+        if(p && typeof p === 'object'){ raw = raw.map(x=> (typeof x === 'string' ? tryParse(x) : x)); break; }
+        // fallback: treat as filename/label
+        out.push({ certificate_name: it, issued_by:'', date_completed:'', training_description:'' });
+        continue;
+      }
+      if(typeof it === 'object'){
+        const name = it.certificate_name || it.name || it.title || it.cert_name || '';
+        const issued = it.issued_by || it.issuer || it.issuedBy || '';
+        const date = it.date_completed || it.date || it.completed || it.when || '';
+        const desc = it.training_description || it.description || it.desc || it.what_you_learned || '';
+        out.push({ certificate_name: String(name||''), issued_by: String(issued||''), date_completed: String(date||''), training_description: String(desc||'') });
+      }
+    }
+    return out;
+  }
+
+  function renderFileCards(savedFiles){
+    if(!savedFiles || !savedFiles.length) return null;
+    const frag = document.createDocumentFragment();
+    savedFiles.forEach((f, idx) => {
+      const ext = (f.type || (f.name||'').split('.').pop()||'').toLowerCase();
+      const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
+      const div = document.createElement('div');
+      div.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+      div.innerHTML = `<span class="text-2xl">${icon}</span>
+        <div class="flex-1 min-w-0">
+          <div class="text-sm text-gray-700 truncate">${(f.name||'').replace(/</g,'&lt;')}</div>
+          <div class="text-xs text-gray-500 mt-1">${(f.type||'').toUpperCase()}</div>
+        </div>
+        <div class="ml-4 flex gap-2">
+          <button data-idx="${idx}" data-action="view" class="view-cert-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button>
+          <button data-idx="${idx}" data-action="remove" class="remove-cert-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button>
+        </div>`;
+      frag.appendChild(div);
+    });
+    return frag;
+  }
+
+  function renderTextEntries(entries){
+    if(!entries || !entries.length) return null;
+    const frag = document.createDocumentFragment();
+    entries.forEach(e=>{
+      const wrapper = document.createElement('div');
+      wrapper.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-3';
+      const title = e.certificate_name || '(No name)';
+      const issuer = e.issued_by ? `<div class="text-sm text-gray-600 mt-1">Issued by: <strong>${escapeHtml(e.issued_by)}</strong></div>` : '';
+      const date = e.date_completed ? `<div class="text-sm text-gray-600 mt-1">Date: <span>${escapeHtml(e.date_completed)}</span></div>` : '';
+      const desc = e.training_description ? `<p class="text-sm text-gray-700 mt-2">${escapeHtml(e.training_description)}</p>` : '';
+      wrapper.innerHTML = `<h4 class="text-blue-700 font-semibold">${escapeHtml(title)}</h4>${issuer}${date}${desc}`;
+      frag.appendChild(wrapper);
+    });
+    return frag;
+  }
+
+  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // new combined renderer
+  function populateCertificateReview(){
+    const review = document.getElementById(containerId);
+    if(!review) return;
+    // clear only the certificate content (leave header)
+    // we'll remove nodes inside review that are not the header H3 if present
+    // simplest: replace inner content with our generated nodes
+    review.innerHTML = '';
+
+    // 1) attempt to render textual certificate entries
+    let entries = [];
+    try{
+      const cand = readFromLocalCandidates();
+      if(cand && cand.data && cand.data.length){
+        entries = normalizeEntries(cand.data);
+      } else {
+        // fallback: try rpi_personal2.schoolWorkInfo.certificates etc
+        const rawDraft = tryParse(localStorage.getItem('rpi_personal2') || localStorage.getItem('rpi_personal') || '{}') || {};
+        const sw = rawDraft.schoolWorkInfo || rawDraft.school || rawDraft || {};
+        const maybe = sw.certificates || sw.certs || sw.cert_list || rawDraft.certificates || rawDraft.certs;
+        if(maybe) entries = normalizeEntries(tryParse(maybe) || []);
+      }
+    }catch(e){ entries = []; }
+
+    // 2) attempt to render uploaded file list (existing helper loads many keys)
+    let savedFiles = [];
+    try{
+      const arrRaw = localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || localStorage.getItem('uploadedProofs_proof') || '[]';
+      const arr = tryParse(arrRaw) || [];
+      if(Array.isArray(arr) && arr.length){
+        savedFiles = arr.map(it => {
+          if(typeof it === 'string') return { name: it, type: (it.split('.').pop()||'').toLowerCase(), data: null };
+          return { name: it.name || it.filename || '', type: it.type || (it.name||'').split('.').pop() || '', data: it.data || it.url || null };
+        });
+      } else {
+        const legacyName = localStorage.getItem('uploadedProofName1') || localStorage.getItem('uploadedProofName') || '';
+        const legacyData = localStorage.getItem('uploadedProofData1') || localStorage.getItem('uploadedProofData') || null;
+        const legacyType = localStorage.getItem('uploadedProofType1') || localStorage.getItem('uploadedProofType') || (legacyName.split('.').pop()||'').toLowerCase();
+        if(legacyName) savedFiles.push({ name: legacyName, type: legacyType, data: legacyData });
+      }
+    }catch(e){ savedFiles = []; }
+
+    // 3) render into container
+    let appended = false;
+    if(entries.length){
+      const title = document.createElement('h3');
+      title.className = 'mt-2 text-lg font-semibold text-blue-600 mb-3';
+      title.textContent = 'Certificate / Training Details';
+      review.appendChild(title);
+      const frag = renderTextEntries(entries);
+      if(frag){ review.appendChild(frag); appended = true; }
+    }
+
+    if(savedFiles.length){
+      const title2 = document.createElement('div');
+      title2.className = 'mt-4 mb-2';
+      title2.innerHTML = '<h3 class="text-lg font-semibold text-blue-600">Uploaded Certificate Files</h3>';
+      review.appendChild(title2);
+      const filesFrag = renderFileCards(savedFiles);
+      if(filesFrag){ review.appendChild(filesFrag); appended = true; }
+
+      // bind view/remove buttons
+      review.querySelectorAll('.view-cert-file').forEach(b => {
+        b.addEventListener('click', (ev) => {
+          const idx = Number(ev.currentTarget.getAttribute('data-idx') || 0);
+          const item = savedFiles[idx];
+          if(!item) return alert('No preview available');
+          // open modal (reuse global modal if exists)
+          const modal = document.getElementById('filePreviewModal') || document.getElementById('fileModal');
+          const content = document.getElementById('filePreviewContent') || document.getElementById('modalContent');
+          if(modal && content){
+            const src = item.data || item.url || null;
+            content.innerHTML = `<h3 class="font-semibold mb-2">${escapeHtml(item.name)}</h3>`;
+            const ext = (item.type || (item.name||'').split('.').pop()).toLowerCase();
+            if(['jpg','jpeg','png'].includes(ext)){
+              if(src) content.innerHTML += `<img src="${src}" class="max-h-[85vh] mx-auto rounded-lg shadow" />`;
+              else content.innerHTML += `<p class="text-gray-700">No preview available.</p>`;
+            } else if(ext === 'pdf'){
+              if(src) content.innerHTML += `<iframe src="${src}" class="w-full h-[85vh] rounded-lg border"></iframe>`;
+              else content.innerHTML += `<p class="text-gray-700">No preview available.</p>`;
+            } else {
+              if(src) content.innerHTML += `<a href="${src}" target="_blank" class="text-blue-600 underline">Open file</a>`;
+              else content.innerHTML += `<p class="text-gray-700">No preview available.</p>`;
+            }
+            modal.classList.remove('hidden');
+          } else {
+            alert('Preview not available in this view.');
+          }
+        });
+      });
+
+      review.querySelectorAll('.remove-cert-file').forEach(b => {
+        b.addEventListener('click', (ev) => {
+          const idx = Number(ev.currentTarget.getAttribute('data-idx') || 0);
+          // remove from uploadedProofs1 if present
+          try{
+            const arrRaw = localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || null;
+            if(arrRaw){
+              let arr = JSON.parse(arrRaw||'[]') || [];
+              if(Array.isArray(arr) && arr.length > idx){
+                arr.splice(idx,1);
+                localStorage.setItem('uploadedProofs1', JSON.stringify(arr));
+                // also remove legacy keys if filename matches
+                const fname = savedFiles[idx] && savedFiles[idx].name;
+                if(fname){
+                  ['uploadedProofName','uploadedProofData','uploadedProofType','uploadedProofName1','uploadedProofData1','uploadedProofType1'].forEach(k=>{
+                    try{ const v = localStorage.getItem(k); if(v && String(v).includes(fname)) localStorage.removeItem(k); }catch(e){}
+                  });
+                }
+              }
+            } else {
+              // clear legacy keys
+              ['uploadedProofName','uploadedProofData','uploadedProofType','uploadedProofName1','uploadedProofData1','uploadedProofType1'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+            }
+          }catch(e){}
+          setTimeout(populateCertificateReview, 30);
+        });
+      });
+    }
+
+    if(!appended){
+      const p = document.createElement('p');
+      p.className = 'text-gray-700 italic';
+      p.textContent = 'No certificates or trainings provided.';
+      review.appendChild(p);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', populateCertificateReview);
+  window.addEventListener('storage', function(e){
+    const watch = ['certificates','certificates_list','uploadedProofs1','uploadedProofs','uploadedProofName','uploadedProofName1','uploadedProofData','rpi_personal2','review_certs'];
+    if(!e.key || watch.includes(e.key)) setTimeout(populateCertificateReview, 50);
+  });
+})();
+</script>
 </body>
 
 </html>
