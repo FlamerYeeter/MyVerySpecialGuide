@@ -300,9 +300,129 @@
 </div>
 
   <br>
+
+<!-- Certificate & Training Input Section -->
+<div class="bg-white border border-gray-200 rounded-lg p-4 sm:p-5 mb-4">
+
+  <!-- Header row -->
+  <div class="flex items-center justify-between mb-3">
+    <h3 class="font-semibold text-[#1E40AF] text-base sm:text-lg flex items-center gap-2">
+      Certificate / Training Details
+    </h3>
+
+    <button
+      type="button"
+      class="remove-job text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 
+             px-3 py-1.5 rounded-lg font-medium transition-colors duration-200"
+    >
+      Remove
+    </button>
+  </div>
+
+  <p class="text-gray-600 italic text-xs sm:text-sm mb-4">
+    I-type ang impormasyon tungkol sa certificate o training.
+  </p>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8"> 
+    <!-- Certificate Name -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+        <img
+          src="https://img.icons8.com/fluency/24/document.png"
+          alt="Certificate icon"
+          class="w-5 h-5"
+        />
+        Name of Certificate / Training
+      </label>
+      <input
+        type="text"
+        name="certificate_name"
+        placeholder="e.g. Food Safety Training"
+        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+      />
+      <p class=" italic text-xs text-gray-500 mt-1">
+        (Pangalan ng training o certificate)
+      </p>
+    </div>
+
+    <!-- Organization -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+        <img
+          src="https://img.icons8.com/fluency/24/company.png"
+          alt="Organization icon"
+          class="w-5 h-5"
+        />
+        Issued By
+      </label>
+      <input
+        type="text"
+        name="issued_by"
+        placeholder="e.g. TESDA, Training Center"
+        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+      />
+      <p class="italic text-xs text-gray-500 mt-1">
+        (Sino ang nagbigay ng training)
+      </p>
+    </div>
+
+    <!-- Date Completed -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+        <img
+          src="https://img.icons8.com/fluency/24/calendar.png"
+          alt="Calendar icon"
+          class="w-5 h-5"
+        />
+        Date Completed
+      </label>
+      <input
+        type="date"
+        name="date_completed"
+        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+      />
+      <p class="italic text-xs text-gray-500 mt-1">
+        (Petsa kung kailan natapos)
+      </p>
+    </div>
+
+    <!-- Simple Description -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+        <img
+          src="https://img.icons8.com/fluency/24/idea.png"
+          alt="Idea icon"
+          class="w-5 h-5"
+        />
+        What did you learn?
+      </label>
+      <input
+        type="text"
+        name="training_description"
+        placeholder="e.g. How to clean, serve food, follow rules"
+        class="w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
+      />
+      <p class="italic text-xs text-gray-500 mt-1">
+        (Maikling paliwanag ng natutunan)
+      </p>
+    </div>
+  </div>
+</div>
+
+   <!-- Add Another Work Exp Button -->
+                <div class="mt-6 text-center mb-8">
+                    <button id="addJobBtn" type="button"
+                        class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                            stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Another Certificate / Training
+                    </button>
+                </div>
                
-                     <!-- File Upload -->
-                  <div id="fileuploadSection"
+    <!-- File Upload -->
+    <div id="fileuploadSection"
   class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
 ><!-- 🔹 FILE UPLOAD SECTION -->
 <div
@@ -311,11 +431,11 @@
   <div class="flex-1">
     <p class="font-medium text-gray-800 text-sm sm:text-base">
       <span id="proofLabel" class="flex items-center gap-2">
-        <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
+        <span>Upload Proof of Certificate or Training  (Image or PDF)</span>
       </span>
     </p>
     <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-      (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
+      (Mag-upload ng larawan o PDF bilang patunay ng Certificate o Training)<br /><br />
       Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
       <b>5MB</b><br />
     </p>
