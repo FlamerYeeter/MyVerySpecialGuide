@@ -1985,8 +1985,19 @@ document.addEventListener("DOMContentLoaded", () => {
                         const school = firstLocal(['schoolName','school','school_name','schoolName']);
                         const other = firstLocal(['review_other','edu_other','edu_other_text']);
                     //    if(edu) document.getElementById('review_edu').textContent = String(edu);
+                        if (edu) {
+                            // prefer input with id educationLevel, otherwise try common review ids
+                            const target = document.getElementById('educationLevel') || document.getElementById('review_edu') || document.getElementById('review_edu_label');
+                            if (target) {
+                                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') target.value = String(edu);
+                                else target.textContent = String(edu);
+                            }
+                        }
                         if(school) document.getElementById('schoolName').textContent = String(school);
-                        if(other) document.getElementById('review_other_label').textContent = String(other);
+                        if(other) {
+                            const otherEl = document.getElementById('review_other_label') || document.getElementById('review_other');
+                            if (otherEl) otherEl.textContent = String(other);
+                        }
                     }
 
                     function renderCertificates(){
@@ -2507,6 +2518,55 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  // format various date inputs to "Month D, YYYY" (e.g. December 2, 2025)
+  function formatDateHuman(input) {
+    if (!input && input !== 0) return '';
+    try {
+      const s = String(input).trim();
+      if (!s) return '';
+      // YYYY-MM-DD
+      let m;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        const [y,mo,d] = s.split('-').map(Number);
+        const dt = new Date(y, mo - 1, d);
+        if (!isNaN(dt.getTime())) return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      }
+      // DD/MM/YYYY
+      if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
+        const [d,mo,y] = s.split('/').map(Number);
+        const dt = new Date(y, mo - 1, d);
+        if (!isNaN(dt.getTime())) return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+      }
+      // try Date.parse for other ISO or human strings
+      const parsed = new Date(s);
+      if (!isNaN(parsed.getTime())) return parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    } catch (e) {
+      // fallthrough
+    }
+    return String(input);
+  }
+
+  function renderTextEntries(entries){
+    if(!entries || !entries.length) return null;
+    const frag = document.createDocumentFragment();
+    entries.forEach(e=>{
+      const wrapper = document.createElement('div');
+      wrapper.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-3';
+      const title = e.certificate_name || '(No name)';
+
+      const issuer = e.issued_by ? `<div class="text-sm text-gray-600 mt-1">Issued by: <strong>${escapeHtml(e.issued_by)}</strong></div>` : '';
+
+      // use formatted human date
+      const humanDate = e.date_completed ? formatDateHuman(e.date_completed) : '';
+      const date = humanDate ? `<div class="text-sm text-gray-600 mt-1">Date: <span>${escapeHtml(humanDate)}</span></div>` : '';
+
+      const desc = e.training_description ? `<p class="text-sm text-gray-700 mt-2">${escapeHtml(e.training_description)}</p>` : '';
+      wrapper.innerHTML = `<h4 class="text-blue-700 font-semibold">${escapeHtml(title)}</h4>${issuer}${date}${desc}`;
+      frag.appendChild(wrapper);
+    });
+    return frag;
+  }
 
   // new combined renderer
   function populateCertificateReview(){

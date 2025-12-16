@@ -256,7 +256,6 @@
         if (document.readyState === 'complete' || document.readyState === 'interactive') init(); else document.addEventListener('DOMContentLoaded', init);
       })();
     </script>
-    <script src="{{ asset('js/register.js') }}"></script>
 <script>
 (function(){
   const createBtn = document.getElementById('createAccountBtn');
@@ -294,7 +293,7 @@
 
     // ✅ Save data to backend 
     const data = {
-      education: localStorage.getItem('rpi_personal2'),
+      education: localStorage.getItem('edu_level'),
       job_experiences: localStorage.getItem('job_experiences'),
       review_certs: localStorage.getItem('review_certs'),
       rpi_personal: localStorage.getItem('rpi_personal1'),
@@ -306,7 +305,8 @@
       uploadedProofs_proof: localStorage.getItem('uploadedProofs_proof'),
       workplace: localStorage.getItem('workplace'),
       jobPreferences: localStorage.getItem('jobPreferences'),
-      skills1_selected: localStorage.getItem('skills1_selected')
+      skills1_selected: localStorage.getItem('skills1_selected'),
+      certificates: localStorage.getItem('certificates') || localStorage.getItem('education_certificates') || '[]'
     };
 
     debugger;

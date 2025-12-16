@@ -958,21 +958,32 @@ document.addEventListener('DOMContentLoaded', function(){
     }
 
     function saveAndRedirect(){
-      try {
+    try {
         btn.classList.add('opacity-60');
         const eduObj = {
-          edu_level: (document.getElementById('edu_level')?.value||'').toString(),
-          edu_other_text: (document.getElementById('review_other')?.value||'').toString(),
-          school_name: (document.getElementById('school_name')?.value||'').toString(),
-          certs: (document.querySelector('input[name="certs"]:checked')?.value||'').toString(),
-          certificates: []
+        edu_level: (document.getElementById('edu_level')?.value||'').toString(),
+        edu_other_text: (document.getElementById('review_other')?.value||'').toString(),
+        school_name: (document.getElementById('school_name')?.value||'').toString(),
+        certs: (document.querySelector('input[name="certs"]:checked')?.value||'').toString(),
+        certificates: []
         };
+
+        // read hidden serialized certificates (maintains existing behavior)
         try {
-          const raw = document.getElementById('certificates') ? document.getElementById('certificates').value : '[]';
-          const arr = JSON.parse(raw || '[]');
-          if (Array.isArray(arr)) eduObj.certificates = arr;
+        const raw = document.getElementById('certificates') ? document.getElementById('certificates').value : '[]';
+        const arr = JSON.parse(raw || '[]');
+        if (Array.isArray(arr)) eduObj.certificates = arr;
         } catch (e) { eduObj.certificates = []; }
 
+        // normalize keys to the shape registration-data.php expects
+        eduObj.certificates = (eduObj.certificates || []).map(c => ({
+        certificate_name: c.certificate_name ?? c.name ?? c.title ?? '',
+        issued_by:        c.issued_by ?? c.issuer ?? c.issuedBy ?? '',
+        date_completed:   c.date_completed ?? c.date ?? c.completed ?? '',
+        training_description: c.training_description ?? c.description ?? c.what_you_learned ?? ''
+        })).filter(x => x.certificate_name || x.issued_by || x.date_completed || x.training_description);
+
+        // persist the education/profile + canonical certificate array
         localStorage.setItem('education_profile', JSON.stringify(eduObj));
         localStorage.setItem('edu_level', eduObj.edu_level);
         localStorage.setItem('school_name', eduObj.school_name);
@@ -981,10 +992,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
         // route expects GET — follow workexp page behavior
         window.location.href = nextUrl;
-      } catch (err) {
+    } catch (err) {
         console.error('education save failed', err);
         btn.classList.remove('opacity-60');
-      }
+    }
     }
 
     btn.addEventListener('click', function(ev){
@@ -1185,7 +1196,6 @@ document.addEventListener('DOMContentLoaded', function(){
   });
 })();
 </script>
-
 
 </body>
 

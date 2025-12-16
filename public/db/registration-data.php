@@ -61,7 +61,23 @@ if (!$data) {
 
 // ——— EXTRACT DATA ———
 $user_info         = json_decode($data['rpi_personal'] ?? '{}', true);
-$education_level   = json_decode($data['education'], true);
+// Robustly extract education level and school name (accept JSON object or plain string)
+$education_level_raw = $data['education'] ?? null;
+$edu_level = null;
+$school_name = null;
+if ($education_level_raw !== null) {
+    $decoded = json_decode($education_level_raw, true);
+     if (is_array($decoded)) {
+         $edu_level  = $decoded['edu_level'] ?? $decoded['education_level'] ?? $decoded['level'] ?? null;
+         $school_name = $decoded['school_name'] ?? $decoded['school'] ?? null;
+     } else {
+         // plain string (e.g. "Vocational/Training")
+         $edu_level = is_string($education_level_raw) ? $education_level_raw : null;
+     }
+ }
+ // also accept explicit top-level keys if present
+$edu_level    = $edu_level ?? ($data['edu_level'] ?? $data['education_level'] ?? null);
+$school_name  = $school_name ?? ($data['school_name'] ?? $data['school'] ?? null);
 $is_graduate       = $data['review_certs'] ?? null;
 $license_type      = $data['selected_work_year'] ?? null;
 $status            = $data['workplace'] ?? null;
@@ -135,8 +151,8 @@ oci_bind_by_name($stid1, ':v4',  $email);
 oci_bind_by_name($stid1, ':v5',  $phone);
 oci_bind_by_name($stid1, ':v6',  $password);
 oci_bind_by_name($stid1, ':v7',  $age);
-oci_bind_by_name($stid1, ':v8',  $education_level['educationLevel']);
-oci_bind_by_name($stid1, ':v9',  $education_level['schoolName']);
+oci_bind_by_name($stid1, ':v8',  $edu_level);
+oci_bind_by_name($stid1, ':v9',  $school_name);
 oci_bind_by_name($stid1, ':v11', $gf);
 oci_bind_by_name($stid1, ':v12', $gl);
 oci_bind_by_name($stid1, ':v13', $ge);
@@ -177,6 +193,48 @@ if ($allGood) {
             $allGood = false;
             break;
         }
+    }
+}
+
+// ——— 3. INSERT guardian_certificates (Certificate / Training Details) ———
+if ($allGood) {
+    // Accept several possible incoming keys for certificate entries
+    $rawCerts = $data['certificates'] ?? $data['education_certificates'] ?? $data['education_profile'] ?? '[]';
+    $cert_entries = is_string($rawCerts) ? json_decode($rawCerts, true) : $rawCerts;
+    if (!is_array($cert_entries)) $cert_entries = [];
+
+    foreach ($cert_entries as $ce) {
+        if (!is_array($ce)) continue;
+        $c_name   = trim($ce['certificate_name'] ?? $ce['name'] ?? $ce['certificate'] ?? '');
+        $c_issued = trim($ce['issued_by'] ?? $ce['issuer'] ?? '');
+        $c_date   = trim($ce['date_completed'] ?? $ce['date'] ?? '');
+        $c_learn  = trim($ce['training_description'] ?? $ce['description'] ?? $ce['what_you_learned'] ?? '');
+
+        // skip totally empty entries
+        if ($c_name === '' && $c_issued === '' && $c_date === '' && $c_learn === '') continue;
+
+        // Use TO_DATE only when a date string is provided; otherwise NULL
+        $sqlc = "INSERT INTO guardian_certificates (
+                    guardian_id, name, issued_by, date_completed, what_learned, created_at, updated_at
+                 ) VALUES (
+                    :gid, :gname, :gissued,
+                    CASE WHEN :gdate IS NULL OR :gdate = '' THEN NULL ELSE TO_DATE(:gdate,'YYYY-MM-DD') END,
+                    :glearn, SYSDATE, SYSDATE
+                 )";
+        $stidc = oci_parse($conn, $sqlc);
+        oci_bind_by_name($stidc, ':gid',   $user_guardian_id);
+        oci_bind_by_name($stidc, ':gname', $c_name);
+        oci_bind_by_name($stidc, ':gissued', $c_issued);
+        oci_bind_by_name($stidc, ':gdate', $c_date);
+        oci_bind_by_name($stidc, ':glearn', $c_learn);
+
+        if (!oci_execute($stidc, OCI_NO_AUTO_COMMIT)) {
+            $e = oci_error($stidc);
+            $allGood = false;
+            oci_free_statement($stidc);
+            break;
+        }
+        oci_free_statement($stidc);
     }
 }
 
