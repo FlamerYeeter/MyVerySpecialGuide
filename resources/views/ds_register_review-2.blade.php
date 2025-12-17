@@ -142,209 +142,235 @@
                     Certificates & Trainings
                 </h3>
 
-                <div class="mt-4 text-gray-800 mb-3" id="certificateReview">
-                    <p>
-                        <span class="font-semibold">Certificates / Trainings:</span>
-                        <input id="reviewCerts" />
-                    </p>
+                <div id="certificateReview" class="mt-4 text-gray-800 mb-3">
+                    <!-- Read-only list -->
+                    <div id="certsList" class="space-y-3"></div>
+                    <div id="noCertsMsg" class="text-gray-600 italic">No certificates or trainings added.</div>
+
+                    <!-- Inline edit panel (hidden until Edit clicked) -->
+                    <div id="certsEdit" class="hidden mt-4">
+                        <div id="certs_container" class="space-y-4"></div>
+
+                        <template id="cert_template">
+                            <div class="cert-entry bg-white border border-gray-200 rounded-lg p-4 relative">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Name of Certificate / Training</label>
+                                        <input type="text" class="cert-name mt-1 w-full border rounded px-2 py-1" placeholder="e.g. Food Safety Training">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Issued By</label>
+                                        <input type="text" class="cert-issuer mt-1 w-full border rounded px-2 py-1" placeholder="e.g. TESDA, Training Center">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">Date Completed</label>
+                                        <input type="date" class="cert-date mt-1 w-full border rounded px-2 py-1">
+                                    </div>
+                                    <div>
+                                        <label class="text-sm font-medium text-gray-700">What did you learn?</label>
+                                        <input type="text" class="cert-desc mt-1 w-full border rounded px-2 py-1" placeholder="e.g. How to clean, serve food">
+                                    </div>
+                                </div>
+                                <button type="button" class="remove-cert absolute top-3 right-3 text-sm bg-red-500 text-white px-3 py-1 rounded">Remove</button>
+                            </div>
+                        </template>
+
+                        <div class="flex gap-3 mt-4">
+                            <button id="addCertBtn" type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-md">＋ Add Another Certificate</button>
+                            <button id="cancelCertsBtn" type="button" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md">Cancel</button>
+                        </div>
+                    </div>
                 </div>
-                       <!-- Certificates -->
-            <div id = "certificateCard" class="hidden mt-8 text-left px-2 sm:px-4">
-                <!-- Main Label -->
-                <label for="certs" class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                    Do you have any certificates or special trainings?
-                    <button type="button" aria-label="Play audio for Other option"
-                        class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                         data-tts-en="Do you have any certificates or special trainings?"
-                         data-tts-tl="May mga certificate o special training ka ba?"
-                        aria-label="Play audio for other option">🔊
-                    </button>
-                </label>
-
-                <!-- Translation -->
-                <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-                    (May mga certificate o special training ka ba?)
-                </p>
-
-                <!-- Radio Buttons -->
-                <div class="flex items-center gap-6 mt-2">
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input
-                    type="radio"
-                    id="certYes"
-                    name="certs"
-                    value="yes"
-                    class="text-blue-600 focus:ring-blue-400 w-5 h-5"
-                    />
-                    <span class="text-gray-800 text-sm sm:text-base">Yes</span>
-                </label>
-
-                <label class="flex items-center gap-2 cursor-pointer">
-                    <input
-                    type="radio"
-                    id="certNo"
-                    name="certs"
-                    value="no"
-                    class="text-blue-600 focus:ring-blue-400 w-5 h-5"
-                    />
-                    <span class="text-gray-800 text-sm sm:text-base">No</span>
-                </label>
-                </div>
-                    <p>
-                        <span class="font-semibold">Uploaded Certificates / Trainings:</span>
-                        <span id="review_certfile" class="ml-2 text-sm text-gray-700">No file uploaded</span>
-                    </p>
-                    <p class="text-sm text-gray-600 mt-1 italic">
-                        <small>If you uploaded a certificate, its filename will appear above and you can preview it with the View button.</small>
-                    </p>
-                </div>
-                
-           <div id="fileuploadSection"
-                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-                ><!-- 🔹 FILE UPLOAD SECTION -->
-                <div
-                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-                >
-                <div class="flex-1">
-                    <p class="font-medium text-gray-800 text-sm sm:text-base">
-                    <span id="proofLabel" class="flex items-center gap-2">
-                        <span>Upload Proof (Image or PDF)</span> <span>⭐</span>
-                    </span>
-                    </p>
-                    <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-                    (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
-                    Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size:
-                    <b>5MB</b><br />
-                    </p>
-
-                    <!-- File preview details -->
-                    <div
-                    id="proofFileInfo"
-                    class="mt-3 bg-white border border-gray-200 rounded-lg p-3 flex justify-between items-center shadow-sm hidden"
-                    >
-                    <div class="flex items-center justify-between gap-4 p-2 border rounded-lg shadow-sm bg-white">
-                <!-- File icon + name -->
-                <div class="flex items-center gap-2">
-                    <span id="proofFileIcon" class="text-2xl">📄</span>
-                    <span
-                    id="proofFileName"
-                    class="text-sm text-gray-700 truncate max-w-[160px] sm:max-w-[240px]"
-                    ></span>
-                </div>
-
-                <!-- Buttons -->
-                <div class="flex gap-3">
-                    <button
-                    id="proofViewBtn"
-                    type="button"
-                    class="bg-[#2E2EFF] hover:bg-blue-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
-                    >
-                    View / Tingnan
-                    </button>
-                    <button
-                    id="proofRemoveBtn"
-                    type="button"
-                    class="bg-[#D20103] hover:bg-red-600 font-medium text-white text-xs px-3 py-1 rounded-md transition"
-                    >
-                    Remove / Alisin
-                    </button>
-            </div>
-         </div>
-    </div>
- </div>
-
-  <!-- Upload button -->
-  <label
-   id="ChooseFilelabel"
-    for="proof"
-    class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium 
-                        px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
-  >
-    📁 Choose File / Pumili ng File
-  </label>
-
-  <input
-    id="proof"
-    name="proof"
-    type="file"
-    accept=".jpg,.jpeg,.png,.pdf"
-    class="hidden"
-    required
-  />
-</div>
-
-<!-- 🔹 MODAL PREVIEW -->
-<div
-  id="fileModal"
-  class="hidden fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50"
->
-  <div class="bg-white rounded-lg shadow-lg p-4 max-w-6xl w-[96%] max-h-[90vh] overflow-auto relative">
-    <button
-      id="closeModalBtn"
-      class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl"
-    >
-      ×
-    </button>
-    <div id="modalContent" class="p-2 text-center overflow-auto max-h-[85vh]"></div>
-            </div>
-  </div>
-</div>
     </div>
 
 <!-- Education Info edit/save btn script -->
 <script>
-const editEduBtn = document.getElementById("editSchoolBtn");
-let isEditingEdu = false;
-editEduBtn.addEventListener("click", () => {
-    isEditingEdu = !isEditingEdu;
-    if (isEditingEdu) {
-        enableEducationEdit();
-    } else {
-        saveEducationEdit();
+/*
+  Unified toggle: main #editSchoolBtn will open/close the education edit controls AND
+  the inline certificates editor via the exposed cert-editor API (if present).
+*/
+(function(){
+    const btn = document.getElementById('editSchoolBtn');
+    if (!btn) return;
+    // store editing state on the button to be read by other handlers
+    function isEditing() { return btn.dataset.mvsgEditing === '1'; }
+    function setEditing(v){
+        btn.dataset.mvsgEditing = v ? '1' : '0';
+        // visual label sync
+        if (v) { btn.textContent = '💾 Save Changes'; btn.classList.remove('bg-blue-600'); btn.classList.add('bg-green-600'); }
+        else    { btn.textContent = '✏️ Edit Information'; btn.classList.remove('bg-green-600'); btn.classList.add('bg-blue-600'); }
     }
-});
 
-function enableEducationEdit() {
-    editEduBtn.textContent = "💾 Save Changes";
-    editEduBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-+   editEduBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+    // ensure a stable display element exists for the education-level value (span)
+    function ensureLevelDisplay(){
+        const raw = document.getElementById('educationLevel');
+        if (!raw) return null;
+        let disp = document.getElementById('educationLevel_display');
+        if (!disp) {
+            disp = document.createElement('span');
+            disp.id = 'educationLevel_display';
+            disp.style.display = raw.style && raw.style.display ? raw.style.display : 'inline-block';
+            raw.parentNode.insertBefore(disp, raw);
+        }
+        return { raw, disp };
+    }
 
-    // Education Level
-    document.getElementById("educationLevel").style.display = "none";
-    document.getElementById("edit_edu_select").classList.remove("hidden");
+    function openEducationEditor(){
+        const { raw, disp } = ensureLevelDisplay() || {};
+        const editSelect = document.getElementById('edit_edu_select');
+        const schoolSpan = document.getElementById('schoolName');
+        const schoolInput = document.getElementById('edit_school_input');
 
-    // School Name
-    document.getElementById("schoolName").classList.add("hidden");
-    document.getElementById("edit_school_input").classList.remove("hidden");
+        // Prefer values from localStorage (most authoritative), then display span, then raw
+        const storedEdu = (localStorage.getItem('educationLevel') || localStorage.getItem('edu_level') || localStorage.getItem('review_edu') || '').trim();
+        const storedSchool = (localStorage.getItem('schoolName') || localStorage.getItem('school') || localStorage.getItem('review_school') || '').trim();
 
-    // Certificates card becomes visible
-    document.getElementById("certificateCard").classList.remove("hidden");
+        const currentVal = storedEdu || (disp && (disp.textContent||'').trim()) || (raw && ((raw.value||raw.textContent)||'').toString().trim()) || '';
+        const currentSchool = storedSchool || (schoolSpan && (schoolSpan.textContent||'').trim()) || '';
 
-    // Show Choose File
-    document.getElementById("ChooseFilelabel").classList.remove("hidden");
-}
+        // populate editor controls
+        if (editSelect) {
+            // pick matching option if exists, else leave current value
+            const opt = Array.from(editSelect.options).find(o => String(o.value).toLowerCase() === String(currentVal).toLowerCase() || String(o.text).toLowerCase() === String(currentVal).toLowerCase());
+            if (opt) editSelect.value = opt.value;
+            else if (currentVal) {
+                // if value not in list, create a temporary option so user sees it
+                try {
+                    const tmp = document.createElement('option');
+                    tmp.value = currentVal;
+                    tmp.text = currentVal;
+                    editSelect.add(tmp, editSelect.options[0]);
+                    editSelect.value = currentVal;
+                } catch(e){}
+            }
+        }
+        if (schoolInput) schoolInput.value = currentSchool || '';
 
-function saveEducationEdit() {
-    editEduBtn.textContent = "✏️ Edit Information";
-    editEduBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
-+   editEduBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+        // show editors, hide displays
+        try { if (disp) disp.style.display = 'none'; } catch(e){}
+        try { if (raw) raw.style.display = 'none'; } catch(e){}
+        if (editSelect) { editSelect.classList.remove('hidden'); editSelect.style.display = ''; }
+        if (schoolSpan) schoolSpan.classList.add('hidden');
+        if (schoolInput) { schoolInput.classList.remove('hidden'); schoolInput.style.display = ''; }
 
-    // Save education level
-    const eduValue = document.getElementById("edit_edu_select").value;
-    document.getElementById("educationLevel").value = eduValue;
-    document.getElementById("educationLevel").style.display = "block";
-    document.getElementById("edit_edu_select").classList.remove("hidden");
-    document.getElementById("edit_edu_select").classList.add("hidden");
+        // open inline cert editor (use exposed API if present)
+        try {
+            if (typeof window.__mvsg_enterCerts === 'function') {
+                window.__mvsg_enterCerts();
+            } else {
+                const certPanel = document.getElementById('certsEdit');
+                if (certPanel) certPanel.classList.remove('hidden');
+                const listEl = document.getElementById('certsList');
+                if (listEl) listEl.style.display = 'none';
+            }
+        } catch(e){}
+    }
 
-    // Save school name
-    const schoolInput = document.getElementById("edit_school_input").value;
-    document.getElementById("schoolName").textContent = schoolInput;
-    document.getElementById("schoolName").classList.remove("hidden");
-    document.getElementById("edit_school_input").classList.add("hidden");
+    function closeEducationEditorAndSave(){
+        const { raw, disp } = ensureLevelDisplay() || {};
+        const editSelect = document.getElementById('edit_edu_select');
+        const schoolSpan = document.getElementById('schoolName');
+        const schoolInput = document.getElementById('edit_school_input');
 
-    // Hide upload button again
-    document.getElementById("ChooseFilelabel").classList.add("hidden");
-}
+        // read editor values (fall back to localStorage)
+        const eduValue = (editSelect && (editSelect.value||'').toString().trim()) ||
+                         (localStorage.getItem('educationLevel') || localStorage.getItem('edu_level') || '').toString().trim() ||
+                         (disp && (disp.textContent||'').trim()) || (raw && (raw.value||raw.textContent||'').toString().trim()) || '';
+
+        const schoolValue = (schoolInput && (schoolInput.value||'').toString().trim()) ||
+                            (localStorage.getItem('schoolName') || localStorage.getItem('school') || '').toString().trim() ||
+                            (schoolSpan && (schoolSpan.textContent||'').trim()) || '';
+
+        // update canonical display span
+        try {
+            if (disp) {
+                disp.textContent = eduValue || '';
+                disp.style.display = '';
+                disp.classList.remove('hidden');
+            }
+        } catch(e){}
+
+        // also keep the raw element in sync (some scripts query this id)
+        try {
+            if (raw) {
+                if (raw.tagName === 'INPUT' || raw.tagName === 'TEXTAREA') raw.value = eduValue || '';
+                else raw.textContent = eduValue || '';
+                // keep raw hidden so display span is primary
+                raw.style.display = 'none';
+                raw.classList.add('hidden');
+            }
+        } catch(e){}
+
+        // hide editor select cleanly
+        if (editSelect) { try { editSelect.classList.add('hidden'); editSelect.style.display = 'none'; } catch(e){} }
+
+        // update school display and hide input
+        if (schoolSpan) {
+            schoolSpan.textContent = schoolValue || '';
+            schoolSpan.classList.remove('hidden');
+            schoolSpan.style.display = '';
+        }
+        if (schoolInput) { try { schoolInput.classList.add('hidden'); schoolInput.style.display = 'none'; } catch(e){} }
+
+        // persist to multiple known keys so other scripts pick up immediately
+        try {
+            const sEdu = eduValue || '';
+            const sSchool = schoolValue || '';
+            const keysEdu = ['educationLevel','edu_level','education_level','review_edu','eduLevel'];
+            const keysSchool = ['schoolName','school','school_name','review_school'];
+
+            keysEdu.forEach(k => { try { localStorage.setItem(k, sEdu); } catch(e){} });
+            keysSchool.forEach(k => { try { localStorage.setItem(k, sSchool); } catch(e){} });
+
+            // update rpi_personal2 draft if present
+            try {
+                const rawDraft = localStorage.getItem('rpi_personal2') || localStorage.getItem('rpi_personal') || localStorage.getItem('registrationDraft');
+                let draft = rawDraft ? JSON.parse(rawDraft) : (window.__mvsg_lastLoadedDraft || {});
+                if (!draft || typeof draft !== 'object') draft = {};
+                draft.schoolWorkInfo = draft.schoolWorkInfo || {};
+                draft.schoolWorkInfo.school = sSchool;
+                draft.schoolWorkInfo.edu_level = sEdu;
+                try { localStorage.setItem('rpi_personal2', JSON.stringify(draft)); } catch(e){}
+            } catch(e){}
+            // notify other listeners
+            window.dispatchEvent(new CustomEvent('mvsg:educationSaved', { detail: { educationLevel: eduValue, schoolName: schoolValue } }));
+            try { window.dispatchEvent(new StorageEvent('storage', { key: 'educationLevel', newValue: eduValue })); } catch(e){}
+        } catch(e){ console.warn('persist education failed', e); }
+
+        // ensure any other UI that reads certificates/education refreshes now
+        try { if (typeof renderReadOnly === 'function') renderReadOnly(); } catch(e){}
+        try { if (typeof renderPreviewBlock === 'function') renderPreviewBlock(); } catch(e){}
+        try { if (typeof window.populateReview === 'function') window.populateReview(); } catch(e){}
+        try { window.dispatchEvent(new Event('mvsg:populateDone')); } catch(e){}
+
+        // close inline cert editor (save via exposed API if available)
+        try {
+            if (typeof window.__mvsg_exitCerts === 'function') {
+                window.__mvsg_exitCerts(true);
+            } else {
+                const certPanel = document.getElementById('certsEdit');
+                if (certPanel) certPanel.classList.add('hidden');
+                const listEl = document.getElementById('certsList');
+                if (listEl) listEl.style.display = '';
+            }
+        } catch(e){}
+    }
+
+    // single click handler
+    btn.addEventListener('click', function(ev){
+        if (!isEditing()) {
+            setEditing(true);
+            openEducationEditor();
+        } else {
+            // save + exit
+            setEditing(false);
+            closeEducationEditorAndSave();
+        }
+    });
+
+    // initialize visual to "not editing"
+    setEditing(false);
+})();
 </script>
 
             <!-- Work Experience -->
@@ -363,6 +389,14 @@ function saveEducationEdit() {
                         <span id="review_work_list" class="flex flex-wrap gap-2 items-center">
                             <span class="text-gray-600">N/A</span>
                         </span>
+                        <!-- edit select (hidden until Edit clicked) -->
+                        <select id="edit_work_select" class="hidden border rounded px-2 py-1 ml-3">
+                            <option value="">— Select —</option>
+                            <option value="paid">Paid</option>
+                            <option value="volunteer">Volunteer</option>
+                            <option value="internship">Internship</option>
+                            <option value="none">No, this would be my first time</option>
+                        </select>
                     </p>
                 </div>
 
@@ -371,6 +405,41 @@ function saveEducationEdit() {
                     <div id="review_job_experiences" class="space-y-4">
                         <p class="text-gray-600 italic">No job experiences added.</p>
                     </div>
+                <!-- Inline Work Edit Panel (hidden until Edit clicked) -->
+                <div id="workEditPanel" class="hidden bg-white rounded-lg border border-gray-200 p-4 mt-4">
+                    <template id="job_edit_template">
+                        <div class="job-edit-entry bg-white p-4 rounded-lg border border-gray-100 mb-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Job Title</label>
+                                    <input type="text" class="job-edit-title mt-1 w-full border rounded px-2 py-1" />
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Company</label>
+                                    <input type="text" class="job-edit-company mt-1 w-full border rounded px-2 py-1" />
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Work Year</label>
+                                    <input type="text" maxlength="4" inputmode="numeric" class="job-edit-year mt-1 w-full border rounded px-2 py-1" />
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-gray-700">Description</label>
+                                    <input type="text" class="job-edit-desc mt-1 w-full border rounded px-2 py-1" />
+                                </div>
+                            </div>
+                            <div class="mt-3 text-right">
+                                <button type="button" class="remove-job-edit bg-red-500 text-white px-3 py-1 rounded">Remove</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div id="work_edit_container" class="space-y-3"></div>
+                    <div class="flex gap-3 mt-4">
+                        <button id="addWorkBtn" type="button" class="bg-indigo-600 text-white px-4 py-2 rounded-md">＋ Add Another Job</button>
+                        <button id="saveWorkBtn" type="button" class="bg-green-600 text-white px-4 py-2 rounded-md">Save Work</button>
+                        <button id="cancelWorkBtn" type="button" class="bg-gray-300 text-gray-800 px-4 py-2 rounded-md">Cancel</button>
+                    </div>
+                </div>
                     <script>
                         // Render saved job experiences from register work page into this review view.
                         (function(){
@@ -379,7 +448,7 @@ function saveEducationEdit() {
                                 // Try many common key names used across forms
                                 const title = e.title || e.job_title || e.position || e.role || e.job || '';
                                 const company = e.company || e.company_name || e.employer || e.Company || '';
-                                const year = e.start_year || e.job_start_year || e.year || e.startYear || e.job_work_year || '';
+                                const year = e.work_year || e.start_year || e.job_start_year || e.year || e.startYear || e.job_work_year || '';
                                 const desc = e.description || e.job_description || e.desc || e.notes || '';
                                 return { title:String(title||''), company:String(company||''), year:String(year||''), desc:String(desc||'') };
                             }
@@ -1792,150 +1861,111 @@ document.addEventListener("DOMContentLoaded", () => {
                 })();
             </script>
           <script>
-            (function () {
-            const fileInput = document.getElementById("proof");
-            const fileInfo = document.getElementById("proofFileInfo");
-            const fileName = document.getElementById("proofFileName");
-            const fileIcon = document.getElementById("proofFileIcon");
-            const viewBtn = document.getElementById("proofViewBtn");
-            const removeBtn = document.getElementById("proofRemoveBtn");
-            const modal = document.getElementById("fileModal");
-            const modalContent = document.getElementById("modalContent");
-            const closeModal = document.getElementById("closeModalBtn");
-            const hintEl = document.getElementById("proofHint");
-            const prevFileEl = document.getElementById("review_certfile");
+                (function(){
+                    // Render certificate entries saved by ds_register_education.blade.php
+                    const CERT_KEYS = ['education_certificates','education_profile','education_profile.certificates','education_certificates_array'];
 
-            console.log("✅ File upload script initialized");
+                    function parseMaybe(v){
+                        if (!v) return null;
+                        try { return typeof v === 'string' ? JSON.parse(v) : v; } catch(e) { return v; }
+                    }
 
-            // 🔹 Load file from localStorage (base64)
-            const savedFileData = localStorage.getItem("uploadedProofData");
-            const savedFileType = localStorage.getItem("uploadedProofType");
-            const savedFileName = localStorage.getItem("uploadedProofName");
+                    function readCertificates() {
+                        // 1) direct canonical key
+                        try {
+                            const raw = localStorage.getItem('education_certificates');
+                            if (raw) {
+                                const parsed = parseMaybe(raw);
+                                if (Array.isArray(parsed)) return parsed;
+                            }
+                        } catch(e){}
 
-            if (savedFileData && savedFileType && savedFileName) {
-                showFileInfo(savedFileName, savedFileType);
-                makeFileClickable(prevFileEl, savedFileName, savedFileData, savedFileType);
-            } else if (prevFileEl && prevFileEl.textContent.trim() !== "No file uploaded") {
-                // If coming from previous form
-                const prevFileName = prevFileEl.textContent.trim();
-                showFileInfo(prevFileName, getFileType(prevFileName));
-                makeFileClickable(prevFileEl, prevFileName, savedFileData, getFileType(prevFileName));
-            }
+                        // 2) education_profile with nested certificates
+                        try {
+                            const epRaw = localStorage.getItem('education_profile') || localStorage.getItem('education_profile_json');
+                            if (epRaw) {
+                                const ep = parseMaybe(epRaw);
+                                if (ep && Array.isArray(ep.certificates)) return ep.certificates;
+                                if (ep && Array.isArray(ep.education_certificates)) return ep.education_certificates;
+                            }
+                        } catch(e){}
 
-            // 🔹 When a new file is selected
-            fileInput.addEventListener("change", function () {
-                const file = this.files[0];
-                if (!file) return;
+                        // 3) fallback: search a few other keys
+                        for (const k of ['education_certificates','educationCertificates','certificates']) {
+                            try {
+                                const r = localStorage.getItem(k);
+                                const p = parseMaybe(r);
+                                if (Array.isArray(p)) return p;
+                            } catch(e){}
+                        }
+                        return [];
+                    }
 
-                const ext = getFileType(file.name);
-                if (!["jpg", "jpeg", "png", "pdf"].includes(ext)) {
-                    alert("Invalid file type. Only JPG, PNG, or PDF allowed.");
-                    fileInput.value = "";
-                    return;
-                }
+                    function fmtDate(d) {
+                        if (!d) return '';
+                        // accept ISO or yyyy-mm-dd
+                        try {
+                            const dt = new Date(d);
+                            if (!isNaN(dt.getTime())) return dt.toLocaleDateString(undefined, { year:'numeric', month:'long', day:'numeric' });
+                        } catch(e){}
+                        return String(d);
+                    }
 
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const fileData = e.target.result; // base64 content
-                    // store both legacy and "1" keys so both review pages can read it
-                    localStorage.setItem("uploadedProofData", fileData);
-                    localStorage.setItem("uploadedProofType", ext);
-                    localStorage.setItem("uploadedProofName", file.name);
+                    function makeCard(c) {
+                        const name = c.certificate_name || c.name || c.title || '';
+                        const issuer = c.issued_by || c.issuer || c.issuedBy || '';
+                        const date = fmtDate(c.date_completed || c.date || c.completed || '');
+                        const desc = c.training_description || c.description || c.what_you_learned || '';
+                        const html = document.createElement('div');
+                        html.className = 'bg-white border border-gray-200 rounded-lg p-4 shadow-sm';
+                        html.innerHTML = `
+                            <h4 class="text-blue-700 font-semibold mb-1">${escapeHtml(name || '—')}</h4>
+                            <div class="text-sm text-gray-700 mb-1">
+                                ${issuer ? `<strong>Issued by:</strong> ${escapeHtml(issuer)}` : ''}
+                            </div>
+                            ${date ? `<div class="text-sm text-gray-700 mb-2"><strong>Date:</strong> ${escapeHtml(date)}</div>` : ''}
+                            ${desc ? `<div class="text-gray-800 text-sm">${escapeHtml(desc)}</div>` : ''}
+                        `;
+                        return html;
+                    }
 
-                    localStorage.setItem("uploadedProofData1", fileData);
-                    localStorage.setItem("uploadedProofType1", ext);
-                    localStorage.setItem("uploadedProofName1", file.name);
+                    function escapeHtml(s){ if (s===null||s===undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-                    showFileInfo(file.name, ext);
-                    makeFileClickable(prevFileEl, file.name, fileData, ext);
-                };
-                // ...
-                // 🔹 Remove file
-                removeBtn.addEventListener("click", () => {
-                    // remove both variants
-                    ["uploadedProofData","uploadedProofType","uploadedProofName",
-                    "uploadedProofData1","uploadedProofType1","uploadedProofName1",
-                    "uploadedProofData0","uploadedProofType0","uploadedProofName0",
-                    "uploaded_proof_data","uploaded_proof_type","uploaded_proof_name",
-                    "proofData","proofType","proofName"
-                    ].forEach(k => { try { localStorage.removeItem(k); } catch(e){} });
+                    function render() {
+                        const listEl = document.getElementById('certsList');
+                        const noneEl = document.getElementById('noCertsMsg');
+                        if (!listEl || !noneEl) return;
+                        listEl.innerHTML = '';
+                        const arr = readCertificates() || [];
+                        if (!arr.length) {
+                            noneEl.style.display = 'block';
+                            return;
+                        }
+                        noneEl.style.display = 'none';
+                        arr.forEach(it => {
+                            listEl.appendChild(makeCard(it));
+                        });
+                    }
 
-                    fileInput.value = "";
-                    hideFileInfo();
-                });
-                reader.readAsDataURL(file);
-            });
+                    document.addEventListener('DOMContentLoaded', function(){
+                        render();
+                        // wire edit button to go back to education page (saveDraftAndGoto will persist draft)
+                        // Only attach navigation handler when inline edit UI is NOT present.
+                        const editBtn = document.getElementById('editSchoolBtn');
+                        const inlinePanel = document.getElementById('certsEdit');
+                        if (editBtn && !inlinePanel) {
+                            editBtn.addEventListener('click', function(){
+                                try { saveDraftAndGoto('{{ route('registereducation') }}'); }
+                                catch(e){ window.location.href='{{ route('registereducation') }}'; }
+                            });
+                        }
+                    });
 
-            // 🔹 View button
-            viewBtn.addEventListener("click", () => {
-                const name = localStorage.getItem("uploadedProofName");
-                const data = localStorage.getItem("uploadedProofData");
-                const type = localStorage.getItem("uploadedProofType");
-                if (data && type && name) openModalPreview(name, data, type);
-            });
-
-            // 🔹 Remove file
-            removeBtn.addEventListener("click", () => {
-                localStorage.removeItem("uploadedProofData");
-                localStorage.removeItem("uploadedProofType");
-                localStorage.removeItem("uploadedProofName");
-                fileInput.value = "";
-                hideFileInfo();
-            });
-
-            // 🔹 Close modal
-            closeModal.addEventListener("click", closeModalFn);
-            modal.addEventListener("click", (e) => {
-                if (e.target === modal) closeModalFn();
-            });
-
-            // ===============================
-            // 🔹 Helper Functions
-            // ===============================
-
-            function showFileInfo(name, type) {
-                fileInfo.classList.remove("hidden");
-                if (hintEl) hintEl.style.display = "none";
-                fileIcon.textContent = type === "pdf" ? "📄" : "🖼️";
-                fileName.textContent = name;
-            }
-
-            function hideFileInfo() {
-                fileInfo.classList.add("hidden");
-                fileName.textContent = "";
-                fileIcon.textContent = "";
-                if (hintEl) hintEl.style.display = "";
-            }
-
-            function closeModalFn() {
-                modal.classList.add("hidden");
-                modalContent.innerHTML = "";
-            }
-
-            function getFileType(filename) {
-                return filename.split(".").pop().toLowerCase();
-            }
-
-            // 🔹 Make filename clickable
-            function makeFileClickable(el, name, data, type) {
-                if (!el) return;
-                el.classList.add("text-blue-600", "underline", "cursor-pointer");
-                el.title = "Click to view uploaded file";
-                el.onclick = () => openModalPreview(name, data, type);
-            }
-
-            // 🔹 Open modal preview
-            function openModalPreview(name, data, type) {
-                modalContent.innerHTML = `<h2 class="font-semibold mb-2">${name}</h2>`;
-                if (["jpg", "jpeg", "png"].includes(type)) {
-                    modalContent.innerHTML += `<img src="${data}" alt="${name}" class="w-auto max-w-full max-h-[85vh] mx-auto rounded-lg shadow" />`;
-                } else if (type === "pdf") {
-                    modalContent.innerHTML += `<iframe src="${data}" class="w-full h-[85vh] rounded-lg border" title="${name}"></iframe>`;
-                } else {
-                    modalContent.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
-                }
-            }
-            })();
+                    window.addEventListener('storage', function(e){
+                        const watch = ['education_certificates','education_profile','education_profile_json','review_certs','certificates'];
+                        if (!e.key || watch.includes(e.key)) setTimeout(render, 40);
+                    });
+                })();
             </script>
            <script>
             window.addEventListener("DOMContentLoaded", () => {
@@ -1985,19 +2015,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         const school = firstLocal(['schoolName','school','school_name','schoolName']);
                         const other = firstLocal(['review_other','edu_other','edu_other_text']);
                     //    if(edu) document.getElementById('review_edu').textContent = String(edu);
-                        if (edu) {
-                            // prefer input with id educationLevel, otherwise try common review ids
-                            const target = document.getElementById('educationLevel') || document.getElementById('review_edu') || document.getElementById('review_edu_label');
-                            if (target) {
-                                if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') target.value = String(edu);
-                                else target.textContent = String(edu);
-                            }
-                        }
                         if(school) document.getElementById('schoolName').textContent = String(school);
-                        if(other) {
-                            const otherEl = document.getElementById('review_other_label') || document.getElementById('review_other');
-                            if (otherEl) otherEl.textContent = String(other);
-                        }
+                        if(other) document.getElementById('review_other_label').textContent = String(other);
                     }
 
                     function renderCertificates(){
@@ -2181,65 +2200,74 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // replace the previous renderPreviewBlock with one that uses loadSavedCerts()
     function renderPreviewBlock() {
+        // Important: only update the inner read-only list (do NOT replace the whole certificateReview container)
         const reviewContainer = document.getElementById('certificateReview');
         if (!reviewContainer) return;
-
+        const listEl = document.getElementById('certsList');
+        const noEl = document.getElementById('noCertsMsg');
         const saved = loadSavedCerts();
-        reviewContainer.innerHTML = '';
 
-        // if user explicitly selected "no", show No
+        // explicit "no"
         if (saved.hasCertFlag && String(saved.hasCertFlag).toLowerCase() === 'no') {
-            reviewContainer.innerHTML = '<p class="text-gray-700 italic">Certificates / Trainings: No</p>';
+            if (listEl) listEl.innerHTML = '';
+            if (noEl) { noEl.style.display = 'block'; noEl.textContent = 'No certificates or trainings added.'; }
             return;
         }
 
+        // render stacked list into certsList (preserve certsEdit and other controls)
         if (Array.isArray(saved.list) && saved.list.length) {
-            // build stacked list
+            if (noEl) noEl.style.display = 'none';
             const wrapper = document.createElement('div');
             wrapper.innerHTML = saved.list.map((it, idx) => makeFileCard(it, idx)).join('');
-            reviewContainer.appendChild(wrapper);
+            if (listEl) {
+                listEl.innerHTML = '';
+                // move children from wrapper into listEl (keeps event observers scoped)
+                Array.from(wrapper.children).forEach(ch => listEl.appendChild(ch));
 
-            // bind view/remove
-            wrapper.querySelectorAll('[data-action="view"]').forEach(btn => {
-                btn.addEventListener('click', (ev) => {
-                    const idx = Number(ev.currentTarget.dataset.idx);
-                    const it = saved.list[idx];
-                    if (!it) return alert('No preview available.');
-                    openPreviewModal(it.name, it.data || it.url || '', it.type || (it.name||'').split('.').pop());
+                // bind view/remove on the newly-inserted nodes
+                listEl.querySelectorAll('[data-action="view"]').forEach(btn => {
+                    btn.addEventListener('click', (ev) => {
+                        const idx = Number(ev.currentTarget.dataset.idx);
+                        const it = saved.list[idx];
+                        if (!it) return alert('No preview available.');
+                        openPreviewModal(it.name, it.data || it.url || '', it.type || (it.name||'').split('.').pop());
+                    });
                 });
-            });
-            wrapper.querySelectorAll('[data-action="remove"]').forEach(btn => {
-                btn.addEventListener('click', (ev) => {
-                    const idx = Number(ev.currentTarget.dataset.idx);
-                    // remove from both array and legacy keys to keep UI consistent
-                    try {
-                        // if uploadedProofs1 exists, update it
-                        const arrRaw = localStorage.getItem('uploadedProofs1');
-                        if (arrRaw) {
-                            const arr = JSON.parse(arrRaw || '[]') || [];
-                            if (Array.isArray(arr) && arr.length > idx) {
-                                arr.splice(idx,1);
-                                localStorage.setItem('uploadedProofs1', JSON.stringify(arr));
+                listEl.querySelectorAll('[data-action="remove"]').forEach(btn => {
+                    btn.addEventListener('click', (ev) => {
+                        const idx = Number(ev.currentTarget.dataset.idx);
+                        try {
+                            const arrRaw = localStorage.getItem('uploadedProofs1');
+                            if (arrRaw) {
+                                const arr = JSON.parse(arrRaw || '[]') || [];
+                                if (Array.isArray(arr) && arr.length > idx) {
+                                    arr.splice(idx,1);
+                                    localStorage.setItem('uploadedProofs1', JSON.stringify(arr));
+                                }
                             }
+                        } catch(e){}
+                        const fname = saved.list[idx] && saved.list[idx].name;
+                        if (fname) {
+                            ['uploadedProofName','uploadedProofData','uploadedProofType',
+                            'uploadedProofName1','uploadedProofData1','uploadedProofType1',
+                            'uploadedProofName0','uploadedProofData0','uploadedProofType0'].forEach(k=>{
+                                try { const v = localStorage.getItem(k); if (v && String(v).includes(fname)) localStorage.removeItem(k); } catch(e){}
+                            });
                         }
-                    } catch(e){}
-                    // also remove legacy single-file keys if filename matches
-                    const fname = saved.list[idx] && saved.list[idx].name;
-                    if (fname) {
-                        ['uploadedProofName','uploadedProofData','uploadedProofType',
-                        'uploadedProofName1','uploadedProofData1','uploadedProofType1',
-                        'uploadedProofName0','uploadedProofData0','uploadedProofType0',
-                        'admin_uploaded_proof_name','admin_uploaded_proof_data','admin_uploaded_proof_type'].forEach(k=>{ try{ const v = localStorage.getItem(k); if(v && String(v).includes(fname)) localStorage.removeItem(k); }catch(e){} });
-                    }
-                    // re-render
-                    setTimeout(renderPreviewBlock, 30);
+                        setTimeout(renderPreviewBlock, 30);
+                    });
                 });
-            });
+            } else {
+                // fallback: if certsList not present, replace minimal area
+                reviewContainer.querySelectorAll('*').forEach(n => n.remove());
+                reviewContainer.appendChild(wrapper);
+            }
             return;
         }
 
-        // nothing
-        reviewContainer.innerHTML = '<p class="text-gray-700 italic">Certificates / Trainings: No file uploaded</p>';
+        // nothing found
+        if (listEl) { listEl.innerHTML = ''; if (noEl) { noEl.style.display='block'; noEl.textContent = 'No certificates or trainings added.'; } }
+        else reviewContainer.innerHTML = '<p class="text-gray-700 italic">Certificates / Trainings: No file uploaded</p>';
     }
 
     // small helper used by view handlers in other scripts
@@ -2411,298 +2439,622 @@ document.addEventListener("DOMContentLoaded", () => {
 
 })();
 </script>
+            <script>
+                (function(){
+                    // utilities (kept small and robust)
+                    const LS_KEY = 'education_certificates';
+                    const $ = id => document.getElementById(id);
+                    const parseJSON = s => { try { return JSON.parse(s||'null'); } catch(e){ return null; } };
 
+                    function readCerts() {
+                        const raw = localStorage.getItem(LS_KEY);
+                        const arr = parseJSON(raw);
+                        return Array.isArray(arr) ? arr : [];
+                    }
+                    function saveCerts(arr) {
+                        try { localStorage.setItem(LS_KEY, JSON.stringify(arr || [])); } catch(e){}
+                        window.dispatchEvent(new StorageEvent('storage',{key:LS_KEY, newValue: JSON.stringify(arr || [])}));
+                    }
+
+                    function fmtDateFriendly(d) {
+                        if (!d) return '';
+                        try { const dt = new Date(d); if (!isNaN(dt.getTime())) return dt.toLocaleDateString(undefined,{ year:'numeric', month:'long', day:'numeric' }); } catch(e){}
+                        return d;
+                    }
+
+                    // read-only render
+                    function renderReadOnly() {
+                        const listEl = $('certsList');
+                        const noneEl = $('noCertsMsg');
+                        if (!listEl || !noneEl) return;
+                        const arr = readCerts();
+                        listEl.innerHTML = '';
+                        if (!arr.length) { noneEl.style.display = 'block'; return; }
+                        noneEl.style.display = 'none';
+                        arr.forEach(item => {
+                            const card = document.createElement('div');
+                            card.className = 'bg-white border border-gray-200 rounded-lg p-4 shadow-sm';
+                            const name = item.certificate_name || item.name || item.title || '—';
+                            const issuer = item.issued_by || item.issuer || '';
+                            const date = fmtDateFriendly(item.date_completed || item.date || item.completed || '');
+                            const desc = item.training_description || item.description || item.what_you_learned || '';
+                            card.innerHTML = `
+                                <h4 class="text-blue-700 font-semibold mb-1">${escapeHtml(name)}</h4>
+                                ${issuer ? `<div class="text-sm text-gray-700"><strong>Issued by:</strong> ${escapeHtml(issuer)}</div>` : ''}
+                                ${date ? `<div class="text-sm text-gray-700 mt-1"><strong>Date:</strong> ${escapeHtml(date)}</div>` : ''}
+                                ${desc ? `<div class="text-gray-800 text-sm mt-2">${escapeHtml(desc)}</div>` : ''}
+                            `;
+                            listEl.appendChild(card);
+                        });
+                    }
+
+                    function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+                    // edit mode
+                    function buildEditEntry(data) {
+                        const tpl = $('cert_template');
+                        const node = tpl.content.firstElementChild.cloneNode(true);
+                        const nameInput = node.querySelector('.cert-name');
+                        const issuerInput = node.querySelector('.cert-issuer');
+                        const dateInput = node.querySelector('.cert-date');
+                        const descInput = node.querySelector('.cert-desc');
+                        if (data) {
+                            nameInput.value = data.certificate_name || data.name || data.title || '';
+                            issuerInput.value = data.issued_by || data.issuer || '';
+                            // normalize date to yyyy-mm-dd for input
+                            const rawDate = data.date_completed || data.date || data.completed || '';
+                            try {
+                                const dt = new Date(rawDate);
+                                if (!isNaN(dt.getTime())) {
+                                    const yyyy = dt.getFullYear();
+                                    const mm = String(dt.getMonth()+1).padStart(2,'0');
+                                    const dd = String(dt.getDate()).padStart(2,'0');
+                                    dateInput.value = `${yyyy}-${mm}-${dd}`;
+                                } else {
+                                    dateInput.value = rawDate || '';
+                                }
+                            } catch(e){ dateInput.value = rawDate || ''; }
+                            descInput.value = data.training_description || data.description || data.what_you_learned || '';
+                        }
+                        node.querySelector('.remove-cert').addEventListener('click', () => {
+                            node.remove();
+                        });
+                        return node;
+                    }
+
+                    function enterEditMode() {
+                        const editPanel = $('certsEdit');
+                        const container = $('certs_container');
+                        if (!editPanel || !container) return;
+                        container.innerHTML = '';
+                        const arr = readCerts();
+                        if (!arr.length) container.appendChild(buildEditEntry({}));
+                        else arr.forEach(it => container.appendChild(buildEditEntry(it)));
+                        editPanel.classList.remove('hidden');
+                        const list = $('certsList'); if (list) list.style.display = 'none';
+                        const none = $('noCertsMsg'); if (none) none.style.display = 'none';
+                    }
+
+                    function exitEditMode(save) {
+                        const editPanel = $('certsEdit');
+                        const container = $('certs_container');
+                        if (!editPanel || !container) return;
+                        if (save) {
+                            const entries = Array.from(container.querySelectorAll('.cert-entry'));
+                            const out = entries.map(el => {
+                                const get = cls => (el.querySelector('.' + cls) && el.querySelector('.' + cls).value) ? el.querySelector('.' + cls).value.trim() : '';
+                                const obj = {
+                                    certificate_name: get('cert-name'),
+                                    issued_by: get('cert-issuer'),
+                                    date_completed: get('cert-date'),
+                                    training_description: get('cert-desc')
+                                };
+                                if (!obj.certificate_name && !obj.issued_by && !obj.date_completed && !obj.training_description) return null;
+                                return obj;
+                            }).filter(Boolean);
+                            saveCerts(out);
+                        }
+                        editPanel.classList.add('hidden');
+                        const list = $('certsList'); if (list) list.style.display = '';
+                        const none = $('noCertsMsg'); if (none && (!readCerts() || !readCerts().length)) none.style.display = 'block';
+                        renderReadOnly();
+                    }
+                    // expose API so main edit button can call into the cert editor without relying on click proxies
+                    window.__mvsg_enterCerts = enterEditMode;
+                    window.__mvsg_exitCerts = exitEditMode;
+                    window.__mvsg_saveCerts = function(){ exitEditMode(true); };
+
+                    // make document-click handler ignore clicks when button has mvsgSkip flag (so central handler can control flow)
+                    document.addEventListener('click', function(ev){
+                        try {
+                            const closestBtn = ev.target && ev.target.closest ? ev.target.closest('#editSchoolBtn') : (ev.target && ev.target.id === 'editSchoolBtn' ? ev.target : null);
+                            if (closestBtn && closestBtn.dataset && closestBtn.dataset.mvsgSkip === '1') {
+                                // intentionally ignore — another handler is orchestrating open/close
+                                return;
+                            }
+                        } catch(e){}
+
+                        const target = ev.target;
+                        if (!target) return;
+                        if (target.id === 'editSchoolBtn') {
+                            const editPanel = $('certsEdit');
+                            if (editPanel && editPanel.classList.contains('hidden')) enterEditMode();
+                            else exitEditMode(true);
+                        }
+                        if (target.id === 'addCertBtn') {
+                            const container = $('certs_container');
+                            if (container) container.appendChild(buildEditEntry({}));
+                        }
+                        if (target.id === 'saveCertsBtn') exitEditMode(true);
+                        if (target.id === 'cancelCertsBtn') exitEditMode(false);
+                    });
+                    // wire buttons
+                    document.addEventListener('click', function(ev){
+                        const target = ev.target;
+                        if (!target) return;
+                        if (target.id === 'editSchoolBtn') {
+                            const editPanel = $('certsEdit');
+                            if (editPanel && editPanel.classList.contains('hidden')) enterEditMode();
+                            else exitEditMode(true);
+                        }
+                        if (target.id === 'addCertBtn') {
+                            const container = $('certs_container');
+                            if (container) container.appendChild(buildEditEntry({}));
+                        }
+                        if (target.id === 'saveCertsBtn') exitEditMode(true);
+                        if (target.id === 'cancelCertsBtn') exitEditMode(false);
+                    });
+
+                    // re-render when storage changes
+                    window.addEventListener('storage', function(e){
+                        if (!e.key || e.key === LS_KEY) setTimeout(renderReadOnly, 30);
+                    });
+
+                    // init on load
+                    document.addEventListener('DOMContentLoaded', function(){
+                        renderReadOnly();
+                    });
+
+                })();
+            </script>
 <script>
 /*
-  Render certificate/training entries (text fields) in review view.
-  Reads from several possible sources and falls back to rpi_personal2 draft keys.
+  Central sync + safe edit-button wiring for Education fields.
+  - Removes previous anonymous listeners by replacing the button node.
+  - Keeps UI and localStorage in sync so saved values appear immediately and after reload.
 */
 (function(){
-  const containerId = 'certificateReview';
+    const EDU_KEYS = ['educationLevel','edu_level','education_level','review_edu','eduLevel'];
+    const SCHOOL_KEYS = ['schoolName','school','school_name','review_school'];
 
-  function tryParse(v){
-    if(!v && v !== 0) return null;
-    if(typeof v === 'object') return v;
-    try { return JSON.parse(v); } catch(e) { return String(v).trim(); }
-  }
-
-  function readFromLocalCandidates(){
-    const keys = [
-      'certificates', 'certificates_list', 'education_certificates',
-      'review_certificates', 'review_certs_list', 'uploadedCertificates',
-      'rpi_personal2', 'rpi_personal', 'registrationDraft'
-    ];
-    for(const k of keys){
-      try{
-        const raw = localStorage.getItem(k);
-        if(!raw) continue;
-        const parsed = tryParse(raw);
-        // normalized: array of objects or single object
-        if(Array.isArray(parsed) && parsed.length) return { source: k, data: parsed };
-        if(parsed && typeof parsed === 'object'){
-          // common shape: { certificates: [...] } or schoolWorkInfo.certificates
-          if(Array.isArray(parsed.certificates) && parsed.certificates.length) return { source:k, data: parsed.certificates };
-          if(Array.isArray(parsed.schoolWorkInfo && parsed.schoolWorkInfo.certificates) && parsed.schoolWorkInfo.certificates.length) return { source:k, data: parsed.schoolWorkInfo.certificates };
-          // possibly the object itself is a single certificate entry
-          const maybe = [];
-          const fields = ['certificate_name','issued_by','date_completed','training_description','name','issuer','date','description'];
-          const hasField = fields.some(f => parsed[f]);
-          if(hasField) { maybe.push(parsed); return { source:k, data: maybe }; }
+    function readFirst(keys){
+        for(const k of keys){
+            try {
+                const v = localStorage.getItem(k);
+                if (v !== null && v !== undefined && String(v).trim() !== '') return String(v).trim();
+            } catch(e){}
         }
-        // string form: comma separated JSON-like or CSV -> ignore
-      }catch(e){}
-    }
-    return { source: null, data: [] };
-  }
-
-  function normalizeEntries(raw){
-    if(!raw) return [];
-    const out = [];
-    for(const it of raw){
-      if(!it) continue;
-      if(typeof it === 'string'){
-        // try parse object inside string
-        const p = tryParse(it);
-        if(p && typeof p === 'object'){ raw = raw.map(x=> (typeof x === 'string' ? tryParse(x) : x)); break; }
-        // fallback: treat as filename/label
-        out.push({ certificate_name: it, issued_by:'', date_completed:'', training_description:'' });
-        continue;
-      }
-      if(typeof it === 'object'){
-        const name = it.certificate_name || it.name || it.title || it.cert_name || '';
-        const issued = it.issued_by || it.issuer || it.issuedBy || '';
-        const date = it.date_completed || it.date || it.completed || it.when || '';
-        const desc = it.training_description || it.description || it.desc || it.what_you_learned || '';
-        out.push({ certificate_name: String(name||''), issued_by: String(issued||''), date_completed: String(date||''), training_description: String(desc||'') });
-      }
-    }
-    return out;
-  }
-
-  function renderFileCards(savedFiles){
-    if(!savedFiles || !savedFiles.length) return null;
-    const frag = document.createDocumentFragment();
-    savedFiles.forEach((f, idx) => {
-      const ext = (f.type || (f.name||'').split('.').pop()||'').toLowerCase();
-      const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
-      const div = document.createElement('div');
-      div.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
-      div.innerHTML = `<span class="text-2xl">${icon}</span>
-        <div class="flex-1 min-w-0">
-          <div class="text-sm text-gray-700 truncate">${(f.name||'').replace(/</g,'&lt;')}</div>
-          <div class="text-xs text-gray-500 mt-1">${(f.type||'').toUpperCase()}</div>
-        </div>
-        <div class="ml-4 flex gap-2">
-          <button data-idx="${idx}" data-action="view" class="view-cert-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button>
-          <button data-idx="${idx}" data-action="remove" class="remove-cert-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button>
-        </div>`;
-      frag.appendChild(div);
-    });
-    return frag;
-  }
-
-  function renderTextEntries(entries){
-    if(!entries || !entries.length) return null;
-    const frag = document.createDocumentFragment();
-    entries.forEach(e=>{
-      const wrapper = document.createElement('div');
-      wrapper.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-3';
-      const title = e.certificate_name || '(No name)';
-      const issuer = e.issued_by ? `<div class="text-sm text-gray-600 mt-1">Issued by: <strong>${escapeHtml(e.issued_by)}</strong></div>` : '';
-      const date = e.date_completed ? `<div class="text-sm text-gray-600 mt-1">Date: <span>${escapeHtml(e.date_completed)}</span></div>` : '';
-      const desc = e.training_description ? `<p class="text-sm text-gray-700 mt-2">${escapeHtml(e.training_description)}</p>` : '';
-      wrapper.innerHTML = `<h4 class="text-blue-700 font-semibold">${escapeHtml(title)}</h4>${issuer}${date}${desc}`;
-      frag.appendChild(wrapper);
-    });
-    return frag;
-  }
-
-  function escapeHtml(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-  // format various date inputs to "Month D, YYYY" (e.g. December 2, 2025)
-  function formatDateHuman(input) {
-    if (!input && input !== 0) return '';
-    try {
-      const s = String(input).trim();
-      if (!s) return '';
-      // YYYY-MM-DD
-      let m;
-      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
-        const [y,mo,d] = s.split('-').map(Number);
-        const dt = new Date(y, mo - 1, d);
-        if (!isNaN(dt.getTime())) return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      }
-      // DD/MM/YYYY
-      if (/^\d{2}\/\d{2}\/\d{4}$/.test(s)) {
-        const [d,mo,y] = s.split('/').map(Number);
-        const dt = new Date(y, mo - 1, d);
-        if (!isNaN(dt.getTime())) return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-      }
-      // try Date.parse for other ISO or human strings
-      const parsed = new Date(s);
-      if (!isNaN(parsed.getTime())) return parsed.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    } catch (e) {
-      // fallthrough
-    }
-    return String(input);
-  }
-
-  function renderTextEntries(entries){
-    if(!entries || !entries.length) return null;
-    const frag = document.createDocumentFragment();
-    entries.forEach(e=>{
-      const wrapper = document.createElement('div');
-      wrapper.className = 'bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-3';
-      const title = e.certificate_name || '(No name)';
-
-      const issuer = e.issued_by ? `<div class="text-sm text-gray-600 mt-1">Issued by: <strong>${escapeHtml(e.issued_by)}</strong></div>` : '';
-
-      // use formatted human date
-      const humanDate = e.date_completed ? formatDateHuman(e.date_completed) : '';
-      const date = humanDate ? `<div class="text-sm text-gray-600 mt-1">Date: <span>${escapeHtml(humanDate)}</span></div>` : '';
-
-      const desc = e.training_description ? `<p class="text-sm text-gray-700 mt-2">${escapeHtml(e.training_description)}</p>` : '';
-      wrapper.innerHTML = `<h4 class="text-blue-700 font-semibold">${escapeHtml(title)}</h4>${issuer}${date}${desc}`;
-      frag.appendChild(wrapper);
-    });
-    return frag;
-  }
-
-  // new combined renderer
-  function populateCertificateReview(){
-    const review = document.getElementById(containerId);
-    if(!review) return;
-    // clear only the certificate content (leave header)
-    // we'll remove nodes inside review that are not the header H3 if present
-    // simplest: replace inner content with our generated nodes
-    review.innerHTML = '';
-
-    // 1) attempt to render textual certificate entries
-    let entries = [];
-    try{
-      const cand = readFromLocalCandidates();
-      if(cand && cand.data && cand.data.length){
-        entries = normalizeEntries(cand.data);
-      } else {
-        // fallback: try rpi_personal2.schoolWorkInfo.certificates etc
-        const rawDraft = tryParse(localStorage.getItem('rpi_personal2') || localStorage.getItem('rpi_personal') || '{}') || {};
-        const sw = rawDraft.schoolWorkInfo || rawDraft.school || rawDraft || {};
-        const maybe = sw.certificates || sw.certs || sw.cert_list || rawDraft.certificates || rawDraft.certs;
-        if(maybe) entries = normalizeEntries(tryParse(maybe) || []);
-      }
-    }catch(e){ entries = []; }
-
-    // 2) attempt to render uploaded file list (existing helper loads many keys)
-    let savedFiles = [];
-    try{
-      const arrRaw = localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || localStorage.getItem('uploadedProofs_proof') || '[]';
-      const arr = tryParse(arrRaw) || [];
-      if(Array.isArray(arr) && arr.length){
-        savedFiles = arr.map(it => {
-          if(typeof it === 'string') return { name: it, type: (it.split('.').pop()||'').toLowerCase(), data: null };
-          return { name: it.name || it.filename || '', type: it.type || (it.name||'').split('.').pop() || '', data: it.data || it.url || null };
-        });
-      } else {
-        const legacyName = localStorage.getItem('uploadedProofName1') || localStorage.getItem('uploadedProofName') || '';
-        const legacyData = localStorage.getItem('uploadedProofData1') || localStorage.getItem('uploadedProofData') || null;
-        const legacyType = localStorage.getItem('uploadedProofType1') || localStorage.getItem('uploadedProofType') || (legacyName.split('.').pop()||'').toLowerCase();
-        if(legacyName) savedFiles.push({ name: legacyName, type: legacyType, data: legacyData });
-      }
-    }catch(e){ savedFiles = []; }
-
-    // 3) render into container
-    let appended = false;
-    if(entries.length){
-      const title = document.createElement('h3');
-      title.className = 'mt-2 text-lg font-semibold text-blue-600 mb-3';
-      title.textContent = 'Certificate / Training Details';
-      review.appendChild(title);
-      const frag = renderTextEntries(entries);
-      if(frag){ review.appendChild(frag); appended = true; }
-    }
-
-    if(savedFiles.length){
-      const title2 = document.createElement('div');
-      title2.className = 'mt-4 mb-2';
-      title2.innerHTML = '<h3 class="text-lg font-semibold text-blue-600">Uploaded Certificate Files</h3>';
-      review.appendChild(title2);
-      const filesFrag = renderFileCards(savedFiles);
-      if(filesFrag){ review.appendChild(filesFrag); appended = true; }
-
-      // bind view/remove buttons
-      review.querySelectorAll('.view-cert-file').forEach(b => {
-        b.addEventListener('click', (ev) => {
-          const idx = Number(ev.currentTarget.getAttribute('data-idx') || 0);
-          const item = savedFiles[idx];
-          if(!item) return alert('No preview available');
-          // open modal (reuse global modal if exists)
-          const modal = document.getElementById('filePreviewModal') || document.getElementById('fileModal');
-          const content = document.getElementById('filePreviewContent') || document.getElementById('modalContent');
-          if(modal && content){
-            const src = item.data || item.url || null;
-            content.innerHTML = `<h3 class="font-semibold mb-2">${escapeHtml(item.name)}</h3>`;
-            const ext = (item.type || (item.name||'').split('.').pop()).toLowerCase();
-            if(['jpg','jpeg','png'].includes(ext)){
-              if(src) content.innerHTML += `<img src="${src}" class="max-h-[85vh] mx-auto rounded-lg shadow" />`;
-              else content.innerHTML += `<p class="text-gray-700">No preview available.</p>`;
-            } else if(ext === 'pdf'){
-              if(src) content.innerHTML += `<iframe src="${src}" class="w-full h-[85vh] rounded-lg border"></iframe>`;
-              else content.innerHTML += `<p class="text-gray-700">No preview available.</p>`;
-            } else {
-              if(src) content.innerHTML += `<a href="${src}" target="_blank" class="text-blue-600 underline">Open file</a>`;
-              else content.innerHTML += `<p class="text-gray-700">No preview available.</p>`;
-            }
-            modal.classList.remove('hidden');
-          } else {
-            alert('Preview not available in this view.');
-          }
-        });
-      });
-
-      review.querySelectorAll('.remove-cert-file').forEach(b => {
-        b.addEventListener('click', (ev) => {
-          const idx = Number(ev.currentTarget.getAttribute('data-idx') || 0);
-          // remove from uploadedProofs1 if present
-          try{
-            const arrRaw = localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || null;
-            if(arrRaw){
-              let arr = JSON.parse(arrRaw||'[]') || [];
-              if(Array.isArray(arr) && arr.length > idx){
-                arr.splice(idx,1);
-                localStorage.setItem('uploadedProofs1', JSON.stringify(arr));
-                // also remove legacy keys if filename matches
-                const fname = savedFiles[idx] && savedFiles[idx].name;
-                if(fname){
-                  ['uploadedProofName','uploadedProofData','uploadedProofType','uploadedProofName1','uploadedProofData1','uploadedProofType1'].forEach(k=>{
-                    try{ const v = localStorage.getItem(k); if(v && String(v).includes(fname)) localStorage.removeItem(k); }catch(e){}
-                  });
+        // try draft object
+        try {
+            const draftRaw = localStorage.getItem('rpi_personal2') || localStorage.getItem('registrationDraft') || null;
+            if (draftRaw) {
+                const d = JSON.parse(draftRaw);
+                if (d) {
+                    // common nested locations
+                    const s = (d.schoolWorkInfo && (d.schoolWorkInfo.edu_level || d.schoolWorkInfo.school)) || d.edu_level || d.school || '';
+                    if (s) return String(s).trim();
                 }
-              }
-            } else {
-              // clear legacy keys
-              ['uploadedProofName','uploadedProofData','uploadedProofType','uploadedProofName1','uploadedProofData1','uploadedProofType1'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
             }
-          }catch(e){}
-          setTimeout(populateCertificateReview, 30);
-        });
-      });
+        } catch(e){}
+        return '';
     }
 
-    if(!appended){
-      const p = document.createElement('p');
-      p.className = 'text-gray-700 italic';
-      p.textContent = 'No certificates or trainings provided.';
-      review.appendChild(p);
+    function ensureElements(){
+        const raw = document.getElementById('educationLevel'); // used as raw fallback
+        let disp = document.getElementById('educationLevel_display');
+        if (!disp && raw) {
+            disp = document.createElement('span');
+            disp.id = 'educationLevel_display';
+            raw.parentNode.insertBefore(disp, raw);
+        }
+        return {
+            raw,
+            disp,
+            select: document.getElementById('edit_edu_select'),
+            schoolSpan: document.getElementById('schoolName'),
+            schoolInput: document.getElementById('edit_school_input')
+        };
     }
-  }
 
-  document.addEventListener('DOMContentLoaded', populateCertificateReview);
-  window.addEventListener('storage', function(e){
-    const watch = ['certificates','certificates_list','uploadedProofs1','uploadedProofs','uploadedProofName','uploadedProofName1','uploadedProofData','rpi_personal2','review_certs'];
-    if(!e.key || watch.includes(e.key)) setTimeout(populateCertificateReview, 50);
-  });
+    function syncEducationToUI(){
+        const el = ensureElements();
+        const edu = readFirst(EDU_KEYS) || '';
+        const school = readFirst(SCHOOL_KEYS) || '';
+
+        // update display span (primary)
+        if (el.disp) {
+            el.disp.textContent = edu;
+            el.disp.classList.remove('hidden');
+            el.disp.style.display = '';
+        }
+        // keep raw input/value consistent for other scripts
+        if (el.raw) {
+            try {
+                if (el.raw.tagName === 'INPUT' || el.raw.tagName === 'TEXTAREA') el.raw.value = edu;
+                else el.raw.textContent = edu;
+                el.raw.classList.remove('hidden');
+                el.raw.style.display = 'none'; // prefer display span visually
+            } catch(e){}
+        }
+        // sync select (keep option existing)
+        if (el.select) {
+            const val = String(edu || '').trim();
+            if (val) {
+                const opt = Array.from(el.select.options).find(o => o.value === val || o.text === val);
+                if (opt) el.select.value = opt.value;
+                else {
+                    // temporary option so select shows current value when opened
+                    try {
+                        const tmp = document.createElement('option');
+                        tmp.value = val; tmp.text = val;
+                        el.select.insertBefore(tmp, el.select.firstChild);
+                        el.select.value = val;
+                    } catch(e){}
+                }
+            }
+            // hide editor by default
+            el.select.classList.add('hidden');
+            el.select.style.display = 'none';
+        }
+
+        // school
+        if (el.schoolSpan) {
+            el.schoolSpan.textContent = school;
+            el.schoolSpan.classList.remove('hidden');
+            el.schoolSpan.style.display = '';
+        }
+        if (el.schoolInput) {
+            el.schoolInput.value = school || '';
+            el.schoolInput.classList.add('hidden');
+            el.schoolInput.style.display = 'none';
+        }
+    }
+
+    function persistEducation(eduValue, schoolValue){
+        const sEdu = String(eduValue || '');
+        const sSchool = String(schoolValue || '');
+        const keysEdu = EDU_KEYS;
+        const keysSchool = SCHOOL_KEYS;
+        keysEdu.forEach(k => { try { localStorage.setItem(k, sEdu); } catch(e){} });
+        keysSchool.forEach(k => { try { localStorage.setItem(k, sSchool); } catch(e){} });
+
+        // update draft object if present
+        try {
+            const rawDraft = localStorage.getItem('rpi_personal2') || '{}';
+            let draft = {};
+            try { draft = JSON.parse(rawDraft || '{}'); } catch(e){ draft = {}; }
+            draft.schoolWorkInfo = draft.schoolWorkInfo || {};
+            draft.schoolWorkInfo.school = sSchool;
+            draft.schoolWorkInfo.edu_level = sEdu;
+            localStorage.setItem('rpi_personal2', JSON.stringify(draft));
+        } catch(e){}
+
+        // notify listeners
+        try { window.dispatchEvent(new CustomEvent('mvsg:educationSaved', { detail: { educationLevel: sEdu, schoolName: sSchool } })); } catch(e){}
+        try { window.dispatchEvent(new StorageEvent('storage', { key: 'educationLevel', newValue: sEdu })); } catch(e){}
+    }
+
+    // Replace existing editSchoolBtn node to remove prior anonymous listeners, then attach unified handler.
+    function wireEditButton(){
+        const existing = document.getElementById('editSchoolBtn');
+        if (!existing) return;
+        const clone = existing.cloneNode(true);
+        existing.parentNode.replaceChild(clone, existing);
+
+        // ensure our state flag
+        clone.dataset.mvsgEditing = '0';
+
+        clone.addEventListener('click', function(){
+            const editing = clone.dataset.mvsgEditing === '1';
+            const els = ensureElements();
+            if (!editing) {
+                // open editors
+                clone.dataset.mvsgEditing = '1';
+                clone.textContent = '💾 Save Changes';
+                clone.classList.remove('bg-blue-600'); clone.classList.add('bg-green-600');
+                // show select and school input populated from UI/localStorage
+                const currentEdu = els.disp ? els.disp.textContent.trim() : (els.raw ? (els.raw.value||els.raw.textContent||'') : '');
+                if (els.select) {
+                    // un-hide and ensure selection option exists
+                    const opt = Array.from(els.select.options).find(o => o.value === currentEdu || o.text === currentEdu);
+                    if (!opt && currentEdu) {
+                        try { const tmp = document.createElement('option'); tmp.value = currentEdu; tmp.text = currentEdu; els.select.insertBefore(tmp, els.select.firstChild); } catch(e){}
+                    }
+                    els.select.classList.remove('hidden'); els.select.style.display = '';
+                }
+                if (els.disp) { els.disp.style.display = 'none'; els.disp.classList.add('hidden'); }
+                if (els.raw) { els.raw.style.display = 'none'; els.raw.classList.add('hidden'); }
+                if (els.schoolSpan) { els.schoolSpan.classList.add('hidden'); els.schoolSpan.style.display = 'none'; }
+                if (els.schoolInput) { els.schoolInput.classList.remove('hidden'); els.schoolInput.style.display = ''; }
+                // open inline certs editor as well (if available)
+                try { if (typeof window.__mvsg_enterCerts === 'function') window.__mvsg_enterCerts(); else { const c = document.getElementById('certsEdit'); if (c) c.classList.remove('hidden'); const l = document.getElementById('certsList'); if (l) l.style.display = 'none'; } } catch(e){}
+            } else {
+                // save values and close editors
+                const newEdu = (document.getElementById('edit_edu_select') && document.getElementById('edit_edu_select').value) || (document.getElementById('educationLevel') && (document.getElementById('educationLevel').value||document.getElementById('educationLevel').textContent)) || '';
+                const newSchool = (document.getElementById('edit_school_input') && document.getElementById('edit_school_input').value) || (document.getElementById('schoolName') && document.getElementById('schoolName').textContent) || '';
+                // persist
+                persistEducation(newEdu.trim(), newSchool.trim());
+                // update UI
+                syncEducationToUI();
+                // close certs editor
+                try { if (typeof window.__mvsg_exitCerts === 'function') window.__mvsg_exitCerts(true); else { const c = document.getElementById('certsEdit'); if (c) c.classList.add('hidden'); const l = document.getElementById('certsList'); if (l) l.style.display = ''; } } catch(e){}
+                // restore button label/state
+                clone.dataset.mvsgEditing = '0';
+                clone.textContent = '✏️ Edit Information';
+                clone.classList.remove('bg-green-600'); clone.classList.add('bg-blue-600');
+            }
+        }, { passive: true });
+    }
+
+    // boot
+    document.addEventListener('DOMContentLoaded', function(){
+        try { syncEducationToUI(); } catch(e){ console.debug('sync init failed', e); }
+        try { wireEditButton(); } catch(e){ console.debug('wireEditButton failed', e); }
+    });
+
+    // keep UI in sync when storage changes
+    window.addEventListener('storage', function(e){
+        const keys = EDU_KEYS.concat(SCHOOL_KEYS, ['rpi_personal2','registrationDraft']);
+        if (!e.key || keys.includes(e.key)) {
+            setTimeout(syncEducationToUI, 20);
+        }
+    });
+
+    // also respond to our custom save event
+    window.addEventListener('mvsg:educationSaved', function(){ setTimeout(syncEducationToUI, 10); });
+
 })();
 </script>
+<script>
+(function(){
+    // Work inline edit: toggle, build entries, save to localStorage 'job_experiences'
+    const workEditPanel = document.getElementById('workEditPanel');
+    const workContainer = document.getElementById('work_edit_container');
+    const template = document.getElementById('job_edit_template');
+    const reviewJobs = document.getElementById('review_job_experiences');
+    const reviewWorkList = document.getElementById('review_work_list');
+    const editWorkSelect = document.getElementById('edit_work_select');
+    let workEditBtn = Array.from(document.querySelectorAll('.edit-btn')).find(b=>b.dataset && b.dataset.section==='work');
+
+    function parseJSONSafe(s){ try { return s ? JSON.parse(s) : []; } catch(e){ return Array.isArray(s) ? s : (typeof s === 'string' ? s.split(',').map(x=>x.trim()).filter(Boolean) : []); } }
+    function readSavedJobs(){ return parseJSONSafe(localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || '[]'); }
+
+    function buildEditNode(item){
+        const node = template.content.firstElementChild.cloneNode(true);
+        const title = node.querySelector('.job-edit-title');
+        const company = node.querySelector('.job-edit-company');
+        const year = node.querySelector('.job-edit-year');
+        const desc = node.querySelector('.job-edit-desc');
+        if (item) {
+            title.value = item.title || item.job_title || item.position || '';
+            company.value = item.company || item.company_name || item.employer || '';
+            year.value = item.start_year || item.job_work_year || item.year || '';
+            desc.value = item.description || item.job_description || item.desc || '';
+        }
+        node.querySelector('.remove-job-edit').addEventListener('click', () => { node.remove(); });
+        return node;
+    }
+
+    function enterWorkEdit(){
+        if (!workEditPanel || !workContainer) return;
+        workContainer.innerHTML = '';
+        const arr = readSavedJobs();
+        if (!Array.isArray(arr) || arr.length === 0) workContainer.appendChild(buildEditNode({}));
+        else arr.forEach(it => workContainer.appendChild(buildEditNode(it)));
+        if (reviewJobs) reviewJobs.style.display = 'none';
+        if (reviewWorkList) reviewWorkList.style.display = 'none';
+        // populate & show work-type select
+        try {
+            const stored = localStorage.getItem('selected_work_experience') || localStorage.getItem('work_type') || localStorage.getItem('selectedWorkExperience') || '';
+            if (editWorkSelect) {
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed) && parsed.length) editWorkSelect.value = parsed[0];
+                        else if (typeof stored === 'string' && String(stored).trim()) editWorkSelect.value = String(stored).replace(/[\[\]"]+/g,'').split(',')[0].trim();
+                    } catch(e){ editWorkSelect.value = String(stored).replace(/[\[\]"]+/g,'').split(',')[0].trim(); }
+                } else {
+                    // try visible pills
+                    const pill = reviewWorkList && reviewWorkList.querySelector('span:not(.text-gray-600)');
+                    if (pill) editWorkSelect.value = pill.textContent.trim().toLowerCase() || '';
+                }
+                editWorkSelect.classList.remove('hidden');
+                editWorkSelect.style.display = '';
+            }
+        } catch(e){}
+        workEditPanel.classList.remove('hidden');
+    }
+
+    function exitWorkEdit(save){
+        if (!workEditPanel || !workContainer) return;
+        // read selection early
+        const sel = (editWorkSelect && editWorkSelect.value) ? String(editWorkSelect.value).trim() : '';
+        // persist work-type keys regardless of save flag (so UI reflects choice immediately)
+        try {
+            if (sel) {
+                const asArr = JSON.stringify([sel]);
+                localStorage.setItem('selected_work_experience', asArr);
+                localStorage.setItem('work_type', asArr);
+                localStorage.setItem('selectedWorkExperience', asArr);
+                // update simple review pill display immediately
+                if (reviewWorkList) {
+                    reviewWorkList.innerHTML = '';
+                    if (sel === 'none') reviewWorkList.innerHTML = '<span class="text-gray-600">N/A</span>';
+                    else {
+                        const span = document.createElement('span');
+                        span.className = 'bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm font-medium';
+                        span.textContent = sel.charAt(0).toUpperCase() + sel.slice(1);
+                        reviewWorkList.appendChild(span);
+                    }
+                }
+            }
+        } catch(e){}
+        // build and persist job entries
+        let out = [];
+        if (save) {
+            const entries = Array.from(workContainer.querySelectorAll('.job-edit-entry'));
+            out = entries.map(node => {
+                try {
+                    const title = node.querySelector('.job-edit-title')?.value?.trim() || '';
+                    const company = node.querySelector('.job-edit-company')?.value?.trim() || '';
+                    const yearRaw = node.querySelector('.job-edit-year')?.value?.trim() || '';
+                    const desc = node.querySelector('.job-edit-desc')?.value?.trim() || '';
+                    // Normalize year/start_year: prefer 4-digit year, else try extract yyyy from common date formats
+                    let start_year;
+                    if (/^\d{4}$/.test(yearRaw)) start_year = yearRaw;
+                    else {
+                        const m = String(yearRaw).match(/(\d{4})\b/);
+                        start_year = m ? m[1] : (yearRaw || undefined);
+                    }
+                    if (!title && !company && !start_year && !desc) return null;
+                    const obj = { title, company, description: desc };
+                    if (start_year !== undefined) obj.start_year = start_year;
+                    return obj;
+                } catch(e){ return null; }
+            }).filter(Boolean);
+        }
+
+        // If user selected "none", remove saved job_experiences so review shows empty state
+        try {
+            if (sel === 'none') {
+                out = [];
+            }
+        } catch(e){}
+
+        // persist canonical keys and draft
+        try {
+            const s = JSON.stringify(out || []);
+            try { localStorage.setItem('job_experiences', s); } catch(e){}
+            try { localStorage.setItem('work_experiences', s); } catch(e){}
+            try { localStorage.setItem('workExperience', JSON.stringify({ work_experiences: out || [] })); } catch(e){}
+            // Persist selected_work_year so final-step/readers have a stable key
+            try {
+                const years = (out || []).map(o => (o && (o.start_year || o.year || ''))).filter(Boolean);
+                localStorage.setItem('selected_work_year', JSON.stringify(years));
+            } catch(e){}
+            // update rpi_personal2 draft object if present so server-side save sees changes
+            try {
+                const rawDraft = localStorage.getItem('rpi_personal2') || localStorage.getItem('rpi_personal') || '{}';
+                let draft = {};
+                try { draft = JSON.parse(rawDraft || '{}'); } catch(e){ draft = {}; }
+                draft.workExperience = draft.workExperience || {};
+                draft.workExperience.work_experiences = out || [];
+                try { draft.workExperience.selected_work_year = (out || []).map(x => x.start_year || x.year || '').filter(Boolean); } catch(e){}
+                localStorage.setItem('rpi_personal2', JSON.stringify(draft));
+            } catch(e){}
+            // notify other listeners
+            try { window.dispatchEvent(new StorageEvent('storage', { key:'job_experiences', newValue: s })); } catch(e){}
+            try { window.dispatchEvent(new CustomEvent('mvsg:workSaved', { detail: { workExperiences: out || [] } })); } catch(e){}
+        } catch(e){ console.warn('persist work experiences failed', e); }
+
+        workEditPanel.classList.add('hidden');
+        if (reviewJobs) reviewJobs.style.display = '';
+        if (reviewWorkList) reviewWorkList.style.display = '';
+        // trigger re-render of review block
+        setTimeout(()=>{ try { const ev = new Event('mvsg:populateDone'); window.dispatchEvent(ev); } catch(e){} }, 20);
+    }
+    
+    // Remove standalone Save Work button (we'll use the top Edit -> Save toggle)
+    const oldSaveBtn = document.getElementById('saveWorkBtn');
+    if (oldSaveBtn && oldSaveBtn.parentNode) oldSaveBtn.parentNode.removeChild(oldSaveBtn);
+
+    // Wire top-level Work Edit button to behave like Education's EditInformation (toggle -> Save)
+    if (workEditBtn) {
+        const clone = workEditBtn.cloneNode(true);
+        workEditBtn.parentNode.replaceChild(clone, workEditBtn);
+        clone.dataset.mvsgEditing = '0';
+        // ensure initial visual state
+        clone.textContent = clone.textContent.trim() || '✏️ Edit Information';
+        clone.classList.remove('bg-green-600'); clone.classList.add('bg-blue-600');
+
+        clone.addEventListener('click', function(){
+            const editing = clone.dataset.mvsgEditing === '1';
+            if (!editing) {
+                // enter edit mode
+                clone.dataset.mvsgEditing = '1';
+                clone.textContent = '💾 Save Changes';
+                clone.classList.remove('bg-blue-600'); clone.classList.add('bg-green-600');
+                enterWorkEdit();
+            } else {
+                // save and exit
+                clone.dataset.mvsgEditing = '0';
+                clone.textContent = '✏️ Edit Information';
+                clone.classList.remove('bg-green-600'); clone.classList.add('bg-blue-600');
+                exitWorkEdit(true);
+            }
+        }, { passive: true });
+    }
+
+    // wire add/cancel buttons (keep these; save is now via top button)
+    document.addEventListener('click', function(ev){
+        const t = ev.target;
+        if (!t) return;
+        if (t.id === 'addWorkBtn') {
+            if (workContainer) workContainer.appendChild(buildEditNode({}));
+            return;
+        }
+        if (t.id === 'cancelWorkBtn') { exitWorkEdit(false); return; }
+    });
+
+    // Ensure panel hidden on load
+    document.addEventListener('DOMContentLoaded', function(){
+        if (workEditPanel) workEditPanel.classList.add('hidden');
+        // hide edit select initially and sync review display from storage
+        try {
+            if (editWorkSelect) { editWorkSelect.classList.add('hidden'); editWorkSelect.style.display = 'none'; }
+            const stored = localStorage.getItem('selected_work_experience') || localStorage.getItem('work_type') || '';
+            if (stored && reviewWorkList) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed) && parsed.length) {
+                        reviewWorkList.innerHTML = '';
+                        parsed.forEach(v => {
+                            const span = document.createElement('span');
+                            span.className = 'bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm font-medium';
+                            span.textContent = String(v).charAt(0).toUpperCase() + String(v).slice(1);
+                            reviewWorkList.appendChild(span);
+                        });
+                    }
+                } catch(e){
+                    const v = String(stored).replace(/[\[\]"]+/g,'').split(',')[0].trim();
+                    if (v) {
+                        reviewWorkList.innerHTML = '';
+                        const span = document.createElement('span');
+                        span.className = 'bg-blue-50 text-blue-800 px-3 py-1 rounded-md text-sm font-medium';
+                        span.textContent = v.charAt(0).toUpperCase() + v.slice(1);
+                        reviewWorkList.appendChild(span);
+                    }
+                }
+            }
+        } catch(e){}
+    });
+
+    // respond to storage changes so UI stays consistent
+    window.addEventListener('storage', function(e){
+        if (!e.key) return;
+        if (['job_experiences','work_experiences','selected_work_experience','work_type'].includes(e.key)) {
+            setTimeout(function(){
+                try {
+                    if (workEditPanel) workEditPanel.classList.add('hidden');
+                    if (reviewJobs) reviewJobs.style.display = '';
+                    if (reviewWorkList) reviewWorkList.style.display = '';
+                } catch(e){}
+            }, 20);
+        }
+    });
+})();
+</script>
+
 </body>
 
 </html>

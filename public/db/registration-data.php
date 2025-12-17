@@ -177,22 +177,47 @@ if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
 if ($allGood) {
     $work_exp = json_decode($data['job_experiences'] ?? '[]', true);
     foreach ($work_exp as $work) {
+        // Accept multiple possible field names and normalize year
+        $job_title   = $work['title'] ?? $work['job_title'] ?? $work['position'] ?? null;
+        $company     = $work['company'] ?? $work['company_name'] ?? $work['employer'] ?? null;
+        $raw_year    = $work['start_year'] ?? $work['year'] ?? $work['work_year'] ?? null;
+        $description = $work['description'] ?? $work['job_description'] ?? $work['desc'] ?? null;
+
+        // Normalize year to a 4-digit string when possible, otherwise NULL
+        $work_year = null;
+        if ($raw_year !== null && $raw_year !== '') {
+            if (is_numeric($raw_year)) {
+                $work_year = (string) intval($raw_year);
+            } else {
+                if (preg_match('/(\d{4})/', (string)$raw_year, $m)) {
+                    $work_year = $m[1];
+                } else {
+                    // leave as null to avoid inserting invalid data
+                    $work_year = null;
+                }
+            }
+        }
+
         $sql2 = "INSERT INTO job_experience (
                     guardian_id, job_title, company_name, work_year, job_description
                 ) VALUES (
                     :v1,:v2,:v3,:v4,:v5
                 )";
         $stid2 = oci_parse($conn, $sql2);
+
+        // bind normalized variables (not array keys directly)
         oci_bind_by_name($stid2, ':v1', $user_guardian_id);
-        oci_bind_by_name($stid2, ':v2', $work['title']);
-        oci_bind_by_name($stid2, ':v3', $work['company']);
-        oci_bind_by_name($stid2, ':v4', $work['year']);
-        oci_bind_by_name($stid2, ':v5', $work['description']);
+        oci_bind_by_name($stid2, ':v2', $job_title);
+        oci_bind_by_name($stid2, ':v3', $company);
+        oci_bind_by_name($stid2, ':v4', $work_year);
+        oci_bind_by_name($stid2, ':v5', $description);
+
         if (!oci_execute($stid2, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($stid2);
             $allGood = false;
             break;
         }
+        oci_free_statement($stid2);
     }
 }
 

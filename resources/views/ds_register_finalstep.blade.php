@@ -291,6 +291,11 @@
       return;
     }
 
+    let jobExperiencesRaw = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || '[]';
+    let jobExperiences = [];
+    try { jobExperiences = JSON.parse(jobExperiencesRaw || '[]'); } catch(e){ jobExperiences = []; }
+    const derivedYears = (Array.isArray(jobExperiences) ? jobExperiences.map(j => j.start_year || j.year || '').filter(Boolean) : []);
+    
     // ✅ Save data to backend 
     const data = {
       education: localStorage.getItem('edu_level'),
@@ -299,7 +304,7 @@
       rpi_personal: localStorage.getItem('rpi_personal1'),
       school_name: localStorage.getItem('school_name'),
       selected_work_experience: localStorage.getItem('selected_work_experience'),
-      selected_work_year: localStorage.getItem('selected_work_year'),
+      selected_work_year: (localStorage.getItem('selected_work_year') ? localStorage.getItem('selected_work_year') : JSON.stringify(derivedYears)),
       admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
       admin_uploaded_proof_data: localStorage.getItem('admin_uploaded_proof_data'),
       uploadedProofs_proof: localStorage.getItem('uploadedProofs_proof'),
