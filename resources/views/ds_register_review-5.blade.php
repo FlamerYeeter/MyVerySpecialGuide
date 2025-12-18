@@ -681,9 +681,22 @@ document.addEventListener("DOMContentLoaded", () => {
   // save changes
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
+      const errEl = document.getElementById('jobprefModalError');
       const selected = Array.from(cards.filter(c => c.classList.contains('selected-card')))
-                            .map(c => (c.dataset.value || c.querySelector('h3')?.textContent || '').trim())
-                            .filter(Boolean);
+        .map(c => (c.dataset.value || c.querySelector('h3')?.textContent || '').trim())
+        .filter(Boolean);
+      // validation: minimum 3, maximum 5 (same rules as job-preference-1)
+      if (!selected || selected.length < 3) {
+        if (errEl) errEl.innerHTML = '<span class="text-red-600">Please select at least 3 options.</span>';
+        try { const m = modal?.querySelector('.grid'); if (m && m.animate) m.animate([{ transform: 'translateY(-6px)' }, { transform: 'translateY(0)' }], { duration: 220 }); } catch(e){}
+        return;
+      }
+      if (selected.length > 5) {
+        if (errEl) errEl.innerHTML = '<span class="text-red-600">Please select no more than 5 options.</span>';
+        try { const m = modal?.querySelector('.grid'); if (m && m.animate) m.animate([{ transform: 'translateY(-6px)' }, { transform: 'translateY(0)' }], { duration: 220 }); } catch(e){}
+        return;
+      }
+      if (errEl) errEl.innerHTML = '';
       if (hiddenInput) hiddenInput.value = JSON.stringify(selected);
       updateReviewSection(selected);
       closeModalLocal();

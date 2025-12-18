@@ -386,13 +386,45 @@ document.addEventListener("DOMContentLoaded", () => {
     resetSelections();
     const saved = getSavedSkills();
     if (!saved || !saved.length) return;
+
+    // normalize saved values to lowercase for comparison
     const normSet = new Set(saved.map(s => String(s||'').trim().toLowerCase()));
+
+    // collect known card values/titles (lowercased)
+    const known = new Set();
+    let otherCard = null;
+    skillsCards.forEach(card => {
+      const v = (card.dataset.value || '').trim();
+      const title = (card.querySelector('h3')?.textContent || '').trim();
+      if (v) known.add(v.toLowerCase());
+      if (title) known.add(title.toLowerCase());
+      if ((v || '').toLowerCase() === 'other' || (title || '').toLowerCase() === 'other') otherCard = card;
+    });
+
+    // mark exact matches first
     skillsCards.forEach(card => {
       const value = (card.dataset.value || '').trim();
       const title = (card.querySelector('h3')?.textContent || '').trim();
       if (value && normSet.has(value.toLowerCase())) card.classList.add("selected-card");
       else if (title && normSet.has(title.toLowerCase())) card.classList.add("selected-card");
     });
+
+    // If there are saved entries that don't match any known card treat them as "Other" content
+    const unmatched = saved.map(s => String(s||'').trim()).filter(s => s && !known.has(s.toLowerCase()));
+    if (unmatched.length && otherCard) {
+      otherCard.classList.add("selected-card");
+      // fill the Other text input if present
+      const otherInput = otherCard.querySelector('#skills_other_input') || document.getElementById('skills_other_input');
+      if (otherInput) {
+        // prefer the first unmatched custom value
+        otherInput.value = unmatched[0];
+      }
+    }
+
+    // If saved explicitly includes the literal 'other' (case-insensitive) select the Other card too
+    if (otherCard && normSet.has('other')) {
+      otherCard.classList.add("selected-card");
+    }
   }
 
   function updateReviewSection(selected) {
@@ -450,8 +482,39 @@ document.addEventListener("DOMContentLoaded", () => {
   if (saveBtn) {
     saveBtn.addEventListener('click', () => {
       const selected = skillsCards.filter(c => c.classList.contains('selected-card'))
-                                  .map(c => c.dataset.value || c.querySelector('h3')?.textContent || '').filter(Boolean);
+        .map(c => {
+          try {
+            const v = (c.dataset.value || '').trim();
+            // if this is the Other card, prefer the typed input value (if any) instead of the literal "Other"
+            if (v && v.toLowerCase() === 'other') {
+              const otherInput = c.querySelector('input[type="text"]') || document.getElementById('skills_other_input');
+              const txt = otherInput ? (otherInput.value || '').trim() : '';
+              return txt || v; // return typed text when available, otherwise fallback to "Other"
+            }
+            // otherwise return dataset.value or h3 text
+            return v || (c.querySelector('h3')?.textContent || '').trim();
+          } catch (e) {
+            return (c.dataset.value || c.querySelector('h3')?.textContent || '').trim();
+          }
+        })
+        .filter(Boolean);
+
       if (hiddenInput) hiddenInput.value = JSON.stringify(selected);
+      // Persist selections so they survive reloads
+      try {
+        localStorage.setItem('skills1_selected', JSON.stringify(selected));
+        localStorage.setItem('skills_page1', JSON.stringify(selected));
+        // also mirror into rpi_personal.skills for legacy consumers if present
+        try {
+          const rpRaw = localStorage.getItem('rpi_personal');
+          const rp = rpRaw ? JSON.parse(rpRaw) : {};
+          rp.skills = rp.skills || {};
+          rp.skills.selected = selected;
+          rp.skills.selected_csv = selected.join(', ');
+          localStorage.setItem('rpi_personal', JSON.stringify(rp));
+        } catch(e) { /* ignore rpi_personal mirror errors */ }
+      } catch(e) { console.warn('persist skills failed', e); }
+
       updateReviewSection(selected);
       closeModal();
     });
