@@ -151,11 +151,11 @@
                                 class="w-full sm:w-80 border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none"
                                 style="margin-left:-6px;">
                                 <option value="" disabled selected>Select Relationship</option>
-                                <option value="parent">Parent</option>
-                                <option value="guardian">Guardian</option>
-                                <option value="sibling">Sibling</option>
-                                <option value="relative">Relative</option>
-                                <option value="other">Other</option>
+                                <option value="Parent">Parent</option>
+                                <option value="Guardian">Guardian</option>
+                                <option value="Sibling">Sibling</option>
+                                <option value="Relative">Relative</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
 
@@ -164,7 +164,7 @@
                             <p class="text-lg text-gray-600">
                                 Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
                             </p>
-                            <button
+                            <button id="editProfileBtn"
                                 class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
                                 Edit
                             </button>
@@ -208,7 +208,7 @@
                                     <p class="text-lg text-gray-600">
                                         Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
                                     </p>
-                                    <button
+                                    <button id="editAccountBtn"
                                         class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
                                         Edit
                                     </button>
@@ -508,6 +508,180 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 });
 </script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // list of fields to toggle (personal + guardian)
+    const fieldIds = [
+        "first_name","last_name","age","email","phone","address","r_dsType1",
+        "g_first_name","g_last_name","g_email","g_phone","guardian_relationship"
+    ];
 
+    const btn = document.getElementById('editProfileBtn');
+    if (!btn) return;
+
+    // initial mode = view
+    btn.dataset.mode = 'view';
+
+    function setFieldsEditable(editable) {
+        fieldIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.disabled = !editable;
+            // visual classes (optional): swap gray -> white when editable
+            if (editable) {
+                el.classList.remove('bg-gray-50','select-none');
+                el.classList.add('bg-white','text-gray-900');
+            } else {
+                el.classList.add('bg-gray-50','select-none');
+                el.classList.remove('bg-white','text-gray-900');
+            }
+        });
+    }
+
+    btn.addEventListener('click', async function () {
+        const mode = this.dataset.mode || 'view';
+
+        if (mode === 'view') {
+            // switch to edit mode
+            setFieldsEditable(true);
+            this.dataset.mode = 'editing';
+            this.textContent = 'Save';
+            this.classList.remove('bg-green-500','hover:bg-green-600');
+            this.classList.add('bg-green-600'); // keep green but reflect save
+            return;
+        }
+
+        // Save mode -> gather values and POST to server
+        this.disabled = true;
+        this.textContent = 'Saving...';
+
+        const payload = {};
+        fieldIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (el.tagName === 'SELECT') payload[id] = el.value || '';
+            else payload[id] = el.value || '';
+        });
+
+        try {
+            const resp = await fetch('/db/editprofile-1.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const j = await resp.json().catch(()=>({success:false}));
+            if (j && j.success) {
+                // success → return to view mode
+                setFieldsEditable(false);
+                btn.dataset.mode = 'view';
+                btn.textContent = 'Edit';
+                btn.classList.remove('bg-green-600');
+                btn.classList.add('bg-green-500','hover:bg-green-600');
+                console.log('Profile saved');
+            } else {
+                console.error('Save failed', j);
+                alert('Save failed. Check console for details.');
+                btn.textContent = 'Save';
+            }
+        } catch (err) {
+            console.error('Save error', err);
+            alert('Network or server error while saving.');
+            btn.textContent = 'Save';
+        } finally {
+            this.disabled = false;
+        }
+    });
+
+    // ensure initial state matches disabled inputs in template
+    setFieldsEditable(false);
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const acctFieldIds = ['username','password'];
+    const btn = document.getElementById('editAccountBtn');
+    if (!btn) return;
+
+    btn.dataset.mode = 'view';
+
+    function setAcctEditable(editable) {
+        acctFieldIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            // password input when editing should be empty for security
+            if (id === 'password' && editable) {
+                el.value = '';
+                el.placeholder = 'Enter new password (leave blank to keep current)';
+            }
+            el.disabled = !editable;
+            if (editable) {
+                el.classList.remove('bg-gray-50','select-none');
+                el.classList.add('bg-white','text-gray-900');
+            } else {
+                el.classList.add('bg-gray-50','select-none');
+                el.classList.remove('bg-white','text-gray-900');
+            }
+        });
+    }
+
+    btn.addEventListener('click', async function () {
+        const mode = this.dataset.mode || 'view';
+        if (mode === 'view') {
+            setAcctEditable(true);
+            this.dataset.mode = 'editing';
+            this.textContent = 'Save';
+            this.classList.remove('bg-green-500','hover:bg-green-600');
+            this.classList.add('bg-green-600');
+            return;
+        }
+
+        // Save
+        this.disabled = true;
+        this.textContent = 'Saving...';
+
+        const payload = {};
+        const usernameEl = document.getElementById('username');
+        const passwordEl = document.getElementById('password');
+        if (usernameEl) payload.username = usernameEl.value || '';
+        if (passwordEl && passwordEl.value.trim() !== '') payload.password = passwordEl.value.trim();
+
+        try {
+            const resp = await fetch('/db/editprofile-1.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const j = await resp.json().catch(()=>({success:false}));
+            if (j && j.success) {
+                setAcctEditable(false);
+                btn.dataset.mode = 'view';
+                btn.textContent = 'Edit';
+                btn.classList.remove('bg-green-600');
+                btn.classList.add('bg-green-500','hover:bg-green-600');
+                // If username changed, optionally update header display
+                if (payload.username) {
+                    const header = document.getElementById('profile_header_email');
+                    if (header) header.textContent = payload.username;
+                }
+            } else {
+                console.error('Account save failed', j);
+                alert('Save failed. See console for details.');
+                btn.textContent = 'Save';
+            }
+        } catch (err) {
+            console.error('Save error', err);
+            alert('Network or server error while saving.');
+            btn.textContent = 'Save';
+        } finally {
+            this.disabled = false;
+        }
+    });
+
+    // initial state
+    setAcctEditable(false);
+});
+</script>
     </main>
 @endsection
