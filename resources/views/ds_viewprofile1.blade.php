@@ -215,14 +215,14 @@
                                 </div>
                             </div>
                     </section>
-
-<!-- Uploaded Files -->
-                    <section class="border-b border-gray-200 pb-10 mb-10">
+                    
+                    <!-- Uploaded Files -->
+                    <section class="border-b border-gray-200 pb-10 mb-10" id="uploaded_files_section">
                         <h3 class="text-3xl font-bold text-blue-800 mb-8">Uploaded Files</h3>
 
                         <div class="grid md:grid-cols-2 gap-8">
 
-<!-- Membership -->
+                            <!-- Membership -->
                             <div>
                                 <label class="block text-lg font-semibold mb-2">
                                     Proof of Membership <span class="text-gray-500 italic">Uploaded file (if any)</span>
@@ -231,9 +231,15 @@
                                     class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
                                     No file uploaded
                                 </div>
+
+                                <!-- file input (hidden until edit) -->
+                                <div class="mt-3">
+                                    <input id="proof_input" type="file" accept="application/pdf,image/*"
+                                        class="hidden w-full border border-gray-300 rounded-xl px-5 py-3 text-sm" />
+                                </div>
                             </div>
 
-<!-- Medical Certificate -->
+                            <!-- Medical Certificate -->
                             <div>
                                 <label class="block text-lg font-semibold mb-2">
                                     Medical Certificate <span class="text-gray-500 italic">Uploaded file (if any)</span>
@@ -242,6 +248,12 @@
                                     class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
                                     No file uploaded
                                 </div>
+
+                                <!-- file input (hidden until edit) -->
+                                <div class="mt-3">
+                                    <input id="med_input" type="file" accept="application/pdf,image/*"
+                                        class="hidden w-full border border-gray-300 rounded-xl px-5 py-3 text-sm" />
+                                </div>
                             </div>
                         </div>
 
@@ -249,10 +261,22 @@
                             <p class="text-lg text-gray-600">
                                 Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
                             </p>
-                            <button
-                                class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
-                                Edit
-                            </button>
+
+                            <!-- edit/save/cancel buttons -->
+                            <div class="flex items-center gap-4">
+                                <button id="editFilesBtn"
+                                    class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
+                                    Edit
+                                </button>
+
+                                <button id="saveFilesBtn" class="hidden bg-blue-800 text-white px-8 py-3 rounded-xl text-lg font-semibold shadow hover:bg-blue-900">
+                                    Save
+                                </button>
+
+                                <button id="cancelFilesBtn" class="hidden bg-gray-300 text-gray-800 px-6 py-3 rounded-xl text-lg font-medium">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </section>
 
@@ -610,9 +634,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const el = document.getElementById(id);
             if (!el) return;
             // password input when editing should be empty for security
-            if (id === 'password' && editable) {
-                el.value = '';
-                el.placeholder = 'Enter new password (leave blank to keep current)';
+            if (id === 'password') {
+                if (editable) {
+                    el.value = '';
+                    el.placeholder = 'Enter new password (leave blank to keep current)';
+                } else {
+                    // reset to view state
+                    el.value = '';
+                    el.placeholder = 'Hidden for security';
+                }
             }
             el.disabled = !editable;
             if (editable) {
@@ -683,5 +713,103 @@ document.addEventListener('DOMContentLoaded', () => {
     setAcctEditable(false);
 });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const editBtn = document.getElementById('editFilesBtn');
+    const saveBtn = document.getElementById('saveFilesBtn');
+    const cancelBtn = document.getElementById('cancelFilesBtn');
+    const proofInput = document.getElementById('proof_input');
+    const medInput = document.getElementById('med_input');
+    const proofEl = document.getElementById('r_proof');
+    const medEl = document.getElementById('r_medical');
+
+    if (!editBtn || !saveBtn || !cancelBtn) return;
+
+    function setEditing(on) {
+        if (on) {
+            proofInput.classList.remove('hidden');
+            medInput.classList.remove('hidden');
+            saveBtn.classList.remove('hidden');
+            cancelBtn.classList.remove('hidden');
+            editBtn.classList.add('hidden');
+        } else {
+            proofInput.classList.add('hidden');
+            medInput.classList.add('hidden');
+            saveBtn.classList.add('hidden');
+            cancelBtn.classList.add('hidden');
+            editBtn.classList.remove('hidden');
+            proofInput.value = '';
+            medInput.value = '';
+        }
+    }
+
+    function makeDownloadLink(type, label, filename) {
+        const a = document.createElement('a');
+        a.className = 'text-blue-600 underline';
+        a.textContent = label || 'View / Download';
+        a.href = '/db/get_file.php?type=' + encodeURIComponent(type);
+        a.target = '_blank';
+        a.rel = 'noopener';
+        if (filename) a.setAttribute('download', filename);
+        return a;
+    }
+
+    editBtn.addEventListener('click', () => setEditing(true));
+    cancelBtn.addEventListener('click', () => setEditing(false));
+
+    saveBtn.addEventListener('click', async () => {
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Saving...';
+
+        const fd = new FormData();
+        if (proofInput.files && proofInput.files[0]) fd.append('proof', proofInput.files[0]);
+        if (medInput.files && medInput.files[0]) fd.append('med', medInput.files[0]);
+
+        // if no files selected, cancel
+        if (!fd.has('proof') && !fd.has('med')) {
+            alert('Please choose at least one file to upload.');
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save';
+            return;
+        }
+
+        try {
+            const resp = await fetch('/db/editprofile-files.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: fd
+            });
+            const j = await resp.json().catch(()=>({success:false}));
+            if (j && j.success) {
+                // update links (server-streamed endpoint serves current files)
+                if (proofEl) {
+                    proofEl.innerHTML = '';
+                    proofEl.appendChild(makeDownloadLink('proof','View / Download','proof.pdf'));
+                }
+                if (medEl) {
+                    medEl.innerHTML = '';
+                    medEl.appendChild(makeDownloadLink('med','View / Download','medical.pdf'));
+                }
+                setEditing(false);
+                alert('Files updated successfully.');
+            } else {
+                console.error('Upload failed', j);
+                alert('Upload failed. See console for details.');
+            }
+        } catch (err) {
+            console.error('Upload error', err);
+            alert('Network or server error while uploading.');
+        } finally {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save';
+        }
+    });
+
+    // initial state: not editing
+    setEditing(false);
+});
+</script>
+
     </main>
 @endsection
