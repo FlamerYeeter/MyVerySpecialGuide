@@ -205,6 +205,12 @@ while ($row = oci_fetch_assoc($stid)) {
 
     // Blend: 70% content, 30% collaborative
     $computedScore = round((0.7 * $contentScoreRaw + 0.3 * $collabScoreRaw) * 100, 2);
+    // ensure numeric non-null values by explicit casts/fallbacks
+    $contentScoreRaw = isset($row['CONTENT_SCORE_RAW']) ? floatval($row['CONTENT_SCORE_RAW']) : 0.0;
+    $collabScoreRaw  = isset($row['COLLAB_SCORE_RAW'])  ? floatval($row['COLLAB_SCORE_RAW'])  : 0.0;
+    $contentMatches  = isset($row['CONTENT_MATCHES'])  ? intval($row['CONTENT_MATCHES']) : 0;
+    $collabCount     = isset($row['COLLAB_COUNT'])     ? intval($row['COLLAB_COUNT']) : 0;
+    $debugMaxCo      = isset($row['DEBUG_MAX_CO'])     ? intval($row['DEBUG_MAX_CO']) : 0;
 
     $jobs[] = [
         'id'                    => $jobId,
@@ -231,5 +237,78 @@ while ($row = oci_fetch_assoc($stid)) {
 oci_free_statement($stid);
 oci_close($conn);
 
-echo json_encode(['success' => true, 'user_id' => $user_id, 'jobs' => $jobs]);
+// --- NEW: compute simple evaluation metrics for the requesting guardian
+$predictedIds = array_values(array_unique(array_map(function($j){ return $j['id']; }, $jobs)));
+
+$appliedIds = [];
+if (!empty($user_id)) {
+    $conn2 = getOracleConnection();
+    if ($conn2) {
+        $sqlA = "SELECT DISTINCT JOB_POSTING_ID AS JOB_ID FROM MVSG.APPLICATIONS WHERE GUARDIAN_ID = :gid";
+        $stidA = oci_parse($conn2, $sqlA);
+        oci_bind_by_name($stidA, ':gid', $user_id, -1);
+        @oci_execute($stidA);
+        while ($ar = oci_fetch_assoc($stidA)) {
+            if (isset($ar['JOB_ID'])) $appliedIds[] = $ar['JOB_ID'];
+        }
+        @oci_free_statement($stidA);
+        @oci_close($conn2);
+    }
+}
+$predSet = array_map('strval', $predictedIds);
+$appSet  = array_map('strval', array_values(array_unique($appliedIds)));
+
+$tp = count(array_intersect($predSet, $appSet));
+$fp = max(0, count($predSet) - $tp);
+$fn = max(0, count($appSet) - $tp);
+
+// total universe = total job postings (fallback to preds+apps if query fails)
+$totalJobs = null;
+$conn3 = getOracleConnection();
+if ($conn3) {
+    $cntSql = "SELECT COUNT(*) AS CNT FROM MVSG.JOB_POSTINGS";
+    $cntSt = oci_parse($conn3, $cntSql);
+    if (@oci_execute($cntSt)) {
+        $r = oci_fetch_assoc($cntSt);
+        $totalJobs = $r && isset($r['CNT']) ? intval($r['CNT']) : null;
+    }
+    @oci_free_statement($cntSt);
+    @oci_close($conn3);
+}
+if ($totalJobs === null) $totalJobs = max(1, $tp + $fp + $fn);
+$tn = max(0, $totalJobs - ($tp + $fp + $fn));
+
+// compute metrics (null when undefined)
+$precision = ($tp + $fp) > 0 ? ($tp / ($tp + $fp)) : null;
+$recall    = ($tp + $fn) > 0 ? ($tp / ($tp + $fn)) : null;
+$f1        = ($precision !== null && $recall !== null && ($precision + $recall) > 0) ? (2 * $precision * $recall) / ($precision + $recall) : null;
+$accuracy  = ($tp + $tn + 0) / max(1, $tp + $tn + $fp + $fn);
+
+// prepare eval object (include counts + fractional metrics)
+$eval_metrics = [
+    'counts' => ['tp' => $tp, 'tn' => $tn, 'fp' => $fp, 'fn' => $fn],
+    'accuracy'  => $accuracy === null ? null : round($accuracy, 6),
+    'precision' => $precision === null ? null : round($precision, 6),
+    'recall'    => $recall === null ? null : round($recall, 6),
+    'f1'        => $f1 === null ? null : round($f1, 6),
+];
+
+// OPTIONAL: write public/eval_metrics.json so server-side blade can pick it up when available
+try {
+    $path = realpath(__DIR__ . '/..') . DIRECTORY_SEPARATOR . 'eval_metrics.json'; // public/eval_metrics.json
+    if ($path) {
+        @file_put_contents($path, json_encode(array_merge(['generated_by' => 'get-jobs.php', 'user_id' => $user_id], $eval_metrics), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+} catch (\Throwable $e) {
+    // ignore write errors
+}
+
+// echo response including eval metrics
+echo json_encode([
+    'success' => true,
+    'user_id' => $user_id,
+    'jobs' => $jobs,
+    'eval_metrics' => $eval_metrics
+]);
+
 ?>

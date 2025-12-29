@@ -189,6 +189,39 @@
             </div>
         </form>
 
+    <!-- Evaluation metrics: show Accuracy / Precision / Recall / F1 if available -->
+    <section class="mx-6 sm:mx-12 lg:mx-20 mt-8">
+        <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-white p-6 rounded-2xl shadow-md text-center">
+                <div class="text-sm text-gray-500">Accuracy</div>
+                <div id="accuracyVal" class="mt-2 text-2xl font-bold text-gray-900">
+                    {{ isset($display['accuracy']) && $display['accuracy'] !== null ? $display['accuracy'] . '%' : 'N/A' }}
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md text-center">
+                <div class="text-sm text-gray-500">Precision</div>
+                <div id="precisionVal" class="mt-2 text-2xl font-bold text-gray-900">
+                    {{ isset($display['precision']) && $display['precision'] !== null ? $display['precision'] . '%' : 'N/A' }}
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md text-center">
+                <div class="text-sm text-gray-500">Recall</div>
+                <div id="recallVal" class="mt-2 text-2xl font-bold text-gray-900">
+                    {{ isset($display['recall']) && $display['recall'] !== null ? $display['recall'] . '%' : 'N/A' }}
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-md text-center">
+                <div class="text-sm text-gray-500">F1 Score</div>
+                <div id="f1Val" class="mt-2 text-2xl font-bold text-gray-900">
+                    {{ isset($display['f1']) && $display['f1'] !== null ? $display['f1'] . '%' : 'N/A' }}
+                </div>
+            </div>
+        </div>
+
+        @if(empty($display['accuracy']) && empty($display['precision']) && empty($display['recall']) && empty($display['f1']))
+            <p id="metricsHint" class="text-center text-sm text-gray-500 mt-4">No evaluation metrics found. Drop a file named <code>public/eval_metrics.json</code> with accuracy/precision/recall/f1 or counts (tp/tn/fp/fn) to display results.</p>
+        @endif
+    </section>
 
         <!-- location filter removed per request -->
         <!-- Filter is automatic now: selects will submit the form on change -->
@@ -812,7 +845,26 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
 
             // Update the total count first
             count_matches.innerHTML = 'All Matches (' + result.jobs.length + ')';
-
+            if (result.eval_metrics) {
+                try {
+                    const em = result.eval_metrics;
+                    const pct = v => (v === null || v === undefined) ? 'N/A' : (Math.round((v * 100 + Number.EPSILON) * 100) / 100) + '%';
+                    // The API returns fractional metrics (0-1). If the stored values are already percentages, the formatting still works.
+                    const toDisplay = (k) => {
+                        if (em[k] === null || em[k] === undefined) return 'N/A';
+                        let val = Number(em[k]);
+                        // treat values <=1.01 as fractional and convert to percent
+                        if (!isNaN(val) && val > 0 && val <= 1.01) val = val * 100;
+                        return Math.round((val + Number.EPSILON) * 100) / 100 + '%';
+                    };
+                    document.getElementById('accuracyVal').textContent = toDisplay('accuracy');
+                    document.getElementById('precisionVal').textContent = toDisplay('precision');
+                    document.getElementById('recallVal').textContent = toDisplay('recall');
+                    document.getElementById('f1Val').textContent = toDisplay('f1');
+                    const hint = document.getElementById('metricsHint');
+                    if (hint) hint.style.display = 'none';
+                } catch (e) { console.debug('update metrics failed', e); }
+            }
             result.jobs.forEach(job => {
             
             // Calculate progress barS width
