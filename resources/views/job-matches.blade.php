@@ -375,7 +375,7 @@
                                         </div>
                                     </div>
 
-                                    <a href="#" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job match you?</a>
+                                    <a href="/whythisjob?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job matches you?</a>
                                 </div>
 
                                 <p class="text-gray-700 text-xl mt-8 leading-relaxed max-w-4xl">{!! $desc !!}</p>
@@ -891,9 +891,7 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     </div>
                 </div>
                 <!-- Why It Matches -->
-                <a href="#" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center whitespace-nowrap">
-                    Why this job matches you?
-                </a>
+                <a href="/whythisjob?job_id=${encodeURIComponent(job.id)}" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job matches you?</a>
             </div>
 
             <hr class="my-8 border-gray-300">
@@ -1607,7 +1605,7 @@ function loadSavedState() {
                                                             </div>
                                                         </div>
 
-                                                        <a href="#" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job match you?</a>
+                                                        <a href="/whythisjob?job_id=${encodeURIComponent(jid)}" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job matches you?</a>
                                                     </div>
 
                                                     <p class="text-gray-700 text-xl mt-8 leading-relaxed max-w-4xl">${desc}</p>

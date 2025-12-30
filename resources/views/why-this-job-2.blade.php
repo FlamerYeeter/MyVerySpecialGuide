@@ -37,9 +37,106 @@
 
   @php
     $job = $job ?? null;
+   // call why-this-job.php server-side so the page is rendered with matches immediately
+    $jobId = $job['assoc']['id'] ?? ($job['id'] ?? request()->get('job_id') ?? request()->query('job_id'));
+    // Resolve uid robustly: explicit query param -> guardian_id param -> session -> auth user
+    $uid = request()->query('user_id')
+       ?? request()->get('user_id')
+       ?? request()->query('guardian_id')
+       ?? request()->get('guardian_id')
+       ?? null;
+
+    // If still empty, try to read from the authenticated user object (many apps store guardian_id on user)
+    if (empty($uid) && auth()->check()) {
+      $user = auth()->user();
+      // try common properties in order
+      $uid = data_get($user, 'guardian_id') ?: data_get($user, 'guardian') ?: data_get($user, 'id') ?: null;
+    }
+
+    // Local Blade diagnostics for UID resolution (visible to devs)
+    $local_debug = [
+      'query_user_id' => request()->query('user_id'),
+      'query_guardian_id' => request()->query('guardian_id'),
+      'session_guardian_id' => session('guardian_id'),
+      'session_user_id' => session('user_id'),
+      'auth_check' => auth()->check(),
+      'auth_id' => auth()->id(),
+      'resolved_uid' => $uid
+    ];
+
+    $whyData = null;
+    if ($jobId) {
+        try {
+            $script = base_path('public/db/why-this-job.php');
+            if (file_exists($script)) {
+                // Use an internal HTTP request (forward cookies) instead of include so the script
+                // runs in its own PHP context and can read Laravel session/cookie data reliably.
+                $whyUrl = rtrim(config('app.url', url('/')), '/') . '/db/why-this-job.php?job_id=' . urlencode($jobId);
+                $whyUrl .= '&user_id=' . urlencode($uid ?? '');
+                $ch = curl_init($whyUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                // forward current request cookies so the PHP script can access Laravel session if needed
+                if (!empty($_COOKIE)) {
+                    $cookiePairs = [];
+                    foreach ($_COOKIE as $k => $v) {
+                        $cookiePairs[] = $k . '=' . rawurlencode($v);
+                    }
+                    curl_setopt($ch, CURLOPT_COOKIE, implode('; ', $cookiePairs));
+                }
+                // accept JSON
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);
+                $resp = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+                if ($resp && $httpCode >= 200 && $httpCode < 300) {
+                    $whyData = json_decode($resp, true);
+                } else {
+                    // fallback: try include if HTTP call failed (keeps prior behavior)
+                    $origGet = $_GET;
+                    $_GET['job_id'] = (string)$jobId;
+                    $_GET['user_id'] = $uid ? (string)$uid : '';
+                    ob_start();
+                    include $script;
+                    $r = ob_get_clean();
+                    $_GET = $origGet;
+                    if ($r) $whyData = json_decode($r, true);
+                }
+            } else {
+                // fallback to HTTP request (uses configured app url)
+                $whyUrl = rtrim(config('app.url', url('/')), '/') . '/db/why-this-job.php?job_id=' . urlencode($jobId);
+                $whyUrl .= '&user_id=' . urlencode($uid ?? '');
+                $ch = curl_init($whyUrl);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 5);
+                curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+                if (!empty($_COOKIE)) {
+                    $cookiePairs = [];
+                    foreach ($_COOKIE as $k => $v) {
+                        $cookiePairs[] = $k . '=' . rawurlencode($v);
+                    }
+                    curl_setopt($ch, CURLOPT_COOKIE, implode('; ', $cookiePairs));
+                }
+                curl_setopt($ch, CURLOPT_HTTPHEADER, ['Accept: application/json']);
+                $resp = curl_exec($ch);
+                $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+                curl_close($ch);
+                if ($resp && $httpCode >= 200 && $httpCode < 300) $whyData = json_decode($resp, true);
+            }
+        } catch (\Throwable $e) {
+            $whyData = null;
+        }
+    }
     $jobTitle = $job['assoc']['title'] ?? ($job['assoc']['job_title'] ?? 'Untitled Job');
+    if (!empty($whyData['job_title'])) $jobTitle = $whyData['job_title'];
     $company = $job['assoc']['company'] ?? '';
     $jobDescription = $job['job_description'] ?? '';
+    if (!empty($whyData['job_description'])) $jobDescription = $whyData['job_description'];
+    $matched_skills = $whyData['matches']['skills'] ?? [];
+    $matched_workplace = $whyData['matches']['workplace'] ?? [];
+    $matched_pref = $whyData['matches']['job_preference'] ?? [];
+    $matched_certs = $whyData['matches']['certificates'] ?? [];
     $jobSkills = is_array($job['assoc']['skills'] ?? null) ? $job['assoc']['skills'] : (is_array($job['skills'] ?? null) ? $job['skills'] : []);
     $matchPercent = null;
     if (isset($job['match_score']) && is_numeric($job['match_score'])) {
@@ -55,7 +152,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start gap-4">
       <div class="flex items-center space-x-4">
         <img src="{{ asset('image/nameofjob.png') }}" alt="Job Icon" class="w-12 h-12">
-        <h3 class="text-3xl font-extrabold text-blue-900">{{ $jobTitle }}</h3>
+        <h3 id="jobTitle" class="text-3xl font-extrabold text-blue-900">{{ $jobTitle }}</h3>
       </div>
       <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <span class="text-lg bg-green-200 text-green-900 px-4 py-1 rounded-full font-semibold shadow">
@@ -80,18 +177,84 @@
         <p>This job was recommended because it aligns with your skills and preferences.</p>
       @endif
     </div>
-
-    <ul class="list-disc ml-6 text-lg space-y-3 text-gray-800 mt-4">
-      @if(!empty($jobSkills))
-        @foreach(array_slice($jobSkills,0,6) as $s)
-          <li><strong>{{ $s }}</strong>
-            <span class="block text-gray-600 italic text-base">(This skill matches your profile)</span>
-          </li>
-        @endforeach
-      @else
-        <li>We didn't find explicit required skills in the job listing — the recommendation algorithm matched this job based on related skills and interests.</li>
+    
+    <!-- Matched Profile Items (from why-this-job.php) -->
+    <div class="bg-white rounded-2xl p-4 border-2 border-yellow-100 text-lg text-gray-800 mt-6">
+      <h5 class="text-xl font-semibold text-blue-900 mb-3">Matched Profile Items</h5>
+      {{-- Perfect matches (both Job and User) --}}
+      @if(!empty($whyData['perfect_matches']))
+        <div class="mb-4 p-3 bg-green-50 border border-green-100 rounded">
+          <p class="font-semibold text-gray-700">Perfect Matches</p>
+          <div class="mt-2 flex flex-wrap gap-2">
+            @foreach($whyData['perfect_matches'] as $type => $arr)
+              @foreach($arr as $pm)
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">{{ $pm['value'] }}
+                  <small class="text-gray-500 ml-2">{{ $pm['user_value'] }}</small>
+                </span>
+              @endforeach
+            @endforeach
+          </div>
+        </div>
       @endif
-    </ul>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <p class="font-medium text-gray-700">Skills</p>
+          <div class="mt-2 matched-skills-list">
+            @if(!empty($matched_skills))
+            @foreach($matched_skills as $it)
+              @php $v = is_array($it) ? ($it['value'] ?? ($it['profile_value'] ?? ($it['user_value'] ?? ''))) : $it; @endphp
+              <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium inline-block mr-2 mb-2">{{ $v }}</span>
+            @endforeach
+          @else
+            <div class="text-sm text-gray-500">No matches found.</div>
+          @endif
+          </div>
+        </div>
+        <div>
+          <p class="font-medium text-gray-700">Workplace / Environment</p>
+          <div class="mt-2 matched-workplace-list">
+            @if(!empty($matched_workplace))
+            @foreach($matched_workplace as $it)
+              @php $v = is_array($it) ? ($it['value'] ?? '') : $it; @endphp
+              <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium inline-block mr-2 mb-2">{{ $v }}</span>
+            @endforeach
+          @else
+            <div class="text-sm text-gray-500">No matches found.</div>
+          @endif
+          </div>
+        </div>
+        <div>
+          <p class="font-medium text-gray-700">Job Preferences / Positions</p>
+          <div class="mt-2 matched-preference-list">
+            @if(!empty($matched_pref))
+            @foreach($matched_pref as $it)
+              @php $v = is_array($it) ? ($it['value'] ?? '') : $it; @endphp
+              <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium inline-block mr-2 mb-2">{{ $v }}</span>
+            @endforeach
+          @else
+            <div class="text-sm text-gray-500">No matches found.</div>
+          @endif
+          </div>
+        </div>
+        <div>
+          <p class="font-medium text-gray-700">Certificates / Experience</p>
+          <div class="mt-2 matched-cert-list">
+          @if(!empty($matched_certs))
+            @foreach($matched_certs as $c)
+              @php
+                $certRow = is_array($c) && isset($c['matched_cert']) ? $c['matched_cert'] : (is_array($c) ? $c : null);
+                $label = $certRow['NAME'] ?? $certRow['ISSUED_BY'] ?? $certRow['WHAT_LEARNED'] ?? ($c['value'] ?? '');
+              @endphp
+              <span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium inline-block mr-2 mb-2">{{ $label }}</span>
+            @endforeach
+          @else
+            <div class="text-sm text-gray-500">No matches found.</div>
+          @endif
+          </div>
+        </div>
+      </div>
+
+    </div>
   </div>
 
   <!-- What is this Job Card (Matched to Possible Section Size) -->
@@ -235,76 +398,102 @@
 
 
 
-<script type="module">
-  (async function(){
+<!-- Firebase client removed: job-application-firebase.js is intentionally not loaded.
+     Matching and rendering use server-provided data from /db/why-this-job.php. -->
+<!-- hidden server-side job/guardian fallback for client -->
+<div id="whyThisJobData"
+     data-job-id="{{ $job['assoc']['id'] ?? $job['id'] ?? $job['job_id'] ?? request()->get('job_id') ?? '' }}"
+     data-guardian-id="{{ $uid ?? request()->get('user_id') ?? request()->query('user_id') ?? '' }}"
+     style="display:none;"></div>
+@php
+  // remove client-side duplicate fetch: keep the script section but skip client fetch when server provided data exists
+  $skipClientFetch = !empty($whyData);
+@endphp
+
+@endsection
+
+@section('scripts')
+<script>
+  (function(){
     try {
-      const mod = await import('/js/job-application-firebase.js');
-      try { await mod.ensureInit?.(); } catch(e){}
-  try { /* firebase.token removed */ } catch(e) { /* ignore */ }
-      let profile = null;
-      try { profile = await (mod.getUserProfile?.() || Promise.resolve(null)); } catch(e) { profile = null; }
+      const serverVar = @json($job['assoc']['id'] ?? $job['id'] ?? $job['job_id'] ?? null);
+      const el = document.getElementById('whyThisJobData');
+      const dataJob = el && el.dataset && el.dataset.jobId ? String(el.dataset.jobId) : null;
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlJob = urlParams.get('job_id') || urlParams.get('id');
+      const JOB_ID = serverVar || dataJob || urlJob;
+      if (!JOB_ID) return;
 
-      // Normalize profile skills
-      const profileSkills = [];
-      try {
-        if (profile) {
-          if (profile.skills && typeof profile.skills === 'object') {
-            try { if (profile.skills.skills_page1) JSON.parse(profile.skills.skills_page1).forEach(x=>profileSkills.push(String(x).toLowerCase().trim())); } catch(e){}
-            try { if (profile.skills.skills_page2) JSON.parse(profile.skills.skills_page2).forEach(x=>profileSkills.push(String(x).toLowerCase().trim())); } catch(e){}
+      // derive guardian/user id from data attribute or querystring fallbacks
+      const dataUid = el && el.dataset && el.dataset.guardianId ? String(el.dataset.guardianId) : null;
+      const urlUser = urlParams.get('user_id') || urlParams.get('guardian_id') || urlParams.get('uid');
+      const USER_ID = dataUid || urlUser || null;
+
+      // attach to global for other scripts if needed
+      if (USER_ID) window.__mvsg_guardian_id = USER_ID;
+
+      let url = '/db/why-this-job.php?job_id=' + encodeURIComponent(JOB_ID);
+      if (window.__mvsg_guardian_id) url += '&user_id=' + encodeURIComponent(window.__mvsg_guardian_id);
+
+      fetch(url, { credentials: 'same-origin' })
+        .then(r => r.json())
+        .then(data => {
+          if (!data) {
+            console.debug('why-this-job returned empty response', data);
+            return;
           }
-          if (Array.isArray(profile.skills)) profile.skills.forEach(s=>profileSkills.push(String(s).toLowerCase().trim()));
-          if (typeof profile.skills === 'string') profile.skills.split(/[,;\n]+/).forEach(s=>profileSkills.push(String(s).toLowerCase().trim()));
-          if (Array.isArray(profile.interests)) profile.interests.forEach(s=>profileSkills.push(String(s).toLowerCase().trim()));
-          if (typeof profile.interests === 'string') profile.interests.split(/[,;\n]+/).forEach(s=>profileSkills.push(String(s).toLowerCase().trim()));
-        }
-      } catch(e) { console.debug('normalize profile skills failed', e); }
-      const cleanedProfileSkills = Array.from(new Set(profileSkills.filter(Boolean)));
+          // allow responses that don't include an explicit "success" boolean
+          if (data.success === false) {
+            console.debug('why-this-job indicated failure', data);
+            return;
+          }
+          console.debug('why-this-job response', data);
+          const jt = data.job_title || (data.job && (data.job.job_role || data.job.job_title));
+          if (jt) {
+            const h = document.getElementById('jobTitle');
+            if (h) h.textContent = jt;
+          }
 
-      const JOB_SKILLS = @json($jobSkills);
-      const jobSkills = (Array.isArray(JOB_SKILLS) ? JOB_SKILLS.map(s=>String(s).toLowerCase().trim()).filter(Boolean) : []);
+          const m = data.matches || {};
 
-      // compute matched skills
-      const matched = jobSkills.filter(s => cleanedProfileSkills.includes(s));
+          const renderList = (elSelector, items) => {
+            const container = document.querySelector(elSelector);
+            if (!container) return;
+            container.innerHTML = '';
+            if (!items || items.length === 0) {
+              container.innerHTML = '<div class="text-sm text-gray-500">No matches found.</div>';
+              return;
+            }
+            items.forEach(it => {
+              const v = (typeof it === 'string') ? it : (it.value || it.profile_value || it.user_value || '');
+              const div = document.createElement('div');
+              div.className = 'inline-block mr-2 mb-2';
+              div.innerHTML = '<span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm font-medium">' + String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;') + '</span>';
+              container.appendChild(div);
+            });
+          };
 
-      // update matching-skills-list
-      const skillsList = document.querySelector('.matching-skills-list');
-      if (skillsList) {
-        skillsList.innerHTML = '';
-        if (jobSkills.length === 0) {
-          skillsList.innerHTML = '<span class="text-sm text-gray-500">No specific skills were listed for this job.</span>';
-        } else {
-          jobSkills.slice(0,6).forEach(s => {
-            const span = document.createElement('span');
-            span.className = (matched.includes(s) ? 'bg-blue-50 text-blue-500 px-4 py-1 rounded-full text-sm font-medium' : 'bg-gray-100 text-gray-500 px-4 py-1 rounded-full text-sm');
-            span.textContent = s;
-            skillsList.appendChild(span);
+          renderList('.matched-skills-list', m.skills);
+          renderList('.matched-workplace-list', m.workplace);
+          renderList('.matched-preference-list', m.job_preference);
+
+          const certs = (m.certificates || []).map(c => {
+            const certRow = c.matched_cert || c.matched_certificates || c.matchedCert || c;
+            if (certRow && (certRow.NAME || certRow.ISSUED_BY || certRow.WHAT_LEARNED)) {
+              return (certRow.NAME || certRow.ISSUED_BY || certRow.WHAT_LEARNED);
+            }
+            return c.value || '';
           });
-        }
-      }
+          renderList('.matched-cert-list', certs);
 
-      // update client matched skills area
-      const clientMatchContainer = document.querySelector('.client-matched-skills');
-      if (clientMatchContainer) {
-        if (!matched || matched.length === 0) clientMatchContainer.innerHTML = '<p class="text-sm text-gray-500">No matching skills from your profile were detected for this job.</p>';
-        else clientMatchContainer.innerHTML = '<p class="text-sm text-gray-700 font-medium">Skills from your profile that match this job:</p><div class="flex flex-wrap gap-3 mt-2">' + matched.map(s => '<span class="bg-green-50 text-green-600 px-4 py-1 rounded-full text-sm font-medium">'+String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")+'</span>').join('') + '</div>';
-      }
-
-      // compute a fallback percent if none present
-      const badge = document.querySelector('.match-badge');
-      const prog = document.querySelector('.match-progress');
-      const label = document.querySelector('.match-percent-label');
-      let pct = null;
-      if ({{ $matchPercent !== null ? 'true' : 'false' }}) {
-        // leave server-provided percent as-is
-      } else {
-        if (jobSkills.length > 0) pct = Math.round((matched.length / jobSkills.length) * 100);
-        else pct = null;
-        if (badge && pct !== null) badge.textContent = pct + '% Match';
-        if (prog && pct !== null) prog.style.width = pct + '%';
-        if (label && pct !== null) label.textContent = pct + '%';
-      }
-    } catch(e) { console.debug('why-this-job-2 client update failed', e); }
+          const summary = document.querySelector('.matched-summary');
+          if (summary) {
+            const counts = [ (m.skills||[]).length, (m.workplace||[]).length, (m.job_preference||[]).length, (m.certificates||[]).length ];
+            summary.textContent = 'Found ' + counts.reduce((a,b)=>a+b,0) + ' matching items across Skills, Workplace, Preferences and Certificates.';
+          }
+        })
+        .catch(e => console.debug('why-this-job fetch failed', e));
+    } catch(e) { console.debug('why-this-job init failed', e); }
   })();
 </script>
-
 @endsection

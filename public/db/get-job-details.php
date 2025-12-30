@@ -1,12 +1,41 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+// Enable full error reporting during debugging (remove or set to 0 in production)
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
+// start output buffering to capture unexpected output
+ob_start();
+
+// DEBUG TEMP: short-circuit to test response plumbing. REMOVE after debugging.
+// echo json_encode(['debug' => 'early-exit']);
+// echo "\n";
+// ob_end_flush();
+// exit;
 
 // Accept either "id" or "job_id" as string to avoid integer precision loss
 $id_str = $_GET['id'] ?? $_GET['job_id'] ?? null;
+// basic validation: numeric string only
 if (!$id_str || !preg_match('/^\d+$/', $id_str)) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'Missing or invalid job id', 'received' => $id_str]);
     exit;
+}
+
+// reject absurdly long values early to avoid DB/OCI errors and accidental output
+if (strlen($id_str) > 128) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'job id too long', 'max' => 128, 'received_len' => strlen($id_str)]);
+    exit;
+}
+
+// Oracle NUMBER precision is up to 38 digits; if client sends a longer numeric id
+// use TO_CHAR(...) comparisons instead of TO_NUMBER(...) to avoid numeric overflow
+$use_to_char_match = (strlen($id_str) > 38);
+
+function id_condition_sql($col, $use_to_char_match) {
+    if ($use_to_char_match) return "TO_CHAR($col) = :id_str";
+    return "$col = TO_NUMBER(:id_str)";
 }
 
 // Use the shared Oracle helper (same as get-jobs.php)
@@ -20,6 +49,7 @@ if (!$conn) {
 }
 
 // Main query: job + company. Use TO_NUMBER(:id_str) so Oracle receives exact value.
+$id_cond_main = id_condition_sql('jp.ID', $use_to_char_match);
 $sql = "
 SELECT jp.ID,
        jp.COMPANY_ID,
@@ -51,7 +81,7 @@ SELECT jp.ID,
        jp.COMPANY_IMAGE
 FROM MVSG.JOB_POSTINGS jp
 LEFT JOIN MVSG.COMPANY c ON jp.COMPANY_ID = c.ID
-WHERE jp.ID = TO_NUMBER(:id_str)
+WHERE $id_cond_main
 ";
 
 $stid = oci_parse($conn, $sql);
@@ -111,13 +141,54 @@ if (!$logo) {
 
 // Get job managers (all) — use TO_NUMBER binding as well
 $managers = [];
-$sql2 = "SELECT ID, JOB_POSTING_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, ROLE, TO_CHAR(CREATED_AT,'YYYY-MM-DD\"T\"HH24:MI:SS') AS CREATED_AT, TO_CHAR(UPDATED_AT,'YYYY-MM-DD\"T\"HH24:MI:SS') AS UPDATED_AT FROM MVSG.JOB_MANAGERS WHERE JOB_POSTING_ID = TO_NUMBER(:id_str) ORDER BY ID";
+$id_cond_managers = id_condition_sql('JOB_POSTING_ID', $use_to_char_match);
+$sql2 = "SELECT ID, JOB_POSTING_ID, FIRST_NAME, MIDDLE_NAME, LAST_NAME, ROLE, TO_CHAR(CREATED_AT,'YYYY-MM-DD\"T\"HH24:MI:SS') AS CREATED_AT, TO_CHAR(UPDATED_AT,'YYYY-MM-DD\"T\"HH24:MI:SS') AS UPDATED_AT FROM MVSG.JOB_MANAGERS WHERE $id_cond_managers ORDER BY ID";
 $stid2 = oci_parse($conn, $sql2);
 oci_bind_by_name($stid2, ':id_str', $id_str, -1);
 oci_execute($stid2);
 while ($m = oci_fetch_array($stid2, OCI_ASSOC+OCI_RETURN_NULLS)) {
     $managers[] = $m;
 }
+
+// --- NEW: fetch JOB_PROFILE entries and group by TYPE
+$profiles = [];
+$id_cond_profile = id_condition_sql('JOB_PROFILE.JOB_POSTING_ID', $use_to_char_match);
+$sql3 = "SELECT ID, JOB_POSTING_ID, VALUE, TYPE, TO_CHAR(CREATED_AT,'YYYY-MM-DD\"T\"HH24:MI:SS') AS CREATED_AT FROM MVSG.JOB_PROFILE WHERE " . ($use_to_char_match ? "TO_CHAR(JOB_POSTING_ID) = :id_str" : "JOB_POSTING_ID = TO_NUMBER(:id_str)") . " ORDER BY ID";
+$stid3 = oci_parse($conn, $sql3);
+oci_bind_by_name($stid3, ':id_str', $id_str, -1);
+if (@oci_execute($stid3)) {
+    while ($p = oci_fetch_array($stid3, OCI_ASSOC+OCI_RETURN_LOBS)) {
+        $type = strtolower(trim($p['TYPE'] ?? ''));
+        $val = $p['VALUE'] ?? null;
+        if ($type === '' || $val === null) continue;
+        // normalize common type names
+        // allow "skills", "key_responsibilities", "job_preference", "workplace", "job_positions" etc.
+        if (!isset($profiles[$type])) $profiles[$type] = [];
+        $profiles[$type][] = $val;
+    }
+}
+@oci_free_statement($stid3);
+
+// Helper: merge single DB text with profile arrays
+function merge_text_and_profile_array($text, $profileArr)
+{
+    $out = [];
+    if ($text !== null && trim($text) !== '') $out[] = $text;
+    if (!empty($profileArr) && is_array($profileArr)) {
+        foreach ($profileArr as $v) {
+            if ($v !== null && $v !== '') $out[] = $v;
+        }
+    }
+    return count($out) ? $out : null;
+}
+
+// Build merged fields from row + profiles
+$skills_arr = $profiles['skills'] ?? null;
+$positions_arr = $profiles['job_preference'] ?? ($profiles['job_positions'] ?? null);
+$key_resp_arr = merge_text_and_profile_array($row['KEY_RESPONSIBILITIES'] ?? null, $profiles['key_responsibilities'] ?? null);
+$working_env_arr = merge_text_and_profile_array($row['WORKING_ENVIRONMENT'] ?? null, $profiles['workplace'] ?? null);
+$why_join_arr = merge_text_and_profile_array($row['WHY_JOIN_US'] ?? null, $profiles['why_join_us'] ?? ($profiles['why_join'] ?? null));
+$qual_arr = merge_text_and_profile_array($row['QUALIFICATIONS'] ?? null, $profiles['qualifications'] ?? null);
 
 // Build response: include all possible fields from schema (fill nulls if not present)
 $response = [
@@ -130,12 +201,13 @@ $response = [
         'job_role' => $row['JOB_ROLE'] ?? null,
         'job_post_date' => $row['JOB_POST_DATE'] ?? null,
         'apply_before' => $row['APPLY_BEFORE'] ?? null,
+        // prefer merged arrays where available, fall back to raw text
         'job_description' => $row['JOB_DESCRIPTION'] ?? null,
-        'why_join_us' => $row['WHY_JOIN_US'] ?? null,
-        'key_responsibilities' => $row['KEY_RESPONSIBILITIES'] ?? null,
+        'why_join_us' => $why_join_arr ?? ($row['WHY_JOIN_US'] ?? null),
+        'key_responsibilities' => $key_resp_arr ?? ($row['KEY_RESPONSIBILITIES'] ?? null),
         'what_we_are_looking_for' => $row['WHAT_WE_ARE_LOOKING_FOR'] ?? null,
-        'working_environment' => $row['WORKING_ENVIRONMENT'] ?? null,
-        'qualifications' => $row['QUALIFICATIONS'] ?? null,
+        'working_environment' => $working_env_arr ?? ($row['WORKING_ENVIRONMENT'] ?? null),
+        'qualifications' => $qual_arr ?? ($row['QUALIFICATIONS'] ?? null),
         'address' => $row['ADDRESS'] ?? null,
         'phone' => $row['PHONE'] ?? null,
         'email' => $row['JOB_EMAIL'] ?? null,
@@ -143,6 +215,9 @@ $response = [
         'map_link' => $row['MAP_LINK'] ?? null,
         'employee_capacity' => isset($row['EMPLOYEE_CAPACITY']) ? $row['EMPLOYEE_CAPACITY'] : null,
         'company_image_data_uri' => $companyImageDataUri,
+        // expose arrays for frontend convenience
+        'skills' => $skills_arr,
+        'job_positions' => $positions_arr,
     ],
     'company' => [
         'id' => isset($row['COMPANY_ID_REAL']) ? $row['COMPANY_ID_REAL'] : null,
@@ -154,10 +229,42 @@ $response = [
         'status' => $row['COMPANY_STATUS'] ?? null,
         'logo' => $logo,
     ],
-    'managers' => $managers
+    'managers' => $managers,
+    // also include raw profiles for debugging if needed
+    'profiles' => $profiles
 ];
 
-echo json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+// Safely encode JSON and surface encoding errors (avoid silent empty body when json_encode fails)
+// Ensure all strings are UTF-8 to avoid json_encode "Malformed UTF-8" errors
+function utf8ize($mixed) {
+    if (is_array($mixed)) {
+        $out = [];
+        foreach ($mixed as $k => $v) {
+            $out[$k] = utf8ize($v);
+        }
+        return $out;
+    } elseif (is_string($mixed)) {
+        // detect encoding; convert to UTF-8 if needed
+        $enc = mb_detect_encoding($mixed, ['UTF-8','ISO-8859-1','WINDOWS-1252','ASCII'], true);
+        if ($enc !== 'UTF-8') {
+            return mb_convert_encoding($mixed, 'UTF-8', $enc ?: 'UTF-8');
+        }
+        // remove invalid UTF-8 sequences
+        return mb_convert_encoding($mixed, 'UTF-8', 'UTF-8');
+    } else {
+        return $mixed;
+    }
+}
+
+$response = utf8ize($response);
+$out = json_encode($response, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+if ($out === false) {
+    $err = json_last_error_msg();
+    // fallback: try to convert problematic objects to strings minimally
+    echo json_encode(['success' => false, 'error' => 'json_encode failed', 'json_error' => $err, 'response_debug' => array_keys($response)]);
+} else {
+    echo $out;
+}
 
 // close connection/statements
 @oci_free_statement($stid);
