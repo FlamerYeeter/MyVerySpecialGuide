@@ -145,6 +145,47 @@
         elseif ($m > 0 && $m <= 5.0) $matchPercent = round($m * 20);
         else $matchPercent = round($m);
     }
+    // derive consolidated 'who we are looking for' from whyData
+    // Aggregate multiple possible sources into a consolidated list: job field, qualifications, profiles, matches
+    $whoWeAreLookingFor = [];
+    if (!empty($whyData)) {
+      if (!empty($whyData['what_we_are_looking_for'])) $whoWeAreLookingFor = array_merge($whoWeAreLookingFor, (array)$whyData['what_we_are_looking_for']);
+      if (!empty($whyData['what_we_are_looking_for']) && is_string($whyData['what_we_are_looking_for'])) $whoWeAreLookingFor[] = $whyData['what_we_are_looking_for'];
+      if (!empty($whyData['job']['what_we_are_looking_for'])) $whoWeAreLookingFor = array_merge($whoWeAreLookingFor, (array)$whyData['job']['what_we_are_looking_for']);
+      if (!empty($whyData['job']['qualifications'])) $whoWeAreLookingFor = array_merge($whoWeAreLookingFor, (array)$whyData['job']['qualifications']);
+      if (!empty($whyData['what_we_are_looking_for'])) $whoWeAreLookingFor = array_merge($whoWeAreLookingFor, (array)$whyData['what_we_are_looking_for']);
+      if (!empty($whyData['profiles']['what_we_are_looking_for'])) $whoWeAreLookingFor = array_merge($whoWeAreLookingFor, (array)$whyData['profiles']['what_we_are_looking_for']);
+      if (!empty($whyData['profiles']['qualifications'])) $whoWeAreLookingFor = array_merge($whoWeAreLookingFor, (array)$whyData['profiles']['qualifications']);
+      // matches['qualifications'] may contain arrays with 'value'
+      if (!empty($whyData['matches']['qualifications'])) {
+        foreach ((array)$whyData['matches']['qualifications'] as $it) {
+          if (is_array($it)) $whoWeAreLookingFor[] = $it['value'] ?? ($it['profile_value'] ?? ($it['user_value'] ?? null));
+          else $whoWeAreLookingFor[] = $it;
+        }
+      }
+      // fallback: top-level 'qualifications' if the endpoint provided it
+      if (!empty($whyData['qualifications'])) $whoWeAreLookingFor = array_merge($whoWeAreLookingFor, (array)$whyData['qualifications']);
+    }
+
+    // Normalize: split strings containing commas/newlines and trim
+    $expanded = [];
+    foreach ($whoWeAreLookingFor as $item) {
+      if (!is_string($item)) { $item = (string)$item; }
+      $item = trim($item);
+      if ($item === '') continue;
+        // split multi-line / semicolon-separated strings (do NOT split on commas)
+        if (preg_match('/[\r\n;]/', $item)) {
+            $parts = preg_split('/[\r\n;]+/', $item);
+        foreach ($parts as $p) {
+          $p = trim($p);
+          if ($p !== '') $expanded[] = $p;
+        }
+      } else {
+        $expanded[] = $item;
+      }
+    }
+    $whoWeAreLookingFor = array_values(array_unique($expanded));
+    if (empty($whoWeAreLookingFor)) $whoWeAreLookingFor = null;
   @endphp
 
   <!-- Job card for selected job -->
@@ -269,26 +310,28 @@
 
   <div class="bg-white rounded-3xl border-2 border-blue-200 p-10 text-xl text-gray-800 leading-relaxed shadow-inner">
     <p class="text-blue-900 font-medium text-2xl mb-4">Job Overview</p>
-    <p>
-      A <strong>Kitchen Helper</strong> works in a restaurant kitchen to keep everything clean, organized, and running smoothly! 
-      They support cooks, maintain cleanliness, and ensure food preparation areas are ready for use.
-    </p>
-    <p class="text-gray-600 italic mt-3">
-      (Ang <strong>Katulong sa Kusina</strong> ay nagtatrabaho sa kusina ng restawran upang mapanatiling malinis, maayos, at maayos ang takbo ng lahat. 
-      Sila ay sumusuporta sa mga cook, naglilinis, at naghahanda ng mga lugar para sa pagluluto.)
-    </p>
+    @if(!empty($jobDescription))
+      <p>{{ $jobDescription }}</p>
+    @else
+      <p class="text-gray-600">No job description provided.</p>
+    @endif
 
     <hr class="my-8 border-blue-200">
 
     <p class="text-blue-900 font-medium text-2xl mb-4">Ideal for You If...</p>
-    <p>
-      This is a perfect job if you enjoy working with your hands, following clear steps, and being part of a busy, cooperative team. 
-      You’ll gain experience, develop practical skills, and grow in a supportive kitchen environment.
-    </p>
-    <p class="text-gray-600 italic mt-3">
-      (Ito ay perpektong trabaho kung mahilig kang gumamit ng iyong mga kamay, sumusunod sa malinaw na mga hakbang, 
-      at gustong maging bahagi ng isang abalang grupo. Matututo ka ng mga bagong kasanayan araw-araw sa isang kapaligirang nagtutulungan.)
-    </p>
+    @if(!empty($whoWeAreLookingFor))
+      @if(is_array($whoWeAreLookingFor))
+        <ul class="list-disc ml-6 space-y-2">
+          @foreach($whoWeAreLookingFor as $it)
+            <li>{{ $it }}</li>
+          @endforeach
+        </ul>
+      @else
+        <p>{{ $whoWeAreLookingFor }}</p>
+      @endif
+    @else
+      <p class="text-gray-600 italic mt-3">No information on who we are looking for was provided.</p>
+    @endif
   </div>
 </div>
 

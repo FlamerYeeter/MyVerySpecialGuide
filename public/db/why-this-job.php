@@ -109,14 +109,17 @@ if (@oci_execute($stid)) {
 // fetch basic job info (title/role, description) for display
 $job_title = null;
 $job_description = null;
+$job_looking_for = null;
 $job_cond2 = id_condition_sql('ID', $use_to_char_job);
-$sql = "SELECT JOB_ROLE, JOB_DESCRIPTION FROM MVSG.JOB_POSTINGS WHERE $job_cond2";
+$sql = "SELECT JOB_ROLE, JOB_DESCRIPTION, WHAT_WE_ARE_LOOKING_FOR, QUALIFICATIONS FROM MVSG.JOB_POSTINGS WHERE $job_cond2";
 $stid = oci_parse($conn, $sql);
 oci_bind_by_name($stid, ':id_str', $job_id, -1);
 if (@oci_execute($stid)) {
     if ($r = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_LOBS+OCI_RETURN_NULLS)) {
         $job_title = trim((string)($r['JOB_ROLE'] ?? '')) ?: null;
         $job_description = trim((string)($r['JOB_DESCRIPTION'] ?? '')) ?: null;
+        $job_looking_for = trim((string)($r['WHAT_WE_ARE_LOOKING_FOR'] ?? '')) ?: null;
+        $job_qualifications = trim((string)($r['QUALIFICATIONS'] ?? '')) ?: null;
     }
 }
 @oci_free_statement($stid);
@@ -471,6 +474,18 @@ foreach ($norm_job as $type => $map) {
 }
 
 // final response
+// assemble 'who we are looking for' from job posting field + profile entries
+$what_arr = [];
+if (!empty($job_looking_for)) $what_arr[] = $job_looking_for;
+if (!empty($job_qualifications)) $what_arr[] = $job_qualifications;
+foreach (['what_we_are_looking_for','who_we_are_looking_for','looking_for'] as $k) {
+    if (!empty($profiles[$k])) $what_arr = array_merge($what_arr, $profiles[$k]);
+}
+// also include qualifications profile entries if present
+if (!empty($profiles['qualifications'])) $what_arr = array_merge($what_arr, $profiles['qualifications']);
+$what_arr = array_values(array_filter(array_map('trim', $what_arr)));
+if (empty($what_arr)) $what_arr = null;
+
 $resp = [
     'success' => true,
     'job_id' => (string)$job_id,
@@ -497,6 +512,7 @@ $resp['diagnostics'] = [
     // include fetched job title/description for client display
     if (!empty($job_title)) $resp['job_title'] = $job_title;
     if (!empty($job_description)) $resp['job_description'] = $job_description;
+    if (!empty($what_arr)) $resp['what_we_are_looking_for'] = $what_arr;
 
 $resp = utf8ize($resp);
 $out = json_encode($resp, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
