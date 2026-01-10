@@ -113,19 +113,19 @@
                 <!-- Job Type -->
                 <div class="relative w-full">
                     <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Job Type</label>
-                    <select name="growth_potential" onchange="this.form.submit()"
+                    <select name="growth_potential" id="job-type"
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
                         <option value="">Select Job Type</option>
-                        <option value="High Potential"
-                            {{ request('growth_potential') == 'High Potential' ? 'selected' : '' }}>Full-Time</option>
-                        <option value="Medium Potential"
-                            {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Part-Time
+                        <option value="Full-Time"
+                            {{ request('growth_potential') == 'Full-Time' ? 'selected' : '' }}>Full-Time</option>
+                        <option value="Part-Time"
+                            {{ request('growth_potential') == 'Part-Time' ? 'selected' : '' }}>Part-Time
                         </option>
-                        <option value="Medium Potential"
-                            {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Contract
+                        <option value="Contract"
+                            {{ request('growth_potential') == 'Contract' ? 'selected' : '' }}>Contract
                         </option>
-                         <option value="Medium Potential"
-                            {{ request('growth_potential') == 'Medium Potential' ? 'selected' : '' }}>Program
+                         <option value="Program"
+                            {{ request('growth_potential') == 'Program' ? 'selected' : '' }}>Program
                         </option>
                     </select>
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -138,7 +138,7 @@
                 <!-- Work Environment -->
                 <div class="relative w-full">
                     <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Work Environment</label>
-                    <select name="work_environment" onchange="this.form.submit()"
+                    <select name="work_environment" id="work-env"
                         class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
                         <option value="">Select Environment</option>
                         <option value="Quiet" {{ request('work_environment') == 'Friendly Team' ? 'selected' : '' }}>Friendly Team</option>
@@ -159,6 +159,7 @@
                     <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Location</label>
                     <input
                         name="location"
+                        id = "address-location"
                         type="text"
                         value="{{ request('location') }}"
                         placeholder="City or area (e.g. Taguig City)"
@@ -821,28 +822,46 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     Recommended companies based on application history, preferences, and recent platform activity.
               </p>
        <!--Job Card -->
-      <div id="job-container" class="space-y-10"></div>
-        <script>
+       <div id="job-container" class="space-y-10"></div>
+<script>
+function escapeHtml(text) {
+    if (!text) return '';
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+}
 
-        const data = {
-        user_id: localStorage.getItem('user_id')
-        };
+// Function to load jobs based on current filters
+function loadJobs() {
+    const data = {
+        user_id: localStorage.getItem('user_id'),
+        title: document.getElementById('searchJobTitle').value.trim(),
+        location: document.getElementById('address-location').value.trim(),
+        work_environment: document.getElementById('work-env').value.trim(),
+        job_type: document.querySelector('select[name="growth_potential"]').value
+    };
 
-        fetch('/db/get-jobs.php', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
-        .then(response => response.json())
-        .then(result => {
-            if (!result.success || !result.jobs.length) {
-            document.getElementById('job-container').innerHTML = 
-                '<p class="text-center text-3xl text-gray-600">No job postings available at the moment.</p>';
+    fetch('/db/get-jobs.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        const container = document.getElementById('job-container');
+        const count_matches = document.getElementById('all-matches');
+        container.innerHTML = '';
+
+        if (!result.success || !result.jobs.length) {
+            count_matches.innerHTML = 'All Matches (0)';
+            container.innerHTML = '<p class="text-center text-3xl text-gray-600">No job postings available at the moment.</p>';
             return;
-            }
-            const container = document.getElementById('job-container');
-            const count_matches = document.getElementById('all-matches');
+        }
 
+<<<<<<< Updated upstream
             // Update the total count first
             count_matches.innerHTML = 'All Matches (' + result.jobs.length + ')';
             if (result.eval_metrics) {
@@ -868,28 +887,59 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
             result.jobs.forEach(job => {
             
             // Calculate progress barS width
-            const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
+=======
+        count_matches.innerHTML = 'All Matches (' + result.jobs.length + ')';
 
+        result.jobs.forEach(job => {
+>>>>>>> Stashed changes
+            const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
             const cardHTML = `
-        <div class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
-            <!-- Top Section -->
-            <div class="flex flex-col lg:flex-row justify-between items-start gap-10">
-                <!-- Left: Company Info -->
-                <div class="flex items-start gap-6">
-                    <!-- Company Logo -->
-                    <div class="w-36 h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
-                        <img src="${escapeHtml(job.logo)}" alt="${escapeHtml(job.company_name)} logo" class="w-full h-full object-cover">
+            <div class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
+                <div class="flex flex-col lg:flex-row justify-between items-start gap-10">
+                    <div class="flex items-start gap-6">
+                        <div class="w-36 h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
+                            <img src="${escapeHtml(job.logo)}" alt="${escapeHtml(job.company_name)} logo" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h2 class="text-4xl font-extrabold text-gray-900 mb-2">${escapeHtml(job.job_role)}</h2>
+                            <p class="text-2xl text-gray-800 font-semibold mb-2">${escapeHtml(job.company_name)}</p>
+                            <p class="flex items-center text-xl text-gray-700 gap-2">
+                                <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
+                                ${escapeHtml(job.address)}
+                            </p>
+                        </div>
                     </div>
-                    <!-- Company Details -->
-                    <div>
-                        <h2 class="text-4xl font-extrabold text-gray-900 mb-2">${escapeHtml(job.job_role)}</h2>
-                        <p class="text-2xl text-gray-800 font-semibold mb-2">${escapeHtml(job.company_name)}</p>
-                        <p class="flex items-center text-xl text-gray-700 gap-2">
-                            <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
-                            ${escapeHtml(job.address)}
-                        </p>
+                    <a href="#" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center whitespace-nowrap">
+                        Why this job matches you?
+                    </a>
+                </div>
+
+                <hr class="my-8 border-gray-300">
+
+                <div>
+                    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Description</h3>
+                    <p class="text-gray-800 text-2xl leading-relaxed max-w-6xl">
+                        ${escapeHtml(job.description).replace(/\n/g, '<br>')}
+                    </p>
+                </div>
+
+                ${job.skills && job.skills.length > 0 ? `
+                <div class="mt-8">
+                    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills you will Use</h3>
+                    <div class="flex flex-wrap gap-4">
+                        ${job.skills.map(skill => `<span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">${escapeHtml(skill)}</span>`).join('')}
+                    </div>
+                </div>` : ''}
+
+                <div class="mt-8">
+                    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Type</h3>
+                    <div class="flex flex-wrap gap-4">
+                        <span class="border-2 border-[#2563EB] text-[#2563EB] text-lg px-6 py-2 rounded-md font-bold bg-blue-50">
+                            ${escapeHtml(job.job_type)}
+                        </span>
                     </div>
                 </div>
+<<<<<<< Updated upstream
                 <!-- Why It Matches -->
                 <a href="/whythisjob?job_id=${encodeURIComponent(job.id)}" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job matches you?</a>
             </div>
@@ -912,17 +962,31 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                     ${job.skills.map(skill => 
                     `<span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">${escapeHtml(skill)}</span>`
                     ).join('')}
-                </div>
-            </div>` : ''}
+=======
 
-            <!-- Job Type -->
-            <div class="mt-8">
-                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Type</h3>
-                <div class="flex flex-wrap gap-4">
-                    <span class="border-2 border-[#2563EB] text-[#2563EB] text-lg px-6 py-2 rounded-md font-bold bg-blue-50">
-                        ${escapeHtml(job.job_type)}
-                    </span>
+                <div class="mt-10 w-full">
+                    <p class="text-xl font-semibold text-gray-800 mb-2 text-center">Number of Applicants</p>
+                    <div class="h-5 bg-gray-200 rounded-md overflow-hidden">
+                        <div class="h-full bg-[#88BF02]" style="width: ${progress}%;"></div>
+                    </div>
+                    <p class="text-lg text-gray-700 mt-2 text-center">
+                        <strong>${job.applied} applied</strong> out of ${job.openings} openings
+                    </p>
+>>>>>>> Stashed changes
                 </div>
+
+                <div class="flex flex-wrap justify-center gap-6 mt-10">
+                    <button onclick="location.href='job-details?id=${job.id}'" class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
+                        📝 See Details
+                    </button>
+                    <button onclick="location.href='apply.php?id=${job.id}'" class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
+                        🚀 Apply Now
+                    </button>
+                    <button onclick="saveJob('${job.id}', this)" class="bg-[#008000] save-btn text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition" data-job-id="${job.id}">
+                        💾 Save
+                    </button>
+                </div>
+<<<<<<< Updated upstream
             </div>
 
             <!-- Progress Bar -->
@@ -953,116 +1017,43 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
                 </button>
             </div>
         </div>`;
+=======
+            </div>`;
+>>>>>>> Stashed changes
             container.innerHTML += cardHTML;
-            });
-            loadSavedState();
-        })
-        .catch(err => {
-            console.error('Error loading jobs:', err);
-            document.getElementById('job-container').innerHTML = 
-            '<p class="text-center text-red-600 text-2xl">Failed to load jobs. Please try again later.</p>';
         });
 
-        // Helper function to prevent XSS
-        function escapeHtml(text) {
-        if (!text) return '';
-        return String(text)
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;");
-        }
-
-        // ...existing code...
-        function saveJob(jobId, btnEl) {
-            console.log('saveJob called, jobId=', jobId);
-            try {
-                if (!jobId) return;
-                // disable UI
-                if (btnEl) {
-                    btnEl.disabled = true;
-                    btnEl.dataset.orig = btnEl.innerHTML;
-                    btnEl.classList.add('opacity-70', 'cursor-not-allowed');
-                    btnEl.innerHTML = 'Saving…';
-                }
-
-                // send JSON POST, include credentials
-                fetch('/db/save-job.php', {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: { 'Content-Type': 'application/json' },
-                    // for quick local testing you can temporarily set debug_user_id to bypass session
-                    body: JSON.stringify({ job_id: jobId /*, debug_user_id: 2 */ })
-                })
-                .then(r => r.text().then(t => {
-                    // try parse JSON, otherwise show raw response for debugging
-                    let json = null;
-                    try { json = JSON.parse(t); } catch(e) { throw new Error('Invalid JSON response: ' + t.slice(0,500)); }
-                    return json;
-                }))
-                .then(json => {
-                    if (!json || !json.success) {
-                        // server returned failure — show message + details for debugging
-                        const err = json?.message || 'Save failed';
-                        const details = json?.error ? ' — ' + json.error : '';
-                        throw new Error(err + details);
-                    }
-
-                    // success
-                    if (btnEl) {
-                        btnEl.innerHTML = json.message === 'already_saved' ? 'Saved' : 'Saved';
-                        btnEl.classList.remove('opacity-70', 'cursor-not-allowed');
-                        btnEl.classList.remove('bg-green-600'); // adjust as needed
-                        btnEl.disabled = true;
-                         // style as saved
-                        btnEl.classList.remove('bg-[#008000]');
-                        btnEl.classList.add('bg-gray-300', 'text-gray-700', 'cursor-not-allowed');
-                    }
-                    // refresh saved state so other buttons update (and saved list remains authoritative)
-                    loadSavedState();
-                    console.log('saveJob OK', json);
-                })
-                .catch(err => {
-                    console.error('saveJob error', err);
-                    alert('Failed to save job. ' + err.message);
-                    if (btnEl) {
-                        btnEl.disabled = false;
-                        btnEl.classList.remove('opacity-70', 'cursor-not-allowed');
-                        btnEl.innerHTML = btnEl.dataset.orig || '💾 Save';
-                    }
-                });
-            } catch (e) {
-                console.error(e);
-                if (btnEl) {
-                    btnEl.disabled = false;
-                    btnEl.innerHTML = btnEl.dataset.orig || '💾 Save';
-                }
-            }
-        }
-        // add this function near other helpers in the same <script>
-function loadSavedState() {
-    // fetch saved jobs for current guardian, expect {"success":true,"saved":[{"job_id":...},...]}
-    fetch('/db/saved-jobs.php', { credentials: 'same-origin' })
-        .then(r => r.json().catch(() => null))
-        .then(j => {
-            if (!j || !j.success || !Array.isArray(j.saved)) return;
-            const savedIds = new Set(j.saved.map(s => String(s.job_id)));
-            document.querySelectorAll('.save-btn').forEach(btn => {
-                const jid = btn.getAttribute('data-job-id');
-                if (!jid) return;
-                if (savedIds.has(String(jid))) {
-                    btn.textContent = 'Saved';
-                    btn.disabled = true;
-                    btn.classList.remove('bg-[#008000]');
-                    btn.classList.add('bg-gray-300', 'text-gray-700', 'cursor-not-allowed');
-                }
-            });
-        })
-        .catch(() => {/* ignore */});
+        //loadSavedState();
+    })
+    .catch(err => {
+    debugger;
+        console.error('Error loading jobs:', err);
+        document.getElementById('job-container').innerHTML = '<p class="text-center text-red-600 text-2xl">Failed to load jobs. Please try again later.</p>';
+    });
 }
-        // ...existing code...
-        </script>
+
+// Load jobs on page load
+document.addEventListener('DOMContentLoaded', () => loadJobs());
+
+// Search on Enter key press for text inputs
+['searchJobTitle', 'address-location'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+        el.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loadJobs();
+            }
+        });
+    }
+});
+
+// Search on Job Type / Work Environment change or button click
+document.getElementById('searchBtn')?.addEventListener('click', loadJobs);
+document.getElementById('work-env')?.addEventListener('change', loadJobs);
+document.querySelector('select[name="growth_potential"]')?.addEventListener('change', loadJobs);
+</script>
+
         <!-- Instruction Section Wrapper -->
         <div class="mt-8 space-y-8">
 
