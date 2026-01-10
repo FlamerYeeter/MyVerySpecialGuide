@@ -897,9 +897,7 @@ function loadJobs() {
                             </p>
                         </div>
                     </div>
-                    <a href="#" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center whitespace-nowrap">
-                        Why this job matches you?
-                    </a>
+                <a href="/whythisjob?job_id=${encodeURIComponent(job.id)}" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job matches you?</a>
                 </div>
 
                 <hr class="my-8 border-gray-300">
