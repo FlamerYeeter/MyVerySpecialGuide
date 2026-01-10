@@ -781,6 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: fd
             });
             const j = await resp.json().catch(()=>({success:false}));
+            console.debug('editprofile-files response', j);
             if (j && j.success) {
                 // update links (server-streamed endpoint serves current files)
                 if (proofEl) {
@@ -795,7 +796,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Files updated successfully.');
             } else {
                 console.error('Upload failed', j);
-                alert('Upload failed. See console for details.');
+                // Try to show detailed errors to the user
+                try {
+                    if (j && j.results) {
+                        const parts = [];
+                        for (const k of Object.keys(j.results)) {
+                            const r = j.results[k];
+                            if (!r.ok) parts.push(k + ': ' + (r.error || JSON.stringify(r)));
+                        }
+                        if (parts.length) {
+                            alert('Upload failed for: ' + parts.join('; '));
+                        } else if (j.error) {
+                            alert('Upload failed: ' + j.error);
+                        } else {
+                            alert('Upload failed. See console for details.');
+                        }
+                    } else if (j && j.error) {
+                        alert('Upload failed: ' + j.error);
+                    } else {
+                        alert('Upload failed. See console for details.');
+                    }
+                } catch(e) {
+                    console.error('Error parsing upload failure', e);
+                    alert('Upload failed. See console for details.');
+                }
             }
         } catch (err) {
             console.error('Upload error', err);
