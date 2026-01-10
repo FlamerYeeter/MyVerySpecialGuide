@@ -861,37 +861,9 @@ function loadJobs() {
             return;
         }
 
-<<<<<<< Updated upstream
-            // Update the total count first
-            count_matches.innerHTML = 'All Matches (' + result.jobs.length + ')';
-            if (result.eval_metrics) {
-                try {
-                    const em = result.eval_metrics;
-                    const pct = v => (v === null || v === undefined) ? 'N/A' : (Math.round((v * 100 + Number.EPSILON) * 100) / 100) + '%';
-                    // The API returns fractional metrics (0-1). If the stored values are already percentages, the formatting still works.
-                    const toDisplay = (k) => {
-                        if (em[k] === null || em[k] === undefined) return 'N/A';
-                        let val = Number(em[k]);
-                        // treat values <=1.01 as fractional and convert to percent
-                        if (!isNaN(val) && val > 0 && val <= 1.01) val = val * 100;
-                        return Math.round((val + Number.EPSILON) * 100) / 100 + '%';
-                    };
-                    document.getElementById('accuracyVal').textContent = toDisplay('accuracy');
-                    document.getElementById('precisionVal').textContent = toDisplay('precision');
-                    document.getElementById('recallVal').textContent = toDisplay('recall');
-                    document.getElementById('f1Val').textContent = toDisplay('f1');
-                    const hint = document.getElementById('metricsHint');
-                    if (hint) hint.style.display = 'none';
-                } catch (e) { console.debug('update metrics failed', e); }
-            }
-            result.jobs.forEach(job => {
-            
-            // Calculate progress barS width
-=======
         count_matches.innerHTML = 'All Matches (' + result.jobs.length + ')';
 
         result.jobs.forEach(job => {
->>>>>>> Stashed changes
             const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
             const cardHTML = `
             <div class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
@@ -939,30 +911,6 @@ function loadJobs() {
                         </span>
                     </div>
                 </div>
-<<<<<<< Updated upstream
-                <!-- Why It Matches -->
-                <a href="/whythisjob?job_id=${encodeURIComponent(job.id)}" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job matches you?</a>
-            </div>
-
-            <hr class="my-8 border-gray-300">
-
-            <!-- Description -->
-            <div>
-                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Description</h3>
-                <p class="text-gray-800 text-2xl leading-relaxed max-w-6xl">
-                    ${escapeHtml(job.description).replace(/\n/g, '<br>')}
-                </p>
-            </div>
-
-            <!-- Skills Section -->
-            ${job.skills && job.skills.length > 0 ? `
-            <div class="mt-8">
-                <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills</h3>
-                <div class="flex flex-wrap gap-4">
-                    ${job.skills.map(skill => 
-                    `<span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">${escapeHtml(skill)}</span>`
-                    ).join('')}
-=======
 
                 <div class="mt-10 w-full">
                     <p class="text-xl font-semibold text-gray-800 mb-2 text-center">Number of Applicants</p>
@@ -972,7 +920,6 @@ function loadJobs() {
                     <p class="text-lg text-gray-700 mt-2 text-center">
                         <strong>${job.applied} applied</strong> out of ${job.openings} openings
                     </p>
->>>>>>> Stashed changes
                 </div>
 
                 <div class="flex flex-wrap justify-center gap-6 mt-10">
@@ -986,40 +933,7 @@ function loadJobs() {
                         💾 Save
                     </button>
                 </div>
-<<<<<<< Updated upstream
-            </div>
-
-            <!-- Progress Bar -->
-            <div class="mt-10 w-full">
-                <p class="text-xl font-semibold text-gray-800 mb-2 text-center">Number of Applicants</p>
-                <div class="h-5 bg-gray-200 rounded-md overflow-hidden">
-                    <div class="h-full bg-[#88BF02]" style="width: ${progress}%;"></div>
-                </div>
-                <p class="text-lg text-gray-700 mt-2 text-center">
-                    <strong>${job.applied} applied</strong> out of ${job.openings} openings
-                </p>
-            </div>
-
-            <!-- Action Buttons -->
-            <div class="flex flex-wrap justify-center gap-6 mt-10">
-                <button onclick="location.href='/job-details?job_id=${encodeURIComponent(job.id)}'"
-                        class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
-                    📝 See Details
-                </button>
-                <button onclick="location.href='/job-application-1?job_id=${encodeURIComponent(job.id)}'"
-                        class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
-                    🚀 Apply Now
-                </button>
-                <button onclick="saveJob('${job.id}', this)"
-                        class="bg-[#008000] save-btn text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition"
-                        data-job-id="${job.id}">
-                    💾 Save
-                </button>
-            </div>
-        </div>`;
-=======
             </div>`;
->>>>>>> Stashed changes
             container.innerHTML += cardHTML;
         });
 
