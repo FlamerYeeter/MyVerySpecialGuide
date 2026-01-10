@@ -197,7 +197,7 @@
                         📝 See Details
                         </a>
 
-                        <a href="/apply.php?id=${encodeURIComponent(jid)}"
+                        <a href="/job-application-1?job_id=${encodeURIComponent(jid)}"
                         class="px-5 py-3 bg-[#2563EB] text-white rounded-md shadow-md hover:bg-[#1e4fc5] font-semibold">
                         🚀 Apply Now
                         </a>

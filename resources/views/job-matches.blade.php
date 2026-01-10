@@ -394,9 +394,9 @@
                                 </div>
 
                                 <div class="flex justify-end flex-wrap gap-4 mt-4">
-                                    <button class="bg-[#55BEBB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#47a4a1] transition">Details</button>
-                                    <button class="bg-[#2563EB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#1e4fc5] transition">Apply</button>
-                                    <button class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
+                                    <a href="/job-details?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="px-10 py-3 inline-flex items-center justify-center bg-[#55BEBB] text-white text-lg font-bold rounded-md w-[150px] hover:bg-[#47a4a1] transition">Details</a>
+                                    <a href="/job-application-1?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="px-10 py-3 inline-flex items-center justify-center bg-[#2563EB] text-white text-lg font-bold rounded-md w-[150px] hover:bg-[#1e4fc5] transition">Apply</a>
+                                    <button onclick="saveJob('{{ $r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '' }}', this)" class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
                                 </div>
                             </div>
                         @endforeach
@@ -823,6 +823,22 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
               </p>
        <!--Job Card -->
        <div id="job-container" class="space-y-10"></div>
+
+       <style>
+       /* Saved button styling: gray background and disable hover change */
+       .save-btn.saved {
+           background-color: #9CA3AF !important; /* tailwind gray-400 */
+           color: #ffffff !important;
+           border-color: #9CA3AF !important;
+           cursor: default !important;
+       }
+       .save-btn.saved:hover {
+           background-color: #9CA3AF !important;
+       }
+       .save-btn.saved:disabled {
+           opacity: 1 !important;
+       }
+       </style>
 <script>
 function escapeHtml(text) {
     if (!text) return '';
@@ -866,7 +882,7 @@ function loadJobs() {
         result.jobs.forEach(job => {
             const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
             const cardHTML = `
-            <div class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
+            <div data-job-id="${job.id}" class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
                 <div class="flex flex-col lg:flex-row justify-between items-start gap-10">
                     <div class="flex items-start gap-6">
                         <div class="w-36 h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
@@ -923,10 +939,10 @@ function loadJobs() {
                 </div>
 
                 <div class="flex flex-wrap justify-center gap-6 mt-10">
-                    <button onclick="location.href='job-details?id=${job.id}'" class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
+                    <button onclick="location.href='/job-details?job_id=${encodeURIComponent(job.id)}'" class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
                         📝 See Details
                     </button>
-                    <button onclick="location.href='apply.php?id=${job.id}'" class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
+                    <button onclick="location.href='/job-application-1?job_id=${encodeURIComponent(job.id)}'" class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
                         🚀 Apply Now
                     </button>
                     <button onclick="saveJob('${job.id}', this)" class="bg-[#008000] save-btn text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition" data-job-id="${job.id}">
@@ -938,6 +954,61 @@ function loadJobs() {
         });
 
         //loadSavedState();
+
+        // Fetch saved jobs after rendering so saved state persists across reloads
+        fetch('/db/saved-jobs.php', {
+            method: 'GET',
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+        }).then(r => r.json()).then(j => {
+            if (j && j.success && Array.isArray(j.saved)) {
+                const savedSet = new Set(j.saved.map(s => String(s.job_id)));
+                savedSet.forEach(jid => {
+                    // target the save button directly (it carries the data-job-id)
+                    const saveBtn = document.querySelector('.save-btn[data-job-id="' + jid + '"]');
+                    if (!saveBtn) return;
+                    try {
+                        saveBtn.disabled = true;
+                        saveBtn.innerText = 'Saved';
+                        saveBtn.classList.add('saved');
+                        const parent = saveBtn.closest('[data-job-id]');
+                        if (parent) parent.dataset.saved = '1';
+                    } catch (e) { /* ignore DOM update errors */ }
+                });
+            }
+        }).catch(err => {
+            console.debug('Could not fetch saved jobs', err);
+        });
+
+        // Update evaluation metrics in the DOM if returned by the API
+        try {
+            const em = result.eval_metrics || result.evalMetrics || null;
+            if (em) {
+                const fmt = (v) => {
+                    if (v === null || v === undefined) return 'N/A';
+                    const n = Number(v);
+                    if (isNaN(n)) return 'N/A';
+                    const pct = (n > 0 && n <= 1.01) ? (n * 100) : n;
+                    return Math.round(pct * 100) / 100 + '%';
+                };
+                const accEl = document.getElementById('accuracyVal');
+                const precEl = document.getElementById('precisionVal');
+                const recEl = document.getElementById('recallVal');
+                const f1El = document.getElementById('f1Val');
+                if (accEl) accEl.textContent = fmt(em.accuracy);
+                if (precEl) precEl.textContent = fmt(em.precision);
+                if (recEl) recEl.textContent = fmt(em.recall);
+                if (f1El) f1El.textContent = fmt(em.f1);
+                // hide the hint if any metric is present
+                const hint = document.getElementById('metricsHint');
+                if (hint) {
+                    const any = (em.accuracy !== null && em.accuracy !== undefined) || (em.precision !== null && em.precision !== undefined) || (em.recall !== null && em.recall !== undefined) || (em.f1 !== null && em.f1 !== undefined);
+                    hint.style.display = any ? 'none' : '';
+                }
+            }
+        } catch (e) {
+            console.debug('Error updating metrics', e);
+        }
     })
     .catch(err => {
     debugger;
@@ -948,6 +1019,46 @@ function loadJobs() {
 
 // Load jobs on page load
 document.addEventListener('DOMContentLoaded', () => loadJobs());
+
+// Save a job for later (calls public/db/save-job.php). Expects server session auth.
+function saveJob(jobId, btn) {
+    if (!jobId) return alert('Missing job id');
+    const el = btn || document.querySelector('[data-job-id="' + jobId + '"] .save-btn') || null;
+    try { if (el) el.disabled = true; } catch(e){}
+    const body = { job_id: String(jobId) };
+    fetch('/db/save-job.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+    }).then(r => r.json()).then(j => {
+        if (!j) throw new Error('No response');
+        if (j.success) {
+            if (el) {
+                try {
+                    el.disabled = true;
+                    el.innerText = 'Saved';
+                    el.classList.add('saved');
+                    // mark parent container for easy lookup
+                    const parent = el.closest('[data-job-id]');
+                    if (parent) parent.dataset.saved = '1';
+                } catch (e) { /* ignore UI update errors */ }
+            }
+            return;
+        }
+        // handle unauthenticated
+        if (j.message && (j.message === 'Not authenticated (missing session user_id)' || j.error === 'Not authenticated')) {
+            window.location.href = '/login';
+            return;
+        }
+        alert('Failed to save job: ' + (j.message || JSON.stringify(j)));
+        if (el) el.disabled = false;
+    }).catch(err => {
+        console.error('saveJob error', err);
+        alert('Failed to save job. Try again.');
+        if (el) el.disabled = false;
+    });
+}
 
 // Search on Enter key press for text inputs
 ['searchJobTitle', 'address-location'].forEach(id => {
@@ -1469,9 +1580,9 @@ document.querySelector('select[name="growth_potential"]')?.addEventListener('cha
                                                     </div>
 
                                                     <div class="flex justify-end flex-wrap gap-4 mt-4">
-                                                        <button class="bg-[#55BEBB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#47a4a1] transition">Details</button>
-                                                        <button class="bg-[#2563EB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#1e4fc5] transition">Apply</button>
-                                                        <button class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
+                                                        <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="px-10 py-3 inline-flex items-center justify-center bg-[#55BEBB] text-white text-lg font-bold rounded-md w-[150px] hover:bg-[#47a4a1] transition">Details</a>
+                                                        <a href="/job-application-1?job_id=${encodeURIComponent(jid)}" class="px-10 py-3 inline-flex items-center justify-center bg-[#2563EB] text-white text-lg font-bold rounded-md w-[150px] hover:bg-[#1e4fc5] transition">Apply</a>
+                                                        <button onclick="saveJob('${jid}', this)" class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
                                                     </div>
                                                 </div>
                                             `;
@@ -1528,9 +1639,9 @@ document.querySelector('select[name="growth_potential"]')?.addEventListener('cha
                                                     </div>
 
                                                     <div class="flex justify-end flex-wrap gap-4 mt-4">
-                                                        <button class="bg-[#55BEBB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#47a4a1] transition">Details</button>
-                                                        <button class="bg-[#2563EB] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#1e4fc5] transition">Apply</button>
-                                                        <button class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
+                                                        <a href="/job-details?job_id=${encodeURIComponent(jid)}" class="px-10 py-3 inline-flex items-center justify-center bg-[#55BEBB] text-white text-lg font-bold rounded-md w-[150px] hover:bg-[#47a4a1] transition">Details</a>
+                                                        <a href="/job-application-1?job_id=${encodeURIComponent(jid)}" class="px-10 py-3 inline-flex items-center justify-center bg-[#2563EB] text-white text-lg font-bold rounded-md w-[150px] hover:bg-[#1e4fc5] transition">Apply</a>
+                                                        <button onclick="saveJob('${jid}', this)" class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
                                                     </div>
                                                 </div>
                                             `;
