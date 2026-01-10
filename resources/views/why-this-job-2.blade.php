@@ -227,13 +227,19 @@
         <div class="mb-4 p-3 bg-green-50 border border-green-100 rounded">
           <p class="font-semibold text-gray-700">Perfect Matches</p>
           <div class="mt-2 flex flex-wrap gap-2">
-            @foreach($whyData['perfect_matches'] as $type => $arr)
-              @foreach($arr as $pm)
-                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">{{ $pm['value'] }}
-                  <small class="text-gray-500 ml-2">{{ $pm['user_value'] }}</small>
-                </span>
-              @endforeach
-            @endforeach
+                @foreach($whyData['perfect_matches'] as $type => $arr)
+                  @foreach($arr as $pm)
+                    @php
+                      $val = $pm['value'] ?? '';
+                      $uval = $pm['user_value'] ?? null;
+                    @endphp
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">{{ $val }}
+                      @if(!empty($uval) && (string)($uval) !== (string)($val))
+                        <small class="text-gray-500 ml-2">{{ $uval }}</small>
+                      @endif
+                    </span>
+                  @endforeach
+                @endforeach
           </div>
         </div>
       @endif

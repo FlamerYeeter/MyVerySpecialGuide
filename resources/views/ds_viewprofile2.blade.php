@@ -89,6 +89,12 @@
                                         <div id="certsList" class="space-y-2"></div>
                                         <div id="noCertsMsg" class="text-gray-600 italic">No certificates or trainings added.</div>
 
+                                        <!-- View/Download links for server-stored files -->
+                                        <div id="fileLinks" class="mt-3 space-x-4" style="display:none;">
+                                            <a id="proofFileLink" class="text-blue-600 underline" target="_blank" rel="noopener" href="#">View / Download Proof of Membership</a>
+                                            <a id="medFileLink" class="text-blue-600 underline" target="_blank" rel="noopener" href="#">View / Download Medical Certificate</a>
+                                        </div>
+
                                         <!-- NOTE: "Click to Add Certificates / Training Details" removed per request -->
                                         <!-- Inline edit panel (hidden until Edit clicked) -->
                                         <div id="certsEdit" class="hidden mt-4">
@@ -536,6 +542,25 @@ document.addEventListener('DOMContentLoaded', () => {
         // initial render of DB-backed certs
         window.__mvsg_renderDBCerts(userId);
 
+        // Show view/download links for server-stored files if present in response
+        try {
+            const fileLinks = document.getElementById('fileLinks');
+            const proofA = document.getElementById('proofFileLink');
+            const medA = document.getElementById('medFileLink');
+            const files = json.files || {};
+            const lengths = json.file_lengths || {};
+            let shown = false;
+            if (files.proof || (lengths.proof_len && lengths.proof_len > 0)) {
+                if (proofA) { proofA.href = '/db/get_file.php?type=proof'; proofA.style.display = ''; }
+                shown = true;
+            }
+            if (files.med || (lengths.med_len && lengths.med_len > 0)) {
+                if (medA) { medA.href = '/db/get_file.php?type=med'; medA.style.display = ''; }
+                shown = true;
+            }
+            if (fileLinks) fileLinks.style.display = shown ? '' : 'none';
+        } catch(e) { /* non-critical */ }
+
 
         // fetch job_experience rows (by guardian_id)
         return fetch('/db/get-user-work.php', {
@@ -789,7 +814,8 @@ document.addEventListener('DOMContentLoaded', () => {
             certsEdit.classList.remove('hidden');
             if (certsList) certsList.style.display = 'none';
             if (noCertsMsg) noCertsMsg.style.display = 'none';
-            setTimeout(()=>{ const first = certsContainer.querySelector('.cert-name'); if(first) first.focus(); }, 50);
+            // Removed automatic focus to avoid placing the typing cursor immediately when Edit is clicked.
+            // Users can click into fields or press Tab to focus inputs intentionally.
         }).catch(e => {
             certsContainer.appendChild(buildEditEntry({}));
             certsEdit.classList.remove('hidden');
