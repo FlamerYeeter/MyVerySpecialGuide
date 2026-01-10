@@ -28,18 +28,7 @@ if (!$conn) {
     exit;
 }
 
-<<<<<<< Updated upstream
 // SQL: content matches for the provided guardian (if any) + global collab counts (all saved/applications)
-=======
-// Input values
-$title = $data['title'] ?? null;
-$location = $data['location'] ?? null;
-$work_environment = $data['work_environment'] ?? null;
-$job_type = $data['job_type'] ?? null;
-$user_id = $data['user_id'] ?? null;
-
-// SQL: get prioritized job postings for user with optional filters
->>>>>>> Stashed changes
 $sql = "
 WITH
   co_counts AS (
@@ -116,7 +105,6 @@ WITH
         jp.ADDRESS,
         jp.JOB_TYPE,
         jp.EMPLOYEE_CAPACITY,
-<<<<<<< Updated upstream
         1 AS PRIORITY,
         jp.JOB_POST_DATE
       FROM MVSG.JOB_POSTINGS jp
@@ -167,81 +155,13 @@ if (!@oci_execute($stid)) {
     echo json_encode(['success' => false, 'error' => 'Query failed', 'oci' => $e]);
     exit;
 }
-=======
-        PRIORITY,
-        jp.JOB_POST_DATE,
-        ROW_NUMBER() OVER (PARTITION BY jp.ID ORDER BY PRIORITY) AS rn
-    FROM (
-        -- Priority 1: profile match
-        SELECT 
-            jp.ID,
-            jp.COMPANY_NAME,
-            jp.JOB_ROLE,
-            jp.JOB_DESCRIPTION,
-            jp.ADDRESS,
-            jp.JOB_TYPE,
-            jp.EMPLOYEE_CAPACITY,
-            1 AS PRIORITY,
-            jp.JOB_POST_DATE
-        FROM JOB_POSTINGS jp
-        INNER JOIN JOB_PROFILE JPR
-            ON JPR.JOB_POSTING_ID = jp.ID
-        INNER JOIN USER_PROFILE UP
-            ON UP.VALUE = JPR.VALUE
-        INNER JOIN USER_PROFILE UP
-            ON UP.TYPE = JPR.TYPE
-        INNER JOIN USER_GUARDIAN UG
-            ON UG.ID = UP.GUARDIAN_ID
-        WHERE UG.ID = :user_id
-        " . ($title ? " AND LOWER(jp.COMPANY_NAME) LIKE '%' || LOWER(:title) || '%' " : "") . "
-        " . ($location ? " AND LOWER(jp.ADDRESS) LIKE '%' || LOWER(:location) || '%' " : "") . "
-        " . ($work_environment ? " AND LOWER(jp.WORK_ENVIRONMENT) LIKE '%' || LOWER(:work_environment) || '%' " : "") . "
-        " . ($job_type ? " AND LOWER(jp.JOB_TYPE) LIKE '%' || LOWER(:job_type) || '%' " : "") . "
-
-        UNION ALL
-
-        -- Priority 2: address match only
-        SELECT 
-            jp.ID,
-            jp.COMPANY_NAME,
-            jp.JOB_ROLE,
-            jp.JOB_DESCRIPTION,
-            jp.ADDRESS,
-            jp.JOB_TYPE,
-            jp.EMPLOYEE_CAPACITY,
-            2 AS PRIORITY,
-            jp.JOB_POST_DATE
-        FROM JOB_POSTINGS jp
-        INNER JOIN USER_GUARDIAN UG
-            ON UG.ADDRESS = jp.ADDRESS
-        WHERE UG.ID = :user_id
-        " . ($title ? " AND LOWER(jp.COMPANY_NAME) LIKE '%' || LOWER(:title) || '%' " : "") . "
-        " . ($location ? " AND LOWER(jp.ADDRESS) LIKE '%' || LOWER(:location) || '%' " : "") . "
-        " . ($work_environment ? " AND LOWER(jp.WORK_ENVIRONMENT) LIKE '%' || LOWER(:work_environment) || '%' " : "") . "
-        " . ($job_type ? " AND LOWER(jp.JOB_TYPE) LIKE '%' || LOWER(:job_type) || '%' " : "") . "
-    ) jp
-)
-WHERE rn = 1
-ORDER BY PRIORITY, JOB_POST_DATE DESC
-";
-
-$stid = oci_parse($conn, $sql);
-oci_bind_by_name($stid, ':user_id', $user_id);
-
-if ($title) oci_bind_by_name($stid, ':title', $title);
-if ($location) oci_bind_by_name($stid, ':location', $location);
-if ($work_environment) oci_bind_by_name($stid, ':work_environment', $work_environment);
-if ($job_type) oci_bind_by_name($stid, ':job_type', $job_type);
-
-oci_execute($stid);
->>>>>>> Stashed changes
 
 $jobs = [];
 
 while ($row = oci_fetch_assoc($stid)) {
     $jobId = $row['ID'];
 
-    // Fetch skills / job type from JOB_PROFILE
+    // Fetch skills from JOB_PROFILE
     $profileSql = "
         SELECT VALUE, TYPE
         FROM MVSG.JOB_PROFILE
@@ -255,18 +175,9 @@ while ($row = oci_fetch_assoc($stid)) {
 
     $skills = []; $jobTypes = [];
     while ($p = oci_fetch_assoc($pstid)) {
-<<<<<<< Updated upstream
         $type = strtolower($p['TYPE'] ?? '');
         if (strpos($type, 'role') !== false || $type === 'job-position') $jobTypes[] = $p['VALUE'];
         elseif ($type === 'skills') $skills[] = $p['VALUE'];
-=======
-        $type = strtolower($p['TYPE']);
-        if ($type === 'job-position' || strpos($type, 'role') !== false) {
-            $jobTypes[] = $p['VALUE'];
-        } elseif ($type === 'skills') {
-            $skills[] = $p['VALUE'];
-        }
->>>>>>> Stashed changes
     }
     oci_free_statement($pstid);
 
@@ -326,7 +237,6 @@ while ($row = oci_fetch_assoc($stid)) {
 oci_free_statement($stid);
 oci_close($conn);
 
-<<<<<<< Updated upstream
 // --- NEW: compute simple evaluation metrics for the requesting guardian
 $predictedIds = array_values(array_unique(array_map(function($j){ return $j['id']; }, $jobs)));
 
@@ -402,6 +312,3 @@ echo json_encode([
 ]);
 
 ?>
-=======
-echo json_encode(['success' => true, 'jobs' => $jobs]);
->>>>>>> Stashed changes
