@@ -169,6 +169,20 @@ if (@oci_execute($stid3)) {
 }
 @oci_free_statement($stid3);
 
+// --- NEW: fetch number of applicants for this job
+$appliedCount = 0;
+$id_cond_app = $use_to_char_match ? "TO_CHAR(JOB_POSTING_ID) = :id_str" : "JOB_POSTING_ID = TO_NUMBER(:id_str)";
+$appSql = "SELECT COUNT(DISTINCT GUARDIAN_ID) AS APPLIED_COUNT FROM MVSG.APPLICATIONS WHERE " . $id_cond_app;
+$appSt = oci_parse($conn, $appSql);
+oci_bind_by_name($appSt, ':id_str', $id_str, -1);
+if (@oci_execute($appSt)) {
+    $ar = oci_fetch_assoc($appSt);
+    if ($ar && isset($ar['APPLIED_COUNT'])) {
+        $appliedCount = intval($ar['APPLIED_COUNT']);
+    }
+}
+@oci_free_statement($appSt);
+
 // Helper: merge single DB text with profile arrays
 function merge_text_and_profile_array($text, $profileArr)
 {
@@ -218,6 +232,10 @@ $response = [
         // expose arrays for frontend convenience
         'skills' => $skills_arr,
         'job_positions' => $positions_arr,
+        // convenience aliases for frontend
+        'openings' => isset($row['EMPLOYEE_CAPACITY']) ? $row['EMPLOYEE_CAPACITY'] : null,
+        'applied' => $appliedCount,
+        'applied_count' => $appliedCount,
     ],
     'company' => [
         'id' => isset($row['COMPANY_ID_REAL']) ? $row['COMPANY_ID_REAL'] : null,

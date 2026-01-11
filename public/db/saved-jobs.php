@@ -24,8 +24,12 @@ try {
              jp.JOB_ROLE          AS JOB_TITLE,
              jp.COMPANY_NAME      AS COMPANY_NAME,
              jp.ADDRESS           AS LOCATION,
-             jp.JOB_DESCRIPTION   AS DESCRIPTION,
-             jp.COMPANY_IMAGE     AS COMPANY_IMAGE
+                         jp.JOB_DESCRIPTION   AS DESCRIPTION,
+                         jp.COMPANY_IMAGE     AS COMPANY_IMAGE,
+                         jp.EMPLOYEE_CAPACITY AS EMPLOYEE_CAPACITY,
+                         jp.APPLY_BEFORE      AS APPLY_BEFORE,
+                         (SELECT COUNT(DISTINCT GUARDIAN_ID) FROM MVSG.APPLICATIONS a WHERE a.JOB_POSTING_ID = jp.ID) AS APPLIED_COUNT,
+                         (SELECT COUNT(*) FROM MVSG.APPLICATIONS a2 WHERE a2.JOB_POSTING_ID = jp.ID AND a2.GUARDIAN_ID = :gid) AS USER_APPLIED
       FROM MVSG.SAVED_JOBS sj
       JOIN MVSG.JOB_POSTINGS jp ON jp.ID = sj.JOB_ID
       WHERE sj.GUARDIAN_ID = :gid
@@ -85,6 +89,11 @@ try {
             'address'     => $r['LOCATION'] ?? null,
             'description' => $r['DESCRIPTION'] ?? null,
             'logo'        => $logoSrc,
+            'openings'    => isset($r['EMPLOYEE_CAPACITY']) ? (int)$r['EMPLOYEE_CAPACITY'] : null,
+            'apply_before'=> $r['APPLY_BEFORE'] ?? null,
+            'applied'     => isset($r['APPLIED_COUNT']) ? (int)$r['APPLIED_COUNT'] : 0,
+            'applied_count'=> isset($r['APPLIED_COUNT']) ? (int)$r['APPLIED_COUNT'] : 0,
+            'user_applied'=> isset($r['USER_APPLIED']) && intval($r['USER_APPLIED']) > 0 ? true : false,
         ];
     }
 

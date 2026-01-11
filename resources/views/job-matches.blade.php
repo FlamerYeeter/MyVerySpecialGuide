@@ -881,6 +881,20 @@ function loadJobs() {
 
         result.jobs.forEach(job => {
             const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
+            // determine whether Apply should be disabled
+            const now = new Date();
+            let applyBefore = null;
+            try { if (job.apply_before) applyBefore = new Date(job.apply_before); } catch (e) { applyBefore = null; }
+            const isPastDeadline = applyBefore instanceof Date && !isNaN(applyBefore) && applyBefore.getTime() < now.getTime();
+            const openingsNum = job.openings ? Number(job.openings) : 0;
+            const appliedNum = job.applied ? Number(job.applied) : 0;
+            const isFull = openingsNum > 0 && appliedNum >= openingsNum;
+            const userApplied = !!job.user_applied;
+            const applyDisabled = userApplied || isPastDeadline || isFull;
+            const applyBtnClass = applyDisabled ? 'bg-gray-400 text-white text-xl font-bold rounded-md px-10 py-4 cursor-not-allowed transition' : 'bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition';
+            const applyBtnAttr = applyDisabled ? 'disabled' : `onclick="location.href='/job-application-1?job_id=${encodeURIComponent(job.id)}'"`;
+            const applyBtnText = applyDisabled ? '🚫 Apply' : '🚀 Apply Now';
+
             const cardHTML = `
             <div data-job-id="${job.id}" class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
                 <div class="flex flex-col lg:flex-row justify-between items-start gap-10">
@@ -940,8 +954,8 @@ function loadJobs() {
                     <button onclick="location.href='/job-details?job_id=${encodeURIComponent(job.id)}'" class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
                         📝 See Details
                     </button>
-                    <button onclick="location.href='/job-application-1?job_id=${encodeURIComponent(job.id)}'" class="bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition">
-                        🚀 Apply Now
+                    <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? (userApplied ? 'You already applied' : (isPastDeadline ? 'Application deadline passed' : 'No openings left')) : 'Apply for this job'}">
+                        ${applyBtnText}
                     </button>
                     <button onclick="saveJob('${job.id}', this)" class="bg-[#008000] save-btn text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition" data-job-id="${job.id}">
                         💾 Save

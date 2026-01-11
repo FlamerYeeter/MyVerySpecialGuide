@@ -44,11 +44,11 @@
                 </p>
 
                 <div class="flex justify-center sm:justify-start">
-                    <button
+                    <button id="savedJobsCountBtn"
                         class="flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white text-xl font-bold px-10 py-4 rounded-2xl shadow-lg transition-all duration-200 focus:ring-4 focus:ring-green-400 focus:outline-none">
                         <img src="https://img.icons8.com/fluency/48/bookmark-ribbon.png" alt="Saved Jobs Icon"
                             class="h-8 w-8">
-                        No Saved Jobs Yet
+                        <span id="savedJobsCountText">No Saved Jobs Yet</span>
                     </button>
                 </div>
             </div>
@@ -153,63 +153,85 @@
         const container = document.getElementById('saved-jobs-list');
         fetch('/db/saved-jobs.php', { credentials: 'same-origin' })
         .then(r => r.json())
-        .then(json => {
-            if (!json || !json.success || !Array.isArray(json.saved) || json.saved.length === 0) {
-                container.innerHTML = `
-                  <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center text-gray-700">
-                    <p class="text-xl font-semibold mb-2">No Saved Jobs Yet</p>
-                    <p class="text-sm">Save jobs from the Jobs page and they'll appear here.</p>
-                  </div>`;
-                return;
-            }
+                .then(json => {
+                        // update top count button
+                        const btnTextEl = document.getElementById('savedJobsCountText');
+                        const btnEl = document.getElementById('savedJobsCountBtn');
+                        const savedArr = (json && Array.isArray(json.saved)) ? json.saved : [];
+                        const totalSaved = savedArr.length;
+                        if (btnTextEl) {
+                                if (totalSaved === 0) btnTextEl.textContent = 'No Saved Jobs Yet';
+                                else btnTextEl.textContent = `${totalSaved} Saved Job${totalSaved !== 1 ? 's' : ''}`;
+                        }
 
-            // Build modern cards, skip removed entries (server can return j.removed = true)
-            const rows = json.saved.filter(j => !(j.removed || j.is_removed || j.status === 'removed'));
-            if (rows.length === 0) {
-                container.innerHTML = '<div class="text-center text-gray-600">You have no active saved jobs.</div>';
-                return;
-            }
+                        if (!json || !json.success || !Array.isArray(json.saved) || json.saved.length === 0) {
+                                container.innerHTML = `
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center text-gray-700">
+                                        <p class="text-xl font-semibold mb-2">No Saved Jobs Yet</p>
+                                        <p class="text-sm">Save jobs from the Jobs page and they'll appear here.</p>
+                                    </div>`;
+                                return;
+                        }
 
-            container.innerHTML = rows.map(j => {
-                const jid = esc(j.job_id || j.JP_ID || '');
-                const title = esc(j.job_role || 'Untitled Job');
-                const company = esc(j.company_name || '');
-                const loc = esc(j.address || '');
-                const desc = esc((j.description || '').replace(/\s+/g,' ').trim()).slice(0, 280);
-                const logo = esc(j.logo || '/image/jobexp3.png');
+                        // Build modern cards, skip removed entries (server can return j.removed = true)
+                        const rows = json.saved.filter(j => !(j.removed || j.is_removed || j.status === 'removed'));
+                        if (rows.length === 0) {
+                                container.innerHTML = '<div class="text-center text-gray-600">You have no active saved jobs.</div>';
+                                return;
+                        }
 
-                return `
-                  <div data-job-id="${jid}" class="job-card bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col lg:flex-row justify-between gap-6 transition-transform hover:scale-[1.01]">
-                    <div class="flex items-start gap-4 lg:gap-6">
-                      <div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 border bg-gray-50">
-                        <img src="${logo}" alt="${title} logo" class="w-full h-full object-cover">
-                      </div>
-                      <div class="min-w-0">
-                        <h3 class="text-2xl font-extrabold text-gray-900 leading-tight">${title}</h3>
-                        ${ company ? `<p class="text-lg text-gray-700 mt-1">${company}</p>` : '' }
-                        ${ loc ? `<p class="text-sm text-gray-500 mt-1 flex items-center gap-2"><img src='https://img.icons8.com/color/48/marker--v1.png' class='w-4 h-4'> ${loc}</p>` : '' }
-                      </div>
-                    </div>
-                    <div class="flex flex-col items-end justify-between gap-4">
-                      <div class="flex gap-3">
-                        <a href="/job-details?job_id=${encodeURIComponent(jid)}"
-                        class="px-5 py-3 bg-[#55BEBB] text-white rounded-md shadow-md hover:bg-[#47a4a1] font-semibold">
-                        📝 See Details
-                        </a>
+                        container.innerHTML = rows.map(j => {
+                                const jid = esc(j.job_id || j.JP_ID || '');
+                                const title = esc(j.job_role || 'Untitled Job');
+                                const company = esc(j.company_name || '');
+                                const loc = esc(j.address || '');
+                                const desc = esc((j.description || '').replace(/\s+/g,' ').trim()).slice(0, 280);
+                                const logo = esc(j.logo || '/image/jobexp3.png');
 
-                        <a href="/job-application-1?job_id=${encodeURIComponent(jid)}"
-                        class="px-5 py-3 bg-[#2563EB] text-white rounded-md shadow-md hover:bg-[#1e4fc5] font-semibold">
-                        🚀 Apply Now
-                        </a>
+                                // compute apply-disabled state
+                                const openingsNum = j.openings ? Number(j.openings) : 0;
+                                const appliedNum = j.applied ? Number(j.applied) : 0;
+                                let applyBefore = null;
+                                try { if (j.apply_before) applyBefore = new Date(j.apply_before); } catch (e) { applyBefore = null; }
+                                const isPastDeadline = applyBefore instanceof Date && !isNaN(applyBefore) && applyBefore.getTime() < Date.now();
+                                const isFull = openingsNum > 0 && appliedNum >= openingsNum;
+                                const userApplied = !!j.user_applied;
+                                const applyDisabled = userApplied || isPastDeadline || isFull;
+                                const applyBtnAttr = applyDisabled ? 'disabled' : `onclick="location.href='/job-application-1?job_id=${encodeURIComponent(jid)}'"`;
+                                const applyBtnClass = applyDisabled ? 'px-5 py-3 bg-gray-400 text-white rounded-md shadow-md cursor-not-allowed' : 'px-5 py-3 bg-[#2563EB] text-white rounded-md shadow-md hover:bg-[#1e4fc5] font-semibold';
+                                const applyBtnText = applyDisabled ? (userApplied ? '🚫 Applied' : (isPastDeadline ? '🚫 Closed' : '🚫 Full')) : '🚀 Apply Now';
 
-                        <button onclick="removeSavedJob('${esc(jid)}', this)"
-                        class="px-4 py-2 bg-[#FF2400] text-white rounded-md shadow-sm hover:bg-[#C41E3A] font-semibold">
-                        🗑️ Remove
-                        </button>
-                      </div>
-                    </div>
-                  </div>`;
-            }).join('\n');
+                                return `
+                                    <div data-job-id="${jid}" class="job-card bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col lg:flex-row justify-between gap-6 transition-transform hover:scale-[1.01]">
+                                        <div class="flex items-start gap-4 lg:gap-6">
+                                            <div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 border bg-gray-50">
+                                                <img src="${logo}" alt="${title} logo" class="w-full h-full object-cover">
+                                            </div>
+                                            <div class="min-w-0">
+                                                <h3 class="text-2xl font-extrabold text-gray-900 leading-tight">${title}</h3>
+                                                ${ company ? `<p class="text-lg text-gray-700 mt-1">${company}</p>` : '' }
+                                                ${ loc ? `<p class="text-sm text-gray-500 mt-1 flex items-center gap-2"><img src='https://img.icons8.com/color/48/marker--v1.png' class='w-4 h-4'> ${loc}</p>` : '' }
+                                            </div>
+                                        </div>
+                                        <div class="flex flex-col items-end justify-between gap-4">
+                                            <div class="flex gap-3">
+                                                <a href="/job-details?job_id=${encodeURIComponent(jid)}"
+                                                class="px-5 py-3 bg-[#55BEBB] text-white rounded-md shadow-md hover:bg-[#47a4a1] font-semibold">
+                                                📝 See Details
+                                                </a>
+
+                                                <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? (userApplied ? 'You already applied' : (isPastDeadline ? 'Application deadline passed' : 'No openings left')) : 'Apply for this job'}">
+                                                ${applyBtnText}
+                                                </button>
+
+                                                <button onclick="removeSavedJob('${esc(jid)}', this)"
+                                                class="px-4 py-2 bg-[#FF2400] text-white rounded-md shadow-sm hover:bg-[#C41E3A] font-semibold">
+                                                🗑️ Remove
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                        }).join('\n');
         })
         .catch(err => {
             console.error('get-saved-jobs error', err);

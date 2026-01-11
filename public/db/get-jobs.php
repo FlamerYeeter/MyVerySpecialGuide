@@ -105,6 +105,7 @@ WITH
         jp.ADDRESS,
         jp.JOB_TYPE,
         jp.EMPLOYEE_CAPACITY,
+          jp.APPLY_BEFORE,
         1 AS PRIORITY,
         jp.JOB_POST_DATE
       FROM MVSG.JOB_POSTINGS jp
@@ -123,6 +124,7 @@ WITH
         jp.ADDRESS,
         jp.JOB_TYPE,
         jp.EMPLOYEE_CAPACITY,
+          jp.APPLY_BEFORE,
         2 AS PRIORITY,
         jp.JOB_POST_DATE
       FROM MVSG.JOB_POSTINGS jp
@@ -203,6 +205,18 @@ while ($row = oci_fetch_assoc($stid)) {
     $collabCount     = isset($row['COLLAB_COUNT'])     ? intval($row['COLLAB_COUNT']) : 0;
     $debugMaxCo      = isset($row['DEBUG_MAX_CO'])     ? intval($row['DEBUG_MAX_CO']) : 0;
 
+    // Fetch number of applicants (applications) for this job
+    $appSql = "SELECT COUNT(DISTINCT GUARDIAN_ID) AS APPLIED_COUNT FROM MVSG.APPLICATIONS WHERE JOB_POSTING_ID = :job_id";
+    $appSt = oci_parse($conn, $appSql);
+    oci_bind_by_name($appSt, ':job_id', $jobId, -1);
+    if (@oci_execute($appSt)) {
+      $appRow = oci_fetch_assoc($appSt);
+      $appliedCount = $appRow && isset($appRow['APPLIED_COUNT']) ? intval($appRow['APPLIED_COUNT']) : 0;
+    } else {
+      $appliedCount = 0;
+    }
+    @oci_free_statement($appSt);
+
     // Blend: 70% content, 30% collaborative
     $computedScore = round((0.7 * $contentScoreRaw + 0.3 * $collabScoreRaw) * 100, 2);
     // ensure numeric non-null values by explicit casts/fallbacks
@@ -220,7 +234,8 @@ while ($row = oci_fetch_assoc($stid)) {
         'address'               => $row['ADDRESS'] ?? null,
         'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),
         'skills'                => $skills,
-        'openings'              => $row['EMPLOYEE_CAPACITY'] ?? null,
+      'openings'              => $row['EMPLOYEE_CAPACITY'] ?? null,
+      'apply_before'          => isset($row['APPLY_BEFORE']) ? $row['APPLY_BEFORE'] : null,
         'logo'                  => $logoSrc,
         // hybrid signals (guaranteed numeric)
         'content_score'         => round($contentScoreRaw * 100, 2),
@@ -230,6 +245,10 @@ while ($row = oci_fetch_assoc($stid)) {
         'debug_content_matches' => $contentMatches,
         'debug_collab_count'    => $collabCount,
         'debug_max_co'          => $debugMaxCo
+        ,
+        // explicit application counts for frontend
+        'applied'               => $appliedCount,
+        'applied_count'         => $appliedCount
     ];
 }
 
@@ -257,6 +276,20 @@ if (!empty($user_id)) {
 }
 $predSet = array_map('strval', $predictedIds);
 $appSet  = array_map('strval', array_values(array_unique($appliedIds)));
+
+    // Mark per-job whether the requesting guardian already applied (for frontend)
+    if (!empty($appSet) && count($jobs) > 0) {
+      $appSetLookup = array_flip($appSet);
+      foreach ($jobs as $k => $jj) {
+        $jid = isset($jj['id']) ? (string)$jj['id'] : null;
+        $jobs[$k]['user_applied'] = ($jid !== null && isset($appSetLookup[$jid]));
+      }
+    } else {
+      // default false for each job
+      foreach ($jobs as $k => $jj) {
+        $jobs[$k]['user_applied'] = false;
+      }
+    }
 
 $tp = count(array_intersect($predSet, $appSet));
 $fp = max(0, count($predSet) - $tp);
