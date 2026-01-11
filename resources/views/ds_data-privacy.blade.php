@@ -246,17 +246,23 @@
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       const buttons = document.querySelectorAll('.tts-btn');
-      // prefer a single high-quality voice for both English and Filipino
+      // prefer a single high-quality voice for English and a preferred Tagalog voice
       const preferredVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+      const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
       let preferredVoice = null;
+      let preferredTagalogVoice = null;
       let currentBtn = null;
       let availableVoices = [];
 
       function populateVoices() {
         availableVoices = window.speechSynthesis.getVoices() || [];
-        // try exact match first, then fuzzy match for known Microsoft AvaMultilingual
+        // try exact match first for English, then fuzzy match for known Microsoft AvaMultilingual
         preferredVoice = availableVoices.find(v => v.name === preferredVoiceName)
           || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+          || null;
+        // prefer a Tagalog voice (matches ds_register_2 preferences)
+        preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName)
+          || availableVoices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name))
           || null;
       }
 
@@ -307,14 +313,20 @@
             if (!window.speechSynthesis) return;
 
             function voiceFor(langHint) {
-              if (preferredVoice) return preferredVoice;
+              // prefer explicit Tagalog or English voices when available
               if (langHint) {
                 const hint = (langHint || '').toLowerCase();
                 if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                  if (preferredTagalogVoice) return preferredTagalogVoice;
                   return chooseVoiceForLang('tl');
                 }
-                return chooseVoiceForLang(langHint);
+                if (hint.startsWith('en')) {
+                  if (preferredVoice) return preferredVoice;
+                  return chooseVoiceForLang('en');
+                }
               }
+              // fallback to preferred English voice then a general chooser
+              if (preferredVoice) return preferredVoice;
               return chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
             }
 
