@@ -303,8 +303,8 @@
   </div>
 
   <!-- SINGLE UPLOAD BOX -->
-  <div class="border-2 border-dashed border-[#1E40AF] rounded-2xl p-8 text-center 
-              bg-[#F0F9FF] hover:bg-blue-50 transition" onclick="document.getElementById('allDocuments').click()">
+  <div id="bigUploadBox" class="border-2 border-dashed border-[#1E40AF] rounded-2xl p-8 text-center 
+              bg-[#F0F9FF] hover:bg-blue-50 transition">
     
     <div id="bigUploadContent" class="cursor-pointer">
     <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#1E40AF] mx-auto mb-4" 
@@ -811,14 +811,25 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
       const container = document.getElementById('requiredFilesSlots');
       if (!container) return;
       container.innerHTML = '';
-      // Show a slot only if there is an uploaded/persisted file for that requirement
+      // Show a slot for each checked requirement; if uploaded, show file name
       defs.forEach(def => {
+        const chk = document.getElementById(def.checkboxId);
         const entry = stored[def.key];
-        if (!entry || !entry.name) return; // do not show empty slots
+        // If there's no stored entry and the checkbox isn't checked, skip rendering
+        if (!entry && (!chk || !chk.checked)) return;
+
         const { wrap, nameEl, viewBtn, removeBtn } = createSlot(def);
-        nameEl.textContent = entry.name;
-        viewBtn.disabled = false;
-        removeBtn.disabled = false;
+
+        if (entry && entry.name) {
+          nameEl.textContent = entry.name;
+          viewBtn.disabled = false;
+          removeBtn.disabled = false;
+        } else {
+          nameEl.textContent = 'No file selected';
+          viewBtn.disabled = true;
+          removeBtn.disabled = true;
+        }
+
         container.appendChild(wrap);
       });
     }
@@ -837,10 +848,15 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
 
     // NEW: update inner prompt visibility (hide prompt when any uploaded slot exists)
     function updateBigUploadContentVisibility() {
+      // Hide the big upload prompt when any document checkbox is checked,
+      // otherwise show the prompt.
       const content = document.getElementById('bigUploadContent');
       if (!content) return;
-      const anyStored = defs.some(d => stored[d.key] && stored[d.key].name);
-      if (anyStored) content.classList.add('hidden');
+      const anyChecked = defs.some(d => {
+        const chk = document.getElementById(d.checkboxId);
+        return chk && chk.checked;
+      });
+      if (anyChecked) content.classList.add('hidden');
       else content.classList.remove('hidden');
     }
 
@@ -855,6 +871,12 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
           const chk = document.getElementById(d.checkboxId);
           return chk && chk.checked;
         });
+
+        if (checkedDefs.length === 0) {
+          alert('Please select at least one document type (check the boxes) before uploading.');
+          e.target.value = '';
+          return;
+        }
 
         // Mark already-occupied keys so we don't overwrite them synchronously
         const occupied = new Set();
@@ -904,8 +926,19 @@ setupUploader('resumeUpload', 'resumePreview');   // for resume/CV
     // init
     loadPersisted();
     // do NOT auto-check checkboxes — keep them as user left them
-    // show persisted slots if any
+    // show persisted slots if any; if files already present, auto-check their boxes
     document.addEventListener('DOMContentLoaded', () => {
+      // auto-check boxes for any persisted uploads so validation matches visible slots
+      defs.forEach(d => {
+        try {
+          const entry = stored[d.key];
+          const chk = document.getElementById(d.checkboxId);
+          if (entry && entry.name && chk && !chk.checked) {
+            chk.checked = true;
+          }
+        } catch (e) { /* ignore */ }
+      });
+
       renderSlots();
       assignPendingToChecked();
       updateBigUploadContentVisibility();
@@ -1145,8 +1178,70 @@ document.addEventListener('DOMContentLoaded', function () {
   const toReview = document.querySelector('a[href^="/job-application-review1"]');
   if (!toReview) return;
 
+  function validateForm() {
+    const checks = [
+      { name: 'firstName', label: 'First name' },
+      { name: 'lastName', label: 'Last name' },
+      { name: 'email', label: 'Email' },
+      { name: 'age', label: 'Age' },
+      { name: 'phone', label: 'Phone number' },
+      { name: 'address', label: 'Address' }
+    ];
+
+    const missing = [];
+    checks.forEach(ch => {
+      const el = document.querySelector('[name="' + ch.name + '"]');
+      const v = el ? String(el.value || '').trim() : '';
+      if (!v) missing.push(ch.label);
+      if (ch.name === 'email' && v) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!re.test(v)) missing.push('Valid email');
+      }
+      if (ch.name === 'age' && v) {
+        const n = Number(v);
+        if (!Number.isFinite(n) || n <= 0) missing.push('Valid age');
+      }
+    });
+
+    // Required documents: only require files for checkboxes the user checked
+    const docDefs = [
+      { checkboxId: 'chk_medical', key: 'medical', label: 'Medical Certificate' },
+      { checkboxId: 'chk_resume', key: 'resume', label: 'Resume / CV' },
+      { checkboxId: 'chk_pwd', key: 'pwd', label: 'PWD ID' }
+    ];
+    const LS_PREFIX = 'jobreq_';
+
+    // Prefer the uploader's in-memory state if available (more reliable than reading raw localStorage)
+    const persisted = (typeof window.getRequiredUploads === 'function') ? window.getRequiredUploads() : null;
+
+    docDefs.forEach(d => {
+      const chk = document.getElementById(d.checkboxId);
+      if (chk && chk.checked) {
+        let has = false;
+        try {
+          if (persisted && persisted[d.key]) {
+            has = true;
+          } else {
+            const data = localStorage.getItem(LS_PREFIX + d.key + '_data');
+            if (data) has = true;
+          }
+        } catch (e) { /* ignore storage errors */ }
+
+        if (!has) missing.push('Upload ' + d.label);
+      }
+    });
+
+    return missing;
+  }
+
   toReview.addEventListener('click', function (e) {
     e.preventDefault();
+
+    const missing = validateForm();
+    if (missing.length) {
+      alert('Please complete the following before proceeding:\n- ' + missing.join('\n- '));
+      return;
+    }
 
     // Collect current form values (names used in this page)
     const data = {
@@ -1156,7 +1251,6 @@ document.addEventListener('DOMContentLoaded', function () {
       age:       (document.querySelector('[name="age"]')       || {}).value || '',
       phone:     (document.querySelector('[name="phone"]')     || {}).value || '',
       address:   (document.querySelector('[name="address"]')   || {}).value || '',
-      // optionally include other fields you may need
       saved_at: new Date().toISOString()
     };
 
@@ -1168,17 +1262,13 @@ document.addEventListener('DOMContentLoaded', function () {
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
           if (!key || !key.startsWith(prefix)) continue;
-          // expected keys like jobreq_medical_name / jobreq_medical_data / jobreq_medical_type
-          const parts = key.slice(prefix.length).split('_'); // e.g. ['medical','name']
+          const parts = key.slice(prefix.length).split('_');
           if (parts.length < 2) continue;
-          const field = parts[0]; // e.g. medical
-          // read name/data/type consistently
+          const field = parts[0];
           const name = localStorage.getItem(prefix + field + '_name') || null;
           const dataUrl = localStorage.getItem(prefix + field + '_data') || null;
           const type = localStorage.getItem(prefix + field + '_type') || null;
-          // add once per field if name present
           if (name && (dataUrl || type)) {
-            // avoid duplicates
             if (!uploads.find(u => u.key === field)) {
               uploads.push({ key: field, name: name, type: type || '', data: dataUrl || '' });
             }
@@ -1188,7 +1278,6 @@ document.addEventListener('DOMContentLoaded', function () {
         console.warn('could not read persisted uploads', err);
       }
 
-      // include uploads in the saved step payload so review page can show them
       data.uploadedFiles = uploads;
 
       const json = JSON.stringify(data);
@@ -1198,8 +1287,7 @@ document.addEventListener('DOMContentLoaded', function () {
       console.warn('Could not persist application step1', err);
     }
 
-    // navigate to the review URL that the anchor already points to
-    // (use href so job_id query param is preserved)
+    // navigate to the review URL that the anchor already points to (use href so job_id query param is preserved)
     const href = toReview.getAttribute('href');
     window.location.href = href;
   });

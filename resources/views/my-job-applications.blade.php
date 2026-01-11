@@ -66,7 +66,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.65 6.65a7.5 7.5 0 010 10.6z" />
                 </svg>
-                <input type="text" placeholder="Search your application"
+                <input id="appSearchInput" type="text" placeholder="Search your application"
                     class="w-full bg-transparent text-lg focus:outline-none text-gray-700 font-medium">
             </div>
 
@@ -75,11 +75,11 @@
 
                 <!-- Status Dropdown -->
                 <div class="relative w-full sm:w-48">
-                    <select
+                    <select id="appStatusSelect"
                         class="appearance-none bg-blue-100 text-blue-800 px-5 py-3 rounded-full text-lg font-semibold
         shadow-sm hover:bg-blue-200 transition w-full
         border-0 outline-none focus:outline-none focus-visible:outline-none focus:ring-0">
-                        <option value="" disabled selected>Status</option>
+                        <option value="" selected>Status</option>
                         <option value="pending">Pending</option>
                         <option value="reviewed">Reviewed</option>
                         <option value="approved">Approved</option>
@@ -95,11 +95,11 @@
 
                 <!-- Date Dropdown -->
                 <div class="relative w-full sm:w-48">
-                    <select
+                    <select id="appDateSelect"
                         class="appearance-none bg-blue-100 text-blue-800 px-5 py-3 rounded-full text-lg
                        font-semibold shadow-sm hover:bg-blue-200 transition 
                        w-full focus:outline-none focus:ring-0 border-none focus-visible:outline-none">
-                        <option value="" disabled selected>Date</option>
+                        <option value="" selected>Date</option>
                         <option value="today">Today</option>
                         <option value="this_week">This Week</option>
                         <option value="this_month">This Month</option>
@@ -117,109 +117,146 @@
         </div>
     </section>
 
-    <!-- JOB APPLICATION CARD  -->
-    <section class="max-w-6xl mx-auto mt-8 px-6 space-y-8 mb-16">
-
-        <!-- Application Card -->
-        <div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">
-            <div class="p-6">
-                <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                    Job Role
-                </h3>
-                <p class="mt-2 text-lg text-gray-700">Company Name</p>
-                <p class="mt-2 text-lg text-gray-700 flex items-center gap-2">
-                  <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/>
-                  Location
-                </p>
-               <p class="mt-4 text-base text-gray-700 flex items-center gap-2">
-                <img src="https://img.icons8.com/color/48/calendar--v1.png" class="w-6 h-6"/>
-                <span>Date Applied: Aug 0, 2025</span>
-              </p>
-            </div>
-
-            <!-- Application Progress -->
-            <div class="bg-green-50 border-t-4 border-green-300 px-8 py-10">
-
-                <h2 class="text-xl font-semibold text-black text-center mb-10">
-                    Application Progress
-                </h2>
-
-                <!-- Steps -->
-                <div class="flex items-center justify-between w-full max-w-3xl mx-auto">
-
-                    <!-- In Progress (Active Step) -->
-                    <div class="flex flex-col items-center">
-                        <div
-                            class="w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-green-500" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                    d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <p class="mt-3 text-green-700 font-semibold text-sm">In Progress</p>
-                        <p class="text-xs text-gray-500">Aug 25</p>
-                    </div>
-
-                    <!-- Connector Line -->
-                    <div class="h-1 w-12 bg-green-400"></div>
-
-                    <!-- Under Training -->
-                      <div class="flex flex-col items-center opacity-40">
-                        <div
-                            class="w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                    d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <p class="mt-3 text-gray-600 text-sm">Under Training</p>
-                    </div>
-
-                    <!-- Connector Line -->
-                    <div class="h-1 w-12 bg-gray-300"></div>
-
-                    <!-- Under Review -->
-                    <div class="flex flex-col items-center opacity-40">
-                        <div
-                            class="w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                    d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <p class="mt-3 text-gray-600 text-sm">Under Review</p>
-                    </div>
-
-                    <!-- Connector Line -->
-                    <div class="h-1 w-12 bg-gray-300"></div>
-
-                    <!-- Decision -->
-                    <div class="flex flex-col items-center opacity-40">
-                        <div
-                            class="w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-400" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                                    d="M5 13l4 4L19 7" />
-                            </svg>
-                        </div>
-                        <p class="mt-3 text-gray-600 text-sm">Decision</p>
-                    </div>
-
+        <!-- JOB APPLICATIONS LIST -->
+        <section class="max-w-6xl mx-auto mt-8 px-6 mb-16">
+                <div id="applicationsList" class="space-y-8">
+                        <div class="text-center text-gray-500 py-8">Loading applications…</div>
                 </div>
+        </section>
 
-                <!-- Status -->
-                <div class="text-center mt-10">
-                    <p class="text-gray-600 text-sm">Last update: 2 hours ago</p>
-                </div>
+        <script>
+        (function(){
+            const container = document.getElementById('applicationsList');
+            const searchInput = document.getElementById('appSearchInput');
+            const dateSelect = document.getElementById('appDateSelect');
+            const statusSelect = document.getElementById('appStatusSelect');
 
-            </div>
-        </div>
+            const esc = s => String(s === null || s === undefined ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
-    </section>
+            let allApps = [];
+
+            function tryParseDate(v){
+                if (!v) return null;
+                let d = new Date(v);
+                if (!isNaN(d.getTime())) return d;
+                const m = v.match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+                if (m){
+                    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+                }
+                return null;
+            }
+
+            function buildCard(a){
+                const dateApplied = a.created_at ? esc(a.created_at) : 'Unknown';
+                return `\n<div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">\n  <div class="p-6">\n    <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">${esc(a.job_role || 'Job Role')}</h3>\n    <p class="mt-2 text-lg text-gray-700">${esc(a.company_name || 'Company Name')}</p>\n    <p class="mt-2 text-lg text-gray-700 flex items-center gap-2">\n      <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/>\n      ${esc(a.job_address || 'Location')}\n    </p>\n    <p class="mt-4 text-base text-gray-700 flex items-center gap-2">\n      <img src="https://img.icons8.com/color/48/calendar--v1.png" class="w-6 h-6"/>\n      <span>Date Applied: ${dateApplied}</span>\n    </p>\n  </div>\n\n  <div class="bg-green-50 border-t-4 border-green-300 px-8 py-10">\n    <h2 class="text-xl font-semibold text-black text-center mb-10">Application Progress</h2>\n    <div class="flex items-center justify-between w-full max-w-3xl mx-auto">\n      <div class="flex flex-col items-center">\n        <div class="w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" />\n          </svg>\n        </div>\n        <p class=\"mt-3 text-green-700 font-semibold text-sm\">In Progress</p>\n        <p class=\"text-xs text-gray-500\">${dateApplied}</p>\n      </div>\n      <div class=\"h-1 w-12 bg-green-400\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-sm\">Under Training</p>\n      </div>\n      <div class=\"h-1 w-12 bg-gray-300\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-sm\">Under Review</p>\n      </div>\n      <div class=\"h-1 w-12 bg-gray-300\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-sm\">Decision</p>\n      </div>\n    </div>\n    <div class=\"text-center mt-10\"><p class=\"text-gray-600 text-sm\">Last update: ${dateApplied}</p></div>\n  </div>\n</div>`;
+            }
+
+            function renderFiltered(){
+                const q = (searchInput && searchInput.value || '').trim().toLowerCase();
+                const dateFilter = dateSelect ? dateSelect.value : 'all_time';
+                const statusFilter = statusSelect ? statusSelect.value : '';
+
+                let apps = allApps.slice();
+
+                if (q) {
+                    apps = apps.filter(a => {
+                        const hay = ((a.job_role||'') + ' ' + (a.company_name||'') + ' ' + (a.job_address||'') + ' ' + (a.email||'')).toLowerCase();
+                        return hay.indexOf(q) !== -1;
+                    });
+                }
+
+                if (dateFilter && dateFilter !== 'all_time'){
+                    const now = new Date();
+                    apps = apps.filter(a => {
+                        const d = tryParseDate(a.created_at);
+                        if (!d) return false;
+                        const diff = now.getTime() - d.getTime();
+                        if (dateFilter === 'today'){
+                            return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth() && d.getDate() === now.getDate();
+                        } else if (dateFilter === 'this_week'){
+                            return diff <= 7 * 24 * 3600 * 1000;
+                        } else if (dateFilter === 'this_month'){
+                            return diff <= 31 * 24 * 3600 * 1000;
+                        }
+                        return true;
+                    });
+                }
+
+                // Filter by status if selected
+                if (statusFilter) {
+                    const sf = statusFilter.toLowerCase();
+                    apps = apps.filter(a => ((a.status || '').toLowerCase()) === sf);
+                }
+
+                if (!apps || apps.length === 0){
+                    container.innerHTML = `<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded text-center">No applications match your filters.</div>`;
+                    return;
+                }
+
+                container.innerHTML = apps.map(a => buildCard(a)).join('');
+
+                // Insert status badges into rendered cards (post-process to avoid editing the JS template string)
+                (function(){
+                    const nodes = Array.from(container.children || []);
+                    for (let i = 0; i < apps.length && i < nodes.length; i++){
+                        try{
+                            const app = apps[i] || {};
+                            const node = nodes[i];
+                            const p6 = node.querySelector('.p-6');
+                            if (p6){
+                                const badge = document.createElement('p');
+                                badge.className = 'mt-2';
+                                badge.innerHTML = '<span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">Status: ' + esc(app.status || 'Pending') + '</span>';
+                                if (p6.children.length >= 2){
+                                    p6.insertBefore(badge, p6.children[2]);
+                                } else {
+                                    p6.appendChild(badge);
+                                }
+                            }
+                        } catch (e) {
+                            // ignore insertion errors
+                        }
+                    }
+                })();
+            }
+
+            async function fetchAndRender(){
+                try{
+                    container.innerHTML = '<div class="text-center text-gray-500 py-8">Loading applications…</div>';
+                    const res = await fetch('/db/get-applications.php');
+                    const j = await res.json();
+                    if (!j || !j.success){
+                        container.innerHTML = `<div class="p-6 text-center text-red-600">${esc((j && j.error) || 'Failed to load applications')}</div>`;
+                        return;
+                    }
+                    allApps = j.applications || [];
+                    renderFiltered();
+                }catch(err){
+                    container.innerHTML = `<div class="p-6 text-center text-red-600">Error loading applications</div>`;
+                    console.error('load applications error', err);
+                }
+            }
+
+            if (searchInput){
+                searchInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter'){
+                        e.preventDefault();
+                        renderFiltered();
+                    }
+                });
+            }
+            if (dateSelect){
+                dateSelect.addEventListener('change', () => renderFiltered());
+            }
+            if (statusSelect){
+                statusSelect.addEventListener('change', () => renderFiltered());
+            }
+
+            fetchAndRender();
+        })();
+        </script>
 
 
 

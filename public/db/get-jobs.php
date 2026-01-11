@@ -21,6 +21,28 @@ if (!empty($data['user_id'])) {
 // normalize empty -> null
 if ($user_id === '') $user_id = null;
 
+// --- Read optional filter parameters (from JSON body or GET)
+$title = null;
+$location = null;
+$work_env = null;
+$job_type = null;
+if (!empty($data) && is_array($data)) {
+  if (!empty($data['title'])) $title = trim($data['title']);
+  if (!empty($data['location'])) $location = trim($data['location']);
+  if (!empty($data['work_environment'])) $work_env = trim($data['work_environment']);
+  if (!empty($data['job_type'])) $job_type = trim($data['job_type']);
+}
+// Also accept GET params and alternate names used in client code
+if ($title === null && !empty($_GET['title'])) $title = trim($_GET['title']);
+if ($location === null && !empty($_GET['location'])) $location = trim($_GET['location']);
+if ($work_env === null && !empty($_GET['work_environment'])) $work_env = trim($_GET['work_environment']);
+if ($job_type === null) {
+  if (!empty($_GET['job_type'])) $job_type = trim($_GET['job_type']);
+  // client sometimes sends select named 'growth_potential'
+  if ($job_type === null && !empty($data['growth_potential'])) $job_type = trim($data['growth_potential']);
+  if ($job_type === null && !empty($_GET['growth_potential'])) $job_type = trim($_GET['growth_potential']);
+}
+
 $conn = getOracleConnection();
 if (!$conn) {
     http_response_code(500);
@@ -102,8 +124,10 @@ WITH
         jp.COMPANY_NAME,
         jp.JOB_ROLE,
         jp.JOB_DESCRIPTION,
-        jp.ADDRESS,
-        jp.JOB_TYPE,
+          jp.ADDRESS,
+          jp.JOB_TYPE,
+          jp.WORKING_ENVIRONMENT,
+          (SELECT LISTAGG(LOWER(VALUE),' ') WITHIN GROUP (ORDER BY ID) FROM MVSG.JOB_PROFILE jp2 WHERE jp2.JOB_POSTING_ID = jp.ID AND LOWER(jp2.TYPE) IN ('workplace','workplace_preference','work_environment','job_preference','job_positions') AND jp2.VALUE IS NOT NULL) AS JOB_PROFILE_WORKPLACE,
         jp.EMPLOYEE_CAPACITY,
           jp.APPLY_BEFORE,
         1 AS PRIORITY,
@@ -121,8 +145,10 @@ WITH
         jp.COMPANY_NAME,
         jp.JOB_ROLE,
         jp.JOB_DESCRIPTION,
-        jp.ADDRESS,
-        jp.JOB_TYPE,
+          jp.ADDRESS,
+          jp.JOB_TYPE,
+          jp.WORKING_ENVIRONMENT,
+          (SELECT LISTAGG(LOWER(VALUE),' ') WITHIN GROUP (ORDER BY ID) FROM MVSG.JOB_PROFILE jp2 WHERE jp2.JOB_POSTING_ID = jp.ID AND LOWER(jp2.TYPE) IN ('workplace','workplace_preference','work_environment','job_preference','job_positions') AND jp2.VALUE IS NOT NULL) AS JOB_PROFILE_WORKPLACE,
         jp.EMPLOYEE_CAPACITY,
           jp.APPLY_BEFORE,
         2 AS PRIORITY,
@@ -146,11 +172,29 @@ LEFT JOIN content_match cm ON cm.job_id = bj.ID
 LEFT JOIN co_counts cc ON cc.job_id = bj.ID
 LEFT JOIN max_co mc ON 1=1
 WHERE bj.rn = 1
+AND (:title IS NULL OR (LOWER(bj.JOB_ROLE) LIKE :title_like OR LOWER(bj.JOB_DESCRIPTION) LIKE :title_like))
+AND (:location IS NULL OR LOWER(bj.ADDRESS) LIKE :location_like)
+AND (:work_env IS NULL OR LOWER(NVL(bj.WORKING_ENVIRONMENT,'')) LIKE :work_env_like OR LOWER(bj.JOB_ROLE) LIKE :work_env_like)
+AND (:job_type IS NULL OR LOWER(bj.JOB_TYPE) LIKE :job_type_like)
 ORDER BY bj.PRIORITY, bj.JOB_POST_DATE DESC
 ";
 
 $stid = oci_parse($conn, $sql);
 oci_bind_by_name($stid, ':user_id', $user_id, -1);
+// Prepare and bind filter values (use lowercase LIKE patterns)
+$title_like = $title !== null && $title !== '' ? '%' . strtolower($title) . '%' : null;
+$location_like = $location !== null && $location !== '' ? '%' . strtolower($location) . '%' : null;
+$work_env_like = $work_env !== null && $work_env !== '' ? '%' . strtolower($work_env) . '%' : null;
+$job_type_like = $job_type !== null && $job_type !== '' ? '%' . strtolower($job_type) . '%' : null;
+
+oci_bind_by_name($stid, ':title', $title, -1);
+oci_bind_by_name($stid, ':title_like', $title_like, -1);
+oci_bind_by_name($stid, ':location', $location, -1);
+oci_bind_by_name($stid, ':location_like', $location_like, -1);
+oci_bind_by_name($stid, ':work_env', $work_env, -1);
+oci_bind_by_name($stid, ':work_env_like', $work_env_like, -1);
+oci_bind_by_name($stid, ':job_type', $job_type, -1);
+oci_bind_by_name($stid, ':job_type_like', $job_type_like, -1);
 if (!@oci_execute($stid)) {
     $e = oci_error($stid) ?: oci_error($conn);
     http_response_code(500);
@@ -165,21 +209,25 @@ while ($row = oci_fetch_assoc($stid)) {
 
     // Fetch skills from JOB_PROFILE
     $profileSql = "
-        SELECT VALUE, TYPE
-        FROM MVSG.JOB_PROFILE
-        WHERE JOB_POSTING_ID = :job_id
-          AND VALUE IS NOT NULL
-          AND TYPE IN ('skills','job-position','role')
+      SELECT VALUE, TYPE
+      FROM MVSG.JOB_PROFILE
+      WHERE JOB_POSTING_ID = :job_id
+        AND VALUE IS NOT NULL
+        AND LOWER(TYPE) IN ('skills','job-position','role','workplace','workplace_preference','work_environment','job_positions','job_preference')
     ";
     $pstid = oci_parse($conn, $profileSql);
     oci_bind_by_name($pstid, ':job_id', $jobId, -1);
     oci_execute($pstid);
 
     $skills = []; $jobTypes = [];
+    $workplaces = [];
     while ($p = oci_fetch_assoc($pstid)) {
         $type = strtolower($p['TYPE'] ?? '');
         if (strpos($type, 'role') !== false || $type === 'job-position') $jobTypes[] = $p['VALUE'];
         elseif ($type === 'skills') $skills[] = $p['VALUE'];
+      elseif (strpos($type, 'work') !== false || strpos($type, 'workplace') !== false || strpos($type, 'job_preference') !== false || strpos($type,'job_positions') !== false) {
+        $workplaces[] = $p['VALUE'];
+      }
     }
     oci_free_statement($pstid);
 
@@ -233,6 +281,9 @@ while ($row = oci_fetch_assoc($stid)) {
         'description'           => $row['JOB_DESCRIPTION'] ?? '',
         'address'               => $row['ADDRESS'] ?? null,
         'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),
+        // prefer JOB_PROFILE aggregated values, else use JOB table WORKING_ENVIRONMENT
+        'job_profile_workplace' => $row['JOB_PROFILE_WORKPLACE'] ?? null,
+        'work_environment'      => !empty($workplaces) ? implode(', ', $workplaces) : ($row['JOB_PROFILE_WORKPLACE'] ?? ($row['WORKING_ENVIRONMENT'] ?? null)),
         'skills'                => $skills,
       'openings'              => $row['EMPLOYEE_CAPACITY'] ?? null,
       'apply_before'          => isset($row['APPLY_BEFORE']) ? $row['APPLY_BEFORE'] : null,

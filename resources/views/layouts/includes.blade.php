@@ -53,9 +53,9 @@
             Assessment Progress
           </a> -->
 
-          <a href="{{ route('whythisjob') }}"
-            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition {{ Request::routeIs('whythisjob') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
-            Why this Job 
+          <a href="{{ route('my.job.applications') }}"
+            class="nav-link px-6 py-3 border-4 border-blue-600 rounded-3xl text-base sm:text-lg font-semibold shadow-md transition {{ Request::routeIs('my.job.applications') ? 'bg-blue-700 text-white font-bold' : 'bg-white text-gray-900 hover:bg-blue-50' }}">
+            My Job Applications
           </a>
         </nav>
 
@@ -77,8 +77,7 @@
             <a href="{{ route('viewprofile1') }}"
               class="w-full text-left block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">View Profile</a>
 
-            <a href="{{ route('my.job.applications') }}"
-              class="w-full text-left block px-4 py-3 text-base hover:bg-blue-50 rounded-b-xl">My Job Applications</a>
+            <!-- 'My Job Applications' moved to main navbar -->
 
             <form method="POST" action="{{ route('logout') }}">
               @csrf
@@ -98,8 +97,8 @@
         -->
           <a href="{{ route('career.goals.progress') }}"  
           class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Assessment Progress</a>
-        <a href="{{ route('why.this.job.1') }}"
-          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">Why this Job & How to Get there</a>
+        <a href="{{ route('my.job.applications') }}"
+          class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 transition text-center">My Job Applications</a>
 
         <button id="profileButtonMobile"
           class="nav-link w-11/12 px-6 py-3 border-4 border-blue-600 rounded-3xl text-base font-semibold bg-white text-gray-900 shadow-md hover:bg-blue-50 flex justify-center items-center gap-2 transition">
