@@ -589,3 +589,60 @@
 </body>
 
 </html>
+
+<script>
+// Restore skills selections when returning to this page. Runs immediately if page already loaded.
+(function(){
+    function doRestore(){
+        try{
+            const hidden = document.getElementById('skills_page1');
+            if (!hidden) return;
+            let arr = [];
+
+            // Prefer hidden value first
+            try {
+                const v = (hidden.value || '').trim();
+                if (v) {
+                    if ((v.startsWith('[') && v.endsWith(']')) || (v.startsWith('{') && v.endsWith('}'))) arr = JSON.parse(v) || [];
+                    else if (v.indexOf(',') !== -1) arr = v.split(',').map(s=>s.trim()).filter(Boolean);
+                    else if (v) arr = [v];
+                }
+            } catch(e) { arr = []; }
+
+            // Fallback to localStorage keys (include current and legacy names)
+            if (!arr.length) {
+                const keys = ['skills_page1','skills1_selected','skills','selected_skills','selectedSkills'];
+                for (const k of keys) {
+                    try {
+                        const raw = localStorage.getItem(k);
+                        if (!raw) continue;
+                        let parsed = [];
+                        if (String(raw).trim().startsWith('[')) parsed = JSON.parse(raw || '[]');
+                        else if (String(raw).indexOf(',') !== -1) parsed = String(raw).split(',').map(s=>s.trim()).filter(Boolean);
+                        else parsed = [String(raw).trim()];
+                        if (parsed && parsed.length) { arr = parsed; break; }
+                    } catch(e) { arr = []; }
+                }
+            }
+
+            arr = Array.isArray(arr) ? Array.from(new Set(arr.map(x=>String(x||'').trim()).filter(Boolean))) : [];
+            if (!arr.length) return;
+
+            // write normalized value back to hidden
+            hidden.value = JSON.stringify(arr);
+
+            // apply selection to cards (match data-value or h3 text, case-insensitive)
+            const lc = arr.map(s => s.toLowerCase());
+            document.querySelectorAll('.skills-card').forEach(card => {
+                try{
+                    const v = (card.getAttribute('data-value') || '').trim();
+                    const title = (card.querySelector('h3')?.textContent || '').trim();
+                    const matched = (v && lc.includes(v.toLowerCase())) || (title && lc.includes(title.toLowerCase()));
+                    if (matched) card.classList.add('selected'); else card.classList.remove('selected');
+                }catch(e){}
+            });
+        } catch (e) { console.warn('skills restore failed', e); }
+    }
+    if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', doRestore); else doRestore();
+})();
+</script>

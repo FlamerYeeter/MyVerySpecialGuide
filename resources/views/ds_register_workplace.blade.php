@@ -482,3 +482,33 @@
 </body>
 
 </html>
+
+<script>
+// Restore workplace choices when returning to this page. Runs immediately if page already loaded.
+(function(){
+    function doRestore(){
+        try{
+            const hidden = document.getElementById('workplace_choices');
+            const raw = localStorage.getItem('workplace') || localStorage.getItem('workplace_choices') || (hidden ? hidden.value : '');
+            let arr = [];
+            if (raw) {
+                try { arr = JSON.parse(raw || '[]'); } catch(e) {
+                    arr = String(raw).trim().startsWith('[') ? JSON.parse(raw) : String(raw).split(',').map(s=>s.trim()).filter(Boolean);
+                }
+            }
+            arr = Array.isArray(arr) ? Array.from(new Set(arr)) : [];
+            if (hidden) hidden.value = JSON.stringify(arr);
+
+            document.querySelectorAll('.workplace-card').forEach(card => {
+                try {
+                    const onclickAttr = card.getAttribute('onclick') || '';
+                    const m = onclickAttr.match(/'([^']+)'/);
+                    const value = m ? m[1] : (card.getAttribute('data-value') || (card.querySelector('h3')?.textContent || '').trim());
+                    if (value && arr.includes(value)) card.classList.add('selected'); else card.classList.remove('selected');
+                } catch(e) {}
+            });
+        } catch (e) { console.warn('workplace restore failed', e); }
+    }
+    if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', doRestore); else doRestore();
+})();
+</script>

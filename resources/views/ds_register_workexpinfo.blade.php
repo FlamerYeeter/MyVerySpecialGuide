@@ -393,17 +393,6 @@
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">More than 3 years</h3>
                 </div>
-
-                <!-- Card 4 -->
-                <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkYearsChoice(this, 'none')">
-                    <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="None" data-tts-tl="Wala" aria-label="Play audio for None option">🔊</button>
-                    <img src="image/workyr4.png" alt="no experience"
-                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">None</h3>
-                </div>
             </div>
 
             <!-- top-level typed start year removed per UX request — per-job start_year remains editable -->
@@ -1097,3 +1086,87 @@
 </body>
 
 </html>
+
+<script>
+// Restore work experience form state when user returns to this page.
+// This runs immediately if the document has already loaded.
+(function() {
+    function doRestore() {
+        try {
+            // Work type: accept multiple possible storage keys used in this app.
+            const hiddenWorkType = document.getElementById('work_type');
+            const rawWork = localStorage.getItem('work_type') || localStorage.getItem('selected_work_experience') || localStorage.getItem('selected_work_experience') || (hiddenWorkType ? hiddenWorkType.value : '');
+            let workArr = [];
+            if (rawWork) {
+                try {
+                    workArr = String(rawWork).trim().startsWith('[') ? JSON.parse(rawWork) : String(rawWork).split(',').map(s=>s.trim()).filter(Boolean);
+                } catch (e) { workArr = []; }
+            }
+            // normalize and write back
+            workArr = Array.isArray(workArr) ? Array.from(new Set(workArr)) : [];
+            if (hiddenWorkType) hiddenWorkType.value = JSON.stringify(workArr);
+            document.querySelectorAll('.workexp-card').forEach(c => {
+                try {
+                    const v = c.dataset && c.dataset.value ? c.dataset.value : '';
+                    if (v && workArr.includes(v)) c.classList.add('selected'); else c.classList.remove('selected');
+                    if (workArr.includes('none')) {
+                        if (v !== 'none') c.classList.add('disabled');
+                    } else {
+                        c.classList.remove('disabled');
+                    }
+                } catch (e) {}
+            });
+
+            // Work years: accept legacy key 'selected_work_year' or 'work_years'
+            const hiddenWorkYears = document.getElementById('work_years');
+            const rawYears = localStorage.getItem('work_years') || localStorage.getItem('selected_work_year') || (hiddenWorkYears ? hiddenWorkYears.value : '');
+            if (rawYears) {
+                try { if (hiddenWorkYears) hiddenWorkYears.value = rawYears; } catch (e) {}
+                document.querySelectorAll('.workyr-card').forEach(c => {
+                    try {
+                        // prefer data-value; fallback to parsing onclick handler for codes like 'lt1', '1-2', 'gt3'
+                        let dv = '';
+                        if (c.dataset && c.dataset.value) dv = c.dataset.value;
+                        else {
+                            const onclickAttr = c.getAttribute('onclick') || '';
+                            const m = onclickAttr.match(/selectWorkYearsChoice\(this,\s*'([^']+)'\)/);
+                            if (m && m[1]) dv = m[1];
+                        }
+                        if (dv === rawYears) c.classList.add('selected'); else c.classList.remove('selected');
+                    } catch (e) {}
+                });
+            }
+
+            // Job experiences: accept 'work_experiences' or legacy 'job_experiences'
+            const hiddenJobs = document.getElementById('work_experiences');
+            const rawJobs = localStorage.getItem('work_experiences') || localStorage.getItem('job_experiences') || (hiddenJobs ? hiddenJobs.value : '');
+            if (rawJobs) {
+                let arr = [];
+                try { arr = JSON.parse(rawJobs || '[]'); } catch (e) { arr = []; }
+                if (Array.isArray(arr) && arr.length) {
+                    // map legacy 'year' -> 'start_year' so the renderer fills the per-job Work Year input
+                    arr = arr.map(it => {
+                        if (it && !it.start_year && (it.year || it.y)) {
+                            try { return Object.assign({}, it, { start_year: it.year || it.y }); } catch (e) { return it; }
+                        }
+                        return it;
+                    });
+                    if (window.renderWorkExperiencesFromArray) {
+                        try { window.renderWorkExperiencesFromArray(arr); } catch (e) { console.warn('renderWorkExperiencesFromArray failed', e); }
+                    } else {
+                        try { if (hiddenJobs) hiddenJobs.value = JSON.stringify(arr); } catch (e) {}
+                        try { if (window.syncWorkExperiencesFromUI) window.syncWorkExperiencesFromUI(); } catch (e) {}
+                    }
+                }
+            }
+
+            // ensure dependent UI state updates
+            try { if (typeof updateWorkExpState === 'function') updateWorkExpState(); } catch (e) {}
+
+        } catch (e) { console.warn('workexp restore failed', e); }
+    }
+
+    if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', doRestore);
+    else doRestore();
+})();
+</script>

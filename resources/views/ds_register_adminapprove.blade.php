@@ -512,6 +512,64 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
   if (!fileInput) return;
 
+        // remember original label text so resetDisplay can restore it
+        try { if (labelEl && typeof labelEl.dataset !== 'undefined') labelEl.dataset.original = labelEl.textContent || labelEl.dataset.original || 'Upload File'; } catch(e){}
+
+        // determine storage keys for this input (used both on change and on init)
+        let nameKey, dataKey, typeKey;
+        if (inputId === 'proofFile') {
+            nameKey = 'admin_uploaded_proof_name';
+            dataKey = 'admin_uploaded_proof_data';
+            typeKey = 'admin_uploaded_proof_type';
+        } else {
+            nameKey = 'admin_uploaded_med_name';
+            dataKey = 'admin_uploaded_med_data';
+            typeKey = 'admin_uploaded_med_type';
+        }
+
+        // If storage already contains a previously-uploaded file, render its preview on init
+        try {
+            const storedName = localStorage.getItem(nameKey);
+            const storedData = localStorage.getItem(dataKey);
+            const storedType = localStorage.getItem(typeKey);
+            if (storedName && storedData) {
+                const ext = (storedName.split('.').pop() || '').toLowerCase();
+                const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️'
+                                     : ext === 'pdf' ? '📄'
+                                     : '📁';
+
+                // show display block
+                display.innerHTML = `
+                    <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${icon}</span>
+                            <span class="text-sm text-gray-700 truncate max-w-[200px]">${storedName}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+                            <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
+                        </div>
+                    </div>
+                `;
+
+                // view uses storedData (data URL) as the source
+                const viewBtn = display.querySelector('.viewBtn');
+                const removeBtn = display.querySelector('.removeBtn');
+                if (viewBtn) viewBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(storedData, ext); });
+                if (removeBtn) removeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    resetDisplay();
+                    try { fileInput.value = ''; } catch(e){}
+                    localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey);
+                    // also run legacy cleanup
+                    try { cleanupUploadedFileByName(storedName); } catch(e){}
+                });
+
+                if (labelEl) { labelEl.textContent = 'File Uploaded:'; }
+                if (hintEl) { hintEl.style.display = 'none'; }
+            }
+        } catch(e){}
+
   // --------------------------------------------------------------------
   // ⭐ Robust cleanup helper (your requested fix)
   // --------------------------------------------------------------------
@@ -1451,6 +1509,105 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         });
     })();
 </script>
+
+            <!-- Ensure persisted sensitive fields and upload previews are restored after page load -->
+            <script>
+            window.addEventListener('load', function() {
+                try {
+                    const raw = localStorage.getItem('rpi_personal1') || sessionStorage.getItem('rpi_personal1');
+                    if (raw) {
+                        let parsed = {};
+                        try { parsed = JSON.parse(raw); } catch(e) { parsed = raw; }
+                        const pwd = parsed && parsed.password ? parsed.password : '';
+                        if (pwd) {
+                            const p = document.getElementById('password');
+                            const c = document.getElementById('confirmPassword');
+                            if (p) p.value = pwd;
+                            if (c) c.value = pwd;
+                            // trigger validation UI updates
+                            try { p.dispatchEvent(new Event('input')); c.dispatchEvent(new Event('input')); } catch(e){}
+                        }
+                    }
+                } catch(e){}
+
+                // re-run upload initializers to render stored uploads (this is safe; setupUpload checks storage on init)
+                try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); } } catch(e){}
+            });
+            </script>
+
+            <!-- Comprehensive restore: fill all form fields from saved draft/localStorage -->
+            <script>
+            window.addEventListener('load', function() {
+                try {
+                    const raw = localStorage.getItem('rpi_personal1') || sessionStorage.getItem('rpi_personal1');
+                    if (!raw) return;
+                    let parsed;
+                    try { parsed = JSON.parse(raw); } catch(e) { parsed = raw; }
+                    // support wrapped { data: {...} }
+                    if (parsed && parsed.data) parsed = parsed.data;
+
+                    const p = parsed.personal || parsed.personalInfo || parsed || {};
+
+                    function safeSet(id, val) {
+                        try {
+                            if (val === undefined || val === null) return;
+                            const el = document.getElementById(id);
+                            if (!el) return;
+                            if (el.tagName === 'SELECT') {
+                                // try to match by value or by visible text
+                                const wanted = String(val || '').trim();
+                                if (!wanted) return;
+                                let matched = false;
+                                for (const opt of el.options) {
+                                    if (String(opt.value || '').trim().toLowerCase() === wanted.toLowerCase()) { el.value = opt.value; matched = true; break; }
+                                }
+                                if (!matched) {
+                                    for (const opt of el.options) {
+                                        if (String(opt.textContent || '').trim().toLowerCase() === wanted.toLowerCase()) { el.value = opt.value; break; }
+                                    }
+                                }
+                            } else {
+                                el.value = val;
+                            }
+                            // fire input/change so other handlers pick it up
+                            try { el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); } catch(e){}
+                        } catch(e){}
+                    }
+
+                    // common personal fields
+                    safeSet('first_name', p.firstName || p.first_name || p.first || p.fname || '');
+                    safeSet('last_name', p.lastName || p.last_name || p.last || p.lname || '');
+                    safeSet('age', p.age || '');
+                    safeSet('email', p.email || '');
+                    safeSet('phone', p.phone || p.mobile || '');
+                    safeSet('address', p.address || '');
+                    safeSet('username', parsed.username || p.username || '');
+
+                    // dsType if present
+                    const dsVal = parsed.dsType || parsed.ds_type || p.dsType || p.ds_type || parsed.r_dsType || '';
+                    if (dsVal) safeSet('dsType', dsVal);
+
+                    // guardian
+                    safeSet('guardian_first', (parsed.guardian_first || p.guardian_first || p.guardian_first_name || ''));
+                    safeSet('guardian_last', (parsed.guardian_last || p.guardian_last || p.guardian_last_name || ''));
+                    safeSet('guardian_email', (parsed.guardian_email || p.guardian_email || ''));
+                    safeSet('guardian_phone', (parsed.guardian_phone || p.guardian_phone || ''));
+                    safeSet('guardian_relationship', (parsed.guardian_relationship || p.guardian_relationship || p.relationship || ''));
+
+                    // password + confirm
+                    const pwd = parsed.password || p.password || '';
+                    if (pwd) {
+                        safeSet('password', pwd);
+                        safeSet('confirmPassword', pwd);
+                    }
+
+                    // If uploads stored under admin keys, ensure previews are initialized by re-calling setupUpload
+                    try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); } } catch(e){}
+                } catch(e) {
+                    console.warn('[restore] could not apply draft', e);
+                }
+            });
+            </script>
 
 </body>
 

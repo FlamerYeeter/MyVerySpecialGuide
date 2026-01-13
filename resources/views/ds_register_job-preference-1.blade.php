@@ -681,6 +681,35 @@
             }
         });
     </script>
-</body>
+        <script>
+        // Restore job preference selections when returning to this page.
+        // Runs immediately if the document has already loaded.
+        (function(){
+            function doRestore(){
+                try{
+                    const hidden = document.getElementById('jobpref1');
+                    const raw = localStorage.getItem('jobPreferences') || localStorage.getItem('jobpref1') || localStorage.getItem('jobpref') || (hidden ? hidden.value : '');
+                    let arr = [];
+                    if (raw) {
+                        try { arr = JSON.parse(raw || '[]'); } catch(e) {
+                            arr = String(raw).split(',').map(s=>s.trim()).filter(Boolean);
+                        }
+                    }
+                    arr = Array.isArray(arr) ? Array.from(new Set(arr.map(x=>String(x||'').trim()).filter(Boolean))) : [];
+                    if (hidden) hidden.value = JSON.stringify(arr);
 
-</html>
+                    document.querySelectorAll('.jobpref-card').forEach(card => {
+                        try {
+                            const v = (card.getAttribute('data-value') || '').trim();
+                            if (v && arr.includes(v)) card.classList.add('selected'); else card.classList.remove('selected');
+                        } catch(e) {}
+                    });
+                } catch (e) { console.warn('jobpref restore failed', e); }
+            }
+            if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', doRestore); else doRestore();
+        })();
+        </script>
+
+    </body>
+
+    </html>

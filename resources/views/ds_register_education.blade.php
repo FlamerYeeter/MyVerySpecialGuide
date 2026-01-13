@@ -1200,3 +1200,90 @@ document.addEventListener('DOMContentLoaded', function(){
 </body>
 
 </html>
+
+<script>
+// Restore education form state when user returns to this page
+window.addEventListener('DOMContentLoaded', function() {
+    try {
+        const edu_level = localStorage.getItem('edu_level');
+        const school_name = localStorage.getItem('school_name');
+        const review_certs = localStorage.getItem('review_certs');
+        const certs_json = localStorage.getItem('education_certificates');
+
+        if (edu_level) {
+            const el = document.getElementById('edu_level');
+            if (el) { el.value = edu_level; el.dispatchEvent(new Event('change', { bubbles: true })); }
+        }
+        // Restore visual selection on education cards
+        try {
+            const v = (edu_level || '').toString();
+            if (v) {
+                // attempts: attribute data-edu, data-value, id, or matching label text inside .education-card
+                let found = null;
+                found = document.querySelector('.education-card[data-edu="' + v + '"]') || document.querySelector('.education-card[data-value="' + v + '"]') || document.getElementById('edu_' + v.replace(/\s+/g,'_'));
+                if (!found) {
+                    document.querySelectorAll('.education-card').forEach(c => {
+                        try {
+                            const txt = (c.textContent||'').trim().toLowerCase();
+                            if (txt && txt.indexOf(v.toLowerCase()) !== -1) found = found || c;
+                        } catch(e){}
+                    });
+                }
+                if (found) {
+                    document.querySelectorAll('.education-card').forEach(c => c.classList.remove('selected'));
+                    found.classList.add('selected');
+                }
+            }
+        } catch(e) { console.debug('could not restore education card selection', e); }
+        if (school_name) {
+            const s = document.getElementById('school_name');
+            if (s) { s.value = school_name; s.dispatchEvent(new Event('input', { bubbles: true })); }
+        }
+
+        if (review_certs) {
+            const radio = document.querySelector('input[name="certs"][value="' + review_certs + '"]');
+            if (radio) {
+                radio.checked = true;
+                radio.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        }
+
+        if (certs_json) {
+            try {
+                const arr = JSON.parse(certs_json || '[]');
+                if (Array.isArray(arr) && arr.length) {
+                    // put canonical data into hidden field so existing certificate UI code picks it up
+                    const hidden = document.getElementById('certificates');
+                    if (hidden) hidden.value = JSON.stringify(arr);
+
+                    // if the certificate UI builder already exists, rebuild the UI entries to reflect saved data
+                    setTimeout(() => {
+                        try {
+                            const container = document.getElementById('certs_container');
+                            const tpl = document.getElementById('cert_template');
+                            if (!container || !tpl) return;
+                            // clear existing
+                            container.innerHTML = '';
+                            arr.forEach(item => {
+                                const node = tpl.content.firstElementChild.cloneNode(true);
+                                const nameEl = node.querySelector('input[name="certificate_name"]');
+                                const issuedEl = node.querySelector('input[name="issued_by"]');
+                                const dateEl = node.querySelector('input[name="date_completed"]');
+                                const descEl = node.querySelector('input[name="training_description"]');
+                                if (nameEl) nameEl.value = item.certificate_name || item.name || item.title || '';
+                                if (issuedEl) issuedEl.value = item.issued_by || item.issuer || '';
+                                if (dateEl) dateEl.value = item.date_completed || item.date || '';
+                                if (descEl) descEl.value = item.training_description || item.description || '';
+                                container.appendChild(node);
+                            });
+                            // notify sync handlers
+                            container.querySelectorAll('input').forEach(i => i.dispatchEvent(new Event('input', { bubbles: true })));
+                        } catch (e) { console.warn('cert restore failed', e); }
+                    }, 50);
+                }
+            } catch (e) { console.warn('invalid education_certificates', e); }
+        }
+
+    } catch (e) { console.warn('education restore failed', e); }
+});
+</script>
