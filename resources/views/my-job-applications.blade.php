@@ -34,19 +34,19 @@
     <section class="max-w-6xl mx-auto mt-10 px-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
         <div class="bg-[#FFF6E5] border-4 border-[#FFD27F] rounded-3xl shadow-md p-6">
             <img src="https://img.icons8.com/emoji/48/hourglass-not-done.png" alt="Pending Icon" class="mx-auto mb-2">
-            <h3 class="text-4xl font-extrabold text-[#D78203]">-</h3>
+            <h3 class="text-4xl font-extrabold text-[#D78203]"><span id="statPendingCount">-</span></h3>
             <p class="text-lg font-semibold text-gray-800 mt-1">In Progress</p>
         </div>
 
         <div class="bg-[#E9FFE9] border-4 border-[#8BE18B] rounded-3xl shadow-md p-6">
             <img src="https://img.icons8.com/emoji/48/check-mark-emoji.png" alt="Review Icon" class="mx-auto mb-2">
-            <h3 class="text-4xl font-extrabold text-[#1F8B24]">-</h3>
+            <h3 class="text-4xl font-extrabold text-[#1F8B24]"><span id="statReviewedCount">-</span></h3>
             <p class="text-lg font-semibold text-gray-800 mt-1">Under Review</p>
         </div>
 
         <div class="bg-[#E8F3FF] border-4 border-[#7FBFFF] rounded-3xl shadow-md p-6">
             <img src="https://img.icons8.com/emoji/48/file-folder-emoji.png" alt="Applications Icon" class="mx-auto mb-2">
-            <h3 class="text-4xl font-extrabold text-[#007BFF]">-</h3>
+            <h3 class="text-4xl font-extrabold text-[#007BFF]"><span id="statTotalCount">-</span></h3>
             <p class="text-lg font-semibold text-gray-800 mt-1">Total Applications</p>
         </div>
     </section>
@@ -145,11 +145,35 @@
                 if (m){
                     return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
                 }
+                // Handle formats like "11-JAN-26" or "11-JAN-2026" (day-monthAbbrev-year)
+                const m2 = v.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3,})[-\/ ](\d{2,4})/);
+                if (m2){
+                    const day = Number(m2[1]);
+                    const mon = m2[2].toLowerCase().slice(0,3);
+                    const monthMap = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+                    const rawYear = Number(m2[3]);
+                    const year = rawYear < 100 ? (2000 + rawYear) : rawYear;
+                    const monthIdx = monthMap[mon] !== undefined ? monthMap[mon] : 0;
+                    return new Date(year, monthIdx, day);
+                }
                 return null;
             }
 
+            // Format a Date or date-string into "Month day, Year" (e.g. January 11, 2026)
+            function formatNiceDate(v){
+                if (!v) return 'Unknown';
+                const d = (v instanceof Date) ? v : tryParseDate(v);
+                if (!d) return esc(v || 'Unknown');
+                const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+            }
+
             function buildCard(a){
-                const dateApplied = a.created_at ? esc(a.created_at) : 'Unknown';
+                const dateApplied = (function(){
+                    if (!a || !a.created_at) return 'Unknown';
+                    const d = tryParseDate(a.created_at);
+                    return d ? esc(formatNiceDate(d)) : esc(a.created_at || 'Unknown');
+                })();
                 return `\n<div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">\n  <div class="p-6">\n    <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">${esc(a.job_role || 'Job Role')}</h3>\n    <p class="mt-2 text-lg text-gray-700">${esc(a.company_name || 'Company Name')}</p>\n    <p class="mt-2 text-lg text-gray-700 flex items-center gap-2">\n      <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/>\n      ${esc(a.job_address || 'Location')}\n    </p>\n    <p class="mt-4 text-base text-gray-700 flex items-center gap-2">\n      <img src="https://img.icons8.com/color/48/calendar--v1.png" class="w-6 h-6"/>\n      <span>Date Applied: ${dateApplied}</span>\n    </p>\n  </div>\n\n  <div class="bg-green-50 border-t-4 border-green-300 px-8 py-10">\n    <h2 class="text-xl font-semibold text-black text-center mb-10">Application Progress</h2>\n    <div class="flex items-center justify-between w-full max-w-3xl mx-auto">\n      <div class="flex flex-col items-center">\n        <div class="w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" />\n          </svg>\n        </div>\n        <p class=\"mt-3 text-green-700 font-semibold text-sm\">In Progress</p>\n        <p class=\"text-xs text-gray-500\">${dateApplied}</p>\n      </div>\n      <div class=\"h-1 w-12 bg-green-400\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-sm\">Under Training</p>\n      </div>\n      <div class=\"h-1 w-12 bg-gray-300\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-sm\">Under Review</p>\n      </div>\n      <div class=\"h-1 w-12 bg-gray-300\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-sm\">Decision</p>\n      </div>\n    </div>\n    <div class=\"text-center mt-10\"><p class=\"text-gray-600 text-sm\">Last update: ${dateApplied}</p></div>\n  </div>\n</div>`;
             }
 
@@ -231,8 +255,20 @@
                         container.innerHTML = `<div class="p-6 text-center text-red-600">${esc((j && j.error) || 'Failed to load applications')}</div>`;
                         return;
                     }
-                    allApps = j.applications || [];
-                    renderFiltered();
+                        allApps = j.applications || [];
+                        // update stat cards
+                        (function updateStats(apps){
+                            const total = apps.length || 0;
+                            const pending = apps.filter(a => ((a.status||'').toLowerCase()) === 'pending').length;
+                            const reviewed = apps.filter(a => ((a.status||'').toLowerCase()) === 'reviewed').length;
+                            const elTotal = document.getElementById('statTotalCount');
+                            const elPending = document.getElementById('statPendingCount');
+                            const elReviewed = document.getElementById('statReviewedCount');
+                            if (elTotal) elTotal.textContent = total;
+                            if (elPending) elPending.textContent = pending;
+                            if (elReviewed) elReviewed.textContent = reviewed;
+                        })(allApps);
+                        renderFiltered();
                 }catch(err){
                     container.innerHTML = `<div class="p-6 text-center text-red-600">Error loading applications</div>`;
                     console.error('load applications error', err);
