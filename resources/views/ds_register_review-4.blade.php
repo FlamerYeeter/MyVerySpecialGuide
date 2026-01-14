@@ -79,7 +79,7 @@
         class="tts-btn absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200"
         data-tts-en="You can change your skills by clicking the Change button."
         data-tts-tl="Maaari mong baguhin ang iyong mga kasanayan sa pamamagitan ng pag-click sa button na Change"
-        aria-label="Read instructions aloud in English then Filipino"></button>
+        aria-label="Read instructions aloud in English then Filipino">🔊</button>
     </div>
 
     <!-- Skills Review Section -->

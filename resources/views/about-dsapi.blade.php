@@ -86,10 +86,10 @@
             </div>
         </section>
 
-        <!-- Violet Border -->
+        <!-- Violet Border 
         <div class="relative w-full -mb-14 z-10">
             <img src="{{ asset('image/border5.png') }}" alt="violet border" class="w-full object-cover h-16 md:h-20 block relative z-10">
-        </div>
+        </div> -->
 
     </div>
 @endsection

@@ -89,7 +89,7 @@
                 </div>
             </a>
 
-            <!-- Card 3: Assessment Progress -->
+            <!-- Card 3: Assessment Progress 
               <a href="{{ route('assessment') }}" class="block h-full">
                 <div
                     class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
@@ -105,23 +105,20 @@
                         </div>
                     </div>
                 </div>
-            </a>
+            </a> -->
 
-            <!-- Card 4: Why This Job -->
-            <a href="{{ route('whythisjob') }}" class="block h-full">
+            <!-- Card 4: Job Application -->
+            <a href="{{ route('my.job.applications') }}" class="block h-full">
                 <div
                     class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
                     <div class="flex items-center gap-5">
                         <div class="bg-pink-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
-                            <img src="{{ asset('image/brain.png') }}" class="w-14 h-14" alt="">
+                            <img src="{{ asset('image/my-job-app.png') }}" class="w-14 h-14" alt="">
                         </div>
                         <div>
-                            <h4 class="text-[#1E3A8A] font-bold text-2xl">Why This Job</h4>
-                            <p class="text-gray-700 text-lg mt-2">Click here to learn why this job fits you and what steps
-                                can help you prepare for it.</p>
-                            <p class="text-gray-600 italic text-base mt-1">(Pindutin ito upang alamin kung bakit ang
-                                trabahong ito ay akma sa iyo at kung ano ang mga hakbang na makakatulong upang mapaghandaan
-                                ito.)</p>
+                            <h4 class="text-[#1E3A8A] font-bold text-2xl">My Job Applications</h4>
+                            <p class="text-gray-700 text-lg mt-2">Click here to track your application progress and manage your job applications</p>
+                            <p class="text-gray-600 italic text-base mt-1">(Pindutin ito upang i-track ang iyong application progress.)</p>
                         </div>
                     </div>
                 </div>

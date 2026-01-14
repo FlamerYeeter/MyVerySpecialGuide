@@ -72,16 +72,16 @@
         </div>
       </div>
       <button type="button"
-        class="tts-btn absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200"
+        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
         data-tts-en="Please check the boxes below if you agree to the terms of this agreement."
         data-tts-tl="Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito."
-        aria-label="Read agreement instructions aloud in English then Filipino"></button>
+        aria-label="Read agreement instructions aloud in English then Filipino">🔊</button>
     </div>
 
     <!-- Agreement Box -->
     <div class="bg-white rounded-2xl shadow-md p-4 sm:p-6 border border-gray-200 mt-6">
       <h3 class="text-lg sm:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2 text-center sm:text-left">
-        Important Agreements <span class="text-gray-700 text-sm">(Mahalagang Kasunduan)</span>
+        Important Agreements <span class="text-gray-700 text-[18px]">(Mahalagang Kasunduan)</span>
       </h3>
 
       <!-- Agreement 1 -->
@@ -99,7 +99,7 @@
                         class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform flex-shrink-0"
                         data-tts-en="I agree to share my information with employers who are hiring."
                         data-tts-tl="Sumasang-ayon akong ibahagi ang aking impormasyon sa mga employer na naghahanap ng empleyado."
-                        aria-label="Read agreement 1 aloud in English then Filipino" title="Play Audio"></button>
+                        aria-label="Read agreement 1 aloud in English then Filipino" title="Play Audio">🔊</button>
             </div>
             <p class="text-gray-600 italic text-sm leading-snug mt-1">
               (Sumasang-ayon akong ibahagi ang aking impormasyon sa mga employer na naghahanap ng empleyado.)
@@ -123,7 +123,7 @@
                 class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform flex-shrink-0"
                 data-tts-en="I understand that my information will be kept private and safe."
                 data-tts-tl="Nauunawaan ko na ang aking impormasyon ay papanatilihing pribado at ligtas."
-                aria-label="Read agreement 2 aloud in English then Filipino" title="Play Audio"></button>
+                aria-label="Read agreement 2 aloud in English then Filipino" title="Play Audio">🔊</button>
             </div>
             <p class="text-gray-600 italic text-sm leading-snug mt-1">
               (Nauunawaan ko na ang aking impormasyon ay papanatilihing pribado at ligtas.)
@@ -144,7 +144,7 @@
           class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
           data-tts-en="After creating your account, we will match you with jobs that fit your skills and preferences. You will receive notifications when new opportunities are available."
           data-tts-tl="Pagkatapos gumawa ng iyong account, itutugma ka namin sa mga trabaho na ayon sa iyong kakayahan at kagustuhan. Makakatanggap ka ng notification kapag may bagong trabaho na available."
-          aria-label="Read info aloud in English then Filipino" title="Play Audio"></button>
+          aria-label="Read info aloud in English then Filipino" title="Play Audio">🔊</button>
       </div>
       <p class="mt-2 italic text-gray-700 text-xs sm:text-[13px] leading-relaxed">
         (Sa paglikha ng account, pinapatunayan mong totoo at tama ang impormasyong iyong inilagay at na ikaw ay awtorisadong indibidwal na gumamit ng platform na ito. Ang anumang maling paggamit o pagpapahayag ng hindi 
@@ -156,7 +156,7 @@
   <button
     type="button"
     id="createAccountBtn"
-    class="w-full sm:w-[530px] bg-[#42A5F5] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-[#1E88E5] transition-all duration-200"
+    class="w-full sm:w-[530px] bg-[#2E2EFF] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-blue-700 transition-all duration-200"
   >
     Create Account
   </button>
@@ -178,7 +178,7 @@
       <div class="mb-4 text-5xl">🎉</div>
       <h3 class="text-2xl font-bold mb-2">Account<br/>Successfully Created!</h3>
       <p class="text-gray-700 mb-6">Congratulations! Click OK to proceed to login.</p>
-      <button id="createdModalOk" class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-md transition-all duration-200">Okay</button>
+      <button id="createdModalOk" class="bg-[#2E2EFF] hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-md transition-all duration-200">Okay</button>
     </div>
   </div>
 

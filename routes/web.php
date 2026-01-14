@@ -14,6 +14,10 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+Route::get('/finalstep', function () {
+    return view('ds_register_finalstep');
+})->name('ds_register_finalstep');
+
 // Recommender debug route: optional userId. Visit /recommender/debug or /recommender/debug/{userId}
 Route::get('/recommender/debug/{userId?}', [RecommenderDebugController::class, 'debug'])->name('recommender.debug');
 

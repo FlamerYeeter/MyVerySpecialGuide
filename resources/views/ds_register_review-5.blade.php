@@ -102,7 +102,7 @@
                 class="tts-btn absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200"
                 data-tts-en="You can change your job preference by clicking the Change button."
                 data-tts-tl="Maaari mong baguhin ang iyong mga trabahong gusto sa pamamagitan ng pag-click sa button na Change"
-                aria-label="Read instructions aloud in English then Filipino"></button>
+                aria-label="Read instructions aloud in English then Filipino">🔊</button>
         </div>
 
 
@@ -136,7 +136,7 @@
            hover:bg-green-800 hover:scale-105 transition-transform duration-200"
                 data-tts-en="We use your job preferences to connect you with the right job, but some choices may not be hiring now."
                 data-tts-tl="Gagamitin namin ang iyong piniling trabaho upang mahanap ang angkop na posisyon, ngunit may pagkakataon maaaring walang hiring sa posisyon na ito."
-                aria-label="Read this info aloud in English then Filipino"></button>
+                aria-label="Read this info aloud in English then Filipino">🔊</button>
         </div>
 
         <!-- Job Preferences Section -->

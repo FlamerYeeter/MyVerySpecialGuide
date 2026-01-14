@@ -91,13 +91,13 @@
   <!-- Back Button -->
   <div class="mt-10 flex justify-center w-full px-4">
     <a href="{{ route('login') }}"
-       class="flex items-center justify-center gap-3 bg-blue-500 hover:bg-blue-600 
+       class="flex items-center justify-center gap-3 bg-[#2E2EFF] hover:bg-blue-600 
               text-white font-bold text-lg sm:text-xl py-3 px-10 sm:px-14 rounded-lg 
               shadow-md transition-all w-full sm:w-auto max-w-xs sm:max-w-sm">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" 
-           stroke-width="2.5" stroke="currentColor" class="w-6 h-6 sm:w-7 sm:h-7">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
+            class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
       <span>Back</span>
     </a>
   </div>

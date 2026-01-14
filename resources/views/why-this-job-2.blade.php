@@ -23,7 +23,7 @@
     <img src="{{ asset('image/brain.png') }}" alt="Brain Icon" 
          class="w-24 h-24 mb-3 animate-bounce-slow">
     <h2 class="text-4xl font-extrabold text-white tracking-wide drop-shadow-md">
-      Why This Job Match You?
+      Why this Job Match You?
     </h2>
     <p class="text-lg text-white/90 mt-2 max-w-2xl">
       Discover how your unique skills and interests align with this job role.  
@@ -195,17 +195,16 @@
         <img src="{{ asset('image/nameofjob.png') }}" alt="Job Icon" class="w-12 h-12">
         <h3 id="jobTitle" class="text-3xl font-extrabold text-blue-900">{{ $jobTitle }}</h3>
       </div>
-      <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+       <!-- <div class="flex flex-col sm:flex-row items-start sm:items-center gap-2">
         <span class="text-lg bg-green-200 text-green-900 px-4 py-1 rounded-full font-semibold shadow">
           {{ $matchPercent !== null ? ($matchPercent . '% Match for You') : 'Matched' }}
         </span>
         <span class="text-lg bg-green-300 text-green-900 px-4 py-1 rounded-full font-semibold shadow">
           {{ $matchPercent !== null && $matchPercent >= 75 ? 'Excellent Match' : ($matchPercent !== null && $matchPercent >= 50 ? 'Good Match' : 'Potential Match') }}
         </span>
-      </div>
+      </div>-->
     </div>
 
-    <h4 class="text-2xl font-bold text-blue-900 mt-4">Why this Job Matches You 💡</h4>
     @php $whySentence = $job['why_sentence'] ?? null; @endphp
     @if($whySentence)
       <div class="text-lg text-gray-800 italic mb-3">{{ $whySentence }}</div>
@@ -221,7 +220,7 @@
     
     <!-- Matched Profile Items (from why-this-job.php) -->
     <div class="bg-white rounded-2xl p-4 border-2 border-yellow-100 text-lg text-gray-800 mt-6">
-      <h5 class="text-xl font-semibold text-blue-900 mb-3">Matched Profile Items</h5>
+      <h5 class="text-xl font-semibold text-blue-900 mb-3">Matches based on your profile</h5>
       {{-- Perfect matches (both Job and User) --}}
       @if(!empty($whyData['perfect_matches']))
         <div class="mb-4 p-3 bg-green-50 border border-green-100 rounded">
@@ -324,7 +323,7 @@
 
     <hr class="my-8 border-blue-200">
 
-    <p class="text-blue-900 font-medium text-2xl mb-4">Ideal for You If...</p>
+    <p class="text-blue-900 font-medium text-2xl mb-4">Preferred Candidate</p>
     @if(!empty($whoWeAreLookingFor))
       @if(is_array($whoWeAreLookingFor))
         <ul class="list-disc ml-6 space-y-2">
@@ -341,7 +340,7 @@
   </div>
 </div>
 
-  <!-- Possible You Will Do in this Job -->
+  <!-- Possible You Will Do in this Job 
 <div class="bg-green-100 border-4 border-green-300 rounded-3xl shadow-xl p-12 transition hover:shadow-2xl hover:scale-[1.015] duration-300">
   <div class="flex flex-col sm:flex-row sm:items-center mb-8 space-y-3 sm:space-y-0 sm:space-x-5">
     <img src="{{ asset('image/checkmark.png') }}" alt="Check" class="w-14 h-14">
@@ -376,11 +375,10 @@
     <div class="mt-10 text-center">
       <p class="text-gray-700 italic text-base">*This is a sample preview only — actual tasks will be provided by experts.*</p>
     </div>
-  </div>
+  </div> -->
 
-  <!-- Images -->
+  <!-- Images 
   <div class="flex justify-center gap-8 mt-12 flex-wrap">
-    <!-- Placeholder with icon -->
     <div class="w-64 h-64 rounded-3xl border-2 border-green-300 shadow-lg bg-gradient-to-br from-green-200 to-green-100 flex flex-col items-center justify-center text-green-800 font-semibold text-center space-y-3">
       <svg xmlns="http://www.w3.org/2000/svg" class="w-20 h-20 text-green-700 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v16a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
@@ -413,7 +411,7 @@
       <span class="text-lg">Image 4</span>
     </div>
   </div>
-</div>
+</div> -->
 </section>
 
 <!-- BACK TO TOP BUTTON -->

@@ -206,7 +206,7 @@
                 <div class="flex-1">
                     <h3
                         class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                        Type of Down Syndrome <span class="text-gray-500 text-m">(optional)</span>
+                        Type of Down Syndrome <span class="text-[#4B5258] text-m">(optional)</span>
                     </h3>
                     <p class="text-black-600 text-xs sm:text-sm leading-snug mt-1">
                         You may fill this in if you already have records or a doctor’s assessment that shows your type
@@ -293,9 +293,9 @@
                 <!-- Relationship -->
                 <div class="mt-6">
                     <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">
-                        Relationship to User <span>⭐</span>
+                        Relationship to Account Holder <span>⭐</span>
                     </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa Gagamit</p>
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa May-ari ng Account</p>
                     <select id="guardian_relationship"
                         class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
                         <option value="" disabled selected>Select Relationship</option>
@@ -400,7 +400,7 @@
 <!-- Proof of Membership -->
 <div class="mt-8 text-left px-2 sm:px-4">
   <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-    Proof of Membership
+    Proof of Membership <span class="text-[#4B5258] text-m">(optional)</span>
     <button 
       type="button" 
       class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"

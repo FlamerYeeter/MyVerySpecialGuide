@@ -90,7 +90,7 @@
                     <button type="button" class="tts-btn text-xl hover:scale-110 transition-transform"
                         data-tts-en="Please review your details. Make sure all your information below is correct before going to the next page."
                         data-tts-tl="Siguraduhing tama ang lahat ng impormasyong nakasaad bago lumipat ng pahina."
-                        aria-label="Read this section aloud in English then Filipino"></button>
+                        aria-label="Read this section aloud in English then Filipino">🔊</button>
                 </h2>
                 <p class="text-gray-800 text-sm sm:text-base mt-2">
                     Make sure all your information below is correct before going to the next page.

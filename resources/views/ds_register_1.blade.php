@@ -93,7 +93,7 @@
 
             <!-- Audio Button -->
             <button type="button"
-                class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
                 data-tts-en="We will create your account so we can find jobs that are perfect for you!" data-tts-tl="Tayo ay gagawa ng iyong account upang makahanap ng mga trabahong para sa iyo!">
                 🔊
             </button>
@@ -138,7 +138,7 @@
 
                     <!-- Audio Button -->
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
                         data-tts-en="Enter the required information, then wait for admin approval." data-tts-tl="Ilagay ang impormasyon na kailangan, at hintayin ang kumpirmasyon ng admin bago magpatuloy.">
                         🔊
                     </button>
@@ -157,7 +157,7 @@
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
                         data-tts-en="Set up your profile, first tell us about your education and work experience." data-tts-tl="Ayusin ang iyong profile, una ay ibahagi ang iyong pinag-aralan at karanasan sa trabaho.">
                         🔊
                     </button>
@@ -176,7 +176,7 @@
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
                         data-tts-en="Choose the support you need and the workplace you like." data-tts-tl="Piliin ang suportang kailangan mo at ang uri ng lugar ng trabaho na gusto mo.">
                         🔊
                     </button>
@@ -195,7 +195,7 @@
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
                         data-tts-en="Choose your skills." data-tts-tl="Pumili ng mga kakayahan na meron ka.">
                         🔊
                     </button>
@@ -214,7 +214,7 @@
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
                         data-tts-en="Select the jobs you like." data-tts-tl="Piliin ang mga uri ng trabaho na gusto mo.">
                         🔊
                     </button>
@@ -233,7 +233,7 @@
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
                         data-tts-en="Review your answers and finish." data-tts-tl="I-review ang impormasyong iyong inilagay at tapusin.">
                         🔊
                     </button>
