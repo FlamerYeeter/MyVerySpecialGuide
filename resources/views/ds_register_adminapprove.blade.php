@@ -1235,7 +1235,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             personal: ['first_name','last_name','age','email','phone','address'],
             guardian: ['guardian_first','guardian_last','guardian_email','guardian_phone','guardian_relationship'],
             account: ['username','password','confirmPassword'],
-            uploads: ['proofFile','medFile']
+            // Proof of membership is optional; only medical certificate is required
+            uploads: ['medFile']
         };
 
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1366,10 +1367,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 errors.push({ id: 'confirmPassword', msg: 'Passwords do not match.' });
             }
 
-            // uploads checks — require proof and medical certificate (either file selected now or previously saved/uploaded)
-            if (!hasUploadedFileFor('proofFile')) {
-                errors.push({ id: 'proofFile', msg: 'Please upload proof of membership.' });
-            }
+            // uploads checks — require medical certificate (proof of membership is optional)
             if (!hasUploadedFileFor('medFile')) {
                 errors.push({ id: 'medFile', msg: 'Please upload a medical certificate.' });
             }

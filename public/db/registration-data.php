@@ -122,10 +122,10 @@ $lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
 $lob_certs = oci_new_descriptor($conn, OCI_D_LOB);
 $lob_med   = oci_new_descriptor($conn, OCI_D_LOB);
 
-// Write binary data to LOB
-$lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
-$lob_certs->writeTemporary($certsBlob, OCI_TEMP_BLOB);
-$lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
+// Write binary data to LOB (use the variables produced by base64ToBlob)
+$lob_proof->writeTemporary($proof, OCI_TEMP_BLOB);
+$lob_certs->writeTemporary($certs, OCI_TEMP_BLOB);
+$lob_med->writeTemporary($medcerts, OCI_TEMP_BLOB);
 
 // ——— 1. INSERT user_guardian ———
 $sql1 = "INSERT INTO user_guardian (

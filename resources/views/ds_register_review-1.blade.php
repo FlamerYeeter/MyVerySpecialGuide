@@ -639,36 +639,62 @@ setupEditSection("editAccountBtn", "accountSection");
   function renderAll(){
     if(!proofDisplay || !medDisplay) return;
 
-    // PROOF: show only admin-scoped single file (do NOT fall back to education arrays or legacy shared keys)
-    try {
-      const adminProofName = localStorage.getItem(ADMIN_KEYS.proof.name);
-      const adminProofData = localStorage.getItem(ADMIN_KEYS.proof.data);
-      const adminProofType = localStorage.getItem(ADMIN_KEYS.proof.type);
+        // PROOF: prefer admin-scoped single file, but fall back to registration arrays or legacy keys
+        try {
+            const adminProofName = localStorage.getItem(ADMIN_KEYS.proof.name);
+            const adminProofData = localStorage.getItem(ADMIN_KEYS.proof.data);
+            const adminProofType = localStorage.getItem(ADMIN_KEYS.proof.type);
 
-      if (adminProofName && adminProofData) {
-        renderSingleTo(proofDisplay, adminProofName, adminProofData, adminProofType, [ADMIN_KEYS.proof.name, ADMIN_KEYS.proof.data, ADMIN_KEYS.proof.type]);
-      } else {
-        // intentionally do not read uploadedProofs_proof/uploadedProofs1 or other education keys here
-        proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
-      }
-    } catch(e){
-      proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
-    }
+            if (adminProofName && adminProofData) {
+                renderSingleTo(proofDisplay, adminProofName, adminProofData, adminProofType, [ADMIN_KEYS.proof.name, ADMIN_KEYS.proof.data, ADMIN_KEYS.proof.type]);
+            } else {
+                // fallback: check new per-field array
+                const arr = readJson(PROOF_ARR_KEY);
+                if (Array.isArray(arr) && arr.length) {
+                    renderListTo(proofDisplay, arr);
+                } else {
+                    // fallback: legacy shared array
+                    const legacy = readJson(LEGACY_ARR_KEY);
+                    if (Array.isArray(legacy) && legacy.length) {
+                        // try to extract proof entries (some legacy formats store proof at index 0/1 — attempt both)
+                        const candidates = legacy.filter(Boolean);
+                        if (candidates.length) renderListTo(proofDisplay, candidates);
+                        else proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+                    } else {
+                        proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+                    }
+                }
+            }
+        } catch(e){
+            proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+        }
 
-    // MEDICAL: show only admin-scoped single file (do NOT fall back to education arrays or legacy shared keys)
-    try {
-      const adminMedName = localStorage.getItem(ADMIN_KEYS.medical.name);
-      const adminMedData = localStorage.getItem(ADMIN_KEYS.medical.data);
-      const adminMedType = localStorage.getItem(ADMIN_KEYS.medical.type);
+        // MEDICAL: prefer admin-scoped single file, but fall back to registration arrays or legacy keys
+        try {
+            const adminMedName = localStorage.getItem(ADMIN_KEYS.medical.name);
+            const adminMedData = localStorage.getItem(ADMIN_KEYS.medical.data);
+            const adminMedType = localStorage.getItem(ADMIN_KEYS.medical.type);
 
-      if (adminMedName && adminMedData) {
-        renderSingleTo(medDisplay, adminMedName, adminMedData, adminMedType, [ADMIN_KEYS.medical.name, ADMIN_KEYS.medical.data, ADMIN_KEYS.medical.type]);
-      } else {
-        medDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
-      }
-    } catch(e){
-      medDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
-    }
+            if (adminMedName && adminMedData) {
+                renderSingleTo(medDisplay, adminMedName, adminMedData, adminMedType, [ADMIN_KEYS.medical.name, ADMIN_KEYS.medical.data, ADMIN_KEYS.medical.type]);
+            } else {
+                const arr = readJson(MED_ARR_KEY);
+                if (Array.isArray(arr) && arr.length) {
+                    renderListTo(medDisplay, arr);
+                } else {
+                    const legacy = readJson(LEGACY_ARR_KEY);
+                    if (Array.isArray(legacy) && legacy.length) {
+                        const candidates = legacy.filter(Boolean);
+                        if (candidates.length) renderListTo(medDisplay, candidates);
+                        else medDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+                    } else {
+                        medDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+                    }
+                }
+            }
+        } catch(e){
+            medDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+        }
   }
 // ...existing code...
 

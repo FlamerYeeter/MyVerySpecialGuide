@@ -517,13 +517,51 @@ document.addEventListener('DOMContentLoaded', () => {
             const proofEl = document.getElementById('r_proof');
             const medEl = document.getElementById('r_medical');
 
+            // Helper: decide whether server reports a file exists. We accept multiple possible shapes.
+            function fileExistsAccordingToServer(type) {
+                try {
+                    // prefer explicit files object
+                    if (files && Object.prototype.hasOwnProperty.call(files, type)) {
+                        const v = files[type];
+                        if (v === null || v === false || v === '') return false;
+                        return true;
+                    }
+                    // try lengths map (several possible key names)
+                    if (lengths) {
+                        const candidates = [type, type + '_len', type + '_length', type + 'Len', type.toUpperCase() + '_LENGTH'];
+                        for (const k of candidates) {
+                            if (Object.prototype.hasOwnProperty.call(lengths, k)) {
+                                const n = Number(lengths[k] || 0);
+                                return n > 0;
+                            }
+                        }
+                    }
+                } catch (e) { /* ignore */ }
+                return false;
+            }
+
             if (proofEl) {
                 proofEl.innerHTML = '';
-                proofEl.appendChild(makeServerLink('proof', 'View / Download', 'proof.pdf'));
+                if (fileExistsAccordingToServer('proof')) {
+                    proofEl.appendChild(makeServerLink('proof', 'View / Download', 'proof.pdf'));
+                } else {
+                    const no = document.createElement('div');
+                    no.className = 'text-gray-600';
+                    no.textContent = 'No file uploaded';
+                    proofEl.appendChild(no);
+                }
             }
+
             if (medEl) {
                 medEl.innerHTML = '';
-                medEl.appendChild(makeServerLink('med', 'View / Download', 'medical.pdf'));
+                if (fileExistsAccordingToServer('med')) {
+                    medEl.appendChild(makeServerLink('med', 'View / Download', 'medical.pdf'));
+                } else {
+                    const no = document.createElement('div');
+                    no.className = 'text-gray-600';
+                    no.textContent = 'No file uploaded';
+                    medEl.appendChild(no);
+                }
             }
 
         })
