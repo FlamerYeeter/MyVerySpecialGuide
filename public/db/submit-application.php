@@ -45,6 +45,8 @@ try {
 
     // normalize empty string -> null
     if ($job_id === '') $job_id = null;
+    // preserve the original posted job id (digits-only) so JOB_CAPACITY can still record it
+    $posted_job_id = $job_id;
     $guardian_id = isset($_POST['guardian_id']) && $_POST['guardian_id'] !== '' ? $_POST['guardian_id'] : null;
     $first_name = isset($_POST['first_name']) ? $_POST['first_name'] : null;
     $last_name = isset($_POST['last_name']) ? $_POST['last_name'] : null;
@@ -208,6 +210,78 @@ try {
         if (!$pwdBlob->save($pwd_content)) throw new Exception('Failed to save pwd blob');
     }
 
+    // --- insert into JOB_CAPACITY (best-effort within same transaction) ----------------
+    // debug diagnostics for capacity insert
+    $__jobcap_debug = [];
+
+    try {
+        if (!empty($guardian_id) && (!empty($job_id) || !empty($posted_job_id))) {
+            // prefer the matched DB id when available, otherwise fall back to the original posted id
+            $cap_job_id = !empty($matched_job_db_id) ? $matched_job_db_id : $posted_job_id;
+
+            // try to find a readable role/title from JOB_POSTINGS (use resolved id when possible)
+            $job_role = null;
+            $cap_job_id_str = (string)$cap_job_id;
+            // If numeric id is longer than Oracle NUMBER precision, use TO_CHAR matching
+            $use_to_char = strlen($cap_job_id_str) > 38;
+            if ($use_to_char) {
+                $jsql = "SELECT JOB_TITLE, JOB_ROLE, ROLE FROM MVSG.JOB_POSTINGS WHERE TO_CHAR(ID) = :jid_str";
+            } else {
+                $jsql = "SELECT JOB_TITLE, JOB_ROLE, ROLE FROM MVSG.JOB_POSTINGS WHERE ID = TO_NUMBER(:jid_str)";
+            }
+            $jst = @oci_parse($conn, $jsql);
+            if ($jst) {
+                oci_bind_by_name($jst, 'jid_str', $cap_job_id_str, -1);
+                if (@oci_execute($jst)) {
+                    $jr = oci_fetch_assoc($jst);
+                    if ($jr) {
+                        // prefer JOB_TITLE as the role label per requirement
+                        $job_role = trim((string)($jr['JOB_TITLE'] ?? $jr['JOB_ROLE'] ?? $jr['ROLE'] ?? '')) ?: null;
+                    }
+                }
+                @oci_free_statement($jst);
+            }
+
+            $role_to_use = $job_role ?? null;
+
+            // bind numeric ids as strings and convert with TO_NUMBER in SQL to avoid bind-name issues
+            $capSql = "INSERT INTO MVSG.JOB_CAPACITY (JOB_POSTING_ID, USER_ID, ROLE, CREATED_AT, UPDATED_AT, STATUS) VALUES (TO_NUMBER(:b_jid), TO_NUMBER(:b_uid), :b_role, SYSTIMESTAMP, SYSTIMESTAMP, 'In Progress')";
+            $capSt = @oci_parse($conn, $capSql);
+            if ($capSt) {
+                // bind names without leading colon and set lengths where appropriate
+                $rbind = $role_to_use !== null ? $role_to_use : null;
+                $bj = (string)$cap_job_id;
+                $bu = (string)$guardian_id;
+                oci_bind_by_name($capSt, 'b_jid', $bj, -1);
+                oci_bind_by_name($capSt, 'b_uid', $bu, -1);
+                oci_bind_by_name($capSt, 'b_role', $rbind, 4000);
+                $ok = @oci_execute($capSt);
+                $__jobcap_debug['insert_ok'] = $ok ? true : false;
+                if (!$ok) {
+                    $err = oci_error($capSt) ?: [];
+                    $__jobcap_debug['insert_error'] = $err;
+                    // attempt an update to refresh timestamp/role when unique constraint prevents insert
+                    $updSql = "UPDATE MVSG.JOB_CAPACITY SET UPDATED_AT = SYSTIMESTAMP" . ($role_to_use !== null ? ", ROLE = :b_role" : "") . " WHERE JOB_POSTING_ID = TO_NUMBER(:b_jid) AND USER_ID = TO_NUMBER(:b_uid)";
+                    $updSt = @oci_parse($conn, $updSql);
+                    if ($updSt) {
+                        if ($role_to_use !== null) oci_bind_by_name($updSt, 'b_role', $rbind, 4000);
+                        oci_bind_by_name($updSt, 'b_jid', $bj, -1);
+                        oci_bind_by_name($updSt, 'b_uid', $bu, -1);
+                        $uok = @oci_execute($updSt);
+                        $__jobcap_debug['update_ok'] = $uok ? true : false;
+                        if (!$uok) $__jobcap_debug['update_error'] = oci_error($updSt) ?: [];
+                        @oci_free_statement($updSt);
+                    }
+                }
+                @oci_free_statement($capSt);
+            } else {
+                $__jobcap_debug['parse_failed'] = true;
+            }
+        }
+    } catch (Throwable $e) {
+        // ignore capacity logging failures — do not break primary flow
+    }
+
     // commit
     if (!oci_commit($conn)) {
         $e = oci_error($conn);
@@ -254,13 +328,15 @@ try {
     oci_free_statement($stid);
     oci_close($conn);
 
-    echo json_encode([
+    $out = [
         'success' => true,
         'id' => $new_id,
         'job_id_received' => $job_id,
         'company_id_resolved' => $company_id,
         'redirect' => '/job-matches' // client will navigate here if present
-    ]);
+    ];
+    if (!empty($__jobcap_debug)) $out['jobcap_debug'] = $__jobcap_debug;
+    echo json_encode($out);
     exit;
 } catch (Exception $ex) {
     // best-effort cleanup
