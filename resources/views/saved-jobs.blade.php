@@ -180,7 +180,17 @@
                                 return;
                         }
 
-                        container.innerHTML = rows.map(j => {
+                        // Ensure client's applied state is current by fetching the user's applications
+                        const userIdForApps = (typeof window !== 'undefined' && window.LARAVEL_USER_ID) ? String(window.LARAVEL_USER_ID) : localStorage.getItem('user_id');
+                        const appliedSet = new Set();
+                        const fetchApps = userIdForApps ? fetch('/db/get-applications.php?guardian_id=' + encodeURIComponent(userIdForApps), { credentials: 'same-origin' }).then(r => r.json()).then(a => {
+                            if (a && a.success && Array.isArray(a.applications)) {
+                                a.applications.forEach(x => { if (x.job_posting_id) appliedSet.add(String(x.job_posting_id)); });
+                            }
+                        }).catch(() => {/* ignore */}) : Promise.resolve();
+
+                        fetchApps.then(() => {
+                            container.innerHTML = rows.map(j => {
                                 const jid = esc(j.job_id || j.JP_ID || '');
                                 const title = esc(j.job_role || 'Untitled Job');
                                 const company = esc(j.company_name || '');
@@ -193,13 +203,12 @@
                                 const appliedNum = j.applied ? Number(j.applied) : 0;
                                 let applyBefore = null;
                                 try { if (j.apply_before) applyBefore = new Date(j.apply_before); } catch (e) { applyBefore = null; }
-                                // Do not block apply based solely on apply_before/end date. Keep applies allowed unless user already applied or job is full.
-                                const isFull = openingsNum > 0 && appliedNum >= openingsNum;
-                                const userApplied = !!j.user_applied;
-                                const applyDisabled = userApplied || isFull;
+                                // Disable Apply only when the requesting user already applied for this job.
+                                const userApplied = appliedSet.has(jid);
+                                const applyDisabled = userApplied;
                                 const applyBtnAttr = applyDisabled ? 'disabled' : `onclick="location.href='/job-application-1?job_id=${encodeURIComponent(jid)}'"`;
                                 const applyBtnClass = applyDisabled ? 'px-5 py-3 bg-gray-400 text-white rounded-md shadow-md cursor-not-allowed' : 'px-5 py-3 bg-[#2563EB] text-white rounded-md shadow-md hover:bg-[#1e4fc5] font-semibold';
-                                const applyBtnText = applyDisabled ? (userApplied ? '🚫 Applied' : '🚫 Full') : '🚀 Apply Now';
+                                const applyBtnText = applyDisabled ? '🚫 Applied' : '🚀 Apply Now';
 
                                 return `
                                     <div data-job-id="${jid}" class="job-card bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col lg:flex-row justify-between gap-6 transition-transform hover:scale-[1.01]">
@@ -220,7 +229,7 @@
                                                 📝 See Details
                                                 </a>
 
-                                                <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? (userApplied ? 'You already applied' : 'No openings left') : 'Apply for this job'}">
+                                                <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
                                                 ${applyBtnText}
                                                 </button>
 
@@ -231,7 +240,8 @@
                                             </div>
                                         </div>
                                     </div>`;
-                        }).join('\n');
+                            }).join('\n');
+                        });
         })
         .catch(err => {
             console.error('get-saved-jobs error', err);

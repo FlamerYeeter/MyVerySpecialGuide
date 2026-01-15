@@ -883,7 +883,21 @@ function loadJobs() {
 
         count_matches.innerHTML = 'All Matches (' + result.jobs.length + ')';
 
-        result.jobs.forEach(job => {
+        // Ensure we have an up-to-date list of the requesting user's applications
+        // so that client-side `user_applied` reflects deletions made elsewhere.
+        const userIdForApps = (typeof window !== 'undefined' && window.LARAVEL_USER_ID) ? String(window.LARAVEL_USER_ID) : localStorage.getItem('user_id');
+        const appliedSet = new Set();
+        const fetchApps = userIdForApps ? fetch('/db/get-applications.php?guardian_id=' + encodeURIComponent(userIdForApps), { credentials: 'same-origin' }).then(r => r.json()).then(j => {
+            if (j && j.success && Array.isArray(j.applications)) {
+                j.applications.forEach(a => { if (a.job_posting_id) appliedSet.add(String(a.job_posting_id)); });
+            }
+        }).catch(() => {/* ignore */}) : Promise.resolve();
+
+        fetchApps.then(() => {
+            result.jobs.forEach(job => {
+                // override job.user_applied from fresh applications data (clear when not present)
+                try { job.user_applied = appliedSet.has(String(job.id)); } catch (e) { /* ignore */ }
+                
             const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
             // determine whether Apply should be disabled
             const now = new Date();
@@ -892,13 +906,12 @@ function loadJobs() {
             const isPastDeadline = applyBefore instanceof Date && !isNaN(applyBefore) && applyBefore.getTime() < now.getTime();
             const openingsNum = job.openings ? Number(job.openings) : 0;
             const appliedNum = job.applied ? Number(job.applied) : 0;
-            const isFull = openingsNum > 0 && appliedNum >= openingsNum;
+            // Disable Apply only when the requesting user already applied for this job.
             const userApplied = !!job.user_applied;
-            // Do NOT disable apply based solely on an end/closing date. Keep applies allowed unless user already applied or job is full.
-            const applyDisabled = userApplied || isFull;
+            const applyDisabled = userApplied;
             const applyBtnClass = applyDisabled ? 'bg-gray-400 text-white text-xl font-bold rounded-md px-10 py-4 cursor-not-allowed transition' : 'bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition';
             const applyBtnAttr = applyDisabled ? 'disabled' : `onclick="location.href='/job-application-1?job_id=${encodeURIComponent(job.id)}'"`;
-            const applyBtnText = applyDisabled ? (userApplied ? '🚫 Applied' : '🚫 Full') : '🚀 Apply Now';
+            const applyBtnText = applyDisabled ? '🚫 Applied' : '🚀 Apply Now';
 
             const cardHTML = `
             <div data-job-id="${job.id}" class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
@@ -959,7 +972,7 @@ function loadJobs() {
                     <button onclick="location.href='/job-details?job_id=${encodeURIComponent(job.id)}'" class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
                         📝 See Details
                     </button>
-                    <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? (userApplied ? 'You already applied' : 'No openings left') : 'Apply for this job'}">
+                    <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
                         ${applyBtnText}
                     </button>
                     <button onclick="saveJob('${job.id}', this)" class="bg-[#008000] save-btn text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition" data-job-id="${job.id}">
@@ -968,6 +981,7 @@ function loadJobs() {
                 </div>
             </div>`;
             container.innerHTML += cardHTML;
+        });
         });
 
         //loadSavedState();
