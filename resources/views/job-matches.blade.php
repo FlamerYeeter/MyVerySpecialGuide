@@ -943,7 +943,7 @@ function loadJobs() {
 
                 ${job.skills && job.skills.length > 0 ? `
                 <div class="mt-8">
-                    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills you will Use</h3>
+                    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills</h3>
                     <div class="flex flex-wrap gap-4">
                         ${job.skills.map(skill => `<span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">${escapeHtml(skill)}</span>`).join('')}
                     </div>
@@ -1125,11 +1125,11 @@ document.querySelector('select[name="growth_potential"]')?.addEventListener('cha
 
                     <div>
                          <p class="text-xl text-gray-900 font-semibold leading-snug">
-                            Click the <span class="text-[#55BEBB] font-bold">“Apply”</span> button to apply for 
+                            Click the <span class="text-[#2563EB] font-bold">“Apply”</span> button to apply for 
                             the job.
                         </p>
                         <p class="text-base text-gray-700 italic mt-2">
-                            (Pindutin ang <span class="font-semibold text-[#55BEBB]">“Apply”</span> upang mag apply sa trabaho.)
+                            (Pindutin ang <span class="font-semibold text-[#2563EB]">“Apply”</span> upang mag apply sa trabaho.)
                     </div>
                 </div>
             </div>

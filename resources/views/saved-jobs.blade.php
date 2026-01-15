@@ -30,8 +30,8 @@
 
             <!-- Icon -->
             <div
-                class="flex items-center justify-center bg-white border-2 border-yellow-300 p-6 rounded-2xl shadow-sm flex-shrink-0">
-                <img src="https://img.icons8.com/color/96/star--v1.png" alt="Saved Jobs Icon" class="h-16 w-16">
+                class="flex items-center justify-center bg-yellow-200 border-2 border-yellow-300 p-6 rounded-2xl shadow-sm flex-shrink-0">
+                <img src="image/savedicon.png" alt="Saved Jobs Icon" class="h-16 w-16">
             </div>
 
             <!-- Text + Button -->
