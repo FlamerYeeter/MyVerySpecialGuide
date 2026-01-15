@@ -229,11 +229,18 @@
                 @foreach($whyData['perfect_matches'] as $type => $arr)
                   @foreach($arr as $pm)
                     @php
-                      $val = $pm['value'] ?? '';
-                      $uval = $pm['user_value'] ?? null;
+                      $val = trim((string)($pm['value'] ?? ''));
+                      $uval = isset($pm['user_value']) ? trim((string)$pm['user_value']) : null;
+                      // Only show the user's value if it is meaningfully different (case-insensitive comparison)
+                      $showUserVal = false;
+                      if (!empty($uval)) {
+                        $lv = mb_strtolower($val);
+                        $lu = mb_strtolower($uval);
+                        if ($lu !== $lv) $showUserVal = true;
+                      }
                     @endphp
                     <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">{{ $val }}
-                      @if(!empty($uval) && (string)($uval) !== (string)($val))
+                      @if($showUserVal)
                         <small class="text-gray-500 ml-2">{{ $uval }}</small>
                       @endif
                     </span>

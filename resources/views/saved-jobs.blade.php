@@ -239,6 +239,30 @@
         });
     })();
     // ...existing code...
+    function updateSavedJobsCounter() {
+        try {
+            const listContainer = document.getElementById('saved-jobs-list');
+            const btnTextEl = document.getElementById('savedJobsCountText');
+            const btnEl = document.getElementById('savedJobsCountBtn');
+            // count remaining job cards
+            const remaining = listContainer ? listContainer.querySelectorAll('.job-card').length : 0;
+
+            if (btnTextEl) {
+                if (remaining === 0) btnTextEl.textContent = 'No Saved Jobs Yet';
+                else btnTextEl.textContent = `${remaining} Saved Job${remaining !== 1 ? 's' : ''}`;
+            }
+
+            // if no jobs left, show the empty placeholder
+            if (listContainer && remaining === 0) {
+                listContainer.innerHTML = `
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center text-gray-700">
+                        <p class="text-xl font-semibold mb-2">No Saved Jobs Yet</p>
+                        <p class="text-sm">Save jobs from the Jobs page and they'll appear here.</p>
+                    </div>`;
+            }
+        } catch (e) { /* ignore */ }
+    }
+
     function removeSavedJob(jobId, btn) {
         if (!jobId) return;
         const card = btn && btn.closest('[data-job-id]');
@@ -258,8 +282,13 @@
                     card.style.transition = 'opacity 220ms, transform 220ms';
                     card.style.opacity = '0';
                     card.style.transform = 'translateY(8px)';
-                    setTimeout(()=> card.remove(), 260);
+                    setTimeout(()=> {
+                        card.remove();
+                        updateSavedJobsCounter();
+                    }, 260);
                 } else btn.textContent = 'Removed';
+                // if there was no card reference, still update counter
+                if (!card) updateSavedJobsCounter();
             } else {
                 throw new Error(j?.message || 'Remove failed');
             }
