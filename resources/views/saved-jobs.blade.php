@@ -193,13 +193,13 @@
                                 const appliedNum = j.applied ? Number(j.applied) : 0;
                                 let applyBefore = null;
                                 try { if (j.apply_before) applyBefore = new Date(j.apply_before); } catch (e) { applyBefore = null; }
-                                const isPastDeadline = applyBefore instanceof Date && !isNaN(applyBefore) && applyBefore.getTime() < Date.now();
+                                // Do not block apply based solely on apply_before/end date. Keep applies allowed unless user already applied or job is full.
                                 const isFull = openingsNum > 0 && appliedNum >= openingsNum;
                                 const userApplied = !!j.user_applied;
-                                const applyDisabled = userApplied || isPastDeadline || isFull;
+                                const applyDisabled = userApplied || isFull;
                                 const applyBtnAttr = applyDisabled ? 'disabled' : `onclick="location.href='/job-application-1?job_id=${encodeURIComponent(jid)}'"`;
                                 const applyBtnClass = applyDisabled ? 'px-5 py-3 bg-gray-400 text-white rounded-md shadow-md cursor-not-allowed' : 'px-5 py-3 bg-[#2563EB] text-white rounded-md shadow-md hover:bg-[#1e4fc5] font-semibold';
-                                const applyBtnText = applyDisabled ? (userApplied ? '🚫 Applied' : (isPastDeadline ? '🚫 Closed' : '🚫 Full')) : '🚀 Apply Now';
+                                const applyBtnText = applyDisabled ? (userApplied ? '🚫 Applied' : '🚫 Full') : '🚀 Apply Now';
 
                                 return `
                                     <div data-job-id="${jid}" class="job-card bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col lg:flex-row justify-between gap-6 transition-transform hover:scale-[1.01]">
@@ -220,7 +220,7 @@
                                                 📝 See Details
                                                 </a>
 
-                                                <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? (userApplied ? 'You already applied' : (isPastDeadline ? 'Application deadline passed' : 'No openings left')) : 'Apply for this job'}">
+                                                <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? (userApplied ? 'You already applied' : 'No openings left') : 'Apply for this job'}">
                                                 ${applyBtnText}
                                                 </button>
 

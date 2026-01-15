@@ -128,11 +128,10 @@
                     <img src="image/1icon.png" alt="Step 1" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
                     <div class="flex-1 text-center sm:text-left pr-16">
                         <p class="font-bold text-lg sm:text-xl text-gray-900 leading-relaxed">
-                            Enter the required information, then wait for admin approval.
+                            Enter the required information.
                         </p>
                         <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Ilagay ang impormasyon na kailangan, at hintayin ang kumpirmasyon ng admin bago
-                            magpatuloy.)
+                            (Ilagay ang impormasyon na kailangan.)
                         </p>
                     </div>
 

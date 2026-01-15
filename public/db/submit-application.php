@@ -245,7 +245,7 @@ try {
             $role_to_use = $job_role ?? null;
 
             // bind numeric ids as strings and convert with TO_NUMBER in SQL to avoid bind-name issues
-            $capSql = "INSERT INTO MVSG.JOB_CAPACITY (JOB_POSTING_ID, USER_ID, ROLE, CREATED_AT, UPDATED_AT, STATUS) VALUES (TO_NUMBER(:b_jid), TO_NUMBER(:b_uid), :b_role, SYSTIMESTAMP, SYSTIMESTAMP, 'In Progress')";
+            $capSql = "INSERT INTO MVSG.JOB_CAPACITY (JOB_POSTING_ID, USER_ID, ROLE, CREATED_AT, UPDATED_AT, STATUS) VALUES (TO_NUMBER(:b_jid), TO_NUMBER(:b_uid), :b_role, SYSTIMESTAMP, SYSTIMESTAMP, 'Under Training')";
             $capSt = @oci_parse($conn, $capSql);
             if ($capSt) {
                 // bind names without leading colon and set lengths where appropriate
