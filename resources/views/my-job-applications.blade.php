@@ -228,16 +228,44 @@
                             const app = apps[i] || {};
                             const node = nodes[i];
                             const p6 = node.querySelector('.p-6');
-                            if (p6){
-                                const badge = document.createElement('p');
-                                badge.className = 'mt-2';
-                                badge.innerHTML = '<span class="inline-block bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm font-semibold">Status: ' + esc(app.status || 'Pending') + '</span>';
-                                if (p6.children.length >= 2){
-                                    p6.insertBefore(badge, p6.children[2]);
-                                } else {
-                                    p6.appendChild(badge);
+                                if (p6){
+                                    // create/insert withdraw button next to job role by wrapping the h3
+                                    try {
+                                        const h3 = p6.querySelector('h3');
+                                        if (h3) {
+                                            const wrapper = document.createElement('div');
+                                            wrapper.className = 'flex items-start justify-between';
+                                            const clonedH3 = h3.cloneNode(true);
+                                            const btn = document.createElement('button');
+                                            btn.type = 'button';
+                                            btn.className = 'withdraw-btn bg-red-50 text-red-700 hover:bg-red-100 px-3 py-2 rounded-full text-sm font-semibold border border-red-200';
+                                            btn.setAttribute('data-app-id', String(app.id || ''));
+                                            btn.textContent = 'Withdraw';
+                                            wrapper.appendChild(clonedH3);
+                                            wrapper.appendChild(btn);
+                                            p6.insertBefore(wrapper, h3);
+                                            p6.removeChild(h3);
+                                        }
+                                    } catch (wrapErr) {
+                                        // ignore wrapper errors
+                                    }
+
+                                    const badge = document.createElement('p');
+                                    badge.className = 'mt-3';
+                                    const statusRaw = (app && app.status) ? String(app.status).toLowerCase() : 'pending';
+                                    let statusClass = 'bg-gray-100 text-gray-800';
+                                    if (statusRaw === 'pending') statusClass = 'bg-yellow-100 text-yellow-800';
+                                    else if (statusRaw === 'reviewed' || statusRaw.indexOf('review') !== -1) statusClass = 'bg-green-100 text-green-800';
+                                    else if (statusRaw === 'feedback') statusClass = 'bg-blue-100 text-blue-800';
+                                    const label = (app && app.status) ? (app.status.charAt(0).toUpperCase() + app.status.slice(1)) : 'Pending';
+                                    badge.innerHTML = '<span class="inline-block px-4 py-2 rounded-full text-sm font-semibold text-lg ' + statusClass + '">Status: ' + esc(label) + '</span>';
+                                    // Insert the badge after the job role wrapper (before the company name) when possible
+                                    if (p6.children.length >= 2){
+                                        p6.insertBefore(badge, p6.children[1]);
+                                    } else {
+                                        p6.appendChild(badge);
+                                    }
                                 }
-                            }
                         } catch (e) {
                             // ignore insertion errors
                         }
@@ -288,6 +316,91 @@
             if (statusSelect){
                 statusSelect.addEventListener('change', () => renderFiltered());
             }
+
+            // Delegated handler for Withdraw buttons (asks confirmation, calls PHP endpoint)
+            container.addEventListener('click', async (ev) => {
+                try {
+                    const btn = ev.target.closest ? ev.target.closest('.withdraw-btn') : null;
+                    if (!btn) return;
+                    const appId = btn.getAttribute('data-app-id') || btn.dataset.appId;
+                    if (!appId) return;
+                    const ok = window.confirm('Are you sure to withdraw your application?');
+                    if (!ok) return;
+                    btn.disabled = true; btn.classList.add('opacity-50');
+                    try {
+                        const res = await fetch('/db/withdraw_application.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ application_id: appId })
+                        });
+                        const j = await res.json().catch(() => null);
+                        if (j && j.success){
+                            // if server deleted the application, remove it from local list
+                            if (j.deleted) {
+                                allApps = (allApps || []).filter(a => String(a.id) !== String(appId));
+                                renderFiltered();
+                                return;
+                            }
+                            // update local model and re-render (fallback)
+                            allApps = (allApps || []).map(a => { if (String(a.id) === String(appId)) a.status = (j.status || 'withdrawn'); return a; });
+                            renderFiltered();
+                        } else {
+                            // If server returned allowed_statuses, offer a sensible retry
+                            if (j && Array.isArray(j.allowed_statuses) && j.allowed_statuses.length){
+                                const allowed = j.allowed_statuses.slice();
+                                const prefs = ['CANCELLED','CANCEL','WITHDRAWN','RETRACTED','REMOVED'];
+                                let pick = null;
+                                for (const p of prefs){
+                                    const found = allowed.find(a => String(a).toUpperCase() === p);
+                                    if (found){ pick = found; break; }
+                                }
+                                if (pick){
+                                    const ok2 = window.confirm('Database only allows status values: ' + allowed.join(', ') + "\n\nUse '"+pick+"' to withdraw instead?");
+                                    if (ok2){
+                                        // retry with chosen status
+                                        try {
+                                            const r2 = await fetch('/db/withdraw_application.php', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ application_id: appId, status: pick })
+                                            });
+                                            const j2 = await r2.json().catch(() => null);
+                                            if (j2 && j2.success){
+                                                allApps = (allApps || []).map(a => { if (String(a.id) === String(appId)) a.status = (j2.status || pick); return a; });
+                                                renderFiltered();
+                                                return;
+                                            } else {
+                                                alert('Update failed: ' + (j2 && (j2.error || JSON.stringify(j2))) );
+                                            }
+                                        } catch (e2) {
+                                            alert('Network error while retrying withdraw');
+                                        }
+                                    }
+                                } else {
+                                    alert('Update failed. Allowed statuses: ' + allowed.join(', '));
+                                }
+                            } else {
+                                // show detailed error when available
+                                let detail = 'Failed to withdraw application';
+                                if (j) {
+                                    if (j.error) detail = j.error;
+                                    else if (j.oci && (j.oci.message || j.oci['message'])) detail = j.oci.message || j.oci['message'];
+                                    else if (j.oci) detail = JSON.stringify(j.oci);
+                                }
+                                alert(detail);
+                            }
+                            console.error('withdraw error', j);
+                            btn.disabled = false; btn.classList.remove('opacity-50');
+                        }
+                    } catch (e) {
+                        alert('Network error while withdrawing application');
+                        btn.disabled = false; btn.classList.remove('opacity-50');
+                        console.error(e);
+                    }
+                } catch (outer) {
+                    // ignore
+                }
+            });
 
             fetchAndRender();
         })();
