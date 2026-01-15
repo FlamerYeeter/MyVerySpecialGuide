@@ -82,7 +82,7 @@
                         <option value="" selected class="bg-white text-gray-700">Status</option>
                         <option value="pending" class="bg-white text-gray-800">Pending</option>
                         <option value="reviewed" class="bg-white text-gray-800">Under Review</option>
-                        <option value="feedback" class="bg-white text-gray-800">Feedback</option>
+                        <option value="feedback" class="bg-white text-gray-800">Under Training</option>
                     </select>
 
                     <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center">

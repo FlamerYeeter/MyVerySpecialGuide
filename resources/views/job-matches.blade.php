@@ -191,7 +191,7 @@
         </form>
 
     <!-- Evaluation metrics: show Accuracy / Precision / Recall / F1 if available -->
-    <section class="mx-6 sm:mx-12 lg:mx-20 mt-8">
+    {{-- <section class="mx-6 sm:mx-12 lg:mx-20 mt-8">
         <div class="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div class="bg-white p-6 rounded-2xl shadow-md text-center">
                 <div class="text-sm text-gray-500">Accuracy</div>
@@ -222,7 +222,7 @@
         @if(empty($display['accuracy']) && empty($display['precision']) && empty($display['recall']) && empty($display['f1']))
             <p id="metricsHint" class="text-center text-sm text-gray-500 mt-4">No evaluation metrics found. Drop a file named <code>public/eval_metrics.json</code> with accuracy/precision/recall/f1 or counts (tp/tn/fp/fn) to display results.</p>
         @endif
-    </section>
+    </section> --}}
 
         <!-- location filter removed per request -->
         <!-- Filter is automatic now: selects will submit the form on change -->
