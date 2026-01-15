@@ -281,10 +281,38 @@
                             (localStorage.getItem('schoolName') || localStorage.getItem('school') || '').toString().trim() ||
                             (schoolSpan && (schoolSpan.textContent||'').trim()) || '';
 
+        // prepare display value: if user selected "Other", prefer the custom text
+        function readOtherTextFromStorage(){
+            try {
+                const keys = ['edu_other_text','educationOther','education_other','review_other'];
+                for (const k of keys) {
+                    const v = (localStorage.getItem(k) || '').toString().trim();
+                    if (v) return v;
+                }
+                // also check the canonical education_profile object
+                const prof = localStorage.getItem('education_profile');
+                if (prof) {
+                    try {
+                        const p = JSON.parse(prof);
+                        if (p && (p.edu_other_text || p.eduOther || p.education_other)) return (p.edu_other_text || p.eduOther || p.education_other).toString().trim();
+                    } catch(e){}
+                }
+            } catch(e){}
+            return '';
+        }
+
+        let displayVal = eduValue || '';
+        try {
+            if (String(displayVal).toLowerCase() === 'other' || String(displayVal).toLowerCase() === 'others') {
+                const other = readOtherTextFromStorage();
+                if (other) displayVal = other;
+            }
+        } catch(e){}
+
         // update canonical display span
         try {
             if (disp) {
-                disp.textContent = eduValue || '';
+                disp.textContent = displayVal || '';
                 disp.style.display = '';
                 disp.classList.remove('hidden');
             }
@@ -2671,9 +2699,33 @@ document.addEventListener("DOMContentLoaded", () => {
         const edu = readFirst(EDU_KEYS) || '';
         const school = readFirst(SCHOOL_KEYS) || '';
 
+        // determine display value: if edu is "Other", prefer a user-provided custom value
+        function readOtherFromStorageLocal(){
+            try {
+                const keys = ['edu_other_text','educationOther','education_other','review_other'];
+                for (const k of keys) {
+                    const v = (localStorage.getItem(k) || '').toString().trim();
+                    if (v) return v;
+                }
+                const prof = localStorage.getItem('education_profile');
+                if (prof) {
+                    try { const p = JSON.parse(prof); if (p && (p.edu_other_text || p.eduOther || p.education_other)) return (p.edu_other_text||p.eduOther||p.education_other).toString().trim(); } catch(e){}
+                }
+            } catch(e){}
+            return '';
+        }
+
+        let displayVal = edu || '';
+        try {
+            if (String(displayVal).toLowerCase() === 'other' || String(displayVal).toLowerCase() === 'others') {
+                const otherText = readOtherFromStorageLocal();
+                if (otherText) displayVal = otherText;
+            }
+        } catch(e){}
+
         // update display span (primary)
         if (el.disp) {
-            el.disp.textContent = edu;
+            el.disp.textContent = displayVal;
             el.disp.classList.remove('hidden');
             el.disp.style.display = '';
         }
