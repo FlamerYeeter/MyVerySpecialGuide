@@ -6,7 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 
     <!-- Hero Section -->
-    <section class="bg-[#FCD34D] flex items-center justify-center py-16 px-6 sm:px-12 lg:px-20">
+    <section class="bg-[#FCD34D] flex items-center justify-center py-16 px-6 sm:px-12 lg:px-20 rounded-b-3xl">
         <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-10 max-w-5xl w-full">
 
             <div class="flex-shrink-0 flex justify-center">

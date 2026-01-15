@@ -400,16 +400,16 @@
 <!-- Proof of Membership -->
 <div class="mt-8 text-left px-2 sm:px-4">
   <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-    Proof of Membership <span class="text-[#4B5258] text-m">(optional)</span>
+    Proof of DSAPI Membership <span class="text-[#4B5258] text-m">(optional)</span>
     <button 
       type="button" 
       class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-      data-tts-en="Proof of Membership"
-      data-tts-tl="Patunay ng pagiging miyembro"
+      data-tts-en="Proof of DSAPI Membership"
+      data-tts-tl="Patunay ng pagiging miyembro ng DSAPI"
     >🔊</button>
   </label>
 
-  <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Patunay ng pagiging miyembro)</p>
+  <p class="text-gray-600 italic text-sm sm:text-base mb-2">(Patunay ng pagiging miyembro ng DSAPI)</p>
 
   <!-- Upload Section -->
   <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

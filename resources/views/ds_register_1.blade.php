@@ -128,10 +128,10 @@
                     <img src="image/1icon.png" alt="Step 1" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
                     <div class="flex-1 text-center sm:text-left pr-16">
                         <p class="font-bold text-lg sm:text-xl text-gray-900 leading-relaxed">
-                            Enter the required information.
+                            Enter the required personal information.
                         </p>
                         <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Ilagay ang impormasyon na kailangan.)
+                            (Ilagay ang personal na impormasyon na kailangan.)
                         </p>
                     </div>
 
@@ -149,15 +149,15 @@
                     <img src="image/2icon.png" alt="Step 2" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
                     <div class="flex-1 text-center sm:text-left pr-16">
                         <p class="font-bold text-lg sm:text-xl text-gray-900">
-                            Set up your profile, first tell us about your education and work experience.
+                            Set up your profile, tell us about your education and work experience.
                         </p>
                         <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Ayusin ang iyong profile, una ay ibahagi ang iyong pinag-aralan at karanasan sa trabaho.)
+                            (Ayusin ang iyong profile, ibahagi ang iyong pinag-aralan at karanasan sa trabaho.)
                         </p>
                     </div>
                     <button type="button"
                         class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Set up your profile, first tell us about your education and work experience." data-tts-tl="Ayusin ang iyong profile, una ay ibahagi ang iyong pinag-aralan at karanasan sa trabaho.">
+                        data-tts-en="Set up your profile, tell us about your education and work experience." data-tts-tl="Ayusin ang iyong profile, ibahagi ang iyong pinag-aralan at karanasan sa trabaho.">
                         🔊
                     </button>
                 </div>
@@ -168,15 +168,15 @@
                     <img src="image/3icon.png" alt="Step 3" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
                     <div class="flex-1 text-center sm:text-left pr-16">
                         <p class="font-bold text-lg sm:text-xl text-gray-900">
-                            Choose the support you need and the workplace you like.
+                            Choose the work environment you prefer.
                         </p>
                         <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Piliin ang suportang kailangan mo at ang uri ng lugar ng trabaho na gusto mo.)
+                            (Piliin ang uri ng lugar ng trabaho na gusto mo.)
                         </p>
                     </div>
                     <button type="button"
                         class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Choose the support you need and the workplace you like." data-tts-tl="Piliin ang suportang kailangan mo at ang uri ng lugar ng trabaho na gusto mo.">
+                        data-tts-en="Choose the work environment you prefer." data-tts-tl="Piliin ang uri ng lugar ng trabaho na gusto mo.">
                         🔊
                     </button>
                 </div>
@@ -206,7 +206,7 @@
                     <img src="image/5icon.png" alt="Step 5" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
                     <div class="flex-1 text-center sm:text-left pr-16">
                         <p class="font-bold text-lg sm:text-xl text-gray-900">
-                            Select the jobs you like.
+                            Select the jobs you prefer.
                         </p>
                         <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
                             (Piliin ang mga uri ng trabaho na gusto mo.)
@@ -214,7 +214,7 @@
                     </div>
                     <button type="button"
                         class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Select the jobs you like." data-tts-tl="Piliin ang mga uri ng trabaho na gusto mo.">
+                        data-tts-en="Select the jobs you prefer." data-tts-tl="Piliin ang mga uri ng trabaho na gusto mo.">
                         🔊
                     </button>
                 </div>

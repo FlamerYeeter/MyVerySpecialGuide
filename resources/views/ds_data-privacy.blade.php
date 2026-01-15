@@ -111,14 +111,15 @@
       <div class="flex-1 text-center sm:text-left">
         <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Information We Collect</h3>
         <ul class="list-disc list-inside text-gray-700 text-base sm:text-lg space-y-1">
-          <li>Personal details: name, contact number, email address.</li>
-          <li>Parent/Guardian details: name, contact number, email address.</li>
+          <li>Personal details: name, contact number, age, email, home address.</li>
+          <li>Parent/Guardian details: name, contact number, email.</li>
           <li>Education and employment history.</li>
-          <li>Supports need, your skills, and job preferences.</li>
+          <li>Preferred workplace, your skills, and job preferences.</li>
+          <li>Medical certificate, Resume, PWD ID</li>
         </ul>
         <p class="text-gray-700 italic text-base sm:text-lg mt-2">
-          (Kinokolekta namin ang impormasyon tulad ng pangalan, contact number, email, edukasyon, supportang 
-          kailangan, iyong kakayanan at mga trabahong kagustuhan.)
+          (Kinokolekta namin ang impormasyon tulad ng pangalan, contact number, email, address, edukasyon, gustong lugar ng trabaho, 
+          iyong kakayanan at mga trabahong kagustuhan.)
         </p>
       </div>
     </div>
@@ -142,12 +143,12 @@
       <div class="flex-1 text-center sm:text-left">
         <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-2">Purpose of Data Collection</h3>
         <ul class="list-disc list-inside text-gray-700 text-base sm:text-lg space-y-1">
-          <li>Match you with job opportunities & training.</li>
+          <li>Match you with job opportunities.</li>
           <li>Improve our services and support.</li>
           <li>Meet compliance requirements.</li>
         </ul>
         <p class="text-gray-700 italic text-base sm:text-lg mt-2">
-          (Upang mahanap ang angkop na trabaho o pagsasanay, mapabuti ang aming serbisyo, at makasunod sa mga regulasyon.)
+          (Upang mahanap ang angkop na trabaho, mapabuti ang aming serbisyo, at makasunod sa mga regulasyon.)
         </p>
       </div>
     </div>
