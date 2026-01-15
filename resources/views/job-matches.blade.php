@@ -840,6 +840,9 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
        }
        </style>
 <script>
+// Expose Laravel-authenticated user id to client JS (null when not authenticated)
+window.LARAVEL_USER_ID = @json(auth()->check() ? auth()->id() : null);
+
 function escapeHtml(text) {
     if (!text) return '';
     return String(text)
@@ -853,7 +856,8 @@ function escapeHtml(text) {
 // Function to load jobs based on current filters
 function loadJobs() {
     const data = {
-        user_id: localStorage.getItem('user_id'),
+        // prefer server-side authenticated id when available (immediate after register/login)
+        user_id: (typeof window !== 'undefined' && window.LARAVEL_USER_ID) ? String(window.LARAVEL_USER_ID) : localStorage.getItem('user_id'),
         title: document.getElementById('searchJobTitle').value.trim(),
         location: document.getElementById('address-location').value.trim(),
         work_environment: document.getElementById('work-env').value.trim(),

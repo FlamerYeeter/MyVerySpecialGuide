@@ -19,14 +19,27 @@ try {
     }
 
     // guardian id from session (normal) or optional debug param (for local testing)
-    $guardianId = $_SESSION['user_id'] ?? null;
-    if (!$guardianId && !empty($data['debug_user_id'])) {
-        // debug only: allow supplying a test guardian id when you are debugging locally
-        $guardianId = intval($data['debug_user_id']);
+    $guardianId = $_SESSION['user_id'] ?? $_SESSION['guardian_id'] ?? null;
+    $user_id_source = 'session';
+    if (!$guardianId) {
+        // allow JSON body override (useful when client has localStorage user_id immediately after registration)
+        if (!empty($data['user_id'])) {
+            $guardianId = preg_replace('/\D/', '', (string)$data['user_id']);
+            $user_id_source = 'json_body';
+        } elseif (!empty($data['debug_user_id'])) {
+            $guardianId = preg_replace('/\D/', '', (string)$data['debug_user_id']);
+            $user_id_source = 'debug_param';
+        } elseif (!empty($_COOKIE['user_id'])) {
+            $guardianId = preg_replace('/\D/', '', (string)$_COOKIE['user_id']);
+            $user_id_source = 'cookie:user_id';
+        } elseif (!empty($_COOKIE['uid'])) {
+            $guardianId = preg_replace('/\D/', '', (string)$_COOKIE['uid']);
+            $user_id_source = 'cookie:uid';
+        }
     }
 
     if (!$guardianId) {
-        echo json_encode(['success' => false, 'message' => 'Not authenticated (missing session user_id)']);
+        echo json_encode(['success' => false, 'message' => 'Not authenticated (missing session user_id)', 'user_id_source' => null]);
         exit;
     }
 
@@ -44,6 +57,13 @@ try {
     }
     // keep as string to avoid JS -> PHP precision loss for very large numbers
     $jobIdNum = (string)$jobId;
+    // ensure guardian id numeric
+    $guardianId = preg_replace('/\D/', '', (string)$guardianId);
+    if ($guardianId === '') {
+        echo json_encode(['success' => false, 'message' => 'Invalid guardian id after parsing', 'user_id_source' => $user_id_source]);
+        oci_close($conn);
+        exit;
+    }
 
     // VERIFY: job posting exists (JOB_POSTINGS only)
     // If your PHP DB user is not the MVSG schema, either qualify the table name (MVSG.JOB_POSTINGS)

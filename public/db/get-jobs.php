@@ -9,18 +9,47 @@ $raw = file_get_contents('php://input');
 $data = json_decode($raw, true);
 if (!is_array($data)) $data = [];
 
-// determine user id: prefer session (server-side) -> GET param -> JSON body
+// allow user id from JSON, GET param, or session (guardian_id == user id)
 $user_id = null;
-if (!empty($_SESSION['user_id'])) {
-  $user_id = preg_replace('/\D/', '', (string)$_SESSION['user_id']);
+if (!empty($data['user_id'])) {
+    $user_id = preg_replace('/\D/', '', (string)$data['user_id']);
 } elseif (!empty($_GET['user_id'])) {
-  $user_id = preg_replace('/\D/', '', (string)$_GET['user_id']);
-} elseif (!empty($data['user_id'])) {
-  // last-resort: JSON body (kept for backward compatibility)
-  $user_id = preg_replace('/\D/', '', (string)$data['user_id']);
+    $user_id = preg_replace('/\D/', '', (string)$_GET['user_id']);
+} elseif (!empty($_SESSION['user_id'])) {
+    $user_id = preg_replace('/\D/', '', (string)$_SESSION['user_id']);
 }
 // normalize empty -> null
 if ($user_id === '') $user_id = null;
+
+// --- Fallback: if no user_id from request/session, try to read Laravel's file sessions
+if ($user_id === null) {
+  // look for a cookie name that contains 'session' (e.g. laravel-session)
+  $candidate = null;
+  foreach ($_COOKIE as $k => $v) {
+    if (stripos($k, 'session') !== false) { $candidate = $v; break; }
+  }
+  if ($candidate) {
+    // session files live in storage/framework/sessions relative to project root
+    $root = realpath(__DIR__ . '/../../'); // public/db -> project root
+    if ($root) {
+      $sessionFile = $root . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'framework' . DIRECTORY_SEPARATOR . 'sessions' . DIRECTORY_SEPARATOR . $candidate;
+      if (file_exists($sessionFile) && is_readable($sessionFile)) {
+        $content = @file_get_contents($sessionFile);
+        if ($content !== false) {
+          // Laravel file sessions store serialized PHP arrays
+          $data = @unserialize($content);
+          if (is_array($data)) {
+            if (!empty($data['user_id'])) {
+              $user_id = preg_replace('/\D/', '', (string)$data['user_id']);
+            } elseif (!empty($data['guardian_id'])) {
+              $user_id = preg_replace('/\D/', '', (string)$data['guardian_id']);
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
 // --- Read optional filter parameters (from JSON body or GET)
 $title = null;
@@ -55,25 +84,16 @@ if (!$conn) {
 $sql = "
 WITH
   co_counts AS (
-    -- count distinct guardians who either saved or applied to a job
     SELECT job_id, COUNT(DISTINCT guardian_id) AS CO_COUNT
     FROM (
-      SELECT JOB_ID   AS job_id, GUARDIAN_ID FROM MVSG.SAVED_JOBS WHERE JOB_ID IS NOT NULL AND GUARDIAN_ID IS NOT NULL
+      SELECT JOB_ID   AS job_id, GUARDIAN_ID FROM MVSG.SAVED_JOBS
       UNION ALL
-      SELECT JOB_POSTING_ID AS job_id, GUARDIAN_ID FROM MVSG.APPLICATIONS WHERE JOB_POSTING_ID IS NOT NULL AND GUARDIAN_ID IS NOT NULL
-    ) t
+      SELECT JOB_POSTING_ID AS job_id, GUARDIAN_ID FROM MVSG.APPLICATIONS
+    )
     GROUP BY job_id
   ),
   max_co AS (
     SELECT NVL(MAX(CO_COUNT),0) AS MAX_CO FROM co_counts
-  ),
-
-  -- per-job application counts (used by frontend and evaluation)
-  app_counts AS (
-    SELECT JOB_POSTING_ID AS JOB_ID, COUNT(DISTINCT GUARDIAN_ID) AS APPLIED_COUNT
-    FROM MVSG.APPLICATIONS
-    WHERE JOB_POSTING_ID IS NOT NULL
-    GROUP BY JOB_POSTING_ID
   ),
 
   -- separate content sources (like JOB_PROFILE does) and then sum them
@@ -166,52 +186,27 @@ WITH
       FROM MVSG.JOB_POSTINGS jp
       INNER JOIN MVSG.USER_GUARDIAN UG ON UG.ADDRESS = jp.ADDRESS
       WHERE (:user_id IS NOT NULL AND UG.ID = :user_id)
-      
-      UNION ALL
-
-      -- fallback: include all job postings with lowest priority so page shows all jobs
-      SELECT
-        jp.ID,
-        jp.COMPANY_NAME,
-        jp.JOB_ROLE,
-        jp.JOB_DESCRIPTION,
-        jp.ADDRESS,
-        jp.JOB_TYPE,
-        jp.WORKING_ENVIRONMENT,
-        (SELECT LISTAGG(LOWER(VALUE),' ') WITHIN GROUP (ORDER BY ID) FROM MVSG.JOB_PROFILE jp2 WHERE jp2.JOB_POSTING_ID = jp.ID AND LOWER(jp2.TYPE) IN ('workplace','workplace_preference','work_environment','job_preference','job_positions') AND jp2.VALUE IS NOT NULL) AS JOB_PROFILE_WORKPLACE,
-        jp.EMPLOYEE_CAPACITY,
-        jp.APPLY_BEFORE,
-        3 AS PRIORITY,
-        jp.JOB_POST_DATE
-      FROM MVSG.JOB_POSTINGS jp
-      -- no joins: include everything as lowest-priority fallback
     ) t
   )
 SELECT bj.*,
        NVL(cm.MATCH_COUNT,0) AS CONTENT_MATCHES,
-  NVL(cc.CO_COUNT,0)   AS COLLAB_COUNT,
+       NVL(cc.CO_COUNT,0)   AS COLLAB_COUNT,
        CASE WHEN mc.MAX_CO > 0 THEN NVL(cc.CO_COUNT,0) / mc.MAX_CO ELSE 0 END AS COLLAB_SCORE_RAW,
        LEAST(1, NVL(cm.MATCH_COUNT,0) / 5) AS CONTENT_SCORE_RAW,
-  mc.MAX_CO AS DEBUG_MAX_CO,
-  NVL(ac.APPLIED_COUNT,0) AS APPLIED_COUNT
+       mc.MAX_CO AS DEBUG_MAX_CO
 FROM (
   SELECT bj2.*, ROW_NUMBER() OVER (PARTITION BY bj2.ID ORDER BY PRIORITY) AS rn
   FROM base_jobs bj2
 ) bj
 LEFT JOIN content_match cm ON cm.job_id = bj.ID
 LEFT JOIN co_counts cc ON cc.job_id = bj.ID
-LEFT JOIN app_counts ac ON ac.JOB_ID = bj.ID
 LEFT JOIN max_co mc ON 1=1
 WHERE bj.rn = 1
 AND (:title IS NULL OR (LOWER(bj.JOB_ROLE) LIKE :title_like OR LOWER(bj.JOB_DESCRIPTION) LIKE :title_like))
 AND (:location IS NULL OR LOWER(bj.ADDRESS) LIKE :location_like)
 AND (:work_env IS NULL OR LOWER(NVL(bj.WORKING_ENVIRONMENT,'')) LIKE :work_env_like OR LOWER(bj.JOB_ROLE) LIKE :work_env_like)
 AND (:job_type IS NULL OR LOWER(bj.JOB_TYPE) LIKE :job_type_like)
--- Order by blended hybrid score (70% content, 30% collaborative), then newest first
-ORDER BY (
-  (0.7 * LEAST(1, NVL(cm.MATCH_COUNT,0) / 5))
-  + (0.3 * CASE WHEN mc.MAX_CO > 0 THEN NVL(cc.CO_COUNT,0) / mc.MAX_CO ELSE 0 END)
-) DESC, bj.JOB_POST_DATE DESC
+ORDER BY bj.PRIORITY, bj.JOB_POST_DATE DESC
 ";
 
 $stid = oci_parse($conn, $sql);
@@ -288,8 +283,17 @@ while ($row = oci_fetch_assoc($stid)) {
     $collabCount     = isset($row['COLLAB_COUNT'])     ? intval($row['COLLAB_COUNT']) : 0;
     $debugMaxCo      = isset($row['DEBUG_MAX_CO'])     ? intval($row['DEBUG_MAX_CO']) : 0;
 
-    // use APPLIED_COUNT returned by the main query (from app_counts CTE)
-    $appliedCount = isset($row['APPLIED_COUNT']) ? intval($row['APPLIED_COUNT']) : 0;
+    // Fetch number of applicants (applications) for this job
+    $appSql = "SELECT COUNT(DISTINCT GUARDIAN_ID) AS APPLIED_COUNT FROM MVSG.APPLICATIONS WHERE JOB_POSTING_ID = :job_id";
+    $appSt = oci_parse($conn, $appSql);
+    oci_bind_by_name($appSt, ':job_id', $jobId, -1);
+    if (@oci_execute($appSt)) {
+      $appRow = oci_fetch_assoc($appSt);
+      $appliedCount = $appRow && isset($appRow['APPLIED_COUNT']) ? intval($appRow['APPLIED_COUNT']) : 0;
+    } else {
+      $appliedCount = 0;
+    }
+    @oci_free_statement($appSt);
 
     // Blend: 70% content, 30% collaborative
     $computedScore = round((0.7 * $contentScoreRaw + 0.3 * $collabScoreRaw) * 100, 2);
@@ -337,19 +341,28 @@ oci_close($conn);
 $predictedIds = array_values(array_unique(array_map(function($j){ return $j['id']; }, $jobs)));
 
 $appliedIds = [];
-if (!empty($user_id)) {
-    $conn2 = getOracleConnection();
-    if ($conn2) {
-        $sqlA = "SELECT DISTINCT JOB_POSTING_ID AS JOB_ID FROM MVSG.APPLICATIONS WHERE GUARDIAN_ID = :gid";
-        $stidA = oci_parse($conn2, $sqlA);
-        oci_bind_by_name($stidA, ':gid', $user_id, -1);
-        @oci_execute($stidA);
-        while ($ar = oci_fetch_assoc($stidA)) {
-            if (isset($ar['JOB_ID'])) $appliedIds[] = $ar['JOB_ID'];
-        }
-        @oci_free_statement($stidA);
-        @oci_close($conn2);
-    }
+// Collect applied and saved job IDs from ALL users (global interactions)
+$conn2 = getOracleConnection();
+if ($conn2) {
+  // Applications
+  $sqlA = "SELECT DISTINCT JOB_POSTING_ID AS JOB_ID FROM MVSG.APPLICATIONS WHERE JOB_POSTING_ID IS NOT NULL";
+  $stidA = oci_parse($conn2, $sqlA);
+  @oci_execute($stidA);
+  while ($ar = oci_fetch_assoc($stidA)) {
+    if (isset($ar['JOB_ID'])) $appliedIds[] = $ar['JOB_ID'];
+  }
+  @oci_free_statement($stidA);
+
+  // Saved jobs (some schemas use JOB_ID)
+  $sqlS = "SELECT DISTINCT JOB_ID AS JOB_ID FROM MVSG.SAVED_JOBS WHERE JOB_ID IS NOT NULL";
+  $stidS = oci_parse($conn2, $sqlS);
+  @oci_execute($stidS);
+  while ($sr = oci_fetch_assoc($stidS)) {
+    if (isset($sr['JOB_ID'])) $appliedIds[] = $sr['JOB_ID'];
+  }
+  @oci_free_statement($stidS);
+
+  @oci_close($conn2);
 }
 $predSet = array_map('strval', $predictedIds);
 $appSet  = array_map('strval', array_values(array_unique($appliedIds)));
@@ -388,10 +401,9 @@ if ($conn3) {
 if ($totalJobs === null) $totalJobs = max(1, $tp + $fp + $fn);
 $tn = max(0, $totalJobs - ($tp + $fp + $fn));
 
-// compute metrics (null when undefined)
-$precision = ($tp + $fp) > 0 ? ($tp / ($tp + $fp)) : null;
-$recall    = ($tp + $fn) > 0 ? ($tp / ($tp + $fn)) : null;
-$f1        = ($precision !== null && $recall !== null && ($precision + $recall) > 0) ? (2 * $precision * $recall) / ($precision + $recall) : null;
+$precision = ($tp + $fp) > 0 ? ($tp / ($tp + $fp)) : 0.0;
+$recall    = ($tp + $fn) > 0 ? ($tp / ($tp + $fn)) : 0.0;
+$f1        = ($precision + $recall) > 0 ? (2 * $precision * $recall) / ($precision + $recall) : 0.0;
 $accuracy  = ($tp + $tn + 0) / max(1, $tp + $tn + $fp + $fn);
 
 // prepare eval object (include counts + fractional metrics)
