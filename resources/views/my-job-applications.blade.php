@@ -236,13 +236,27 @@
                                             const wrapper = document.createElement('div');
                                             wrapper.className = 'flex items-start justify-between';
                                             const clonedH3 = h3.cloneNode(true);
+
+                                            // Button container (withdraw + feedback)
+                                            const btnWrap = document.createElement('div');
+                                            btnWrap.className = 'flex items-center gap-2';
+
                                             const btn = document.createElement('button');
                                             btn.type = 'button';
                                             btn.className = 'withdraw-btn bg-red-50 text-red-700 hover:bg-red-100 px-3 py-2 rounded-full text-sm font-semibold border border-red-200';
                                             btn.setAttribute('data-app-id', String(app.id || ''));
                                             btn.textContent = 'Withdraw';
+
+                                            const fb = document.createElement('a');
+                                            fb.href = '/job-application-feedback?application_id=' + encodeURIComponent(String(app.id || ''));
+                                            fb.className = 'bg-blue-600 text-white px-3 py-2 rounded-full text-sm font-semibold hover:bg-blue-700';
+                                            fb.textContent = 'View Application Feedback';
+
+                                            btnWrap.appendChild(btn);
+                                            btnWrap.appendChild(fb);
+
                                             wrapper.appendChild(clonedH3);
-                                            wrapper.appendChild(btn);
+                                            wrapper.appendChild(btnWrap);
                                             p6.insertBefore(wrapper, h3);
                                             p6.removeChild(h3);
                                         }

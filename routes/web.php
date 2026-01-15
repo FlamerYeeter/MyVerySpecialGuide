@@ -1233,6 +1233,10 @@ Route::get('/my-job-applications', function () {
     return view('my-job-applications');
 })->name('my.job.applications');
 
+Route::get('/job-application-feedback', function () {
+    return view('job-application-feedback');
+})->name('job.application.feedback');
+
 // Route::get('/my-job-applications', [SavedJobController::class, 'index'])->name('my.job.applications');
 // Route::post('/my-job-applications', [SavedJobController::class, 'store'])->name('my.job.applications');
 // Route::get('/my-job-applications/add/{jobId}', [SavedJobController::class, 'add'])->name('my.job.applications.add');

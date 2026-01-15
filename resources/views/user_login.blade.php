@@ -48,8 +48,8 @@
     </form>
 
     <!-- Forgot Password -->
-    <div class="mt-4">
-      <a href="{{ route('forgotpassword') }}" class="text-sm text-gray-700 hover:underline font-medium">
+      <div class="mt-4">
+      <a id="forgotPasswordLink" href="{{ route('forgotpassword') }}" class="text-sm text-gray-700 hover:underline font-medium">
         Forgot your password?
       </a>
     </div>
@@ -113,6 +113,52 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     errorDiv.textContent = 'Server error.';
   }
 });
+
+// Forgot password: send reset link using reset-password-user.php
+(function(){
+  const forgot = document.getElementById('forgotPasswordLink');
+  if (!forgot) return;
+  forgot.addEventListener('click', async function(ev){
+    ev.preventDefault();
+    const email = (document.querySelector('input[name="email"]')?.value || '').trim();
+    const errorDiv = document.getElementById('loginError');
+    const loadingModal = document.getElementById('loadingModal');
+    errorDiv.textContent = '';
+
+    if (!email) {
+      errorDiv.textContent = 'Please enter your email above to receive a reset link.';
+      const input = document.querySelector('input[name="email"]'); if (input) input.focus();
+      return;
+    }
+
+      try {
+      loadingModal.classList.remove('hidden');
+      // include debug flag when running on localhost so developer can receive link without SMTP
+      const isLocalhost = ['localhost','127.0.0.1','::1'].includes(window.location.hostname);
+      const body = { email };
+      if (isLocalhost) body.debug = 1;
+
+      const res = await fetch('/db/reset-password-user.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      loadingModal.classList.add('hidden');
+      if (data && data.status === 'success') {
+        errorDiv.style.color = 'green';
+        errorDiv.textContent = 'A reset link has been sent to your email. Please check your inbox.';
+      } else {
+        errorDiv.style.color = 'red';
+        errorDiv.textContent = (data && data.message) ? data.message : 'Failed to send reset link.';
+      }
+    } catch (err) {
+      loadingModal.classList.add('hidden');
+      errorDiv.style.color = 'red';
+      errorDiv.textContent = 'Server error while sending reset link.';
+    }
+  });
+})();
 </script>
 </html>
 

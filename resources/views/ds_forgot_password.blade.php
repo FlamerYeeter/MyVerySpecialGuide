@@ -7,6 +7,24 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
 
+  <script>
+    // Run as early as possible: capture fragment token and move to sessionStorage,
+    // then remove fragment from address bar before page renders.
+    (function(){
+      try {
+        var raw = window.location.hash || '';
+        // capture entire value after hash= until next & (supports base64url and percent-encoded tokens)
+        var m = raw.match(/#?hash=([^&]+)/);
+        if (m && m[1]) {
+          try { sessionStorage.setItem('mvsg_reset_hash', m[1]); } catch(e) {}
+          // remove fragment
+          var clean = window.location.protocol + '//' + window.location.host + window.location.pathname + window.location.search;
+          window.history.replaceState({}, document.title, clean);
+        }
+      } catch(e) {}
+    })();
+  </script>
+
   <style>
     body {
       font-family: 'Poppins', sans-serif;
@@ -45,6 +63,8 @@
     </p>
 
     <form id="reset-form" class="flex flex-col space-y-4">
+      <!-- hidden field to receive the reset token (captured from ?hash= in URL) -->
+      <input type="hidden" id="resetHash" name="reset_hash" value="" />
       <div class="text-left">
         <input
           id="newPassword"
@@ -86,6 +106,34 @@
 
   <!-- ✅ Validation Script -->
   <script>
+    // Capture #hash token, save to sessionStorage and hidden field, then remove fragment
+    (function(){
+      try {
+        const raw = window.location.hash || '';
+        // accept any characters until an ampersand (covers base64url and percent-encoded tokens)
+        const match = raw.match(/[#&]?hash=([^&]+)/);
+        if (match && match[1]) {
+          const token = match[1];
+          // store in sessionStorage (not exposed to server logs)
+          try { sessionStorage.setItem('mvsg_reset_hash', token); } catch(e){}
+          // set hidden input too (so form submit includes it)
+          const el = document.getElementById('resetHash');
+          if (el) el.value = token;
+          // remove fragment from address bar
+          const cleanUrl = window.location.protocol + '//' + window.location.host + window.location.pathname;
+          window.history.replaceState({}, document.title, cleanUrl);
+        } else {
+          // if token already in sessionStorage, populate hidden field
+          try {
+            const stored = sessionStorage.getItem('mvsg_reset_hash');
+            if (stored) {
+              const el2 = document.getElementById('resetHash'); if (el2) el2.value = stored;
+            }
+          } catch(e){}
+        }
+      } catch (e) { console.warn('Could not process reset token', e); }
+    })();
+
     const form = document.getElementById('reset-form');
     const prompt = document.getElementById('success-prompt');
     const card = document.getElementById('password-card');
@@ -95,7 +143,7 @@
     const newPasswordError = document.getElementById('newPasswordError');
     const confirmPasswordError = document.getElementById('confirmPasswordError');
 
-    form.addEventListener('submit', (e) => {
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const password = newPassword.value.trim();
@@ -106,11 +154,11 @@
       newPasswordError.classList.add('hidden');
       confirmPasswordError.classList.add('hidden');
 
-      // Validation rules
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\w\s]).{8,}$/;
+      // Validation rules: remove special-character requirement per request
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
       if (!passwordRegex.test(password)) {
-        newPasswordError.textContent = "Password must have 8+ chars, uppercase, lowercase, number, and special char.";
+        newPasswordError.textContent = "Password must have 8+ chars, include uppercase, lowercase, and a number.";
         newPasswordError.classList.remove('hidden');
         valid = false;
       }
@@ -123,13 +171,35 @@
 
       if (!valid) return;
 
-      // ✅ Show success modal and redirect
-      card.classList.add('hidden');
-      prompt.classList.remove('hidden');
+      // Submit to server to change password
+      try {
+        card.classList.add('opacity-60');
+        const token = document.getElementById('resetHash')?.value || sessionStorage.getItem('mvsg_reset_hash');
+        if (!token) throw new Error('Reset token missing.');
 
-      setTimeout(() => {
-        window.location.href = "{{ route('login') }}"; // or your login URL
-      }, 3000);
+        const res = await fetch('/db/reset-password-submit.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reset_hash: token, password })
+        });
+
+        const data = await res.json();
+        card.classList.remove('opacity-60');
+        if (data && data.status === 'success') {
+          // clear token from sessionStorage
+          try { sessionStorage.removeItem('mvsg_reset_hash'); } catch(e){}
+          // show success
+          card.classList.add('hidden');
+          prompt.classList.remove('hidden');
+          setTimeout(() => { window.location.href = "{{ route('login') }}"; }, 2000);
+        } else {
+          throw new Error((data && data.message) ? data.message : 'Failed to update password');
+        }
+      } catch (err) {
+        newPasswordError.textContent = err.message || 'Server error';
+        newPasswordError.classList.remove('hidden');
+        card.classList.remove('opacity-60');
+      }
     });
   </script>
 </body>

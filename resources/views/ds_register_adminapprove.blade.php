@@ -1329,9 +1329,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 }
             });
 
-            // age numeric > 0
-            if (values.age && !(Number(values.age) > 0)) {
-                errors.push({ id: 'age', msg: 'Please enter a valid age.' });
+            // age must be at least 18
+            if (values.age && !(Number(values.age) >= 18)) {
+                errors.push({ id: 'age', msg: 'You must be at least 18 years old.' });
             }
 
             // email
@@ -1397,10 +1397,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             watchIds.forEach(id => {
                 const el = document.getElementById(id);
                 if (!el) return;
-                el.addEventListener('input', () => {
+                    el.addEventListener('input', () => {
                     const v = (el.value || '').trim();
                     let ok = true;
-                    if (id === 'age') ok = v !== '' && Number(v) > 0;
+                    if (id === 'age') ok = v !== '' && Number(v) >= 18;
                     else if (id === 'email') ok = emailRe.test(v);
                     else if (id === 'phone') ok = phoneRe.test(v.replace(/\s+/g,''));
                     else if (id === 'password') ok = passwordRe.test(v);
