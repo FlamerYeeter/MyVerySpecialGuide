@@ -442,10 +442,61 @@
   </div>
 </div>
 
+<!-- PWD ID -->
+<div class="mt-8 text-left px-2 sm:px-4">
+  <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
+    Please upload your PWD ID.
+    <button 
+      type="button" 
+      class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+      data-tts-en="Please upload your PWD ID."
+      data-tts-tl="Paki-upload ang iyong PWD ID."
+    >🔊</button>
+  </label>
+
+   <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
+   Please upload your PWD ID. This is required for verification.
+  </p>
+
+   <p class="text-gray-600 italic text-sm sm:text-base mb-2">
+    (Paki-upload ang iyong PWD ID. Kailangan ito para sa beripikasyon.)
+  </p>
+
+  <!-- Upload Section -->
+  <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+  <div class="flex-1">
+    <p class="font-medium text-gray-800 text-sm sm:text-base">
+      <span id="pwdidLabel" class="flex items-center gap-2">
+        <span>Upload File (Image or PDF)</span> 
+      </span>
+    </p>
+    <p id="pwdidHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+      (Mag-upload ng larawan o PDF ng iyong PWD ID.)<br /><br />
+      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
+    </p>
+
+    <!-- File Info Display -->
+    <div id="pwdidDisplay"></div>
+  </div>
+
+  <!-- Upload button + input wrapped so validation message is appended below the button -->
+  <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
+    <label
+      for="pwdidFile"
+      class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
+    >
+      📁 Choose File / Pumili ng File
+    </label>
+    <input id="pwdidFile" name="pwd_id" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
+    <!-- validation will be appended here (under the button) -->
+    <div class="upload-error w-full text-sm text-right"></div>
+  </div>
+</div>
+
 <!-- Medical Certificate -->
 <div class="mt-8 text-left px-2 sm:px-4">
   <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-    Please upload your medical certificate.
+    Please upload your Medical Certificate.
     <button 
       type="button" 
       class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
@@ -455,11 +506,11 @@
   </label>
 
    <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
-    If you already have a medical certificate from a previous job fit or readiness assessment, you may upload it. If you do not have one, that is okay—this is optional.
+    A medical certificate is required to ensure you are ready to work. Please upload it.
   </p>
 
    <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-    (Kung mayroon ka nang medical certificate mula sa nakaraang assessment para sa job fit o readiness, puwede mo itong i-upload. Kung wala ka pa, ayos lang, optional lamang ito.)
+    (Kailangan ang medical certificate upang matiyak na ikaw ay handang magtrabaho. Paki-upload ito.)
   </p>
 
   <!-- Upload Section -->
