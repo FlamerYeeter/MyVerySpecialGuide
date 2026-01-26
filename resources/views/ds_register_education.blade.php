@@ -350,6 +350,10 @@
 
                                 <!-- File Info Display -->
                                 <div id="validcertDisplay"></div>
+                                <!-- Shared proofs list container (populated from uploadedProofs_proof) -->
+                                <div id="fileuploadSection" class="mt-3 hidden">
+                                    <div id="proofFileInfo"></div>
+                                </div>
                             </div>
 
                             <!-- Upload button + input wrapped so validation message is appended below the button -->
@@ -364,6 +368,95 @@
                                 <div class="upload-error w-full text-sm text-right"></div>
                             </div>
                         </div>
+                        <!-- Wire validcertFile to shared proofs storage + preview (based on adminapprove setup) -->
+                        <script>
+                        (function(){
+                            function setupSingleValidCert(inputId, displayId, labelId, hintId){
+                                const inp = document.getElementById(inputId);
+                                const display = document.getElementById(displayId);
+                                const label = document.getElementById(labelId);
+                                const hint = document.getElementById(hintId);
+                                if(!inp || !display) return;
+
+                                async function readAsDataURL(file){
+                                    return await new Promise((resolve,reject)=>{
+                                        const r = new FileReader();
+                                        r.onerror = ()=>reject(new Error('read error'));
+                                        r.onload = ()=>resolve(r.result);
+                                        r.readAsDataURL(file);
+                                    });
+                                }
+
+                                inp.addEventListener('change', async function(){
+                                    const f = this.files && this.files[0];
+                                    if(!f) return;
+                                    const name = f.name || '';
+                                    const type = String(name.split('.').pop()||'').toLowerCase();
+                                    if(!['jpg','jpeg','png','pdf'].includes(type)){
+                                        alert('Invalid file type. Only JPG, PNG, or PDF allowed.');
+                                        this.value = '';
+                                        return;
+                                    }
+                                    if(f.size > 5 * 1024 * 1024){
+                                        alert('File too large. Max 5MB.');
+                                        this.value = '';
+                                        return;
+                                    }
+
+                                    const icon = ['jpg','jpeg','png'].includes(type)?'🖼️':(type==='pdf'?'📄':'📁');
+                                    const max=60;
+                                    const displayName = name.length>max? name.slice(0,max-3)+'...':name;
+                                    if(label){ label.textContent = 'File Uploaded:'; label.setAttribute('title', name); }
+                                    if(hint) hint.style.display = 'none';
+                                    display.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${icon}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${displayName}</span><div class="flex gap-2"><button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button><button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button></div></div>`;
+
+                                    try{
+                                        const data = await readAsDataURL(f);
+                                        const key = 'uploadedProofs_proof';
+                                        let arr = [];
+                                        try{ arr = JSON.parse(localStorage.getItem(key)||'[]')||[]; }catch(e){ arr=[]; }
+                                        arr.push({ name, type, data });
+                                        if(typeof window.saveProofs === 'function'){
+                                            try{ window.saveProofs(arr); }catch(e){ localStorage.setItem(key, JSON.stringify(arr)); }
+                                        } else {
+                                            try{ localStorage.setItem(key, JSON.stringify(arr)); }catch(e){}
+                                        }
+                                        if(typeof window.showFileList === 'function'){
+                                            try{ window.showFileList(arr); }catch(e){}
+                                        } else {
+                                            setTimeout(()=>{ try{ if(typeof window.showFileList === 'function') window.showFileList(arr); }catch(e){} }, 120);
+                                        }
+                                        const section = document.getElementById('fileuploadSection'); if(section) section.style.display='block';
+                                    }catch(e){ console.warn('persist cert failed', e); }
+
+                                    // delegate view/remove using event delegation
+                                    display.addEventListener('click', function handler(ev){
+                                        const target = ev.target;
+                                        if(target.classList && target.classList.contains('viewBtn')){
+                                            const key='uploadedProofs_proof';
+                                            const arr = window.loadSavedProofs ? window.loadSavedProofs() : (JSON.parse(localStorage.getItem(key)||'[]')||[]);
+                                            const it = arr && arr.length ? arr[arr.length-1] : null;
+                                            if(it && typeof window.openModalPreview === 'function') window.openModalPreview(it.name, it.data, it.type);
+                                        } else if(target.classList && target.classList.contains('removeBtn')){
+                                            try{
+                                                const key='uploadedProofs_proof';
+                                                const raw = localStorage.getItem(key);
+                                                const arr = raw ? JSON.parse(raw) : [];
+                                                const idx = arr.map(x=>String(x.name)).lastIndexOf(name);
+                                                if(idx >= 0){ arr.splice(idx,1); localStorage.setItem(key, JSON.stringify(arr)); if(typeof window.showFileList==='function') window.showFileList(arr); }
+                                            }catch(e){ console.warn('remove saved cert failed', e); }
+                                            try{ display.innerHTML=''; if(label) label.textContent = 'Upload File (Image or PDF)'; if(hint) hint.style.display=''; inp.value=''; }catch(e){}
+                                        }
+                                    }, { once: true });
+                                });
+
+                                // init
+                                try{ if(typeof window.loadSavedProofs === 'function'){ const saved = window.loadSavedProofs(); if(saved && saved.length){ const section = document.getElementById('fileuploadSection'); if(section) section.style.display='block'; window.showFileList(saved); } } }catch(e){}
+                            }
+
+                            try{ setupSingleValidCert('validcertFile','validcertDisplay','validcertLabel','validcertHint'); }catch(e){}
+                        })();
+                        </script>
 
                         <div id="certs_container" class="space-y-4"></div>
 
@@ -521,6 +614,24 @@
                                         fileURL = null;
                                     }
                                 });
+                                // Also persist this selection into the shared education proofs list
+                                try {
+                                    const reader = new FileReader();
+                                    reader.onload = function() {
+                                        try {
+                                            const key = 'uploadedProofs_proof';
+                                            const raw = localStorage.getItem(key);
+                                            const arr = raw ? JSON.parse(raw) : [];
+                                            arr.push({ name: name, type: fileExt, data: reader.result });
+                                            localStorage.setItem(key, JSON.stringify(arr));
+                                            // refresh shared list UI if available
+                                            if (typeof window.showFileList === 'function') window.showFileList(arr);
+                                            if (typeof window.hideFileInfo === 'function') window.hideFileInfo();
+                                            const fileuploadSection = document.getElementById('fileuploadSection'); if (fileuploadSection) fileuploadSection.style.display = 'block';
+                                        } catch (e) { console.warn('persist cert_file failed', e); }
+                                    };
+                                    reader.readAsDataURL(f);
+                                } catch (e) { console.warn('persist cert_file setup failed', e); }
                             });
 
                             // Open modal preview 
@@ -839,7 +950,7 @@
                 return String(name || "").split(".").pop().toLowerCase();
             }
 
-            function loadSavedProofs() {
+            window.loadSavedProofs = function() {
                 try {
                     const raw = localStorage.getItem(LS_KEY);
                     let arr = [];
@@ -861,7 +972,7 @@
                 }
             }
 
-            function saveProofs(list) {
+            window.saveProofs = function(list) {
                 try {
                     localStorage.setItem(LS_KEY, JSON.stringify(list || []));
                 } catch (e) {
@@ -869,14 +980,14 @@
                 }
             }
 
-            function hideFileInfo() {
+            window.hideFileInfo = function() {
                 if (!fileInfo) return;
                 fileInfo.classList.add("hidden");
                 fileInfo.innerHTML = "";
                 if (hintEl) hintEl.style.display = "";
             }
 
-            function openModalPreview(name, dataUrl, type) {
+            window.openModalPreview = function(name, dataUrl, type) {
                 if (!modal || !modalContent) return;
                 modalContent.innerHTML = `<h3 class="font-semibold mb-2">${name}</h3>`;
                 if (["jpg", "jpeg", "png"].includes(type)) {
@@ -891,7 +1002,7 @@
                 modal.classList.remove("hidden");
             }
 
-            function showFileList(list) {
+            window.showFileList = function(list) {
                 if (!fileInfo) return;
                 if (!Array.isArray(list) || !list.length) {
                     hideFileInfo();
@@ -956,12 +1067,12 @@
 
             // init UI from storage
             (function init() {
-                const saved = loadSavedProofs();
+                const saved = window.loadSavedProofs();
                 if (saved && saved.length) {
                     if (fileuploadSection) fileuploadSection.style.display = "block";
-                    showFileList(saved);
+                    window.showFileList(saved);
                 } else {
-                    hideFileInfo();
+                    window.hideFileInfo();
                     if (fileuploadSection) fileuploadSection.style.display = "none";
                 }
             })();

@@ -546,8 +546,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-  setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
-  setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
+    setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
+    setupUpload('pwdidFile', 'pwdidDisplay', 'pwdidLabel', 'pwdidHint');
+    setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
 });
 
 function setupUpload(inputId, displayId, labelId, hintId) {
@@ -572,6 +573,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             nameKey = 'admin_uploaded_proof_name';
             dataKey = 'admin_uploaded_proof_data';
             typeKey = 'admin_uploaded_proof_type';
+        } else if (inputId === 'pwdidFile') {
+            nameKey = 'admin_uploaded_pwd_name';
+            dataKey = 'admin_uploaded_pwd_data';
+            typeKey = 'admin_uploaded_pwd_type';
         } else {
             nameKey = 'admin_uploaded_med_name';
             dataKey = 'admin_uploaded_med_data';
@@ -628,10 +633,11 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     try {
       const name = String(filename || '').trim();
 
-      const keys = [
-        // admin
-        'admin_uploaded_proof_name','admin_uploaded_proof_data','admin_uploaded_proof_type',
-        'admin_uploaded_med_name','admin_uploaded_med_data','admin_uploaded_med_type',
+            const keys = [
+                // admin
+                'admin_uploaded_proof_name','admin_uploaded_proof_data','admin_uploaded_proof_type',
+                'admin_uploaded_pwd_name','admin_uploaded_pwd_data','admin_uploaded_pwd_type',
+                'admin_uploaded_med_name','admin_uploaded_med_data','admin_uploaded_med_type',
 
         // legacy single-file
         'uploadedProofName','uploadedProofData','uploadedProofType',
@@ -639,6 +645,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         'uploadedProofName0','uploadedProofData0','uploadedProofType0',
         'uploaded_proof_name','uploaded_proof_data','uploaded_proof_type',
         'proofName','proofData','proofType','proofFilename',
+        // pwd variants
+        'uploaded_pwd_name','uploaded_pwd_data','uploaded_pwd_type','pwdName','pwdData','pwdType','pwdFilename',
 
         // review keys
         'review_certfile','review_certs_file','review_certfile_name','review_certs_name'
@@ -709,17 +717,21 @@ function setupUpload(inputId, displayId, labelId, hintId) {
       </div>
     `;
 
-    // Unique admin keys
-    let nameKey, dataKey, typeKey;
-    if (inputId === 'proofFile') {
-      nameKey = 'admin_uploaded_proof_name';
-      dataKey = 'admin_uploaded_proof_data';
-      typeKey = 'admin_uploaded_proof_type';
-    } else {
-      nameKey = 'admin_uploaded_med_name';
-      dataKey = 'admin_uploaded_med_data';
-      typeKey = 'admin_uploaded_med_type';
-    }
+        // Unique admin keys
+        let nameKey, dataKey, typeKey;
+        if (inputId === 'proofFile') {
+            nameKey = 'admin_uploaded_proof_name';
+            dataKey = 'admin_uploaded_proof_data';
+            typeKey = 'admin_uploaded_proof_type';
+        } else if (inputId === 'pwdidFile') {
+            nameKey = 'admin_uploaded_pwd_name';
+            dataKey = 'admin_uploaded_pwd_data';
+            typeKey = 'admin_uploaded_pwd_type';
+        } else {
+            nameKey = 'admin_uploaded_med_name';
+            dataKey = 'admin_uploaded_med_data';
+            typeKey = 'admin_uploaded_med_type';
+        }
 
     // Save file to storage
     const reader = new FileReader();
@@ -851,7 +863,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                    window.addEventListener('load', () => {
                     document.getElementById('first_name').value = '';
                     document.getElementById('last_name').value = '';
-                    document.getElementById('age').value = '';
+                    document.getElementById('birthdate').value = '';
                     document.getElementById('email').value = '';
                     document.getElementById('phone').value = '';
                     document.getElementById('address').value = '';
@@ -1029,19 +1041,19 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             try{
                 if(!d || typeof d !== 'object') return false;
                 const p = d.personal || d.personalInfo || d;
-                const first = p.firstName || p.first_name || p.first || p.fname || '';
-                const last = p.lastName || p.last_name || p.last || p.lname || '';
-                const email = p.email || '';
-                const phone = p.phone || p.mobile || '';
-                const age = p.age || '';
-                const address = p.address || '';
+            const first = p.firstName || p.first_name || p.first || p.fname || '';
+            const last = p.lastName || p.last_name || p.last || p.lname || '';
+            const email = p.email || '';
+            const phone = p.phone || p.mobile || '';
+            const birthdate = p.birthdate || p.birth_date || p.dob || p.dateOfBirth || p.age || '';
+            const address = p.address || '';
                 const username = p.username || p.userName || '';
                 let applied = false;
                 applied = setIf('first_name', first) || applied;
                 applied = setIf('last_name', last) || applied;
                 applied = setIf('email', email) || applied;
                 applied = setIf('phone', phone) || applied;
-                applied = setIf('age', age) || applied;
+            applied = setIf('birthdate', birthdate) || applied;
                 applied = setIf('address', address) || applied;
                 applied = setIf('username', username) || applied;
 
@@ -1283,11 +1295,11 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         if (!btn) return;
 
         const required = {
-            personal: ['first_name','last_name','age','email','phone','address'],
+            personal: ['first_name','last_name','birthdate','email','phone','address'],
             guardian: ['guardian_first','guardian_last','guardian_email','guardian_phone','guardian_relationship'],
             account: ['username','password','confirmPassword'],
-            // Proof of membership is optional; only medical certificate is required
-            uploads: ['medFile']
+            // Proof of membership is optional; medical certificate and PWD ID are required
+            uploads: ['medFile','pwdidFile']
         };
 
         const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1313,7 +1325,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             } catch (e) { return false; }
         }
 
-        // --- moved helper: determine if upload exists for proof/med (used both in validation and live-clear) ---
+        // --- moved helper: determine if upload exists for proof/med/pwd (used both in validation and live-clear) ---
         function hasUploadedFileFor(id) {
             try {
                 if (id === 'proofFile') {
@@ -1331,6 +1343,15 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     if (storedHasData('admin_uploaded_med_name') || storedHasData('admin_uploaded_med_data') || storedHasData('admin_uploaded_med_type')) return true;
                     if (storedHasData('uploadedProofs_med') || storedHasData('uploadedProofs')) return true;
                     if (storedHasData('review_certfile_name') || storedHasData('review_certs_name')) return true;
+                    return false;
+                }
+
+                if (id === 'pwdidFile') {
+                    const input = document.getElementById('pwdidFile');
+                    if (input && input.files && input.files.length) return true;
+                    if (storedHasData('admin_uploaded_pwd_name') || storedHasData('admin_uploaded_pwd_data') || storedHasData('admin_uploaded_pwd_type')) return true;
+                    if (storedHasData('uploaded_pwd_name') || storedHasData('uploaded_pwd_data')) return true;
+                    if (storedHasData('pwdName') || storedHasData('pwdFilename')) return true;
                     return false;
                 }
 
@@ -1364,9 +1385,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             // clear previous errors
             [...required.personal, ...required.guardian, ...required.account, ...required.uploads].forEach(clearFieldError);
 
-            const values = {};
+                const values = {};
             // Only gather non-file inputs into values; uploads are checked via hasUploadedFileFor()
-            [...required.personal, ...required.guardian, ...required.account].forEach(id => {
+                [...required.personal, ...required.guardian, ...required.account].forEach(id => {
                 const el = document.getElementById(id);
                 values[id] = el ? (el.value || '').trim() : '';
             });
@@ -1380,9 +1401,22 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 }
             });
 
-            // age must be at least 18
-            if (values.age && !(Number(values.age) >= 18)) {
-                errors.push({ id: 'age', msg: 'You must be at least 18 years old.' });
+            // birthdate must indicate at least 18 years old
+            if (values.birthdate) {
+                try {
+                    const bd = new Date(values.birthdate);
+                    if (!bd || isNaN(bd.getTime())) {
+                        errors.push({ id: 'birthdate', msg: 'Please enter a valid date of birth.' });
+                    } else {
+                        const today = new Date();
+                        let ageYears = today.getFullYear() - bd.getFullYear();
+                        const m = today.getMonth() - bd.getMonth();
+                        if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) ageYears--;
+                        if (!(ageYears >= 18)) errors.push({ id: 'birthdate', msg: 'You must be at least 18 years old.' });
+                    }
+                } catch (e) { errors.push({ id: 'birthdate', msg: 'Please enter a valid date of birth.' }); }
+            } else {
+                errors.push({ id: 'birthdate', msg: 'This field is required.' });
             }
 
             // email
@@ -1418,9 +1452,12 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 errors.push({ id: 'confirmPassword', msg: 'Passwords do not match.' });
             }
 
-            // uploads checks — require medical certificate (proof of membership is optional)
+            // uploads checks — require medical certificate and PWD ID (proof of membership is optional)
             if (!hasUploadedFileFor('medFile')) {
                 errors.push({ id: 'medFile', msg: 'Please upload a medical certificate.' });
+            }
+            if (!hasUploadedFileFor('pwdidFile')) {
+                errors.push({ id: 'pwdidFile', msg: 'Please upload your PWD ID.' });
             }
 
             if (errors.length) {
@@ -1451,7 +1488,22 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     el.addEventListener('input', () => {
                     const v = (el.value || '').trim();
                     let ok = true;
-                    if (id === 'age') ok = v !== '' && Number(v) >= 18;
+                    if (id === 'birthdate') {
+                        try {
+                            if (!v) { ok = false; }
+                            else {
+                                const bd = new Date(v);
+                                if (!bd || isNaN(bd.getTime())) ok = false;
+                                else {
+                                    const today = new Date();
+                                    let ageYears = today.getFullYear() - bd.getFullYear();
+                                    const m = today.getMonth() - bd.getMonth();
+                                    if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) ageYears--;
+                                    ok = ageYears >= 18;
+                                }
+                            }
+                        } catch (e) { ok = false; }
+                    }
                     else if (id === 'email') ok = emailRe.test(v);
                     else if (id === 'phone') ok = phoneRe.test(v.replace(/\s+/g,''));
                     else if (id === 'password') ok = passwordRe.test(v);
@@ -1471,7 +1523,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             });
 
             // file inputs: clear when a file is selected (or when legacy storage detected)
-            ['proofFile','medFile'].forEach(fid => {
+            ['proofFile','pwdidFile','medFile'].forEach(fid => {
                 const inp = document.getElementById(fid);
                 if (inp) {
                     inp.addEventListener('change', () => {
@@ -1483,8 +1535,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             // also listen for storage events (in case uploads are set by other scripts)
             window.addEventListener('storage', (e) => {
                 if (!e) return;
-                if (e.key && /proof|med|uploadedProofs|admin_uploaded/i.test(e.key)) {
-                    ['proofFile','medFile'].forEach(fid => { if (hasUploadedFileFor(fid)) clearFieldError(fid); });
+                if (e.key && /proof|med|pwd|uploadedProofs|admin_uploaded/i.test(e.key)) {
+                    ['proofFile','pwdidFile','medFile'].forEach(fid => { if (hasUploadedFileFor(fid)) clearFieldError(fid); });
                 }
             });
         }
@@ -1517,7 +1569,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     lastName: data.last_name || data.lastName || data.last || '',
                     email: data.email || '',
                     phone: data.phone || '',
-                    age: data.age || '',
+                    birthdate: data.birthdate || data.birth_date || data.dob || data.dateOfBirth || data.age || '',
                     address: data.address || '',
                     username: data.username || '',
                     // persist selected Down Syndrome type (if present) under multiple keys for compatibility
@@ -1580,7 +1632,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 } catch(e){}
 
                 // re-run upload initializers to render stored uploads (this is safe; setupUpload checks storage on init)
-                try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); } } catch(e){}
+                try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('pwdidFile','pwdidDisplay','pwdidLabel','pwdidHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); } } catch(e){}
             });
             </script>
 
@@ -1626,7 +1678,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     // common personal fields
                     safeSet('first_name', p.firstName || p.first_name || p.first || p.fname || '');
                     safeSet('last_name', p.lastName || p.last_name || p.last || p.lname || '');
-                    safeSet('age', p.age || '');
+                    safeSet('birthdate', p.birthdate || p.birth_date || p.dob || p.dateOfBirth || p.age || '');
                     safeSet('email', p.email || '');
                     safeSet('phone', p.phone || p.mobile || '');
                     safeSet('address', p.address || '');
@@ -1651,7 +1703,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     }
 
                     // If uploads stored under admin keys, ensure previews are initialized by re-calling setupUpload
-                    try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); } } catch(e){}
+                    try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('pwdidFile','pwdidDisplay','pwdidLabel','pwdidHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); } } catch(e){}
                 } catch(e) {
                     console.warn('[restore] could not apply draft', e);
                 }
