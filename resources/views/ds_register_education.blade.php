@@ -429,8 +429,9 @@
                                         const section = document.getElementById('fileuploadSection'); if(section) section.style.display='block';
                                     }catch(e){ console.warn('persist cert failed', e); }
 
-                                    // delegate view/remove using event delegation
-                                    display.addEventListener('click', function handler(ev){
+                                    // delegate view/remove using event delegation (ensure single handler)
+                                    try{ if(display._vc_handler) display.removeEventListener('click', display._vc_handler); }catch(e){}
+                                    const _vc_handler = function handler(ev){
                                         const target = ev.target;
                                         if(target.classList && target.classList.contains('viewBtn')){
                                             const key='uploadedProofs_proof';
@@ -447,7 +448,9 @@
                                             }catch(e){ console.warn('remove saved cert failed', e); }
                                             try{ display.innerHTML=''; if(label) label.textContent = 'Upload File (Image or PDF)'; if(hint) hint.style.display=''; inp.value=''; }catch(e){}
                                         }
-                                    }, { once: true });
+                                    };
+                                    display._vc_handler = _vc_handler;
+                                    display.addEventListener('click', _vc_handler);
                                 });
 
                                 // init
@@ -728,6 +731,45 @@
                 </div>
         </form>
     </div>
+
+    <!-- 🔹 Modal (Shared for uploads preview) -->
+    <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
+    <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+        <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
+        <div id="modalContent" class="p-2 text-center"></div>
+    </div>
+    </div>
+    <script>
+        // Modal close handlers: close button, outside click, and Escape key
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const modal = document.getElementById('fileModal');
+                const modalContent = document.getElementById('modalContent');
+                const closeBtn = document.getElementById('closeModalBtn');
+
+                function hideModal() {
+                    try {
+                        if (modal) modal.classList.add('hidden');
+                        if (modalContent) modalContent.innerHTML = '';
+                    } catch (e) {}
+                }
+
+                if (closeBtn) closeBtn.addEventListener('click', function(e) { e.preventDefault(); hideModal(); });
+
+                if (modal) modal.addEventListener('click', function(e) {
+                    // clicking on backdrop should close
+                    if (e.target === modal) hideModal();
+                });
+
+                // Escape key closes modal
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape') hideModal();
+                });
+            } catch (err) {
+                console.warn('modal handlers failed to bind', err);
+            }
+        });
+    </script>
 
     <!-- Small inline helper to toggle selection and write the value -->
     <script>
