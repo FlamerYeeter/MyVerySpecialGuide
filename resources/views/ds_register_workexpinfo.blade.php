@@ -445,6 +445,90 @@
                             </div>
                         </div>
 
+                        <!-- Modal for preview (shared) -->
+                        <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
+                        <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+                            <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
+                            <div id="modalContent" class="p-2 text-center"></div>
+                        </div>
+                        </div>
+
+                        <script>
+                        (function(){
+                            const inp = document.getElementById('resumeFile');
+                            const display = document.getElementById('resumeDisplay');
+                            const label = document.getElementById('resumeLabel');
+                            const hint = document.getElementById('resumeHint');
+                            const LS_KEY = 'uploadedResume_file';
+                            function getExt(n){ return String(n||'').split('.').pop().toLowerCase(); }
+                            async function readAsDataURL(f){ return await new Promise((res,rej)=>{ const r=new FileReader(); r.onerror=()=>rej(); r.onload=()=>res(r.result); r.readAsDataURL(f); }); }
+
+                            function renderDisplayFromList(arr){
+                                try{
+                                    if(!display) return;
+                                    if(!Array.isArray(arr) || !arr.length){ display.innerHTML=''; if(hint) hint.style.display=''; if(label) label.textContent='Upload File (Image or PDF)'; return; }
+                                    const it = arr[arr.length-1];
+                                    const icon = (it.type==='pdf')? '📄' : '🖼️';
+                                    const name = (it.name||'').length>60? (it.name||'').slice(0,57)+'...': (it.name||'');
+                                    display.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${icon}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${name}</span><div class="flex gap-2"><button type="button" data-action="view" class="view-btn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button><button type="button" data-action="remove" class="remove-btn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button></div></div>`;
+                                    if(hint) hint.style.display='none';
+                                    if(label) label.textContent='File Uploaded:';
+                                }catch(e){ console.warn('renderDisplayFromList', e); }
+                            }
+
+                            if(inp){
+                                inp.addEventListener('change', async function(){
+                                    const f = this.files && this.files[0]; if(!f) return;
+                                    const ext = getExt(f.name);
+                                    if(!['jpg','jpeg','png','pdf'].includes(ext)){ alert('Invalid file type'); this.value=''; return; }
+                                    if(f.size > 5*1024*1024){ alert('File too large'); this.value=''; return; }
+                                    try{
+                                        const data = await readAsDataURL(f);
+                                        let arr = [];
+                                        try{ arr = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]; }catch(e){ arr=[]; }
+                                        arr.push({ name: f.name, type: ext, data });
+                                        try{ if(typeof window.saveProofs === 'function') window.saveProofs(arr); else localStorage.setItem(LS_KEY, JSON.stringify(arr)); }catch(e){ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
+                                        renderDisplayFromList(arr);
+                                    }catch(e){ console.warn('resume read failed', e); }
+                                });
+                            }
+
+                            // view/remove via delegation
+                            display && display.addEventListener('click', function(ev){
+                                const t = ev.target;
+                                if(!t) return;
+                                if(t.dataset && (t.dataset.action === 'view' || t.dataset.action === 'view') || t.classList.contains('view-btn')){
+                                    try{
+                                        const arr = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[];
+                                        const it = arr && arr.length? arr[arr.length-1]: null;
+                                        if(it){
+                                            const modal = document.getElementById('fileModal');
+                                            const mc = document.getElementById('modalContent');
+                                            if(modal && mc){
+                                                mc.innerHTML = `<h3 class="font-semibold mb-2">${it.name}</h3>`;
+                                                if(['jpg','jpeg','png'].includes(it.type)) mc.innerHTML += `<img src="${it.data}" class="max-h-[70vh] mx-auto rounded-lg"/>`;
+                                                else if(it.type==='pdf') mc.innerHTML += `<iframe src="${it.data}" class="w-full h-[70vh] rounded-lg border" title="${it.name}"></iframe>`;
+                                                modal.classList.remove('hidden');
+                                            }
+                                        }
+                                    }catch(e){ console.warn(e); }
+                                } else if(t.dataset && (t.dataset.action === 'remove' || t.dataset.action === 'remove') || t.classList.contains('remove-btn')){
+                                    try{
+                                        const raw = localStorage.getItem(LS_KEY);
+                                        const arr = raw? JSON.parse(raw):[];
+                                        if(arr && arr.length){
+                                            arr.pop();
+                                            try{ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }catch(e){ console.warn('save failed', e); }
+                                            renderDisplayFromList(arr);
+                                        }
+                                    }catch(e){ console.warn(e); }
+                                }
+                            });
+
+                            // init existing
+                                    try{ const saved = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]; if(saved && saved.length) renderDisplayFromList(saved); }catch(e){}
+                        })();
+                        </script>
 
             <!-- Experiences Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
@@ -831,6 +915,20 @@
     <script>
         document.getElementById('workplaceNext').addEventListener('click', function() {
             window.location.href = '{{ route("registerworkplace") }}';
+        });
+    </script>
+    <script>
+        // modal close handlers (shared preview)
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const modal = document.getElementById('fileModal');
+                const modalContent = document.getElementById('modalContent');
+                const closeBtn = document.getElementById('closeModalBtn');
+                function hideModal(){ try{ if(modal) modal.classList.add('hidden'); if(modalContent) modalContent.innerHTML=''; }catch(e){} }
+                if (closeBtn) closeBtn.addEventListener('click', function(e){ e.preventDefault(); hideModal(); });
+                if (modal) modal.addEventListener('click', function(e){ if (e.target === modal) hideModal(); });
+                document.addEventListener('keydown', function(e){ if (e.key === 'Escape') hideModal(); });
+            } catch (err) { console.warn('modal bind failed', err); }
         });
     </script>
     <script>
