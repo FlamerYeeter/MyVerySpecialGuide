@@ -149,12 +149,12 @@
 
                     <!-- Age -->
                     <div>
-                        <label for="age"
+                        <label for="birthdate"
                             class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Age <span>⭐</span>
+                            Date of Birth <span>⭐</span>
                         </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Edad</p>
-                        <input id="age" type="number" placeholder="Age"
+                        <p class="text-gray-600 italic text-xs sm:text-sm">Petsa ng Kapanganakan</p>
+                        <input id="birthdate" type="date" placeholder="Select your birthdate"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
                     </div>
                 </div>
