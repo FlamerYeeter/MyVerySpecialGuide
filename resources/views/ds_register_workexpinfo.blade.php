@@ -314,10 +314,9 @@
             <!-- Hidden input for work type (collected by register.js) -->
             <input id="work_type" type="hidden" value="" />
 
-            <!-- Work Experience Question -->
+            <!-- Work Experience Question 
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
 
-                <!-- Question Box -->
                 <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 rounded-lg px-4 py-4 shadow-sm">
                     <div
                        class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-2">
@@ -333,9 +332,9 @@
                     <p class="text-gray-600 italic text-base sm:text-lg mt-1">
                         (Kung may karanasan ka sa trabaho, gaano ka katagal nagtrabaho doon?)
                     </p>
-                </div>
+                </div> -->
 
-                <!-- Instruction -->
+                <!-- Instruction 
                 <div class="mt-8">
                     <div
                         class="flex flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-start gap-2">
@@ -353,12 +352,12 @@
                     </p>
                 </div>
 
-            </div>
+            </div> -->
 
-            <!-- Work Years Cards -->
+            <!-- Work Years Cards 
             <div
                 class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
-                <!-- Card 1 -->
+             
                 <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectWorkYearsChoice(this, 'lt1')">
                     <button type="button"
@@ -370,7 +369,7 @@
                     <h3 class="text-blue-600 font-semibold text-center">Less than 1 year</h3>
                 </div>
 
-                <!-- Card 2 -->
+            
                 <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectWorkYearsChoice(this, '1-2')">
                     <button type="button"
@@ -382,7 +381,7 @@
                     <h3 class="text-blue-600 font-semibold text-center">1-2 years</h3>
                 </div>
 
-                <!-- Card 3 -->
+            
                 <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     onclick="selectWorkYearsChoice(this, 'gt3')">
                     <button type="button"
@@ -393,14 +392,63 @@
                         class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
                     <h3 class="text-blue-600 font-semibold text-center">More than 3 years</h3>
                 </div>
-            </div>
+            </div>  -->
 
             <!-- top-level typed start year removed per UX request — per-job start_year remains editable -->
+
+            <!-- Upload resume -->
+                    <div class="mt-8 text-left px-2 sm:px-4">
+                        <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
+                            Please upload your Resume.
+                            <button type="button"
+                                class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                                data-tts-en="Please upload your Resume."
+                                data-tts-tl="Paki-upload ang iyong resume.">🔊</button>
+                        </label>
+
+                        <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
+                           Upload your resume to show your work experience, skills, and qualifications.
+                        </p>
+
+                        <p class="text-gray-600 italic text-sm sm:text-base mb-2">
+                            (I-upload ang iyong resume upang maipakita ang iyong karanasan sa trabaho, kasanayan, at kwalipikasyon.)
+                        </p>
+
+                        <!-- Upload Section -->
+                        <div
+                            class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800 text-sm sm:text-base">
+                                    <span id="resumeLabel" class="flex items-center gap-2">
+                                        <span>Upload File (Image or PDF)</span>
+                                    </span>
+                                </p>
+                                <p id="resumeHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+                                    (Mag-upload ng larawan o PDF ng iyong Resume)<br /><br />
+                                    Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
+                                </p>
+
+                                <!-- File Info Display -->
+                                <div id="resumeDisplay"></div>
+                            </div>
+
+                            <!-- Upload button + input wrapped so validation message is appended below the button -->
+                            <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
+                                <label for="resumeFile"
+                                    class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+                                    📁 Choose File / Pumili ng File
+                                </label>
+                                <input id="resumeFile" name="resume" type="file" accept=".jpg,.jpeg,.png,.pdf"
+                                    class="hidden" />
+                                <!-- validation will be appended here (under the button) -->
+                                <div class="upload-error w-full text-sm text-right"></div>
+                            </div>
+                        </div>
+
 
             <!-- Experiences Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
                 <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Experiences</h2>
-                <p class="text-gray-600 italic mt-4 text-base sm:text-lg">Add one or more previous work experience.</p>
                 <div id="job_experiences_container" class="space-y-4 mt-4"></div>
                 <template id="job_exp_template">
                     <div
@@ -420,7 +468,7 @@
                                     Title</label>
                                 <input id="job_title" name="job_title"
                                     class="job_title w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="e.g. Kitchen Helper" />
+                                    placeholder="e.g. Kitchen Helper" readonly/>
                             </div>
 
                             <!-- Company Name -->
@@ -429,7 +477,7 @@
                                     class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Company Name</label>
                                 <input id="company_name" name="company_name"
                                     class="company_name w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="e.g., McDonald's or University of Makati" />
+                                    placeholder="e.g., McDonald's or University of Makati" readonly/>
                             </div>
 
                             <!-- Work Year -->
@@ -439,7 +487,7 @@
                                 <!-- Make this editable per-job so each experience can record its own start year. -->
                                 <input id="job_work_year" name="job_work_year" type="text" maxlength="4" inputmode="numeric"
                                     placeholder="e.g. 2004"
-                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" />
+                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" readonly/>
                             </div>
 
                             <!-- Job Description -->
@@ -448,7 +496,7 @@
                                     class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job Description</label>
                                 <textarea id="job_description" name="job_description"
                                     class="job_description w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="What you did (e.g. cleaned tables, organized shelves)">
+                                    placeholder="What you did (e.g. cleaned tables, organized shelves)" readonly>
                          </textarea>
                             </div>
                         </div>
