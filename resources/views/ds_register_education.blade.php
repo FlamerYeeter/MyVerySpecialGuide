@@ -334,132 +334,7 @@
                             (Paki-upload ang iyong mga certificate at training documents upang ma-verify ang iyong mga kasanayan at natapos na pagsasanay.)
                         </p>
 
-                        <!-- Upload Section -->
-                        <div
-                            class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div class="flex-1">
-                                <p class="font-medium text-gray-800 text-sm sm:text-base">
-                                    <span id="validcertLabel" class="flex items-center gap-2">
-                                        <span>Upload File (Image or PDF)</span>
-                                    </span>
-                                </p>
-                                <p id="validcertHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-                                    (Mag-upload ng larawan o PDF ng iyong Certificates/Trainings)<br /><br />
-                                    Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
-                                </p>
-
-                                <!-- File Info Display -->
-                                <div id="validcertDisplay"></div>
-                                <!-- Shared proofs list container (populated from uploadedProofs_proof) -->
-                                <div id="fileuploadSection" class="mt-3 hidden">
-                                    <div id="proofFileInfo"></div>
-                                </div>
-                            </div>
-
-                            <!-- Upload button + input wrapped so validation message is appended below the button -->
-                            <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
-                                <label for="validcertFile"
-                                    class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
-                                    📁 Choose File / Pumili ng File
-                                </label>
-                                <input id="validcertFile" name="valid_cert" type="file" accept=".jpg,.jpeg,.png,.pdf"
-                                    class="hidden" />
-                                <!-- validation will be appended here (under the button) -->
-                                <div class="upload-error w-full text-sm text-right"></div>
-                            </div>
-                        </div>
-                        <!-- Wire validcertFile to shared proofs storage + preview (based on adminapprove setup) -->
-                        <script>
-                        (function(){
-                            function setupSingleValidCert(inputId, displayId, labelId, hintId){
-                                const inp = document.getElementById(inputId);
-                                const display = document.getElementById(displayId);
-                                const label = document.getElementById(labelId);
-                                const hint = document.getElementById(hintId);
-                                if(!inp || !display) return;
-
-                                async function readAsDataURL(file){
-                                    return await new Promise((resolve,reject)=>{
-                                        const r = new FileReader();
-                                        r.onerror = ()=>reject(new Error('read error'));
-                                        r.onload = ()=>resolve(r.result);
-                                        r.readAsDataURL(file);
-                                    });
-                                }
-
-                                inp.addEventListener('change', async function(){
-                                    const f = this.files && this.files[0];
-                                    if(!f) return;
-                                    const name = f.name || '';
-                                    const type = String(name.split('.').pop()||'').toLowerCase();
-                                    if(!['jpg','jpeg','png','pdf'].includes(type)){
-                                        alert('Invalid file type. Only JPG, PNG, or PDF allowed.');
-                                        this.value = '';
-                                        return;
-                                    }
-                                    if(f.size > 5 * 1024 * 1024){
-                                        alert('File too large. Max 5MB.');
-                                        this.value = '';
-                                        return;
-                                    }
-
-                                    const icon = ['jpg','jpeg','png'].includes(type)?'🖼️':(type==='pdf'?'📄':'📁');
-                                    const max=60;
-                                    const displayName = name.length>max? name.slice(0,max-3)+'...':name;
-                                    if(label){ label.textContent = 'File Uploaded:'; label.setAttribute('title', name); }
-                                    if(hint) hint.style.display = 'none';
-                                    display.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${icon}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${displayName}</span><div class="flex gap-2"><button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button><button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button></div></div>`;
-
-                                    try{
-                                        const data = await readAsDataURL(f);
-                                        const key = 'uploadedProofs_proof';
-                                        let arr = [];
-                                        try{ arr = JSON.parse(localStorage.getItem(key)||'[]')||[]; }catch(e){ arr=[]; }
-                                        arr.push({ name, type, data });
-                                        if(typeof window.saveProofs === 'function'){
-                                            try{ window.saveProofs(arr); }catch(e){ localStorage.setItem(key, JSON.stringify(arr)); }
-                                        } else {
-                                            try{ localStorage.setItem(key, JSON.stringify(arr)); }catch(e){}
-                                        }
-                                        if(typeof window.showFileList === 'function'){
-                                            try{ window.showFileList(arr); }catch(e){}
-                                        } else {
-                                            setTimeout(()=>{ try{ if(typeof window.showFileList === 'function') window.showFileList(arr); }catch(e){} }, 120);
-                                        }
-                                        const section = document.getElementById('fileuploadSection'); if(section) section.style.display='block';
-                                    }catch(e){ console.warn('persist cert failed', e); }
-
-                                    // delegate view/remove using event delegation (ensure single handler)
-                                    try{ if(display._vc_handler) display.removeEventListener('click', display._vc_handler); }catch(e){}
-                                    const _vc_handler = function handler(ev){
-                                        const target = ev.target;
-                                        if(target.classList && target.classList.contains('viewBtn')){
-                                            const key='uploadedProofs_proof';
-                                            const arr = window.loadSavedProofs ? window.loadSavedProofs() : (JSON.parse(localStorage.getItem(key)||'[]')||[]);
-                                            const it = arr && arr.length ? arr[arr.length-1] : null;
-                                            if(it && typeof window.openModalPreview === 'function') window.openModalPreview(it.name, it.data, it.type);
-                                        } else if(target.classList && target.classList.contains('removeBtn')){
-                                            try{
-                                                const key='uploadedProofs_proof';
-                                                const raw = localStorage.getItem(key);
-                                                const arr = raw ? JSON.parse(raw) : [];
-                                                const idx = arr.map(x=>String(x.name)).lastIndexOf(name);
-                                                if(idx >= 0){ arr.splice(idx,1); localStorage.setItem(key, JSON.stringify(arr)); if(typeof window.showFileList==='function') window.showFileList(arr); }
-                                            }catch(e){ console.warn('remove saved cert failed', e); }
-                                            try{ display.innerHTML=''; if(label) label.textContent = 'Upload File (Image or PDF)'; if(hint) hint.style.display=''; inp.value=''; }catch(e){}
-                                        }
-                                    };
-                                    display._vc_handler = _vc_handler;
-                                    display.addEventListener('click', _vc_handler);
-                                });
-
-                                // init
-                                try{ if(typeof window.loadSavedProofs === 'function'){ const saved = window.loadSavedProofs(); if(saved && saved.length){ const section = document.getElementById('fileuploadSection'); if(section) section.style.display='block'; window.showFileList(saved); } } }catch(e){}
-                            }
-
-                            try{ setupSingleValidCert('validcertFile','validcertDisplay','validcertLabel','validcertHint'); }catch(e){}
-                        })();
-                        </script>
+                        
 
                         <div id="certs_container" class="space-y-4"></div>
 
@@ -1066,8 +941,8 @@
                     </div>
                 </div>
                 <div class="flex gap-2 ml-4">
-                    <button data-action="view" data-idx="${idx}" type="button" class="view-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button>
-                    <button data-action="remove" data-idx="${idx}" type="button" class="remove-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button>
+                    <button data-action="view" data-idx="${idx}" type="button" class="view-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+                    <button data-action="remove" data-idx="${idx}" type="button" class="remove-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
                 </div>
             </div>
             `;
@@ -1480,6 +1355,105 @@
 
             const debouncedSync = debounce(syncFromUI, 150);
 
+            function createUploadSlotForNode(targetNode) {
+                const suf = String(Date.now()) + Math.floor(Math.random()*1000);
+                const slot = document.createElement('div');
+                slot.className = 'mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3';
+
+                const left = document.createElement('div');
+                left.className = 'flex-1';
+                const label = document.createElement('p');
+                label.className = 'font-medium text-gray-800 text-sm sm:text-base';
+                label.innerHTML = `<span id="validcertLabel_${suf}" class="flex items-center gap-2"><span>Upload File (Image or PDF)</span></span>`;
+                const hint = document.createElement('p');
+                hint.id = `validcertHint_${suf}`;
+                hint.className = 'text-gray-600 italic text-xs sm:text-sm mt-1';
+                hint.innerHTML = '(Mag-upload ng larawan o PDF ng iyong Certificates/Trainings)<br /><br />Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />';
+                const display = document.createElement('div');
+                display.id = `validcertDisplay_${suf}`;
+                const fileuploadWrap = document.createElement('div');
+                fileuploadWrap.id = `fileuploadSection_${suf}`;
+                fileuploadWrap.className = 'mt-3';
+                const proofInfo = document.createElement('div');
+                proofInfo.id = `proofFileInfo_${suf}`;
+                fileuploadWrap.appendChild(proofInfo);
+                left.appendChild(label);
+                left.appendChild(hint);
+                left.appendChild(display);
+                left.appendChild(fileuploadWrap);
+
+                const right = document.createElement('div');
+                right.className = 'flex-shrink-0 flex flex-col items-center sm:items-end space-y-2';
+                const lab = document.createElement('label');
+                lab.htmlFor = `validcertFile_${suf}`;
+                lab.className = 'cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition';
+                lab.textContent = '📁 Choose File / Pumili ng File';
+                const inp = document.createElement('input');
+                inp.type = 'file'; inp.accept = '.jpg,.jpeg,.png,.pdf'; inp.id = `validcertFile_${suf}`; inp.className = 'hidden';
+                const verr = document.createElement('div');
+                verr.className = 'upload-error w-full text-sm text-right';
+                right.appendChild(lab); right.appendChild(inp); right.appendChild(verr);
+
+                slot.appendChild(left); slot.appendChild(right);
+
+                // wire input -> targetNode hidden fields and display
+                inp.addEventListener('change', function() {
+                    const f = this.files && this.files[0];
+                    if (!f) return;
+                    const name = f.name || '';
+                    const type = String(name.split('.').pop()||'').toLowerCase();
+                    if (!['jpg','jpeg','png','pdf'].includes(type)) { alert('Invalid file type. Only JPG, PNG, or PDF allowed.'); this.value=''; return; }
+                    if (f.size > 5 * 1024 * 1024) { alert('File too large. Max 5MB.'); this.value=''; return; }
+                    const reader = new FileReader();
+                    reader.onload = function(e){
+                        try{
+                            const data = e.target.result;
+                            // write into targetNode hidden inputs
+                            const hdData = targetNode.querySelector('input[name="certificate_file_data"]');
+                            const hdName = targetNode.querySelector('input[name="certificate_file_name"]');
+                            const hdType = targetNode.querySelector('input[name="certificate_file_type"]');
+                            if (hdData) hdData.value = data;
+                            if (hdName) hdName.value = name;
+                            if (hdType) hdType.value = type;
+                            // render proofInfo
+                            proofInfo.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${['jpg','jpeg','png'].includes(type)?'🖼️':'📄'}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${name.length>60?name.slice(0,57)+'...':name}</span><div class="flex gap-2"><button type="button" class="view-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button><button type="button" class="remove-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button></div></div>`;
+                            // hook view/remove
+                            const vb = proofInfo.querySelector('.view-file');
+                            const rb = proofInfo.querySelector('.remove-file');
+                            if (vb) vb.addEventListener('click', function(){ if (typeof window.openModalPreview === 'function') return window.openModalPreview(name, data, type); const modal = document.getElementById('fileModal'); const mc = document.getElementById('modalContent'); if(mc) mc.innerHTML = `<h3 class="font-semibold mb-2">${name}</h3>` + (['jpg','jpeg','png'].includes(type)?`<img src="${data}" class="max-h-[70vh] mx-auto rounded-lg"/>`:(type==='pdf'?`<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`:'')); if(modal) modal.classList.remove('hidden'); });
+                            if (rb) rb.addEventListener('click', function(){ if (hdData) hdData.value=''; if (hdName) hdName.value=''; if (hdType) hdType.value=''; proofInfo.innerHTML=''; inp.value='';
+                                // sync
+                                try{ const evt = new Event('input',{bubbles:true}); targetNode.querySelectorAll('input').forEach(i=>i.dispatchEvent(evt)); }catch(e){}
+                            });
+                            // trigger sync
+                            try{ const evt = new Event('input',{bubbles:true}); targetNode.querySelectorAll('input').forEach(i=>i.dispatchEvent(evt)); }catch(e){}
+                        }catch(err){ console.warn(err); }
+                    };
+                    reader.onerror = function(){ alert('Failed to read file'); };
+                    reader.readAsDataURL(f);
+                });
+
+                // allow external population (for restored items)
+                slot.populateFile = function(name, data, type){
+                    try{
+                        const hdData = targetNode.querySelector('input[name="certificate_file_data"]');
+                        const hdName = targetNode.querySelector('input[name="certificate_file_name"]');
+                        const hdType = targetNode.querySelector('input[name="certificate_file_type"]');
+                        if (hdData) hdData.value = data || '';
+                        if (hdName) hdName.value = name || '';
+                        if (hdType) hdType.value = type || '';
+                        if (!data){ proofInfo.innerHTML = ''; return; }
+                        proofInfo.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${['jpg','jpeg','png'].includes(type)?'🖼️':'📄'}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${(name||'Uploaded file').length>60? (name||'Uploaded file').slice(0,57)+'...' : (name||'Uploaded file')}</span><div class="flex gap-2"><button type="button" class="view-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button><button type="button" class="remove-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button></div></div>`;
+                        const vb = proofInfo.querySelector('.view-file');
+                        const rb = proofInfo.querySelector('.remove-file');
+                        if (vb) vb.addEventListener('click', function(){ if (typeof window.openModalPreview === 'function') return window.openModalPreview(name, data, type); const modal = document.getElementById('fileModal'); const mc = document.getElementById('modalContent'); if(mc) mc.innerHTML = `<h3 class="font-semibold mb-2">${name}</h3>` + (['jpg','jpeg','png'].includes(type)?`<img src="${data}" class="max-h-[70vh] mx-auto rounded-lg"/>`:(type==='pdf'?`<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`:'')); if(modal) modal.classList.remove('hidden'); });
+                        if (rb) rb.addEventListener('click', function(){ if (hdData) hdData.value=''; if (hdName) hdName.value=''; if (hdType) hdType.value=''; proofInfo.innerHTML=''; inp.value=''; try{ const evt = new Event('input',{bubbles:true}); targetNode.querySelectorAll('input').forEach(i=>i.dispatchEvent(evt)); }catch(e){} });
+                    }catch(e){ console.warn(e); }
+                };
+
+                return slot;
+            }
+
             function buildEntry(item) {
                 const node = tpl.content.firstElementChild.cloneNode(true);
                 if (item) {
@@ -1500,7 +1474,14 @@
             }
 
             function addCert(item) {
-                container.appendChild(buildEntry(item || {}));
+                const node = buildEntry(item || {});
+                // create upload slot tied to this node and insert before the node
+                const slot = createUploadSlotForNode(node);
+                if (item && item.certificate_file_data) {
+                    try{ slot.populateFile(item.certificate_file_name || '', item.certificate_file_data || '', item.certificate_file_type || ''); }catch(e){}
+                }
+                container.appendChild(slot);
+                container.appendChild(node);
                 debouncedSync();
                 // focus first input of newly added
                 const last = container.lastElementChild;
