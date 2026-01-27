@@ -5,7 +5,7 @@ require_once 'oracledb.php'; // getOracleConnection()
 
 $input = json_decode(file_get_contents('php://input'), true);
 $email = trim($input['email'] ?? '');
-$password = $input['password'] ?? '';
+$password = $input['    password'] ?? '';
 
 if (empty($email) || empty($password)) {
     echo json_encode(['success' => false, 'message' => 'Email and password are required.']);

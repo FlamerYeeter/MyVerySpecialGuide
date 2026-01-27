@@ -718,19 +718,22 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     `;
 
         // Unique admin keys
-        let nameKey, dataKey, typeKey;
+        let nameKey, dataKey, typeKey, ocrtype;
         if (inputId === 'proofFile') {
             nameKey = 'admin_uploaded_proof_name';
             dataKey = 'admin_uploaded_proof_data';
             typeKey = 'admin_uploaded_proof_type';
+            ocrtype = 'membership_proof';
         } else if (inputId === 'pwdidFile') {
             nameKey = 'admin_uploaded_pwd_name';
             dataKey = 'admin_uploaded_pwd_data';
             typeKey = 'admin_uploaded_pwd_type';
+            ocrtype = 'pwd_id';
         } else {
             nameKey = 'admin_uploaded_med_name';
             dataKey = 'admin_uploaded_med_data';
             typeKey = 'admin_uploaded_med_type';
+            ocrtype = 'medical_certificate';
         }
 
     // Save file to storage
@@ -740,6 +743,56 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         localStorage.setItem(nameKey, file.name);
         localStorage.setItem(dataKey, reader.result);
         localStorage.setItem(typeKey, ext);
+        // ✅ Save data to backend 
+        const data = {
+            type: ocrtype,
+            ocr_name: file.name,
+            ocr_data: reader.result,
+            ocr_type: ext
+        };
+
+        fetch('db/ocr-validation.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+        })
+        .then(response => {
+            // Always try to parse JSON, even on errors
+            return response.json().then(jsonData => ({
+                ok: response.ok,
+                status: response.status,
+                body: jsonData
+            }));
+        })
+        .then(res => {
+            if (res.ok) {
+                // ✅ Success (HTTP 200)
+                debugger;
+                console.log('OCR Result:', res.body);
+                if (res.body.data.ocrtype == 'pwd_id' && ocrtype == 'pwd_id') {
+                    alert('Disability: ' + res.body.data.ai_data.type_of_disability + 'OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                }
+                else if (res.body.data.ocrtype == 'medical_certificate' && ocrtype == 'medical_certificate') {
+                    alert('Medical Condition: ' + res.body.data.ai_data.medical_condition + 'OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                }
+                else {
+                    alert('OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                }
+              
+                // Access like:
+                // res.body.status
+                // res.body.message
+                // res.body.data.name, etc.
+            } else {
+                // ❌ Error
+                alert(`Error ${res.status}: ${res.body.message || 'Unknown error'}`);
+            }
+        })
+        .catch(err => {
+            console.error('Fetch error:', err);
+            alert('Failed to fetch OCR data.');
+        });
+
         console.info('[adminapprove] saved upload to localStorage', nameKey);
       } catch (err) {
         console.warn('Failed to save upload in localStorage', err);
