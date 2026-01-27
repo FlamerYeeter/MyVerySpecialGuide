@@ -409,19 +409,22 @@ setupEditSection("editAccountBtn", "accountSection");
 <!-- Uploaded Files Edit Script -->
 <script>
 (function(){
-  const proofDisplay = document.getElementById("proofDisplay");
-  const medDisplay = document.getElementById("medDisplay");
+    const proofDisplay = document.getElementById("proofDisplay");
+    const pwdDisplay = document.getElementById("pwdidDisplay");
+    const medDisplay = document.getElementById("medDisplay");
   const editFilesBtn = document.getElementById("editFilesBtn");
 
-  // New, separate keys to avoid cross-section leakage
-  const PROOF_ARR_KEY = 'uploadedProofs_proof';
-  const MED_ARR_KEY   = 'uploadedProofs_med';
-  const LEGACY_ARR_KEY = 'uploadedProofs1'; // old shared array (migrate if present)
+    // New, separate keys to avoid cross-section leakage
+    const PROOF_ARR_KEY = 'uploadedProofs_proof';
+    const EDU_ARR_KEY   = 'uploadedCertificates_education'; // education-specific proofs
+    const MED_ARR_KEY   = 'uploadedProofs_med';
+    const LEGACY_ARR_KEY = 'uploadedProofs1'; // old shared array (migrate if present)
 
-  const ADMIN_KEYS = {
-    proof: { name: 'admin_uploaded_proof_name', data: 'admin_uploaded_proof_data', type: 'admin_uploaded_proof_type' },
-    medical: { name: 'admin_uploaded_med_name', data: 'admin_uploaded_med_data', type: 'admin_uploaded_med_type' }
-  };
+    const ADMIN_KEYS = {
+        proof: { name: 'admin_uploaded_proof_name', data: 'admin_uploaded_proof_data', type: 'admin_uploaded_proof_type' },
+        pwd:   { name: 'admin_uploaded_pwd_name',  data: 'admin_uploaded_pwd_data',  type: 'admin_uploaded_pwd_type' },
+        medical: { name: 'admin_uploaded_med_name', data: 'admin_uploaded_med_data', type: 'admin_uploaded_med_type' }
+    };
   const LEGACY_KEYS = {
     proof: { name: 'uploadedProofName1', data: 'uploadedProofData1', type: 'uploadedProofType1' },
     medical: { name: 'uploadedProofName0', data: 'uploadedProofData0', type: 'uploadedProofType0' }
@@ -430,6 +433,63 @@ setupEditSection("editAccountBtn", "accountSection");
   function readJson(key){ try { return JSON.parse(localStorage.getItem(key)); } catch(e){ return null; } }
   function writeJson(key, val){ try { localStorage.setItem(key, JSON.stringify(val)); } catch(e){} }
   function removeKeyBoth(k){ try{ localStorage.removeItem(k); }catch(e){} try{ sessionStorage.removeItem(k); }catch(e){} }
+
+    // Attempt to find a proof-like item in localStorage under various legacy keys.
+    function findFallbackProof() {
+        try {
+            // Check common legacy single-file keys
+            const candidates = [
+                'uploadedProofName','uploadedProofData','uploadedProofType',
+                'uploadedProofName1','uploadedProofData1','uploadedProofType1',
+                'uploadedProofName0','uploadedProofData0','uploadedProofType0',
+                'uploaded_proof_name','uploaded_proof_data','uploaded_proof_type',
+                'proofName','proofData','proofType','proofFilename'
+            ];
+
+            // If there is a named pair, prefer it
+            for (let i = 0; i < candidates.length; i++) {
+                const k = candidates[i];
+                if (k.toLowerCase().includes('name')) {
+                    const name = localStorage.getItem(k);
+                    if (name) {
+                        // try to find a matching data key nearby
+                        const possibleDataKeys = candidates.filter(x => x.toLowerCase().includes('data'));
+                        for (const dk of possibleDataKeys) {
+                            const data = localStorage.getItem(dk);
+                            if (data) return { name: name, data: data, type: localStorage.getItem(k.replace(/name/i,'type')) || (name.split('.').pop()||'') };
+                        }
+                    }
+                }
+            }
+
+            // scan all keys for something that looks like a data URL or an array containing an object with name/data
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (!key) continue;
+                const raw = localStorage.getItem(key);
+                if (!raw) continue;
+                // direct data URL
+                if (typeof raw === 'string' && raw.startsWith('data:') && /proof/i.test(key)) {
+                    const name = localStorage.getItem(key.replace(/Data|data|_data/i,'_name')) || 'file';
+                    const type = (raw.split(';')[0] || '').replace('data:','').split('/').pop() || '';
+                    return { name: name, data: raw, type: type };
+                }
+                // JSON array/object
+                try {
+                    const parsed = JSON.parse(raw || 'null');
+                    if (Array.isArray(parsed) && parsed.length) {
+                        // look for object with name+data
+                        for (const it of parsed) {
+                            if (it && (it.name || it.filename) && it.data) return { name: it.name || it.filename, data: it.data, type: it.type || (it.name||'').split('.').pop() };
+                        }
+                    } else if (parsed && typeof parsed === 'object') {
+                        if ((parsed.name || parsed.filename) && parsed.data) return { name: parsed.name || parsed.filename, data: parsed.data, type: parsed.type || (parsed.name||'').split('.').pop() };
+                    }
+                } catch(e){}
+            }
+        } catch(e){}
+        return null;
+    }
 
   function escapeHtml(s){ if(s===null||s===undefined) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
@@ -635,8 +695,8 @@ setupEditSection("editAccountBtn", "accountSection");
               ['uploadedProofName0','uploadedProofData0','uploadedProofType0','uploaded_proof_name','uploaded_proof_data','uploaded_proof_type','medName','medData','medType'];
             legacyCandidates.forEach(k=>{ try{ removeKeyBoth(k); }catch(e){} });
 
-            // prune any array keys that match this namespace but only entries that match the exact filename
-            [PROOF_ARR_KEY, MED_ARR_KEY, LEGACY_ARR_KEY].forEach(k=>{
+                        // prune any array keys that match this namespace but only entries that match the exact filename
+                        [PROOF_ARR_KEY, EDU_ARR_KEY, MED_ARR_KEY, LEGACY_ARR_KEY].forEach(k=>{
               try{
                 const raw = localStorage.getItem(k);
                 if(!raw) return;
@@ -655,8 +715,23 @@ setupEditSection("editAccountBtn", "accountSection");
     });
   }
   
-  function renderAll(){
-    if(!proofDisplay || !medDisplay) return;
+    function renderAll(){
+        if(!proofDisplay || !pwdDisplay || !medDisplay) return;
+
+        // PWD ID: prefer admin-scoped single file (admin may upload PWD)
+        try {
+            const adminPwdName = localStorage.getItem(ADMIN_KEYS.pwd.name);
+            const adminPwdData = localStorage.getItem(ADMIN_KEYS.pwd.data);
+            const adminPwdType = localStorage.getItem(ADMIN_KEYS.pwd.type);
+
+            if (adminPwdName && adminPwdData) {
+                renderSingleTo(pwdDisplay, adminPwdName, adminPwdData, adminPwdType, [ADMIN_KEYS.pwd.name, ADMIN_KEYS.pwd.data, ADMIN_KEYS.pwd.type]);
+            } else {
+                pwdDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+            }
+        } catch(e){
+            pwdDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+        }
 
         // PROOF: prefer admin-scoped single file, but fall back to registration arrays or legacy keys
         try {
@@ -667,20 +742,29 @@ setupEditSection("editAccountBtn", "accountSection");
             if (adminProofName && adminProofData) {
                 renderSingleTo(proofDisplay, adminProofName, adminProofData, adminProofType, [ADMIN_KEYS.proof.name, ADMIN_KEYS.proof.data, ADMIN_KEYS.proof.type]);
             } else {
-                // fallback: check new per-field array
-                const arr = readJson(PROOF_ARR_KEY);
-                if (Array.isArray(arr) && arr.length) {
-                    renderListTo(proofDisplay, arr);
-                } else {
+                    // fallback: check new per-field array (including education-specific proofs)
+                    let arr = readJson(PROOF_ARR_KEY);
+                    if (!Array.isArray(arr) || !arr.length) {
+                        const eduArr = readJson(EDU_ARR_KEY);
+                        if (Array.isArray(eduArr) && eduArr.length) arr = eduArr;
+                    }
+                    if (Array.isArray(arr) && arr.length) {
+                        renderListTo(proofDisplay, arr);
+                    } else {
                     // fallback: legacy shared array
                     const legacy = readJson(LEGACY_ARR_KEY);
                     if (Array.isArray(legacy) && legacy.length) {
-                        // try to extract proof entries (some legacy formats store proof at index 0/1 — attempt both)
                         const candidates = legacy.filter(Boolean);
                         if (candidates.length) renderListTo(proofDisplay, candidates);
                         else proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
                     } else {
-                        proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+                        // Final fallback: scan localStorage for any proof-like entry
+                        const fb = findFallbackProof();
+                        if (fb && fb.name && fb.data) {
+                            renderSingleTo(proofDisplay, fb.name, fb.data, fb.type || (fb.name||'').split('.').pop(), []);
+                        } else {
+                            proofDisplay.innerHTML = '<p class="text-gray-600 italic">No file uploaded.</p>';
+                        }
                     }
                 }
             }
@@ -723,12 +807,14 @@ setupEditSection("editAccountBtn", "accountSection");
     editFilesBtn.innerText = editFilesBtn.dataset.mode === 'editing' ? '💾 Save Changes' : '✏️ Edit Files';
     editFilesBtn.addEventListener('click', ()=>{
       const isEditing = editFilesBtn.dataset.mode === 'editing';
-      const proofFile = document.getElementById('proofFile');
-      const medFile = document.getElementById('medFile');
+    const proofFile = document.getElementById('proofFile');
+    const medFile = document.getElementById('medFile');
+    const pwdFile = document.getElementById('pwdidFile');
 
       if(isEditing){
         if(proofFile) proofFile.disabled = true;
         if(medFile) medFile.disabled = true;
+        if(pwdFile) pwdFile.disabled = true;
         editFilesBtn.innerText = '✏️ Edit Files';
         editFilesBtn.dataset.mode = 'view';
         editFilesBtn.classList.remove('bg-green-600', 'hover:bg-green-700');
@@ -736,6 +822,7 @@ setupEditSection("editAccountBtn", "accountSection");
       } else {
         if(proofFile) proofFile.disabled = false;
         if(medFile) medFile.disabled = false;
+        if(pwdFile) pwdFile.disabled = false;
         editFilesBtn.innerText = '💾 Save Changes';
         editFilesBtn.dataset.mode = 'editing';
         editFilesBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
@@ -824,14 +911,44 @@ setupEditSection("editAccountBtn", "accountSection");
     });
     }
 
+    // PWD upload -> save as admin-only
+    const pwdFileInput = document.getElementById('pwdidFile');
+    if (pwdFileInput) {
+        pwdFileInput.addEventListener('change', (ev) => {
+            const f = ev.target.files && ev.target.files[0];
+            if (!f) return;
+            const reader = new FileReader();
+            reader.onload = function () {
+                try {
+                    const ext = (f.name.split('.').pop() || '').toLowerCase();
+                    // Save as admin-scoped single-file (review-1)
+                    localStorage.setItem(ADMIN_KEYS.pwd.name, f.name);
+                    localStorage.setItem(ADMIN_KEYS.pwd.data, reader.result);
+                    localStorage.setItem(ADMIN_KEYS.pwd.type, ext);
+
+                    // Remove legacy single-file pwd keys (but DO NOT remove admin keys we just set)
+                    const legacyPwdKeys = [
+                        'uploaded_pwd_name','uploaded_pwd_data','uploaded_pwd_type','pwdName','pwdData','pwdType'
+                    ];
+                    legacyPwdKeys.forEach(k => { try { removeKeyBoth(k); } catch(e){} });
+                } catch (err) {
+                    console.warn('[review1] failed to save admin pwd', err);
+                }
+                renderAll();
+            };
+            reader.readAsDataURL(f);
+        });
+    }
+
   // initial render and listen for storage changes
   renderAll();
   window.addEventListener('storage', (e)=>{
     migrateLegacyArrayIfNeeded();
     if(!e.key){ renderAll(); return; }
-    const watch = [PROOF_ARR_KEY, MED_ARR_KEY, LEGACY_ARR_KEY,
-      ADMIN_KEYS.proof.name, ADMIN_KEYS.proof.data, ADMIN_KEYS.proof.type,
-      ADMIN_KEYS.medical.name, ADMIN_KEYS.medical.data, ADMIN_KEYS.medical.type,
+        const watch = [PROOF_ARR_KEY, EDU_ARR_KEY, MED_ARR_KEY, LEGACY_ARR_KEY,
+            ADMIN_KEYS.proof.name, ADMIN_KEYS.proof.data, ADMIN_KEYS.proof.type,
+            ADMIN_KEYS.pwd.name, ADMIN_KEYS.pwd.data, ADMIN_KEYS.pwd.type,
+            ADMIN_KEYS.medical.name, ADMIN_KEYS.medical.data, ADMIN_KEYS.medical.type,
       LEGACY_KEYS.proof.name, LEGACY_KEYS.proof.data, LEGACY_KEYS.proof.type,
       LEGACY_KEYS.medical.name, LEGACY_KEYS.medical.data, LEGACY_KEYS.medical.type
     ];
@@ -886,7 +1003,12 @@ setupEditSection("editAccountBtn", "accountSection");
 
                         const text = id => {
                             const el = document.getElementById(id);
-                            return el && el.textContent ? el.textContent.trim() : '';
+                            if (!el) return '';
+                            // Prefer .value for inputs, fall back to textContent
+                            try {
+                                if (typeof el.value !== 'undefined' && el.value !== null && String(el.value).trim() !== '') return String(el.value).trim();
+                            } catch (e) {}
+                            try { return el.textContent ? el.textContent.trim() : ''; } catch (e) { return ''; }
                         };
 
                         // Personal fields
@@ -895,6 +1017,8 @@ setupEditSection("editAccountBtn", "accountSection");
                         draft.personal.email = draft.personal.email || text('r_email');
                         draft.personal.phone = draft.personal.phone || text('r_phone');
                         draft.personal.age = draft.personal.age || text('r_age');
+                        // Birthdate (ensure it is saved and carried through)
+                        draft.personal.birthdate = draft.personal.birthdate || text('r_birthdate') || text('birthdate');
                         draft.personal.address = draft.personal.address || text('r_address');
                         draft.personal.username = draft.personal.username || text('r_username');
 
@@ -918,13 +1042,22 @@ setupEditSection("editAccountBtn", "accountSection");
 
                     // Save to localStorage
                     try {
-localStorage.setItem('rpi_personal1', JSON.stringify(draft));
+                        // persist draft including birthdate
+                        localStorage.setItem('rpi_personal1', JSON.stringify(draft));
                         try {
                             const verified = JSON.parse(localStorage.getItem('rpi_personal1'));
                             console.info('[review] saveDraftAndEdit wrote rpi_personal1 and verified', verified);
                         } catch (verErr) {
                             console.info('[review] saveDraftAndEdit wrote rpi_personal1 (could not parse on readback)', localStorage.getItem('rpi_personal1'));
                         }
+                        // Also ensure current review view shows the birthdate value
+                        try {
+                            const bd = draft && draft.personal && draft.personal.birthdate ? draft.personal.birthdate : null;
+                            if (bd) {
+                                const bdEl = document.getElementById('birthdate');
+                                if (bdEl && (typeof bdEl.value !== 'undefined')) bdEl.value = bd;
+                            }
+                        } catch(e){}
                     } catch (e) {
                         console.warn('saveDraftAndEdit: failed to set localStorage', e);
                     }
@@ -1825,7 +1958,7 @@ localStorage.setItem('rpi_personal1', JSON.stringify(draft));
             const draft = JSON.parse(saved);
 
             const fieldIds = [
-                "first_name", "last_name", "age", "email", "phone", "address",
+                "first_name", "last_name", "birthdate", "age", "email", "phone", "address",
                 "r_dsType1", "g_last_name", "g_first_name", "g_phone", "g_email",
                 "guardian_relationship", "username", "password"
             ];
@@ -1878,6 +2011,8 @@ localStorage.setItem('rpi_personal1', JSON.stringify(draft));
                         email: data.email || '',
                         phone: data.phone || '',
                         age: data.age || '',
+                        // include birthdate when saving draft
+                        birthdate: data.birthdate || data.birthDate || data.birth_date || '',
                         address: data.address || '',
                         username: data.username || '',
                         g_first_name: data.g_first_name || data.guardianFirst || '',

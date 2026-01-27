@@ -825,20 +825,13 @@
                                     return;
                                 }
 
-                                // require a work-year selection
-                                const selectedWorkYear = document.querySelector('.workyr-card.selected');
-                                if (!selectedWorkYear) {
-                                    if (errorEl) errorEl.textContent = 'Please select how long you worked there.';
-                                    const workYrTop = document.querySelector('.workyr-card') || document.getElementById('workExpNext');
-                                    if (workYrTop) workYrTop.scrollIntoView({behavior:'smooth', block:'center'});
-                                    return;
-                                }
+                                // work-year selection is optional now; do not block progression if not selected
 
-                                // require at least one non-empty job experience entry
+                                // require at least one non-empty job experience entry, but allow progression
+                                // when entries are read-only (restore-only) or saved in hidden/localStorage
                                 const jobItems = Array.from(document.querySelectorAll('#job_experiences_container .job_exp_item'));
                                 let nonEmptyCount = 0;
                                 for (const item of jobItems) {
-                                    // skip disabled entries (they are present only for 'none' state)
                                     const anyInput = Array.from(item.querySelectorAll('input, textarea')).some(inp => {
                                         try { if (inp.disabled) return false; } catch (e) {}
                                         const v = (inp.value || '').trim();
@@ -846,11 +839,39 @@
                                     });
                                     if (anyInput) nonEmptyCount++;
                                 }
+
+                                // If no visible non-empty inputs, attempt fallbacks:
+                                // - if all inputs are readonly/disabled (restore-only), allow
+                                // - if hidden #work_experiences contains saved entries, allow
+                                // - if localStorage has job/work_experiences, allow
                                 if (nonEmptyCount === 0) {
-                                    if (errorEl) errorEl.textContent = 'Please add at least one previous work experience.';
-                                    const jobTop = document.getElementById('job_experiences_container') || document.getElementById('workExpNext');
-                                    if (jobTop) jobTop.scrollIntoView({behavior:'smooth', block:'center'});
-                                    return;
+                                    const allInputs = Array.from(document.querySelectorAll('#job_experiences_container .job_exp_item input, #job_experiences_container .job_exp_item textarea'));
+                                    const allReadonly = allInputs.length > 0 && allInputs.every(inp => inp.readOnly || inp.disabled);
+
+                                    let hiddenHas = false;
+                                    try {
+                                        const hiddenJobs = document.getElementById('work_experiences');
+                                        if (hiddenJobs && hiddenJobs.value) {
+                                            const parsed = JSON.parse(hiddenJobs.value || '[]');
+                                            if (Array.isArray(parsed) && parsed.length > 0) hiddenHas = true;
+                                        }
+                                    } catch (e) { hiddenHas = false; }
+
+                                    let storageHas = false;
+                                    try {
+                                        const raw = localStorage.getItem('work_experiences') || localStorage.getItem('job_experiences');
+                                        if (raw) {
+                                            const parsed = JSON.parse(raw || '[]');
+                                            if (Array.isArray(parsed) && parsed.length > 0) storageHas = true;
+                                        }
+                                    } catch (e) { storageHas = false; }
+
+                                    if (!(allReadonly || hiddenHas || storageHas)) {
+                                        if (errorEl) errorEl.textContent = 'Please add at least one previous work experience.';
+                                        const jobTop = document.getElementById('job_experiences_container') || document.getElementById('workExpNext');
+                                        if (jobTop) jobTop.scrollIntoView({behavior:'smooth', block:'center'});
+                                        return;
+                                    }
                                 }
                             }
 

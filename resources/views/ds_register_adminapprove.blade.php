@@ -743,6 +743,23 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         localStorage.setItem(nameKey, file.name);
         localStorage.setItem(dataKey, reader.result);
         localStorage.setItem(typeKey, ext);
+        // Also persist into the shared education/review array so other pages see the proof
+        try {
+            if (inputId === 'proofFile') {
+                const arrKey = 'uploadedProofs_proof';
+                try {
+                    const raw = localStorage.getItem(arrKey);
+                    let arr = [];
+                    if (raw) {
+                        try { arr = JSON.parse(raw || '[]') || []; } catch(e){ arr = []; }
+                    }
+                    // remove any existing item with same filename then push
+                    arr = (arr || []).filter(it => !(it && (it.name||it.filename) && (it.name||it.filename) === file.name));
+                    arr.push({ name: file.name, type: ext, data: reader.result });
+                    localStorage.setItem(arrKey, JSON.stringify(arr));
+                } catch(e){}
+            }
+        } catch(e){}
         // ✅ Save data to backend 
         const data = {
             type: ocrtype,

@@ -142,7 +142,11 @@
                     Certificates & Trainings
                 </h3>
 
+                <!-- Visible indicator removed; we rely on uploadedCertificates_education for files -->
+
                 <div id="certificateReview" class="mt-4 text-gray-800 mb-3">
+                    <!-- Hidden canonical field for draft restore and scripts that expect an input -->
+                    <input type="hidden" id="review_certs" name="review_certs" value="" />
                     <!-- Read-only list -->
                     <div id="certsList" class="space-y-3"></div>
                     <div id="noCertsMsg" class="text-gray-600 italic">No certificates or trainings added.</div>
@@ -537,7 +541,8 @@
                 </div>
             </div>
 
-            <script>
+                <script>
+                // No diagnostics UI here — review-2 now reads canonical `uploadedCertificates_education`.
                 (function(){
                     function titleCase(s){
                         if(!s) return '';
@@ -1175,16 +1180,14 @@ document.addEventListener("DOMContentLoaded", () => {
                     const savedCert = localStorage.getItem("review_certs"); // same key as saved
                     console.log("Retrieved from localStorage:", savedCert);
 
-                    // Set span text
-                    const certSpan = document.getElementById("review_certs");
-                    if (certSpan) {
-                        if (savedCert) {
-                            certSpan.textContent = savedCert; // display "yes" or "no"
-                            console.log(`Span updated with value: ${savedCert}`);
-                        } else {
-                            certSpan.textContent = '';
-                            console.log("No saved cert found, span cleared.");
-                        }
+                    // Update hidden input (for draft restore and scripts) and visible display
+                    const certInput = document.getElementById("review_certs");
+                    const certDisplay = document.getElementById("review_certs_display");
+                    if (certInput) {
+                        try { certInput.value = savedCert || ''; } catch(e){}
+                    }
+                    if (certDisplay) {
+                        certDisplay.textContent = savedCert ? String(savedCert) : '';
                     }
                 });
             </script>
@@ -1899,34 +1902,90 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
                     function readCertificates() {
-                        // 1) direct canonical key
-                        try {
-                            const raw = localStorage.getItem('education_certificates');
-                            if (raw) {
-                                const parsed = parseMaybe(raw);
-                                if (Array.isArray(parsed)) return parsed;
-                            }
-                        } catch(e){}
+                                        // Read metadata arrays (canonical) AND also include any file-only uploads.
+                                        var result = [];
+                                        // 1) direct canonical key (education_certificates)
+                                        try {
+                                            const raw = localStorage.getItem('education_certificates');
+                                            if (raw) {
+                                                const parsed = parseMaybe(raw);
+                                                if (Array.isArray(parsed)) result = parsed.slice();
+                                            }
+                                        } catch(e){}
 
-                        // 2) education_profile with nested certificates
-                        try {
-                            const epRaw = localStorage.getItem('education_profile') || localStorage.getItem('education_profile_json');
-                            if (epRaw) {
-                                const ep = parseMaybe(epRaw);
-                                if (ep && Array.isArray(ep.certificates)) return ep.certificates;
-                                if (ep && Array.isArray(ep.education_certificates)) return ep.education_certificates;
-                            }
-                        } catch(e){}
+                                        // 2) education_profile with nested certificates (prefer these if present)
+                                        try {
+                                            const epRaw = localStorage.getItem('education_profile') || localStorage.getItem('education_profile_json');
+                                            if (epRaw) {
+                                                const ep = parseMaybe(epRaw);
+                                                if (ep && Array.isArray(ep.certificates)) result = ep.certificates.slice();
+                                                else if (ep && Array.isArray(ep.education_certificates)) result = ep.education_certificates.slice();
+                                            }
+                                        } catch(e){}
 
-                        // 3) fallback: search a few other keys
-                        for (const k of ['education_certificates','educationCertificates','certificates']) {
-                            try {
-                                const r = localStorage.getItem(k);
-                                const p = parseMaybe(r);
-                                if (Array.isArray(p)) return p;
-                            } catch(e){}
-                        }
-                        return [];
+                                        // 3) other possible keys (if nothing found yet)
+                                        if (!result.length) {
+                                            for (const k of ['educationCertificates','certificates','education_certificates_array']) {
+                                                try {
+                                                    const r = localStorage.getItem(k);
+                                                    const p = parseMaybe(r);
+                                                    if (Array.isArray(p)) { result = p.slice(); break; }
+                                                } catch(e){}
+                                            }
+                                        }
+
+                                        // 4) also include any uploaded certificate files saved by the education uploader
+                                        try {
+                                            const filesRaw = localStorage.getItem('uploadedCertificates_education') || localStorage.getItem('uploadedProofs_proof') || localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || null;
+                                            const files = filesRaw ? parseMaybe(filesRaw) : null;
+                                            if (Array.isArray(files) && files.length) {
+                                                const mapped = files.map(f => ({ certificate_name: f.name || f.filename || '', issued_by: '', date_completed: '', training_description: '', __file_only: true }));
+                                                const seen = new Set((result || []).map(r => String(r.certificate_name || r.name || '').toLowerCase()));
+                                                for (const m of mapped) {
+                                                    const n = String(m.certificate_name || '').toLowerCase();
+                                                    if (!n) continue;
+                                                    if (!seen.has(n)) { result.push(m); seen.add(n); }
+                                                }
+                                            }
+                                        } catch(e){}
+
+                                        // 5) broad scan: if still empty, scan localStorage keys for arrays/objects that look like uploaded files
+                                        try {
+                                            if (!result.length && typeof localStorage === 'object') {
+                                                const candidates = [];
+                                                for (let i=0;i<localStorage.length;i++) {
+                                                    const k = localStorage.key(i) || '';
+                                                    if (!/upload|proof|cert|certificate|uploaded/i.test(k)) continue;
+                                                    try {
+                                                        const v = parseMaybe(localStorage.getItem(k));
+                                                        if (Array.isArray(v)) {
+                                                            // check if array of objects with name/data
+                                                            if (v.length && v.some(it => it && (it.name || it.filename || it.data || it.url))) candidates.push({key:k,arr:v});
+                                                        } else if (v && (v.name || v.filename || v.data || v.url)) {
+                                                            candidates.push({key:k,arr:[v]});
+                                                        }
+                                                    } catch(e){}
+                                                }
+                                                if (candidates.length) {
+                                                    // merge first candidate arrays
+                                                    const mapped = [];
+                                                    for (const c of candidates) {
+                                                        for (const f of (c.arr||[])) {
+                                                            if (!f) continue;
+                                                            mapped.push({ certificate_name: f.name || f.filename || '', issued_by: '', date_completed: '', training_description: '', __file_only: true, __source: c.key });
+                                                        }
+                                                    }
+                                                    const seen = new Set((result || []).map(r => String(r.certificate_name || r.name || '').toLowerCase()));
+                                                    for (const m of mapped) {
+                                                        const n = String(m.certificate_name || '').toLowerCase();
+                                                        if (!n) continue;
+                                                        if (!seen.has(n)) { result.push(m); seen.add(n); }
+                                                    }
+                                                }
+                                            }
+                                        } catch(e){}
+
+                                        return result || [];
                     }
 
                     function fmtDate(d) {
@@ -1967,6 +2026,8 @@ document.addEventListener("DOMContentLoaded", () => {
                         const arr = readCertificates() || [];
                         if (!arr.length) {
                             noneEl.style.display = 'block';
+                            // show diagnostic candidates when no certificates found
+                            try { showCertDebug && showCertDebug(); } catch(e){}
                             return;
                         }
                         noneEl.style.display = 'none';
@@ -1974,6 +2035,59 @@ document.addEventListener("DOMContentLoaded", () => {
                             listEl.appendChild(makeCard(it));
                         });
                     }
+
+                    // Diagnostic: scan localStorage for candidate keys and render a small debug block
+                    function showCertDebug() {
+                        try {
+                            const reviewContainer = document.getElementById('certificateReview');
+                            if (!reviewContainer) return;
+                            // avoid adding multiple debug blocks
+                            let dbg = document.getElementById('certsDebugPanel');
+                            if (dbg) dbg.remove();
+                            const panel = document.createElement('div');
+                            panel.id = 'certsDebugPanel';
+                            panel.className = 'mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded';
+                            panel.style.fontSize = '13px';
+                            const header = document.createElement('div');
+                            header.className = 'font-semibold text-yellow-800 mb-2';
+                            header.textContent = 'Debug: no certificates found — scanning localStorage for candidates';
+                            panel.appendChild(header);
+                            const list = document.createElement('div');
+                            const candidates = [];
+                            for (let i=0;i<localStorage.length;i++) {
+                                const k = localStorage.key(i) || '';
+                                if (!/upload|proof|cert|certificate|resume|file|uploaded/i.test(k)) continue;
+                                try {
+                                    const raw = localStorage.getItem(k);
+                                    const preview = String(raw||'').slice(0,200).replace(/\n/g,' ');
+                                    candidates.push({ key: k, preview });
+                                } catch(e){}
+                            }
+                            if (!candidates.length) {
+                                const none = document.createElement('div');
+                                none.className = 'text-gray-600 italic';
+                                none.textContent = 'No likely upload-related localStorage keys found.';
+                                panel.appendChild(none);
+                                reviewContainer.appendChild(panel);
+                                return;
+                            }
+                            candidates.forEach(c => {
+                                const row = document.createElement('div');
+                                row.className = 'mb-2';
+                                row.innerHTML = `<div class="font-medium">Key: <code style="background:#fff;padding:2px 4px;border-radius:4px">${c.key}</code></div><div class="text-xs text-gray-700 mt-1">${escapeHtml(c.preview)}${c.preview.length>=200? '…':''}</div>`;
+                                list.appendChild(row);
+                            });
+                            panel.appendChild(list);
+                            const info = document.createElement('div');
+                            info.className = 'mt-2 text-xs text-gray-700';
+                            info.textContent = 'If you see a key that contains your uploaded filename or data URL, please paste that key and a short value into the chat.';
+                            panel.appendChild(info);
+                            reviewContainer.appendChild(panel);
+                        } catch(e){ console.debug('showCertDebug error', e); }
+                    }
+
+                    // Expose the debug scanner so external controls (buttons) can invoke it
+                    try { window.__mvsg_showCertDebug = showCertDebug; } catch(e){}
 
                     document.addEventListener('DOMContentLoaded', function(){
                         render();
@@ -2133,11 +2247,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
 
                     const saved = localStorage.getItem("rpi_personal2");
-                 
+
 
                     try {
-                        const draft = JSON.parse(saved);
-                        const fieldIds = ["educationLevel", "schoolName","reviewCerts"];
+                        const draft = saved ? JSON.parse(saved) : {};
+                        // use the exact IDs/keys written by the Education page
+                        const fieldIds = ["educationLevel", "schoolName","review_certs"];
 
                         console.log("📦 Retrieved Draft from localStorage:");
                         fieldIds.forEach(id => {
@@ -2183,8 +2298,22 @@ document.addEventListener("DOMContentLoaded", () => {
     function loadSavedCerts() {
         // 1) array-style storage used by Education page (canonical for review-2)
         try {
-            const arrRaw = localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || localStorage.getItem('uploadedProofs_proof') || '[]';
-            const arr = JSON.parse(arrRaw || '[]');
+            // Prefer canonical education key(s): include uploadedCertificates_education and education_certificates
+            const arrRaw = localStorage.getItem('uploadedCertificates_education') || localStorage.getItem('education_certificates') || sessionStorage.getItem('uploadedCertificates_education') || window.__mvsg_uploadedCertificates_education || localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || localStorage.getItem('uploadedProofs_proof') || '[]';
+            let arr = [];
+            try {
+                try { console.debug('[review-2] loadSavedCerts arrRaw preview:', String(arrRaw||'').slice(0,200)); } catch(e){}
+                if (!arrRaw) arr = [];
+                else if (typeof arrRaw === 'object') arr = arrRaw;
+                else {
+                    try { arr = JSON.parse(arrRaw || '[]'); }
+                    catch (e) {
+                        // last-resort: attempt to evaluate loose JS object arrays (non-standard JSON)
+                        try { arr = (new Function('return ' + String(arrRaw)))() || []; } catch (e2) { arr = []; }
+                    }
+                }
+                try { console.debug('[review-2] parsed uploadedCertificates_education length:', Array.isArray(arr)?arr.length:null); } catch(e){}
+            } catch(e){ arr = []; }
             if (Array.isArray(arr) && arr.length) {
                 const normalized = arr.map(it => {
                     if (!it) return null;
@@ -2196,9 +2325,9 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch(e){ /* ignore parse errors */ }
 
         // 2) legacy single-file keys used by Education page (explicit education keys)
-        const data = readFirst(['uploadedProofData1','uploadedProofData','uploadedProofData0','uploaded_proof_data','proofData']);
-        const type = readFirst(['uploadedProofType1','uploadedProofType','uploadedProofType0','uploaded_proof_type','proofType']);
-        const name = readFirst(['uploadedProofName1','uploadedProofName','uploadedProofName0','uploaded_proof_name','proofName']);
+            const data = readFirst(['uploadedProofData1','uploadedProofData','uploadedProofData0','uploaded_proof_data','proofData']);
+            const type = readFirst(['uploadedProofType1','uploadedProofType','uploadedProofType0','uploaded_proof_type','proofType']);
+            const name = readFirst(['uploadedProofName1','uploadedProofName','uploadedProofName0','uploaded_proof_name','proofName']);
         if (data && name) {
             return { list: [{ name, type: (type||name.split('.').pop()).toLowerCase(), data }], hasCertFlag: localStorage.getItem('review_certs') || null };
         }
@@ -2321,12 +2450,113 @@ document.addEventListener("DOMContentLoaded", () => {
     // initial render and watch storage
     document.addEventListener('DOMContentLoaded', renderPreviewBlock);
     window.addEventListener('storage', function(e){
-        const watch = ['uploadedProofs1','uploadedProofData','uploadedProofName','uploadedProofData1','uploadedProofName1','review_certs','uploadedProofs','uploadedProofs_proof'];
+        const watch = ['uploadedCertificates_education','education_certificates','uploadedProofs1','uploadedProofData','uploadedProofName','uploadedProofData1','uploadedProofName1','review_certs','uploadedProofs','uploadedProofs_proof','uploadedResume_file'];
         if (!e.key || watch.includes(e.key)) setTimeout(renderPreviewBlock, 30);
     });
 
     // expose openPreviewModal globally for other handlers
     window.__mvsg_openReviewPreview = openPreviewModal;
+// Retry renderPreviewBlock a few times after load to beat race conditions
+(function(){
+    let attempts = 0;
+    const maxAttempts = 6;
+    const iv = setInterval(()=>{
+        try { renderPreviewBlock(); } catch(e){ console.debug('[review-2] retry renderPreviewBlock error', e); }
+        attempts++;
+        if (attempts >= maxAttempts) clearInterval(iv);
+    }, 120);
+})();
+})();
+</script>
+
+<script>
+// Render resume uploaded from Work Experience page (uploadedResume_file)
+(function(){
+    function getResumeItem(){
+        try{
+            const raw = localStorage.getItem('uploadedResume_file') || localStorage.getItem('resume') || null;
+            if(!raw) return null;
+            try{ const parsed = JSON.parse(raw||'null');
+                if(Array.isArray(parsed) && parsed.length) return parsed[parsed.length-1];
+                if(parsed && (parsed.name || parsed.data)) return parsed;
+            }catch(e){
+                // if it's a single filename string
+                return { name: String(raw), type: (String(raw).split('.').pop()||'').toLowerCase(), data: null };
+            }
+        }catch(e){}
+        return null;
+    }
+
+    function renderResumeBlock(){
+        try{
+            // prefer an explicit container if present, otherwise try to attach near job experiences
+            let container = document.getElementById('resumeReview') || document.getElementById('review_resume') || document.getElementById('review_job_experiences') || document.getElementById('job_experiences_container') || document.getElementById('reviewContainer');
+            if(!container) return;
+            // create a dedicated inner area to avoid stomping other UI
+            let inner = container.querySelector('.resume-list') || container.querySelector('#resumeList');
+            if(!inner){
+                inner = document.createElement('div');
+                inner.id = 'resumeList';
+                inner.className = 'resume-list mt-3';
+                // attempt to insert at top of container
+                container.insertBefore(inner, container.firstChild);
+            }
+
+            const it = getResumeItem();
+            if(!it){ inner.innerHTML = '<p class="text-gray-600 italic">No resume uploaded.</p>'; return; }
+
+            const ext = (it.type || (it.name||'').split('.').pop()||'').toLowerCase();
+            const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
+            const nameSafe = String(it.name || 'Resume').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            inner.innerHTML = `
+                <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
+                    <div class="text-2xl">${icon}</div>
+                    <div class="min-w-0">
+                        <div class="text-sm text-gray-700 truncate max-w-[420px]">${nameSafe}</div>
+                        <div class="text-xs text-gray-500 mt-1">${(ext||'').toUpperCase()}</div>
+                    </div>
+                    <div class="ml-auto flex gap-2">
+                        <button id="resume_view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
+                        <button id="resume_remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+                    </div>
+                </div>`;
+
+            inner.querySelector('#resume_view').addEventListener('click', function(){
+                // reuse preview modal if present
+                const modal = document.getElementById('filePreviewModal') || document.getElementById('fileModal');
+                const content = document.getElementById('filePreviewContent') || document.getElementById('modalContent');
+                if(modal && content){
+                    content.innerHTML = `<h3 class="font-semibold mb-2">${nameSafe}</h3>`;
+                    if(['jpg','jpeg','png'].includes(ext)) content.innerHTML += `<img src="${it.data || ''}" class="max-h-[85vh] mx-auto rounded-lg shadow" />`;
+                    else if(ext==='pdf') content.innerHTML += `<iframe src="${it.data || ''}" class="w-full h-[85vh] rounded-lg border"></iframe>`;
+                    else content.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                    modal.classList.remove('hidden');
+                } else {
+                    alert('No preview available.');
+                }
+            });
+
+            inner.querySelector('#resume_remove').addEventListener('click', function(){
+                try{
+                    const raw = localStorage.getItem('uploadedResume_file');
+                    if(raw){
+                        const arr = JSON.parse(raw||'[]')||[];
+                        if(arr && arr.length){ arr.pop(); localStorage.setItem('uploadedResume_file', JSON.stringify(arr)); }
+                    }
+                }catch(e){}
+                setTimeout(renderResumeBlock, 30);
+            });
+
+        }catch(e){ console.warn('renderResumeBlock failed', e); }
+    }
+
+    document.addEventListener('DOMContentLoaded', renderResumeBlock);
+    window.addEventListener('storage', function(e){
+        const watch = ['uploadedResume_file','uploadedCertificates_education','education_certificates'];
+        if(!e.key || watch.includes(e.key)) setTimeout(renderResumeBlock, 40);
+    });
+    // expose for debugging
+    window.__mvsg_renderResume = renderResumeBlock;
 })();
 </script>
 

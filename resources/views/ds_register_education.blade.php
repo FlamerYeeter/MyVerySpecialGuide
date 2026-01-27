@@ -492,18 +492,31 @@
                                         fileURL = null;
                                     }
                                 });
-                                // Also persist this selection into the shared education proofs list
+                                // Persist this selection into the education-specific list (and mirror into shared key for compatibility)
                                 try {
                                     const reader = new FileReader();
                                     reader.onload = function() {
                                         try {
-                                            const key = 'uploadedProofs_proof';
-                                            const raw = localStorage.getItem(key);
-                                            const arr = raw ? JSON.parse(raw) : [];
-                                            arr.push({ name: name, type: fileExt, data: reader.result });
-                                            localStorage.setItem(key, JSON.stringify(arr));
+                                            const eduKey = LS_KEY;
+                                            const sharedKey = SHARED_PROOF_KEY;
+                                            // update education-specific key
+                                            try {
+                                                const rawEdu = localStorage.getItem(eduKey);
+                                                const arrEdu = rawEdu ? JSON.parse(rawEdu) : [];
+                                                arrEdu.push({ name: name, type: fileExt, data: reader.result });
+                                                localStorage.setItem(eduKey, JSON.stringify(arrEdu));
+                                            } catch(e) { console.warn('persist edu cert failed', e); }
+
+                                            // also append into the shared proofs array for backward compatibility
+                                            try {
+                                                const rawShared = localStorage.getItem(sharedKey);
+                                                const arrShared = rawShared ? JSON.parse(rawShared) : [];
+                                                arrShared.push({ name: name, type: fileExt, data: reader.result });
+                                                localStorage.setItem(sharedKey, JSON.stringify(arrShared));
+                                            } catch(e) { /* non-fatal */ }
+
                                             // refresh shared list UI if available
-                                            if (typeof window.showFileList === 'function') window.showFileList(arr);
+                                            if (typeof window.showFileList === 'function') window.showFileList(JSON.parse(localStorage.getItem(sharedKey) || '[]'));
                                             if (typeof window.hideFileInfo === 'function') window.hideFileInfo();
                                             const fileuploadSection = document.getElementById('fileuploadSection'); if (fileuploadSection) fileuploadSection.style.display = 'block';
                                         } catch (e) { console.warn('persist cert_file failed', e); }
@@ -851,7 +864,8 @@
             const hintEl = document.getElementById("proofHint");
             const fileuploadSection = document.getElementById("fileuploadSection");
 
-            const LS_KEY = "uploadedProofs_proof"; // unified key: array of {name,type,data}
+            const LS_KEY = "uploadedCertificates_education"; // education-specific key: array of {name,type,data}
+            const SHARED_PROOF_KEY = "uploadedProofs_proof"; // legacy/shared proofs (kept for compatibility)
             const MAX_BYTES = 5 * 1024 * 1024; // 5MB per file
 
             function readFileAsDataURL(file) {
@@ -1070,6 +1084,29 @@
     </script>
 
     <script>
+        // Auto-check 'Yes' for certificates when any uploaded file exists (shared or per-entry)
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                const rawShared = localStorage.getItem('uploadedProofs_proof');
+                const shared = rawShared ? (JSON.parse(rawShared) || []) : [];
+                const hidden = document.getElementById('certificates');
+                const canon = hidden ? (JSON.parse(hidden.value || '[]') || []) : [];
+                const hasShared = Array.isArray(shared) && shared.length > 0;
+                const hasCanonFile = Array.isArray(canon) && canon.some(it => it && (it.certificate_file_data || it.certificate_file_name));
+                if (hasShared || hasCanonFile) {
+                    const yes = document.querySelector('input[name="certs"][value="yes"]');
+                    if (yes && !yes.checked) {
+                        yes.checked = true;
+                        yes.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+            } catch (e) {
+                console.warn('auto-check certs failed', e);
+            }
+        });
+    </script>
+
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
             (function() {
                 const formEl = document.getElementById('educationForm');
@@ -1115,13 +1152,36 @@
                     if (certValue === 'yes') {
                         let ok = false;
                         try {
-                            const raw = document.getElementById('certificates') ? document.getElementById(
-                                'certificates').value : '[]';
+                            // 1) check canonical hidden certificates (may include file data)
+                            const raw = document.getElementById('certificates') ? document.getElementById('certificates').value : '[]';
                             const arr = JSON.parse(raw || '[]');
                             if (Array.isArray(arr) && arr.length) {
-                                ok = arr.some(it => it && (String(it.certificate_name || '').trim() || String(it
-                                        .issued_by || '').trim() || String(it.date_completed || '')
-                                    .trim() || String(it.training_description || '').trim()));
+                                ok = arr.some(it => it && (
+                                    String(it.certificate_name || '').trim() ||
+                                    String(it.issued_by || '').trim() ||
+                                    String(it.date_completed || '').trim() ||
+                                    String(it.training_description || '').trim() ||
+                                    String(it.certificate_file_data || '').trim()
+                                ));
+                            }
+
+                            // 2) if no canonical entries with content, check shared/local uploaded proofs
+                            if (!ok) {
+                                try {
+                                    const shared = JSON.parse(localStorage.getItem('uploadedProofs_proof') || '[]') || [];
+                                    if (Array.isArray(shared) && shared.length) ok = true;
+                                } catch (e) {
+                                    // ignore
+                                }
+                            }
+
+                            // final fallback: if any preview/view button exists on the page,
+                            // treat that as evidence that a file was uploaded (handles timing/init races)
+                            if (!ok) {
+                                try {
+                                    const hasPreviewButton = !!document.querySelector('.view-file, .viewBtn');
+                                    if (hasPreviewButton) ok = true;
+                                } catch (e) {}
                             }
                         } catch (e) {
                             ok = false;
@@ -1343,12 +1403,25 @@
                     const issued = block.querySelector('input[name="issued_by"]')?.value?.trim() || '';
                     const date = block.querySelector('input[name="date_completed"]')?.value?.trim() || '';
                     const desc = block.querySelector('input[name="training_description"]')?.value?.trim() || '';
-                    if (name || issued || date || desc) list.push({
-                        certificate_name: name,
-                        issued_by: issued,
-                        date_completed: date,
-                        training_description: desc
-                    });
+                    const file_name = block.querySelector('input[name="certificate_file_name"]')?.value?.trim() || '';
+                    const file_data = block.querySelector('input[name="certificate_file_data"]')?.value || '';
+                    const file_type = block.querySelector('input[name="certificate_file_type"]')?.value?.trim() || '';
+
+                    // include entry if any visible fields OR a file is attached
+                    if (name || issued || date || desc || file_name || file_data) {
+                        const entry = {
+                            certificate_name: name,
+                            issued_by: issued,
+                            date_completed: date,
+                            training_description: desc
+                        };
+                        if (file_name || file_data) {
+                            entry.certificate_file_name = file_name;
+                            entry.certificate_file_data = file_data;
+                            entry.certificate_file_type = file_type || (file_name.split('.').pop()||'').toLowerCase();
+                        }
+                        list.push(entry);
+                    }
                 });
                 writeHidden(list);
             }
@@ -1421,12 +1494,37 @@
                             const vb = proofInfo.querySelector('.view-file');
                             const rb = proofInfo.querySelector('.remove-file');
                             if (vb) vb.addEventListener('click', function(){ if (typeof window.openModalPreview === 'function') return window.openModalPreview(name, data, type); const modal = document.getElementById('fileModal'); const mc = document.getElementById('modalContent'); if(mc) mc.innerHTML = `<h3 class="font-semibold mb-2">${name}</h3>` + (['jpg','jpeg','png'].includes(type)?`<img src="${data}" class="max-h-[70vh] mx-auto rounded-lg"/>`:(type==='pdf'?`<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`:'')); if(modal) modal.classList.remove('hidden'); });
-                            if (rb) rb.addEventListener('click', function(){ if (hdData) hdData.value=''; if (hdName) hdName.value=''; if (hdType) hdType.value=''; proofInfo.innerHTML=''; inp.value='';
-                                // sync
+                            if (rb) rb.addEventListener('click', function(){
+                                if (hdData) hdData.value=''; if (hdName) hdName.value=''; if (hdType) hdType.value=''; proofInfo.innerHTML=''; inp.value='';
+                                // remove from canonical saved files as well
+                                try {
+                                    const fname = String(name || '').trim();
+                                    if (fname) {
+                                        const existing = window.loadSavedProofs ? window.loadSavedProofs() : (JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]);
+                                        const filtered = (Array.isArray(existing) ? existing.filter(f => String((f && (f.name||f.filename||'')).toLowerCase()) !== fname.toLowerCase()) : existing);
+                                        try { if (typeof window.saveProofs === 'function') window.saveProofs(filtered); else localStorage.setItem(LS_KEY, JSON.stringify(filtered)); } catch(e){}
+                                        try { if (typeof window.showFileList === 'function') window.showFileList(filtered); } catch(e){}
+                                    }
+                                } catch(e){}
+                                // sync inputs
                                 try{ const evt = new Event('input',{bubbles:true}); targetNode.querySelectorAll('input').forEach(i=>i.dispatchEvent(evt)); }catch(e){}
                             });
                             // trigger sync
                             try{ const evt = new Event('input',{bubbles:true}); targetNode.querySelectorAll('input').forEach(i=>i.dispatchEvent(evt)); }catch(e){}
+
+                            // also persist this per-entry file into the shared education files array
+                            try {
+                                const fname = String(name || '').trim();
+                                const fdata = data;
+                                const ftype = type;
+                                if (fname && fdata) {
+                                    const existing = window.loadSavedProofs ? window.loadSavedProofs() : (JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]);
+                                    const filtered = (Array.isArray(existing) ? existing.filter(f => String((f && (f.name||f.filename||'')).toLowerCase()) !== fname.toLowerCase()) : []);
+                                    filtered.push({ name: fname, type: ftype, data: fdata });
+                                    try { if (typeof window.saveProofs === 'function') window.saveProofs(filtered); else localStorage.setItem(LS_KEY, JSON.stringify(filtered)); } catch(e){}
+                                    try { if (typeof window.showFileList === 'function') window.showFileList(filtered); } catch(e){}
+                                }
+                            } catch(e) { console.warn('persist per-entry file failed', e); }
                         }catch(err){ console.warn(err); }
                     };
                     reader.onerror = function(){ alert('Failed to read file'); };
@@ -1465,6 +1563,26 @@
                 const removeBtn = node.querySelector('.remove-cert');
                 if (removeBtn) {
                     removeBtn.addEventListener('click', function() {
+                        // if this entry has an attached uploaded file, also remove it from saved files
+                        try {
+                            const hdName = node.querySelector('input[name="certificate_file_name"]');
+                            const fname = hdName && hdName.value ? String(hdName.value).trim() : '';
+                            if (fname) {
+                                try {
+                                    const savedFiles = window.loadSavedProofs ? window.loadSavedProofs() : (JSON.parse(localStorage.getItem(LS_KEY)||'[]')) || [];
+                                    const filtered = (Array.isArray(savedFiles) ? savedFiles.filter(f => String((f && (f.name||f.filename||'')).toLowerCase()) !== fname.toLowerCase()) : savedFiles);
+                                    try { window.saveProofs ? window.saveProofs(filtered) : localStorage.setItem(LS_KEY, JSON.stringify(filtered)); } catch(e){}
+                                    try { if (typeof window.showFileList === 'function') window.showFileList(filtered); } catch(e){}
+                                } catch(e){}
+                            }
+                        } catch(e){}
+                        // also remove the upload slot immediately preceding this node (if any)
+                        try {
+                            const prev = node.previousElementSibling;
+                            if (prev && prev.querySelector && prev.querySelector('[id^="proofFileInfo_"]')) {
+                                prev.remove();
+                            }
+                        } catch(e){}
                         node.remove();
                         debouncedSync();
                     });
