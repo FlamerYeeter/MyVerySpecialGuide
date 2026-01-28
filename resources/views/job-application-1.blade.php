@@ -156,8 +156,8 @@
         class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
     </div>
     <div>
-      <label class="block font-bold text-2xl text-gray-800 mb-2">Age <span class="text-red-500">*</span></label>
-      <input type="number" name="age"
+      <label class="block font-bold text-2xl text-gray-800 mb-2">Date of Birth <span class="text-red-500">*</span></label>
+      <input type="date" name="date_of_birth"
         class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
     </div>
     <div>
@@ -1031,8 +1031,20 @@ document.addEventListener('DOMContentLoaded', function () {
     btn.textContent = 'Loading…';
 
     try {
-      const res = await fetch('/db/get_profile.php', { credentials: 'same-origin' });
-      const json = await res.json();
+      // prefer passing guardian_id from localStorage when available so servers without PHP session can still return profile
+      const uid = localStorage.getItem('user_id') || null;
+      const fetchOpts = { credentials: 'same-origin' };
+      if (uid) {
+        fetchOpts.method = 'POST';
+        fetchOpts.headers = { 'Content-Type': 'application/json' };
+        fetchOpts.body = JSON.stringify({ guardian_id: uid });
+      }
+      console.debug('[autofill] requesting profile', { uid, fetchOpts });
+      const res = await fetch('/db/get_profile.php', fetchOpts);
+      const text = await res.text();
+      let json = null;
+      try { json = text ? JSON.parse(text) : null; } catch(e) { console.warn('[autofill] failed to parse JSON response', text); }
+      console.debug('[autofill] response', { status: res.status, body: json || text });
       if (!json || !json.success || !json.user) throw new Error(json && json.error ? json.error : 'No profile returned');
 
       const u = json.user || {};
@@ -1050,7 +1062,8 @@ document.addEventListener('DOMContentLoaded', function () {
         firstName: ['FIRST_NAME', 'first_name', 'firstName'],
         lastName:  ['LAST_NAME', 'last_name', 'lastName'],
         email:     ['EMAIL', 'email', 'EMAIL_ADDRESS'],
-        age:       ['AGE', 'age'],
+        // prefer date_of_birth keys commonly returned from profile
+        birthdate: ['DATE_OF_BIRTH','date_of_birth','dateOfBirth','dob','birthdate','birth_date'],
         phone:     ['CONTACT_NUMBER', 'contact_number', 'contactNumber', 'PHONE_NUMBER'],
         address:   ['ADDRESS', 'address']
       };
@@ -1065,7 +1078,8 @@ document.addEventListener('DOMContentLoaded', function () {
       setField('firstName', pick(u, fieldMap.firstName));
       setField('lastName',  pick(u, fieldMap.lastName));
       setField('email',     pick(u, fieldMap.email));
-      setField('age',       pick(u, fieldMap.age));
+      // form input is named `date_of_birth` so set that field
+      setField('date_of_birth', pick(u, fieldMap.birthdate));
       setField('phone',     pick(u, fieldMap.phone));
       setField('address',   pick(u, fieldMap.address));
 
@@ -1178,12 +1192,12 @@ document.addEventListener('DOMContentLoaded', function () {
   const toReview = document.querySelector('a[href^="/job-application-review1"]');
   if (!toReview) return;
 
-  function validateForm() {
+    function validateForm() {
     const checks = [
       { name: 'firstName', label: 'First name' },
       { name: 'lastName', label: 'Last name' },
       { name: 'email', label: 'Email' },
-      { name: 'age', label: 'Age' },
+      { name: 'birthdate', label: 'Date of birth' },
       { name: 'phone', label: 'Phone number' },
       { name: 'address', label: 'Address' }
     ];
@@ -1197,9 +1211,10 @@ document.addEventListener('DOMContentLoaded', function () {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!re.test(v)) missing.push('Valid email');
       }
-      if (ch.name === 'age' && v) {
-        const n = Number(v);
-        if (!Number.isFinite(n) || n <= 0) missing.push('Valid age');
+      if (ch.name === 'birthdate' && v) {
+        // accept YYYY-MM-DD or other parseable date; require basic ISO format
+        const ok = /^\d{4}-\d{2}-\d{2}$/.test(v) || !isNaN(Date.parse(v));
+        if (!ok) missing.push('Valid date of birth (YYYY-MM-DD)');
       }
     });
 
@@ -1248,7 +1263,8 @@ document.addEventListener('DOMContentLoaded', function () {
       firstName: (document.querySelector('[name="firstName"]') || {}).value || '',
       lastName:  (document.querySelector('[name="lastName"]')  || {}).value || '',
       email:     (document.querySelector('[name="email"]')     || {}).value || '',
-      age:       (document.querySelector('[name="age"]')       || {}).value || '',
+      // capture birthdate (accept several possible field names)
+      date_of_birth: (document.querySelector('[name="date_of_birth"]') || document.querySelector('[name="birthdate"]') || document.querySelector('[name="dob"]') || {}).value || '',
       phone:     (document.querySelector('[name="phone"]')     || {}).value || '',
       address:   (document.querySelector('[name="address"]')   || {}).value || '',
       saved_at: new Date().toISOString()

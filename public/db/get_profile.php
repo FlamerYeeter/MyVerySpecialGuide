@@ -1,14 +1,40 @@
 <?php
-session_start();
+$sessionStarted = session_status() === PHP_SESSION_ACTIVE;
+if (!$sessionStarted) session_start();
 header('Content-Type: application/json');
 require_once 'oracledb.php';
 
-if (empty($_SESSION['user_id'])) {
-    echo json_encode(['success' => false, 'error' => 'Not logged in']);
-    exit;
+// allow caller to supply guardian_id in request body (JSON) or query param when no PHP session is available
+$rawInput = file_get_contents('php://input');
+$body = null;
+if ($rawInput) {
+    $body = json_decode($rawInput, true);
 }
 
-$id = $_SESSION['user_id'];
+$id = null;
+// priority: JSON body -> query param -> PHP session
+if (!empty($body) && !empty($body['guardian_id'])) {
+    $id = $body['guardian_id'];
+    $id_source = 'json_body';
+} elseif (!empty($_REQUEST['guardian_id'])) {
+    $id = $_REQUEST['guardian_id'];
+    $id_source = 'request_param';
+} elseif (!empty($_SESSION['user_id'])) {
+    $id = $_SESSION['user_id'];
+    $id_source = 'session';
+}
+
+if (empty($id)) {
+    // helpful debug info to aid client troubleshooting
+    $debug = [
+        'id_source' => isset($id_source) ? $id_source : null,
+        'session_user_id' => isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null,
+        'body_present' => $body ? true : false,
+        'request_guardian_id' => isset($_REQUEST['guardian_id']) ? $_REQUEST['guardian_id'] : null
+    ];
+    echo json_encode(['success' => false, 'error' => 'Not logged in', 'debug' => $debug]);
+    exit;
+}
 $conn = getOracleConnection();
 if (!$conn) {
     echo json_encode(['success'=>false,'error'=>'DB connect failed']);
@@ -16,7 +42,8 @@ if (!$conn) {
 }
 
 // include LOB columns; do NOT return password
-$sql = "SELECT id, first_name, last_name, email, contact_number, age, address,
+// return DATE_OF_BIRTH as YYYY-MM-DD string (DB uses DATE column)
+$sql = "SELECT id, first_name, last_name, email, contact_number, TO_CHAR(date_of_birth,'YYYY-MM-DD') AS DATE_OF_BIRTH, address,
                types_of_ds, guardian_first_name, guardian_last_name, guardian_email,
                guardian_contact_number, username, relationship_to_user,
                proof_of_membership, med_certificates, certificates, school, education
@@ -65,6 +92,7 @@ $row['CERTIFICATES_UPLOADED'] = (!empty($files['other_certs'])) ? true : false;
 echo json_encode([
     'success' => true,
     'user' => $row,
+    'debug' => [ 'id_source' => isset($id_source) ? $id_source : null, 'id_used' => $id, 'session_user_id' => isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null ],
     'files' => $files,
     'file_lengths' => $file_lengths
 ]);

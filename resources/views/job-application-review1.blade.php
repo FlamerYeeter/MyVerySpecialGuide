@@ -68,7 +68,7 @@
                     <p><span class="font-semibold">First Name:</span> <span id="rev-firstname"></span></p>
                     <p><span class="font-semibold">Last Name:</span> <span id="rev-lastname"></span></p>
                     <p class="sm:col-span-2"><span class="font-semibold">Email:</span> <span id="rev-email"></span></p>
-                    <p><span class="font-semibold">Age:</span> <span id="rev-age"></span></p>
+                    <p><span class="font-semibold">Date of Birth:</span> <span id="rev-birthdate"></span></p>
                     <p><span class="font-semibold">Phone Number:</span> <span id="rev-phone"></span></p>
                     <p class="sm:col-span-2"><span class="font-semibold">Complete Address:</span> <span
                             id="rev-address"></span></p>
@@ -237,14 +237,14 @@
             const firstName = (saved && (saved.firstName || saved.first_name || saved.FIRST_NAME)) || document.getElementById('rev-firstname')?.textContent || '';
             const lastName = (saved && (saved.lastName || saved.last_name || saved.LAST_NAME)) || document.getElementById('rev-lastname')?.textContent || '';
             const email = (saved && (saved.email || saved.EMAIL || saved.email_address)) || document.getElementById('rev-email')?.textContent || '';
-            const age = (saved && (saved.age || saved.AGE)) || document.getElementById('rev-age')?.textContent || '';
+            const date_of_birth = (saved && (saved.date_of_birth || saved.dateOfBirth || saved.dob)) || document.getElementById('rev-birthdate')?.textContent || '';
             const phone = (saved && (saved.phone || saved.phone_number || saved.PHONE_NUMBER)) || document.getElementById('rev-phone')?.textContent || '';
             const address = (saved && (saved.address || saved.ADDRESS || saved.complete_address)) || document.getElementById('rev-address')?.textContent || '';
 
             fd.append('first_name', firstName);
             fd.append('last_name', lastName);
             fd.append('email', email);
-            if (age) fd.append('age', age);
+            if (date_of_birth) fd.append('date_of_birth', date_of_birth);
             fd.append('phone_number', phone);
             fd.append('complete_address', address);
 
@@ -442,7 +442,7 @@ document.addEventListener('DOMContentLoaded', function () {
         setText('rev-firstname', pick(saved, ['firstName','first_name','FIRST_NAME']));
         setText('rev-lastname',  pick(saved, ['lastName','last_name','LAST_NAME']));
         setText('rev-email',     pick(saved, ['email','EMAIL','email_address','EMAIL_ADDRESS']));
-        setText('rev-age',       pick(saved, ['age','AGE']));
+        setText('rev-birthdate', pick(saved, ['date_of_birth','dateOfBirth','dob','birthdate','birth_date']));
         setText('rev-phone',     pick(saved, ['phone','phone_number','CONTACT_NUMBER','contact_number']));
         setText('rev-address',   pick(saved, ['address','ADDRESS','complete_address']));
     }
