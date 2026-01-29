@@ -596,17 +596,7 @@
                 <input id="work_experiences" type="hidden" value="[]" />
                 <input id="work_years" type="hidden" value="" />
 
-                <!-- Add Another Work Exp Button -->
-                <div class="mt-6 text-center">
-                    <button id="addJobBtn" type="button"
-                        class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                            stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Another Job Experience
-                    </button>
-                </div>
+                <!-- Add Another Work Exp Button removed (no longer needed) -->
                 <!-- Next Button -->
                 <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
                     <div id="workExpError" class="text-red-600 text-sm text-center"></div>
@@ -1078,10 +1068,13 @@
                 };
             }
 
-            // Add button
-            document.getElementById('addJobBtn').addEventListener('click', function() {
-                addJob();
-            });
+            // Add button (guarded) — only bind if button exists
+            const _addJobBtn = document.getElementById('addJobBtn');
+            if (_addJobBtn && typeof _addJobBtn.addEventListener === 'function') {
+                _addJobBtn.addEventListener('click', function() {
+                    addJob();
+                });
+            }
 
             // Expose renderer for register.js autofill
             window.renderWorkExperiencesFromArray = function(arr) {
