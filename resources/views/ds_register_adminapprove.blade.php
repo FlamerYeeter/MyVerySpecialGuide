@@ -397,6 +397,8 @@
                     Passwords do not match.
                 </p>
             </div>
+
+{{-- 
 <!-- Proof of Membership -->
 <div class="mt-8 text-left px-2 sm:px-4">
   <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
@@ -422,7 +424,7 @@
     <p id="proofHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
       (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br /><br />
       Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
-    </p>
+    </p> 
 
     <!-- File Info Display -->
     <div id="proofDisplay"></div>
@@ -441,6 +443,7 @@
     <div class="upload-error w-full text-sm text-right"></div>
   </div>
 </div>
+--}}
 
 <!-- PWD ID -->
 <div class="mt-8 text-left px-2 sm:px-4">
