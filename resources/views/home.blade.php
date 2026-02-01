@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>MyVerySpecialGuide</title>
+    <title>EmpowerPath</title>
     <link rel="stylesheet" href="{{ asset('build/app.css') }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
@@ -21,7 +21,7 @@
                   <h1
                       class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-blue-800 leading-tight mb-6 sm:mb-8 drop-shadow-lg">
                       WELCOME to<br>
-                      <span class="text-blue-600">MyVerySpecialGuide</span>
+                      <span class="text-blue-600">EmpowerPath</span>
                   </h1>
                   <a href="{{ route('user.role') }}"
                      class="inline-block bg-[#2563EB] hover:bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">

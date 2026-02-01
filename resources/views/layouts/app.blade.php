@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>MyVerySpecialGuide</title>
+    <title>EmpowerPath</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -38,7 +38,7 @@ $manifestPath = public_path('build/manifest.json');
             <a href="{{ route('home') }}" class="flex items-center space-x-3">
                 <img src="image/logo.png" alt="MyVerySpecialGuide Logo"
                     class="w-14 h-14 md:w-16 md:h-16 object-contain">
-                <span class="text-xl md:text-2xl font-bold text-blue-700">MyVerySpecialGuide</span>
+                <span class="text-xl md:text-2xl font-bold text-blue-700">EmpowerPath</span>
             </a>
 
             <!-- Nav Links -->
@@ -46,7 +46,7 @@ $manifestPath = public_path('build/manifest.json');
                 <a href="{{ route('home') }}"
                     class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
                 <a href="{{ route('about.us') }}"
-                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About MVSG</a>
+                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About EmpowerPath</a>
                 <a href="{{ route('about.ds') }}"
                     class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
                 <a href="{{ route('about.dsapi') }}" 
@@ -92,7 +92,7 @@ $manifestPath = public_path('build/manifest.json');
             <a href="{{ route('home') }}"
                 class="block text-gray-700 hover:text-blue-600 font-medium text-base">Home</a>
             <a href="{{ route('about.us') }}"
-                class="block text-gray-700 hover:text-blue-600 font-medium text-base">About MVSG</a>
+                class="block text-gray-700 hover:text-blue-600 font-medium text-base">About EmpowerPath</a>
             <a href="{{ route('about.ds') }}"
                 class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down Syndrome</a>
             <a href="/" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Down Syndrome

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <title>MyVerySpecialGuide</title>
+  <title>EmpowerPath</title>
   <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -18,7 +18,7 @@
       <div class="flex items-center gap-3 flex-shrink-0">
         <img src="{{ asset('image/logo.png') }}" alt="Logo" class="w-12 sm:w-14 h-12 sm:h-14 object-contain">
         <h1 class="text-2xl sm:text-3xl font-extrabold text-blue-800 whitespace-nowrap">
-          MyVerySpecialGuide
+          EmpowerPath
         </h1>
       </div>
 

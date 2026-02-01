@@ -18,12 +18,12 @@
                     </h2>
                     <div class="text-justify text-base md:text-lg text-gray-700 leading-relaxed space-y-4">
                         <p>
-                            Welcome to <span class="font-semibold text-blue-600">MyVerySpecialGuide (MVSG)</span> —
+                            Welcome to <span class="font-semibold text-blue-600">EmpowerPath</span> —
                             an inclusive digital platform dedicated to empowering individuals with
                             <span class="font-semibold text-blue-700">Down Syndrome</span> by guiding them toward
                             meaningful and fulfilling careers.
                         </p>
-
+                    <!-- tehh Jeza paayos na lng meaning ng EmpowerPath natin -->
                         <p>
                             At MVSG, we believe everyone deserves more than limited opportunities —
                             they deserve <span class="text-blue-600 font-medium">careers that match their strengths, skills,
