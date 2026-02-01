@@ -32,17 +32,18 @@ $manifestPath = public_path('build/manifest.json');
 
 <body class="font-sans antialiased flex flex-col min-h-screen">
     <!-- Navigation -->
-    <nav class="w-full px-6 md:px-12 py-4 bg-white/80 backdrop-blur-md shadow-md">
-        <div class="flex items-center justify-between">
+    <nav class="w-full bg-white/80 backdrop-blur-md shadow-md">
+        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-12 py-4">
+         <div class="flex items-center justify-between gap-4">
             <!-- Logo (links to home) -->
-            <a href="{{ route('home') }}" class="flex items-center space-x-3">
-                <img src="image/logo.png" alt="MyVerySpecialGuide Logo"
-                    class="w-14 h-14 md:w-16 md:h-16 object-contain">
-                <span class="text-xl md:text-2xl font-bold text-blue-700">EmpowerPath</span>
+            <a href="{{ route('home') }}" class="flex items-center space-x-3 shrink-0">
+                <img src="image/logo.png" alt="EmpowerPath Logo"
+                    class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain">
+                <span class="text-lg sm:text-xl md:text-2xl font-bold text-blue-700">EmpowerPath</span>
             </a>
 
             <!-- Nav Links -->
-            <div class="hidden md:flex items-center space-x-8">
+            <div class="hidden lg:flex items-center gap-6 ml-auto">
                 <a href="{{ route('home') }}"
                     class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
                 <a href="{{ route('about.us') }}"
@@ -51,6 +52,14 @@ $manifestPath = public_path('build/manifest.json');
                     class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
                 <a href="{{ route('about.dsapi') }}" 
                     class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Down Syndrome Association</a>
+                <!-- Sign Up Button -->
+               <a href="{{ route('register') }}"
+                    class="inline-block border-2 border-[#2563EB] text-[#2563EB]
+                           px-8 py-3 rounded-xl text-base font-semibold
+                           hover:bg-[#2563EB]/20 hover:border-[#1D4ED8]
+                           transition-all duration-200 transform hover:scale-105">
+                          Sign Up
+                </a>
             </div>
 
             <div class="flex items-center space-x-4">
@@ -78,7 +87,7 @@ $manifestPath = public_path('build/manifest.json');
                 @endauth
 
                 <!-- Responsive Menu Button -->
-                <button id="menu-toggle" class="md:hidden text-gray-700 hover:text-blue-600 focus:outline-none">
+                <button id="menu-toggle" class="lg:hidden text-gray-700 hover:text-blue-600 focus:outline-none">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
@@ -86,17 +95,26 @@ $manifestPath = public_path('build/manifest.json');
                 </button>
             </div>
         </div>
+    </div>
 
         <!-- Responsive Dropdown Menu -->
-        <div id="mobile-menu" class="hidden flex-col mt-4 space-y-3 md:hidden">
+        <div id="mobile-menu" class="hidden lg:hidden mt-4 rounded-xl bg-white shadow-md px-4 py-4 space-y-3">
             <a href="{{ route('home') }}"
                 class="block text-gray-700 hover:text-blue-600 font-medium text-base">Home</a>
             <a href="{{ route('about.us') }}"
                 class="block text-gray-700 hover:text-blue-600 font-medium text-base">About EmpowerPath</a>
             <a href="{{ route('about.ds') }}"
                 class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down Syndrome</a>
-            <a href="/" class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Down Syndrome
+            <a href="{{ route('about.dsapi') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">Down Syndrome
                 Association</a>
+            <!-- Sign Up Button -->
+            <a href="{{ route('register') }}"
+                    class="inline-block border-2 border-[#2563EB] text-[#2563EB]
+                           px-8 py-3 rounded-xl text-base font-semibold
+                           hover:bg-[#2563EB]/20 hover:border-[#1D4ED8]
+                           transition-all duration-200 transform hover:scale-105">
+                          Sign Up
+                </a>
             @auth
                 <a href="{{ route('user.role') }}"
                     class="block text-gray-700 hover:text-blue-600 font-medium text-base">Profile</a>
@@ -116,12 +134,12 @@ $manifestPath = public_path('build/manifest.json');
     <!-- Footer -->
     <footer class="bg-white border-t mt-12">
         <div
-            class="container md:px-12 mx-auto px-6 py-10 
-               grid grid-cols-1 md:grid-cols-5 gap-5 
-               text-center md:text-left items-start">
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10
+            grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8
+            text-center md:text-left">
 
             <!-- Logo -->
-            <div class="px-12 flex flex-col items-center md:items-start space-y-3">
+            <div class="flex flex-col items-center md:items-start space-y-3">
                 <img src="{{ asset('image/orglogo.jpg') }}" alt="Logo"
                     class="h-28 w-28 object-contain mx-auto md:mx-0">
             </div>
@@ -137,7 +155,7 @@ $manifestPath = public_path('build/manifest.json');
             </div>
 
             <!-- Socials -->
-            <div class="px-16">
+            <div>
                 <h3 class="font-semibold text-gray-800 mb-3 text-lg">Socials</h3>
                 <ul class="text-gray-600 text-sm space-y-1">
                     <li><a href="https://www.facebook.com/downsyndromeassociationofthephilippinesinc"
@@ -158,7 +176,7 @@ $manifestPath = public_path('build/manifest.json');
             <div class="flex justify-center md:justify-start mt-6 md:mt-0">
                 <button id="goUpBtn"
                     class="flex items-center gap-2 bg-blue-600 text-white font-semibold 
-                       px-12 py-4 rounded-xl shadow-md text-lg
+                       px-6 sm:px-10 py-2 sm:py-4 text-base sm:text-lg rounded-xl shadow-md 
                        hover:bg-blue-700 active:scale-95 transition-all">
                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
@@ -171,7 +189,7 @@ $manifestPath = public_path('build/manifest.json');
         </div>
 
         <!-- Bottom Bar -->
-        <div class="bg-[#2563EB] text-white text-center py-3 text-sm">
+        <div class="bg-[#2563EB] text-white text-center py-3 text-xs sm:text-sm">
             © 2025 EmpowerPath. All rights reserved.
         </div>
     </footer>

@@ -23,23 +23,22 @@
                             <span class="font-semibold text-blue-700">Down Syndrome</span> by guiding them toward
                             meaningful and fulfilling careers.
                         </p>
-                    <!-- tehh Jeza paayos na lng meaning ng EmpowerPath natin -->
+
                         <p>
-                            At MVSG, we believe everyone deserves more than limited opportunities —
-                            they deserve <span class="text-blue-600 font-medium">careers that match their strengths, skills,
-                                and aspirations.</span>
+                            We believe everyone deserves more than limited opportunities
+                            they deserve <span class="text-blue-600 font-medium">employment that aligned with their skills
+                                and abilities.</span>
                         </p>
 
                         <p>
-                            By combining <span class="font-medium text-blue-700">therapeutic insights</span> with
-                            <span class="font-medium text-blue-700">smart job-matching technology</span>,
-                            we help create personalized career pathways that open real possibilities.
+                            By <span class="font-medium text-blue-700">smart job-matching technology</span>,
+                            we help create recommended jobs that open real possibilities.
                         </p>
 
                         <p>
                             Our mission is to empower individuals to thrive, gain independence,
-                            and work side by side with everyone else — because inclusion is not just a goal,
-                            it’s a shared responsibility.
+                            and work side by side with everyone else because inclusion is not just a goal,
+                            it is a shared responsibility.
                         </p>
 
                         <p class="font-medium italic">
@@ -80,10 +79,8 @@
                     WHAT WE DO
                 </h3>
                 <p class="text-gray-700 leading-relaxed text-justify text-sm sm:text-base md:text-lg">
-                    MVSG is built to assist both users and their guardians in navigating the journey toward employment and
-                    personal development.
-                    By analyzing strengths, aspirations, and evolving abilities, our system provides tailored job insights
-                    and training suggestions
+                    EmpowerPath is built to assist both users and their guardians in navigating the journey toward employment.
+                    By analyzing strengths and evolving abilities, our system provides tailored recommended jobs  
                     that open doors to brighter futures.
                 </p>
             </div>
@@ -112,9 +109,9 @@
 
                     <h3 class="text-2xl sm:text-3xl font-extrabold mb-3 sm:mb-4 text-white drop-shadow-sm">VISION</h3>
                     <p class="leading-relaxed text-black text-justify text-base sm:text-lg">
-                        MVSG envisions a world where neurodivergent individuals thrive in careers tailored to their
+                        EmpowerPath envisions a world where neurodivergent individuals thrive in careers tailored to their
                         unique strengths and potential. Through innovation, compassion, and inclusivity, we aim to create
-                        not just a recommendation system—but a personalized guide that nurtures lifelong growth.
+                        not just a recommendation system but a personalized guide that nurtures lifelong growth.
                     </p>
                 </div>
 
@@ -127,7 +124,7 @@
         <section class="py-12 sm:py-16 md:py-20 px-4 sm:px-8 md:px-12">
             <div class="max-w-5xl mx-auto text-left md:px-6">
                 <h3 class="text-2xl sm:text-3xl md:text-4xl font-bold text-blue-700 mb-6 leading-snug">
-                    Sign up to hear from the MyVerySpecialGuide team and discover how you can be part of the journey.
+                    Sign up to hear from the EmpowerPath team and discover how you can be part of the journey.
                 </h3>
 
                 <p class="text-blue-600 mb-8 text-sm sm:text-base md:text-lg leading-relaxed" style="text-align: justify;">
