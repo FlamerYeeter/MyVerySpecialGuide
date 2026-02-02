@@ -2,6 +2,52 @@
 
 @section('content')
 
+@php
+  // Attempt to load application and its feedback from Oracle (best-effort)
+  $application = null;
+  $feedback = null;
+  $appId = request('application_id') ?? request('id') ?? null;
+  if (!empty($appId)) {
+    try {
+      $oraclePath = base_path('public/db/oracledb.php');
+      if (file_exists($oraclePath)) {
+        require_once $oraclePath; // provides getOracleConnection()
+        $conn = getOracleConnection();
+        if ($conn) {
+          $sql = "SELECT A.ID, A.JOB_POSTING_ID, A.COMPANY_ID, A.GUARDIAN_ID, A.FIRST_NAME, A.LAST_NAME, A.EMAIL, A.CREATED_AT, JP.COMPANY_NAME, JP.JOB_ROLE
+                FROM MVSG.APPLICATIONS A
+                LEFT JOIN MVSG.JOB_POSTINGS JP ON JP.ID = A.JOB_POSTING_ID
+                WHERE A.ID = :aid";
+          $stid = oci_parse($conn, $sql);
+          oci_bind_by_name($stid, ':aid', $appId);
+          @oci_execute($stid);
+          $row = @oci_fetch_assoc($stid);
+          @oci_free_statement($stid);
+          if ($row) {
+            $application = $row;
+            // try to fetch job_capacity feedback for this user+job
+            $jid = $application['JOB_POSTING_ID'] ?? null;
+            $uid = $application['GUARDIAN_ID'] ?? null;
+            if (!empty($jid) && !empty($uid)) {
+              $q2 = "SELECT STATUS, ROLE, FINAL_RECOMMENDATION, HR_DECISION, UPDATED_AT FROM MVSG.JOB_CAPACITY WHERE JOB_POSTING_ID = :jid AND USER_ID = :uid";
+              $s2 = oci_parse($conn, $q2);
+              oci_bind_by_name($s2, ':jid', $jid);
+              oci_bind_by_name($s2, ':uid', $uid);
+              @oci_execute($s2);
+              $fb = @oci_fetch_assoc($s2);
+              @oci_free_statement($s2);
+              if ($fb) $feedback = $fb;
+            }
+          }
+          @oci_close($conn);
+        }
+      }
+    } catch (\Throwable $e) {
+      // ignore — page will show fallback messaging
+    }
+  }
+@endphp
+
 
     <!-- Back Button -->
     <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
@@ -37,18 +83,17 @@
 
   <!-- Status & Support Labels -->
   <div class="flex flex-wrap gap-5 mb-10">
-
     <!-- Application Decision -->
-    <div class="flex items-center gap-3 bg-red-100 border border-red-300 rounded-full px-6 py-3">
+    <div class="flex items-center gap-3 rounded-full px-6 py-3" style="background: #fff6f6; border: 1px solid #fecaca;">
       <span class="text-xl font-semibold text-red-800">
-        Decision: Not Hired
+        Decision: {{ $feedback['HR_DECISION'] ?? $feedback['FINAL_RECOMMENDATION'] ?? 'No decision yet' }}
       </span>
     </div>
 
     <!-- Support Level -->
-    <div class="flex items-center gap-3 bg-green-100 border border-green-300 rounded-full px-6 py-3">
+    <div class="flex items-center gap-3 rounded-full px-6 py-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
       <span class="text-xl font-semibold text-green-800">
-        Support Level: Full Support
+        Support Level: {{ $feedback['FINAL_RECOMMENDATION'] ?? ($feedback['STATUS'] ?? 'Pending') }}
       </span>
     </div>
 
@@ -56,30 +101,34 @@
 
   <!-- Greeting -->
   <p class="font-semibold text-gray-800 text-2xl mb-6">
-    Hello Juan,
+    Hello {{ $application['FIRST_NAME'] ?? 'Applicant' }},
   </p>
 
   <!-- Message -->
-  <p class="text-2xl text-gray-700 leading-loose mb-6">
-    Thank you for applying for the <strong>Kitchen Helper</strong> position at
-    <strong>Shakey’s Taguig City</strong>.
-  </p>
+  @if ($feedback && (trim(($feedback['HR_DECISION'] ?? '') . ($feedback['FINAL_RECOMMENDATION'] ?? '')) !== ''))
+    <p class="text-2xl text-gray-700 leading-loose mb-6">
+      Thank you for applying for the <strong>{{ $application['JOB_ROLE'] ?? 'the position' }}</strong> at
+      <strong>{{ $application['COMPANY_NAME'] ?? '' }}</strong>.
+    </p>
 
-  <p class="text-2xl text-gray-700 leading-loose mb-6">
-    We reviewed your application carefully. At this time, we have chosen
-    another applicant for this role.
-  </p>
+    <p class="text-2xl text-gray-700 leading-loose mb-6">
+      We reviewed your application carefully. Decision: <strong>{{ $feedback['HR_DECISION'] ?? $feedback['FINAL_RECOMMENDATION'] }}</strong>.
+    </p>
 
-  <p class="text-2xl text-gray-700 leading-loose mb-8">
-    Please do not feel discouraged. You did well by applying.
-    We encourage you to apply again in the future.
-  </p>
+    @if (!empty($feedback['ROLE']))
+      <p class="text-2xl text-gray-700 leading-loose mb-6">Role noted: <strong>{{ $feedback['ROLE'] }}</strong></p>
+    @endif
+
+    <p class="text-2xl text-gray-700 leading-loose mb-8">Thank you for applying. We will contact you with next steps if applicable.</p>
+  @else
+    <p class="text-2xl text-gray-700 leading-loose mb-6">Feedback has not been provided by the company yet. Please check back later.</p>
+  @endif
 
   <!-- Closing -->
   <p class="text-2xl text-gray-800 font-medium mt-10">
     Kind regards,<br>
     <span class="font-semibold text-blue-800">
-      Shakey’s Taguig City Hiring Team
+      {{ $application['COMPANY_NAME'] ?? $application['COMPANY_NAME'] ?? 'Hiring Team' }} Hiring Team
     </span>
   </p>
 </div>

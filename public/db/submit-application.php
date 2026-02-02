@@ -51,8 +51,18 @@ try {
     $first_name = isset($_POST['first_name']) ? $_POST['first_name'] : null;
     $last_name = isset($_POST['last_name']) ? $_POST['last_name'] : null;
     $email = isset($_POST['email']) ? $_POST['email'] : null;
-    // accept date_of_birth in ISO format (YYYY-MM-DD) instead of numeric age
+    // accept date_of_birth in ISO format (YYYY-MM-DD) — we store age (years) in DB
     $date_of_birth = isset($_POST['date_of_birth']) && $_POST['date_of_birth'] !== '' ? trim($_POST['date_of_birth']) : null;
+    $age = null;
+    if ($date_of_birth) {
+        try {
+            $dob_dt = new DateTime($date_of_birth);
+            $now_dt = new DateTime();
+            $age = $now_dt->diff($dob_dt)->y;
+        } catch (Exception $e) {
+            $age = null;
+        }
+    }
     $phone = isset($_POST['phone_number']) ? $_POST['phone_number'] : null;
     $address = isset($_POST['complete_address']) ? $_POST['complete_address'] : null;
 
@@ -167,8 +177,8 @@ try {
 
     // Build INSERT with EMPTY_BLOB() placeholders and RETURNING LOB locators
         $insertSql = "INSERT INTO MVSG.APPLICATIONS 
-            (JOB_POSTING_ID, COMPANY_ID, GUARDIAN_ID, FIRST_NAME, LAST_NAME, EMAIL, DATE_OF_BIRTH, PHONE_NUMBER, COMPLETE_ADDRESS, MEDICAL_CERTIFICATE, RESUME_CV, PWD_ID, CREATED_AT)
-            VALUES (:job_id, :company_id, :guardian_id, :first_name, :last_name, :email, TO_DATE(:date_of_birth, 'YYYY-MM-DD'), :phone, :address, EMPTY_BLOB(), EMPTY_BLOB(), EMPTY_BLOB(), SYSTIMESTAMP)
+            (JOB_POSTING_ID, COMPANY_ID, GUARDIAN_ID, FIRST_NAME, LAST_NAME, EMAIL, AGE, PHONE_NUMBER, COMPLETE_ADDRESS, MEDICAL_CERTIFICATE, RESUME_CV, PWD_ID, CREATED_AT)
+                VALUES (:job_id, :company_id, :guardian_id, :first_name, :last_name, :email, :age, :phone, :address, EMPTY_BLOB(), EMPTY_BLOB(), EMPTY_BLOB(), SYSTIMESTAMP)
             RETURNING ID, MEDICAL_CERTIFICATE, RESUME_CV, PWD_ID INTO :new_id, :med_blob, :res_blob, :pwd_blob";
 
     $stid = oci_parse($conn, $insertSql);
@@ -180,7 +190,7 @@ try {
     oci_bind_by_name($stid, ':first_name', $first_name);
     oci_bind_by_name($stid, ':last_name', $last_name);
     oci_bind_by_name($stid, ':email', $email);
-    oci_bind_by_name($stid, ':date_of_birth', $date_of_birth);
+    oci_bind_by_name($stid, ':age', $age);
     oci_bind_by_name($stid, ':phone', $phone);
     oci_bind_by_name($stid, ':address', $address);
 

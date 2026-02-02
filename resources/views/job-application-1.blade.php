@@ -1197,24 +1197,40 @@ document.addEventListener('DOMContentLoaded', function () {
       { name: 'firstName', label: 'First name' },
       { name: 'lastName', label: 'Last name' },
       { name: 'email', label: 'Email' },
-      { name: 'birthdate', label: 'Date of birth' },
+      // Accept multiple possible field names for date of birth
+      { name: ['date_of_birth', 'birthdate', 'dob'], label: 'Date of birth' },
       { name: 'phone', label: 'Phone number' },
       { name: 'address', label: 'Address' }
     ];
 
     const missing = [];
     checks.forEach(ch => {
-      const el = document.querySelector('[name="' + ch.name + '"]');
+      let el = null;
+      if (Array.isArray(ch.name)) {
+        for (const n of ch.name) {
+          el = document.querySelector('[name="' + n + '"]');
+          if (el) break;
+        }
+      } else {
+        el = document.querySelector('[name="' + ch.name + '"]');
+      }
+
       const v = el ? String(el.value || '').trim() : '';
       if (!v) missing.push(ch.label);
-      if (ch.name === 'email' && v) {
+
+      // field-specific validations
+      if ((ch.name === 'email' || (Array.isArray(ch.name) && ch.name.indexOf('email') !== -1)) && v) {
         const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!re.test(v)) missing.push('Valid email');
       }
-      if (ch.name === 'birthdate' && v) {
-        // accept YYYY-MM-DD or other parseable date; require basic ISO format
-        const ok = /^\d{4}-\d{2}-\d{2}$/.test(v) || !isNaN(Date.parse(v));
-        if (!ok) missing.push('Valid date of birth (YYYY-MM-DD)');
+
+      // date of birth validation: supports multiple name variants
+      const dobNames = Array.isArray(ch.name) ? ch.name : [ch.name];
+      if (dobNames.indexOf('date_of_birth') !== -1 || dobNames.indexOf('birthdate') !== -1 || dobNames.indexOf('dob') !== -1) {
+        if (v) {
+          const ok = /^\d{4}-\d{2}-\d{2}$/.test(v) || !isNaN(Date.parse(v));
+          if (!ok) missing.push('Valid date of birth (YYYY-MM-DD)');
+        }
       }
     });
 
