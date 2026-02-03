@@ -691,6 +691,115 @@ function setupUpload(inputId, displayId, labelId, hintId) {
   }
   // --------------------------------------------------------------------
 
+    // Robust date parser that supports many human formats and Filipino month names
+    function parseDateString(raw) {
+        if (!raw) return null;
+        let s = String(raw).trim();
+        if (!s) return null;
+        // remove HTML entities and extra punctuation
+        s = s.replace(/&nbsp;|\u00A0/g, ' ');
+        s = s.replace(/(\d)(st|nd|rd|th)\b/gi, '$1');
+        s = s.replace(/[.,]/g, ' ');
+        s = s.replace(/\s+/g, ' ').trim();
+
+        // Filipino month name mapping
+        const monthMap = {
+            'enero':'january','pebrero':'february','pebr':'february','febrero':'february','marso':'march','abril':'april','mayo':'may',
+            'hunyo':'june','hulyo':'july','agosto':'august','setyembre':'september','septiembre':'september','oktubre':'october',
+            'nobyembre':'november','disyembre':'december','dic':'december','diciembre':'december'
+        };
+
+        // normalize month names to English
+        s = s.replace(new RegExp(Object.keys(monthMap).join('|'), 'ig'), function(m){
+            return monthMap[m.toLowerCase()] || m;
+        });
+
+        // Try Date.parse first (handles many English formats)
+        let ts = Date.parse(s);
+        if (!isNaN(ts)) return new Date(ts);
+
+        // Try common numeric formats: dd/mm/yyyy, mm/dd/yyyy, yyyy-mm-dd
+        let m;
+        // yyyy-mm-dd or yyyy/mm/dd
+        m = s.match(/^(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})$/);
+        if (m) return new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
+
+        // dd-mm-yyyy or dd/mm/yyyy or mm-dd-yyyy
+        m = s.match(/^(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{2,4})$/);
+        if (m) {
+            let a = parseInt(m[1],10), b = parseInt(m[2],10), y = parseInt(m[3],10);
+            if (y < 100) y = y < 50 ? 2000 + y : 1900 + y;
+            // if first > 12, treat as day-first; if second > 12 treat as day-second; else prefer day-first (common outside US)
+            let day, month;
+            if (a > 12) { day = a; month = b; }
+            else if (b > 12) { day = b; month = a; }
+            else { day = a; month = b; }
+            return new Date(y, month - 1, day);
+        }
+
+        // MonthName dd yyyy or MonthName dd, yyyy
+        m = s.match(/^([A-Za-z]+)\s+(\d{1,2})\s+(\d{2,4})$/);
+        if (m) {
+            const monthName = m[1].toLowerCase();
+            const day = parseInt(m[2],10);
+            let year = parseInt(m[3],10);
+            if (year < 100) year = year < 50 ? 2000 + year : 1900 + year;
+            const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+            const mi = months.indexOf(monthName);
+            if (mi >= 0) return new Date(year, mi, day);
+        }
+
+        // dd MonthName yyyy
+        m = s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{2,4})$/);
+        if (m) {
+            const day = parseInt(m[1],10);
+            const monthName = m[2].toLowerCase();
+            let year = parseInt(m[3],10);
+            if (year < 100) year = year < 50 ? 2000 + year : 1900 + year;
+            const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+            const mi = months.indexOf(monthName);
+            if (mi >= 0) return new Date(year, mi, day);
+        }
+
+        // fallback: try to extract first 4-digit year and month/day nearby
+        m = s.match(/(\d{1,2})[\s\-\/]*([A-Za-z]+)[\s\-\/]*(\d{2,4})/);
+        if (m) {
+            const day = parseInt(m[1],10);
+            const monthName = m[2].toLowerCase();
+            let year = parseInt(m[3],10);
+            if (year < 100) year = year < 50 ? 2000 + year : 1900 + year;
+            const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
+            const mi = months.indexOf(monthName);
+            if (mi >= 0) return new Date(year, mi, day);
+        }
+
+        return null;
+    }
+
+    function isOlderThanMonths(dateObj, months) {
+        if (!dateObj || !(dateObj instanceof Date) || isNaN(dateObj.getTime())) return false;
+        const cutoff = new Date();
+        cutoff.setMonth(cutoff.getMonth() - months);
+        return dateObj < cutoff;
+    }
+
+    // Extracts candidate date substrings from a block of text and returns parsed Date objects
+    function extractDatesFromText(text) {
+        const results = [];
+        if (!text || typeof text !== 'string') return results;
+        // Tokenize by whitespace and common punctuation
+        const tokens = text.replace(/[,()\r\n]/g, ' ').split(/\s+/).filter(Boolean);
+        // Try windows of up to 5 tokens to capture formats like "December 20 2025" or "20 December 2025"
+        for (let i = 0; i < tokens.length; i++) {
+            for (let len = 1; len <= 5 && i + len <= tokens.length; len++) {
+                const slice = tokens.slice(i, i + len).join(' ');
+                const d = parseDateString(slice);
+                if (d && !results.find(x => x.getTime() === d.getTime())) results.push(d);
+            }
+        }
+        return results;
+    }
+
 
   fileInput.addEventListener('change', () => {
     const file = fileInput.files[0];
@@ -793,26 +902,39 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     const resp = res.body || {};
                     const ai = (resp.data && resp.data.ai_data) ? resp.data.ai_data : {};
                     if (ocrtype === 'medical_certificate') {
-                        // try common field names that the OCR AI may return
-                        const dateStr = (ai.date || ai.issue_date || ai.issued_date || ai.date_issued || ai.issued) || '';
-                        if (dateStr && String(dateStr).trim() !== '') {
-                            // attempt to parse a date from the returned string
-                            const parsed = Date.parse(String(dateStr).replace(/\./g,'').replace(/-/g,'-'));
-                            if (!isNaN(parsed)) {
-                                const certDate = new Date(parsed);
-                                const cutoff = new Date();
-                                cutoff.setMonth(cutoff.getMonth() - 3);
-                                if (certDate < cutoff) {
-                                    // certificate too old — reject upload and clean up
-                                    alert('Medical certificate appears to be older than 3 months and has been rejected. Please upload a more recent certificate.');
-                                    try { resetDisplay(); } catch(e){}
-                                    try { fileInput.value = ''; } catch(e){}
-                                    try { if (fileURL) URL.revokeObjectURL(fileURL); fileURL = null; } catch(e){}
-                                    try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
-                                    try { cleanupUploadedFileByName(file?.name || localStorage.getItem(nameKey)); } catch(e){}
-                                    return; // stop further processing for this upload
-                                }
+                        // Gather date candidates from AI fields and raw OCR text; prefer the newest parsed date
+                        const aiDateCandidates = [];
+                        const dateFields = [ai.date, ai.issue_date, ai.issued_date, ai.date_issued, ai.issued, ai.issueDate, ai.issuedOn, ai.date_issued_on];
+                        dateFields.forEach(x => { if (x && String(x).trim()) aiDateCandidates.push(String(x).trim()); });
+
+                        // also parse the raw_text for date-like substrings
+                        const rawText = (resp.data && resp.data.raw_text) ? String(resp.data.raw_text) : '';
+                        const textDates = extractDatesFromText(rawText);
+
+                        // parse AI candidates
+                        const parsedCandidates = aiDateCandidates.map(s => parseDateString(s)).filter(Boolean);
+                        // include parsed dates from raw text
+                        textDates.forEach(d => parsedCandidates.push(d));
+
+                        // choose the most recent date (max timestamp)
+                        let chosen = null;
+                        parsedCandidates.forEach(d => {
+                            if (!chosen || d.getTime() > chosen.getTime()) chosen = d;
+                        });
+
+                        if (chosen) {
+                            if (isOlderThanMonths(chosen, 3)) {
+                                alert('Medical certificate appears to be older than 3 months and has been rejected. Please upload a more recent certificate.');
+                                try { resetDisplay(); } catch(e){}
+                                try { fileInput.value = ''; } catch(e){}
+                                try { if (fileURL) URL.revokeObjectURL(fileURL); fileURL = null; } catch(e){}
+                                try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                                try { cleanupUploadedFileByName(file?.name || localStorage.getItem(nameKey)); } catch(e){}
+                                return; // stop further processing for this upload
                             }
+                        } else {
+                            // no confidently parsed date found — do not auto-reject; log for visibility
+                            console.warn('No confident date found in AI fields or OCR text for medical certificate. Skipping auto-reject.');
                         }
                     }
                 } catch (err) {
