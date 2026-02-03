@@ -29,7 +29,7 @@
             $jid = $application['JOB_POSTING_ID'] ?? null;
             $uid = $application['GUARDIAN_ID'] ?? null;
             if (!empty($jid) && !empty($uid)) {
-              $q2 = "SELECT STATUS, ROLE, FINAL_RECOMMENDATION, HR_DECISION, UPDATED_AT FROM MVSG.JOB_CAPACITY WHERE JOB_POSTING_ID = :jid AND USER_ID = :uid";
+              $q2 = "SELECT STATUS, ROLE, CATEGORY_LEVEL, FINAL_RECOMMENDATION, HR_DECISION, UPDATED_AT FROM MVSG.JOB_CAPACITY WHERE JOB_POSTING_ID = :jid AND USER_ID = :uid";
               $s2 = oci_parse($conn, $q2);
               oci_bind_by_name($s2, ':jid', $jid);
               oci_bind_by_name($s2, ':uid', $uid);
@@ -37,6 +37,17 @@
               $fb = @oci_fetch_assoc($s2);
               @oci_free_statement($s2);
               if ($fb) $feedback = $fb;
+              // Fallback: if no user-specific row found, try to get latest FINAL_RECOMMENDATION for the job
+              if (empty($feedback) && !empty($jid)) {
+                $q3 = "SELECT STATUS, ROLE, CATEGORY_LEVEL, FINAL_RECOMMENDATION, HR_DECISION, UPDATED_AT FROM (SELECT * FROM MVSG.JOB_CAPACITY WHERE JOB_POSTING_ID = :jid2 AND FINAL_RECOMMENDATION IS NOT NULL ORDER BY UPDATED_AT DESC) WHERE ROWNUM = 1";
+                $s3 = oci_parse($conn, $q3);
+                // bind as string/number depending on type
+                oci_bind_by_name($s3, ':jid2', $jid);
+                @oci_execute($s3);
+                $fb2 = @oci_fetch_assoc($s3);
+                @oci_free_statement($s3);
+                if ($fb2) $feedback = $fb2;
+              }
             }
           }
           @oci_close($conn);
@@ -90,10 +101,10 @@
       </span>
     </div>
 
-    <!-- Support Level -->
+    <!-- Support Level (use CATEGORY_LEVEL only; show Pending when null) -->
     <div class="flex items-center gap-3 rounded-full px-6 py-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
       <span class="text-xl font-semibold text-green-800">
-        Support Level: {{ $feedback['FINAL_RECOMMENDATION'] ?? ($feedback['STATUS'] ?? 'Pending') }}
+        Support Level: {{ $feedback['CATEGORY_LEVEL'] ?? 'Pending' }}
       </span>
     </div>
 
