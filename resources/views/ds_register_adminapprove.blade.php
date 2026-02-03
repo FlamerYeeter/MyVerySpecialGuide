@@ -787,16 +787,47 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         .then(res => {
             if (res.ok) {
                 // ✅ Success (HTTP 200)
-                debugger;
                 console.log('OCR Result:', res.body);
+                // If this was a medical certificate OCR, enforce date validation (client-side)
+                try {
+                    const resp = res.body || {};
+                    const ai = (resp.data && resp.data.ai_data) ? resp.data.ai_data : {};
+                    if (ocrtype === 'medical_certificate') {
+                        // try common field names that the OCR AI may return
+                        const dateStr = (ai.date || ai.issue_date || ai.issued_date || ai.date_issued || ai.issued) || '';
+                        if (dateStr && String(dateStr).trim() !== '') {
+                            // attempt to parse a date from the returned string
+                            const parsed = Date.parse(String(dateStr).replace(/\./g,'').replace(/-/g,'-'));
+                            if (!isNaN(parsed)) {
+                                const certDate = new Date(parsed);
+                                const cutoff = new Date();
+                                cutoff.setMonth(cutoff.getMonth() - 3);
+                                if (certDate < cutoff) {
+                                    // certificate too old — reject upload and clean up
+                                    alert('Medical certificate appears to be older than 3 months and has been rejected. Please upload a more recent certificate.');
+                                    try { resetDisplay(); } catch(e){}
+                                    try { fileInput.value = ''; } catch(e){}
+                                    try { if (fileURL) URL.revokeObjectURL(fileURL); fileURL = null; } catch(e){}
+                                    try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                                    try { cleanupUploadedFileByName(file?.name || localStorage.getItem(nameKey)); } catch(e){}
+                                    return; // stop further processing for this upload
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn('Date validation failed', err);
+                }
+
+                // generic user-facing notifications
                 if (res.body.data.ocrtype == 'pwd_id' && ocrtype == 'pwd_id') {
-                    alert('Disability: ' + res.body.data.ai_data.type_of_disability + 'OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                    alert('Disability: ' + (res.body.data.ai_data.type_of_disability || '') + ' — OCR processed successfully.');
                 }
                 else if (res.body.data.ocrtype == 'medical_certificate' && ocrtype == 'medical_certificate') {
-                    alert('Medical Condition: ' + res.body.data.ai_data.medical_condition + 'OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                    alert('Medical certificate processed successfully.');
                 }
                 else {
-                    alert('OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                    alert('OCR Type: ' + (res.body.data.ocrtype || '') + ' processed successfully.');
                 }
               
                 // Access like:

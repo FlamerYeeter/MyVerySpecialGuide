@@ -94,10 +94,10 @@
 
   <!-- Status & Support Labels -->
   <div class="flex flex-wrap gap-5 mb-10">
-    <!-- Application Decision -->
+    <!-- Application Decision (use HR_DECISION only) -->
     <div class="flex items-center gap-3 rounded-full px-6 py-3" style="background: #fff6f6; border: 1px solid #fecaca;">
       <span class="text-xl font-semibold text-red-800">
-        Decision: {{ $feedback['HR_DECISION'] ?? $feedback['FINAL_RECOMMENDATION'] ?? 'No decision yet' }}
+        Decision: {{ $feedback['HR_DECISION'] ?? 'No decision yet' }}
       </span>
     </div>
 
@@ -122,9 +122,11 @@
       <strong>{{ $application['COMPANY_NAME'] ?? '' }}</strong>.
     </p>
 
-    <p class="text-2xl text-gray-700 leading-loose mb-6">
-      We reviewed your application carefully. Decision: <strong>{{ $feedback['HR_DECISION'] ?? $feedback['FINAL_RECOMMENDATION'] }}</strong>.
-    </p>
+    @if (!empty($feedback['HR_DECISION']))
+      <p class="text-2xl text-gray-700 leading-loose mb-6">
+        We reviewed your application carefully. Decision: <strong>{{ $feedback['HR_DECISION'] }}</strong>.
+      </p>
+    @endif
 
     @if (!empty($feedback['ROLE']))
       <p class="text-2xl text-gray-700 leading-loose mb-6">Role noted: <strong>{{ $feedback['ROLE'] }}</strong></p>
