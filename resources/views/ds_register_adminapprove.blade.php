@@ -565,16 +565,17 @@ function setupUpload(inputId, displayId, labelId, hintId) {
       console.warn('[cleanup] error', e);
     }
   }
-  // --------------------------------------------------------------------
 
+    // These variables should live in the same scope as fileInput, display, labelEl, hintEl, etc.
+    let isProcessing = false;
+    let currentFileURL = null;
+    let lastChangeTime = 0;
 
-  fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
-    if (!file) {
-      resetDisplay();
-      return;
-    }
+    if (!fileInput.dataset.changeListenerAttached) {
+        fileInput.addEventListener('change', async function (e) {
+            const now = Date.now();
 
+<<<<<<< Updated upstream
     if (fileURL) URL.revokeObjectURL(fileURL);
     fileURL = URL.createObjectURL(file);
 
@@ -654,6 +655,190 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     hintEl.style.display = 'none';
   });
 
+=======
+            // ── Guard 1: already processing ────────────────────────────────
+            if (isProcessing) {
+                console.log("[upload-guard] Already processing – skipped");
+                return;
+            }
+
+            // ── Guard 2: too soon after last change (prevents double-fire) ──
+            if (now - lastChangeTime < 300) {
+                console.log("[upload-guard] Change event too soon (<300ms) – ignored");
+                return;
+            }
+            lastChangeTime = now;
+
+            isProcessing = true;
+            console.log("[upload] Change event started", new Date().toISOString());
+
+            try {
+                const file = fileInput.files?.[0];
+                if (!file) {
+                    resetDisplay();
+                    return;
+                }
+
+                // Clean up old object URL
+                if (currentFileURL) {
+                    URL.revokeObjectURL(currentFileURL);
+                }
+                currentFileURL = URL.createObjectURL(file);
+
+                const ext = file.name.split('.').pop().toLowerCase();
+                const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️'
+                        : ext === 'pdf' ? '📄'
+                        : '📁';
+
+                display.innerHTML = `
+                    <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${icon}</span>
+                            <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">
+                                View / Tingnan
+                            </button>
+                            <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">
+                                Remove / Alisin
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                // Determine storage keys & OCR type
+                let nameKey, dataKey, typeKey, ocrtype;
+                if (inputId === 'proofFile') {
+                    nameKey = 'admin_uploaded_proof_name';
+                    dataKey = 'admin_uploaded_proof_data';
+                    typeKey = 'admin_uploaded_proof_type';
+                    ocrtype = 'membership_proof';
+                } else if (inputId === 'pwdidFile') {
+                    nameKey = 'admin_uploaded_pwd_name';
+                    dataKey = 'admin_uploaded_pwd_data';
+                    typeKey = 'admin_uploaded_pwd_type';
+                    ocrtype = 'pwd_id';
+                } else {
+                    nameKey = 'admin_uploaded_med_name';
+                    dataKey = 'admin_uploaded_med_data';
+                    typeKey = 'admin_uploaded_med_type';
+                    ocrtype = 'medical_certificate';
+                }
+
+                // Read file as Data URL
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error || new Error("FileReader failed"));
+                    reader.readAsDataURL(file);
+                });
+
+                console.log("[upload] File read completed");
+
+                // Save to localStorage
+                localStorage.setItem(nameKey, file.name);
+                localStorage.setItem(dataKey, dataUrl);
+                localStorage.setItem(typeKey, ext);
+                console.info('[adminapprove] saved upload to localStorage', nameKey);
+
+                // Prepare and send to backend
+                const payload = {
+                    type: ocrtype,
+                    ocr_name: file.name,
+                    ocr_data: dataUrl,
+                    ocr_type: ext
+                };
+
+                console.log("[upload] Sending OCR request for:", file.name);
+                // debugger;   // ← keep if you need to inspect payload
+
+                const response = await fetch('db/ocr-validation.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                let result;
+                try {
+                    result = await response.json();
+                } catch (jsonErr) {
+                    console.warn("Invalid JSON from server", jsonErr);
+                    result = { message: 'Invalid response format' };
+                }
+
+                if (response.ok) {
+                    console.log('OCR Result:', result);
+
+                    const detectedType = result.data?.ocrtype;
+                    const aiData = result.data?.ai_data || {};
+
+                    if (detectedType === 'pwd_id' && ocrtype === 'pwd_id') {
+                        alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                    } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
+                        alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                    } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
+                        alert(`Is Member of DSAPI: ${aiData.is_membership || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                    } else {
+                        alert(`OCR Type: ${detectedType || ocrtype} processed successfully.`);
+                    }
+                } else {
+                    alert(`Error ${response.status}: ${result.message || 'Unknown server error'}`);
+                }
+
+                // Attach button listeners (only once per file selection)
+                const viewBtn = display.querySelector('.viewBtn');
+                const removeBtn = display.querySelector('.removeBtn');
+
+                if (viewBtn) {
+                    viewBtn.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        openModal(currentFileURL, ext);
+                    });
+                }
+
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        resetDisplay();
+                        fileInput.value = '';
+
+                        if (currentFileURL) {
+                            URL.revokeObjectURL(currentFileURL);
+                            currentFileURL = null;
+                        }
+
+                        localStorage.removeItem(nameKey);
+                        localStorage.removeItem(dataKey);
+                        localStorage.removeItem(typeKey);
+
+                        cleanupUploadedFileByName(file?.name || localStorage.getItem(nameKey));
+
+                        console.info('[adminapprove] removed upload and cleaned legacy keys for', nameKey);
+                    });
+                }
+
+                labelEl.textContent = 'File Uploaded:';
+                hintEl.style.display = 'none';
+
+            } catch (err) {
+                console.error('[upload] Processing failed:', err);
+                alert('Something went wrong while processing the file.');
+            }
+            finally {
+                isProcessing = false;
+                fileInput.value = '';   // Clear input so same file can be selected again if needed
+                console.log("[upload] Processing finished", new Date().toISOString());
+            }
+        });
+
+        fileInput.dataset.changeListenerAttached = 'true';
+        console.log("[upload] Change listener attached (one-time)");
+    } else {
+        console.log("[upload] Change listener already attached – skipped re-attachment");
+    }
+    
+>>>>>>> Stashed changes
   // Modal preview
   function openModal(url, ext) {
     modal.classList.remove('hidden');

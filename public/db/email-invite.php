@@ -14,7 +14,7 @@ try {
     $to       = $input['email']    ?? 'default@example.com';
     $username = $input['username'] ?? 'NewAdmin';
     $subject  = 'Your Account Is Ready';
-    $baseUrl  = 'http://103.38.251.55/_/r/mvsg/adminhub/login';
+    $baseUrl  = 'http://mvsg.arkiease.com/_/r/mvsg/adminhub/login';
 
     // ✅ Generate a secure random password
     $plainPassword = bin2hex(random_bytes(4)); // e.g., "A7f3b9c2"
