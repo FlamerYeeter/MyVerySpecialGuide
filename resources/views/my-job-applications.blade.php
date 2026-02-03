@@ -82,7 +82,7 @@
                         <option value="" selected class="bg-white text-gray-700">Status</option>
                         <option value="pending" class="bg-white text-gray-800">Pending</option>
                         <option value="reviewed" class="bg-white text-gray-800">Under Review</option>
-                        <option value="feedback" class="bg-white text-gray-800">Under Training</option>
+                        <option value="feedback" class="bg-white text-gray-800">Feedback</option>
                     </select>
 
                     <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center">
@@ -158,6 +158,37 @@
                 return null;
             }
 
+                        // Dynamic version of buildCard that overrides visual progress based on `status`
+                        function buildCardDynamic(a){
+                            const dateApplied = (function(){
+                                if (!a || !a.created_at) return 'Unknown';
+                                const d = tryParseDate(a.created_at);
+                                return d ? esc(formatNiceDate(d)) : esc(a.created_at || 'Unknown');
+                            })();
+
+                            const statusRaw = (a && a.status) ? String(a.status).toLowerCase() : 'pending';
+                            const isPending = statusRaw === 'pending';
+                            const isReview = statusRaw === 'reviewed' || statusRaw.indexOf('review') !== -1;
+                            const isFeedback = statusRaw === 'feedback' || statusRaw.indexOf('feedback') !== -1;
+
+                            const submittedIconClass = isPending ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
+                            const submittedLabelClass = isPending ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+
+const reviewIconClass = isReview ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
+                const reviewLabelClass = isReview ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+
+                const feedbackIconClass = isFeedback ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
+                const feedbackLabelClass = isFeedback ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+
+                const conn1Class = (isReview || isFeedback) ? 'h-1 w-12 bg-green-400' : 'h-1 w-12 bg-gray-300';
+                const conn2Class = isFeedback ? 'h-1 w-12 bg-green-400' : 'h-1 w-12 bg-gray-300';
+
+                const submittedInnerSvg = isPending ? `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" /></svg>` : '';
+                const reviewInnerSvg = isReview ? `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" /></svg>` : '';
+                const feedbackInnerSvg = isFeedback ? `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" /></svg>` : '';
+
+                            return `\n<div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">\n  <div class="p-6">\n    <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">${esc(a.job_role || 'Job Role')}</h3>\n    <p class="mt-2 text-xl font-semibold text-black-700">${esc(a.company_name || 'Company Name')}</p>\n  \n  <p class="mt-2 text-lg text-gray-700 flex items-center gap-2">\n      <img src=\"https://img.icons8.com/color/48/marker--v1.png\" class=\"w-6 h-6\"/>\n      ${esc(a.job_address || 'Location')}\n    </p>\n    <p class="mt-4 text-base text-gray-700 flex items-center gap-2">\n      <img src=\"https://img.icons8.com/color/48/calendar--v1.png\" class=\"w-6 h-6\"/>\n      <span>Date Applied: ${dateApplied}</span>\n    </p>\n  </div>\n\n  <div class="bg-green-50 border-t-4 border-green-300 px-8 py-10">\n    <h2 class="text-xl font-semibold text-black text-center mb-10">Application Progress</h2>\n    <div class="flex items-center justify-between w-full max-w-3xl mx-auto">\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${submittedIconClass}\">\n          ${submittedInnerSvg}\n        </div>\n        <p class=\"${submittedLabelClass}\">Application Submitted</p>\n        <p class=\"text-xs text-gray-500\">${dateApplied}</p>\n      </div>\n      <div class=\"${conn1Class}\"></div>\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${reviewIconClass}\">\n          ${reviewInnerSvg}\n        </div>\n        <p class=\"${reviewLabelClass}\">Under Review</p>\n      </div>\n      <div class=\"${conn2Class}\"></div>\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${feedbackIconClass}\">\n          ${feedbackInnerSvg}\n        </div>\n        <p class=\"${feedbackLabelClass}\">Feedback</p>\n      </div>\n          <div class=\"flex flex-col items-center opacity-40\">\n          </div>\n    </div>\n    <div class=\"text-center mt-10\"><p class=\"text-gray-600 text-sm\">Last update: ${dateApplied}</p></div>\n  </div>\n</div>`;
+                        }
             // Format a Date or date-string into "Month day, Year" (e.g. January 11, 2026)
             function formatNiceDate(v){
                 if (!v) return 'Unknown';
@@ -218,7 +249,7 @@
                     return;
                 }
 
-                container.innerHTML = apps.map(a => buildCard(a)).join('');
+                container.innerHTML = apps.map(a => buildCardDynamic(a)).join('');
 
                 // Insert status badges into rendered cards (post-process to avoid editing the JS template string)
                 (function(){
@@ -267,10 +298,11 @@
                                     const badge = document.createElement('p');
                                     badge.className = 'mt-3';
                                     const statusRaw = (app && app.status) ? String(app.status).toLowerCase() : 'pending';
+                                    // Color mapping: Pending = Gray, Under Review = Yellow, Feedback = Green
                                     let statusClass = 'bg-gray-100 text-gray-800';
-                                    if (statusRaw === 'pending') statusClass = 'bg-yellow-100 text-yellow-800';
-                                    else if (statusRaw === 'reviewed' || statusRaw.indexOf('review') !== -1) statusClass = 'bg-green-100 text-green-800';
-                                    else if (statusRaw === 'feedback') statusClass = 'bg-blue-100 text-blue-800';
+                                    if (statusRaw === 'pending') statusClass = 'bg-gray-100 text-gray-800';
+                                    else if (statusRaw === 'reviewed' || statusRaw.indexOf('review') !== -1) statusClass = 'bg-yellow-100 text-yellow-800';
+                                    else if (statusRaw === 'feedback') statusClass = 'bg-green-100 text-green-800';
                                     const label = (app && app.status) ? (app.status.charAt(0).toUpperCase() + app.status.slice(1)) : 'Pending';
                                     badge.innerHTML = '<span class="inline-block px-4 py-2 rounded-full text-sm font-semibold text-lg ' + statusClass + '">Status: ' + esc(label) + '</span>';
                                     // Insert the badge after the job role wrapper (before the company name) when possible
@@ -300,14 +332,21 @@
                         // update stat cards
                         (function updateStats(apps){
                             const total = apps.length || 0;
-                            const pending = apps.filter(a => ((a.status||'').toLowerCase()) === 'pending').length;
-                            const reviewed = apps.filter(a => ((a.status||'').toLowerCase()) === 'reviewed').length;
+                            // Normalize and count statuses coming from JOB_CAPACITY (jc_status)
+                            const pending = apps.filter(a => {
+                                const s = (a.status || '').toString().toLowerCase();
+                                return s.indexOf('pending') !== -1;
+                            }).length;
+                            const underReview = apps.filter(a => {
+                                const s = (a.status || '').toString().toLowerCase();
+                                return s.indexOf('review') !== -1; // matches 'reviewed' or 'under_review'
+                            }).length;
                             const elTotal = document.getElementById('statTotalCount');
                             const elPending = document.getElementById('statPendingCount');
                             const elReviewed = document.getElementById('statReviewedCount');
                             if (elTotal) elTotal.textContent = total;
                             if (elPending) elPending.textContent = pending;
-                            if (elReviewed) elReviewed.textContent = reviewed;
+                            if (elReviewed) elReviewed.textContent = underReview;
                         })(allApps);
                         renderFiltered();
                 }catch(err){
