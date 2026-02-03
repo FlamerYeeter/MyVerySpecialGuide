@@ -171,21 +171,27 @@
                             const isReview = statusRaw === 'reviewed' || statusRaw.indexOf('review') !== -1;
                             const isFeedback = statusRaw === 'feedback' || statusRaw.indexOf('feedback') !== -1;
 
-                            const submittedIconClass = isPending ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
-                            const submittedLabelClass = isPending ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+                            // Determine which steps are checked/completed based on status
+                            const submittedChecked = isPending || isReview || isFeedback;
+                            const reviewChecked = isReview || isFeedback;
+                            const feedbackChecked = isFeedback;
 
-const reviewIconClass = isReview ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
-                const reviewLabelClass = isReview ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+                            const submittedIconClass = submittedChecked ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
+                            const submittedLabelClass = submittedChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
 
-                const feedbackIconClass = isFeedback ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
-                const feedbackLabelClass = isFeedback ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+                            const reviewIconClass = reviewChecked ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
+                            const reviewLabelClass = reviewChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
 
-                const conn1Class = (isReview || isFeedback) ? 'h-1 w-12 bg-green-400' : 'h-1 w-12 bg-gray-300';
-                const conn2Class = isFeedback ? 'h-1 w-12 bg-green-400' : 'h-1 w-12 bg-gray-300';
+                            const feedbackIconClass = feedbackChecked ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
+                            const feedbackLabelClass = feedbackChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
 
-                const submittedInnerSvg = isPending ? `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" /></svg>` : '';
-                const reviewInnerSvg = isReview ? `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" /></svg>` : '';
-                const feedbackInnerSvg = isFeedback ? `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" /></svg>` : '';
+                            const conn1Class = reviewChecked ? 'h-1 w-12 bg-green-400' : 'h-1 w-12 bg-gray-300';
+                            const conn2Class = feedbackChecked ? 'h-1 w-12 bg-green-400' : 'h-1 w-12 bg-gray-300';
+
+                            const checkSvg = `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" /></svg>`;
+                            const submittedInnerSvg = submittedChecked ? checkSvg : '';
+                            const reviewInnerSvg = reviewChecked ? checkSvg : '';
+                            const feedbackInnerSvg = feedbackChecked ? checkSvg : '';
 
                             return `\n<div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">\n  <div class="p-6">\n    <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">${esc(a.job_role || 'Job Role')}</h3>\n    <p class="mt-2 text-xl font-semibold text-black-700">${esc(a.company_name || 'Company Name')}</p>\n  \n  <p class="mt-2 text-lg text-gray-700 flex items-center gap-2">\n      <img src=\"https://img.icons8.com/color/48/marker--v1.png\" class=\"w-6 h-6\"/>\n      ${esc(a.job_address || 'Location')}\n    </p>\n    <p class="mt-4 text-base text-gray-700 flex items-center gap-2">\n      <img src=\"https://img.icons8.com/color/48/calendar--v1.png\" class=\"w-6 h-6\"/>\n      <span>Date Applied: ${dateApplied}</span>\n    </p>\n  </div>\n\n  <div class="bg-green-50 border-t-4 border-green-300 px-8 py-10">\n    <h2 class="text-xl font-semibold text-black text-center mb-10">Application Progress</h2>\n    <div class="flex items-center justify-between w-full max-w-3xl mx-auto">\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${submittedIconClass}\">\n          ${submittedInnerSvg}\n        </div>\n        <p class=\"${submittedLabelClass}\">Application Submitted</p>\n        <p class=\"text-xs text-gray-500\">${dateApplied}</p>\n      </div>\n      <div class=\"${conn1Class}\"></div>\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${reviewIconClass}\">\n          ${reviewInnerSvg}\n        </div>\n        <p class=\"${reviewLabelClass}\">Under Review</p>\n      </div>\n      <div class=\"${conn2Class}\"></div>\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${feedbackIconClass}\">\n          ${feedbackInnerSvg}\n        </div>\n        <p class=\"${feedbackLabelClass}\">Feedback</p>\n      </div>\n          <div class=\"flex flex-col items-center opacity-40\">\n          </div>\n    </div>\n    <div class=\"text-center mt-10\"><p class=\"text-gray-600 text-sm\">Last update: ${dateApplied}</p></div>\n  </div>\n</div>`;
                         }
