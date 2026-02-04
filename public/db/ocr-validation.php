@@ -1,15 +1,4 @@
 <?php
-/**************************************
- * OCR API - Base64 to OCR Extraction (Windows)
- * Handles:
- * - membership_proof (optional)
- * - pwd_id (PWD ID Philippine)
- * - medical_certificate
- * Requirements:
- * - Tesseract
- * - Poppler (for PDFs)
- * - ImageMagick
- **************************************/
 
 error_reporting(E_ERROR | E_PARSE);
 ini_set('display_errors', 0);
@@ -18,7 +7,6 @@ ini_set('display_errors', 0);
 // CONFIG
 // ================================
 
-define('TESSERACT', '"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"');
 define('MAX_BASE64', 10_000_000); // ~10MB
 
 header("Content-Type: application/json");
@@ -27,50 +15,84 @@ header("Content-Type: application/json");
 // FUNCTIONS
 // ================================
 
-function buildOcrPrompt($fields, $text)
+function buildOcrPrompt($fields, $imagePaths, $ocrtype)
 {
-    // Build JSON format dynamically
     $jsonFormat = "{\n";
     foreach ($fields as $key => $value) {
         $jsonFormat .= "  \"$key\": \"$value\",\n";
     }
     $jsonFormat = rtrim($jsonFormat, ",\n") . "\n}";
 
-    // Build field list
     $fieldList = "- " . implode("\n- ", array_keys($fields));
 
-    return <<<PROMPT
-TASK:
-Extract data from the OCR text and determine where each value should be placed. Return the extracted information in the specified JSON format. Convert unstructured OCR text into structured fields. Do not leave any fields missing. If the data is not immediately found, carefully analyze and search the text to locate it. If Filipino addresses or Filipino words are found, align them to the appropriate fields.
-Strictly provide full data and return only the JSON object without any additional text or explanations and follow the format.
+    $imageBlock = "";
+    foreach ($imagePaths as $i => $path) {
+        $label = count($imagePaths) > 1 ? "Image " . ($i+1) : "Main image";
+        $imageBlock .= "IMAGE $label: $path\n";
+    }
 
-FIELDS:
+    $extraHint = "";
+    if ($ocrtype === 'pwd_id') {
+        $extraHint = "This is usually a Philippine PWD ID card — often has front and back sides. if this is not PWD ID then return error else if it contains PWD ID then its good. \n";
+    } elseif ($ocrtype === 'medical_certificate') {
+        $extraHint = "This is a medical certificate — look for patient name, date, diagnosis, doctor. if this is not Medical Certificate then return error else if it contains Medical Certificate then its good. \n";
+    } elseif ($ocrtype === 'membership_proof') {
+        $extraHint = "This is a proof of membership document — look for organization Proof of membership in the Down Syndrome Association of the Philippines, Inc. (DSAPI). if this is not Proof of Membership then return error else if it contains Medical Certificate then its good. \n";   
+    } elseif ($ocrtype === 'certificate_proof') {
+        $extraHint = "This is a certificate proof of training — look for organization name, date, and participant details. if this is not Certificate of Training then return error else if it contains Certificate of Training then its good. \n";   
+    }          
+
+    return <<<PROMPT
+You are an expert at reading Philippine identity documents and medical certificates from images.
+
+TASK:
+Read all the provided images carefully.
+Extract the requested fields.
+Return **only** valid JSON — no other text, no markdown, no explanations.
+
+FIELDS TO EXTRACT:
 $fieldList
 
-JSON FORMAT:
+EXPECTED JSON FORMAT (example):
 $jsonFormat
 
-OCR TEXT:
-$text
+IMAGES:
+$imageBlock
+
+$extraHint
+- Be careful with handwriting and low-quality prints
+- Fix obvious OCR-like mistakes (Januarg → January, etc.)
+- Convert dates to YYYY-MM-DD when possible
+- Keep addresses complete and natural 
+
+Return only the JSON object.
 PROMPT;
 }
 
-function callAI($model, $prompt)
+function callOCR($model, $prompt, $images = [])
 {
     $url = "http://localhost:11434/api/generate";
 
-    $payload = json_encode([
-        "model" => $model,
-        "prompt" => $prompt,
-        "stream" => false
-    ]);
+    $payload = [
+        "model"    => $model,
+        "prompt"   => $prompt,
+        "stream"   => false,
+    ];
+
+    // If model supports images → send them
+    if (!empty($images)) {
+        $payload["images"] = [];
+        foreach ($images as $path) {
+            $payload["images"][] = base64_encode(file_get_contents($path));
+        }
+    }
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 120);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+    curl_setopt($ch, CURLOPT_TIMEOUT, 180);
 
     $response = curl_exec($ch);
     if (curl_errno($ch)) return null;
@@ -105,35 +127,35 @@ $ocrtype = $data['type'] ?? null;
 // 2. HANDLE BASE64 INPUT
 // ================================
 
-if (in_array($ocrtype, ['membership_proof', 'pwd_id', 'medical_certificate'])) {
-    $base64_data = $data['ocr_data'] ?? null;
-    if (!$base64_data) response(false, "No file data provided");
-
-    if (strpos($base64_data, ',') !== false) $base64_data = explode(',', $base64_data)[1];
-    $fileData = base64_decode($base64_data);
-    if (!$fileData) response(false, "Invalid Base64 file");
-    if (strlen($base64_data) > MAX_BASE64) response(false, "File too large");
-} else {
+if (!in_array($ocrtype, ['certificate_proof', 'membership_proof', 'pwd_id', 'medical_certificate'])) {
     response(false, "Invalid OCR type");
 }
+
+$base64_data = $data['ocr_data'] ?? null;
+if (!$base64_data) response(false, "No file data provided");
+
+if (strpos($base64_data, ',') !== false) {
+    $base64_data = explode(',', $base64_data)[1];
+}
+
+$fileData = base64_decode($base64_data);
+if (!$fileData) response(false, "Invalid Base64 file");
+if (strlen($base64_data) > MAX_BASE64) response(false, "File too large");
 
 // ================================
 // 3. DETECT FILE TYPE
 // ================================
 
 $ext = null;
+if (str_starts_with($data['ocr_data'], 'data:image/jpeg')) $ext = '.jpg';
+elseif (str_starts_with($data['ocr_data'], 'data:image/png')) $ext = '.png';
+elseif (str_starts_with($data['ocr_data'], 'data:application/pdf')) $ext = '.pdf';
 
-if (isset($base64_data)) {
-    if (str_starts_with($data['ocr_data'], 'data:image/jpeg')) $ext = '.jpg';
-    elseif (str_starts_with($data['ocr_data'], 'data:image/png')) $ext = '.png';
-    elseif (str_starts_with($data['ocr_data'], 'data:application/pdf')) $ext = '.pdf';
-}
-
-if (!$ext && $fileData) {
+if (!$ext) {
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $mime  = finfo_buffer($finfo, $fileData);
     finfo_close($finfo);
-    $extMap = ['image/jpeg' => '.jpg','image/png'=>'.png','application/pdf'=>'.pdf'];
+    $extMap = ['image/jpeg' => '.jpg', 'image/png' => '.png', 'application/pdf' => '.pdf'];
     $ext = $extMap[$mime] ?? null;
 }
 
@@ -155,99 +177,125 @@ file_put_contents($tmpFile, $fileData);
 $images = [];
 if ($ext === '.pdf') {
     $out = $tmp . '_img';
-    shell_exec("pdftoppm -png \"$tmpFile\" \"$out\"");
+    shell_exec("pdftoppm -png " . escapeshellarg($tmpFile) . " " . escapeshellarg($out));
     $page = 1;
     while (file_exists($out . "-$page.png")) {
         $images[] = $out . "-$page.png";
         $page++;
     }
-    if (empty($images)) { cleanup([$tmpFile]); response(false, "PDF conversion failed"); }
-} else $images[] = $tmpFile;
+    if (empty($images)) {
+        cleanup([$tmpFile]);
+        response(false, "PDF conversion failed");
+    }
+} else {
+    $images[] = $tmpFile;
+}
 
 // ================================
-// 6. IMAGE PREPROCESSING
+// 6. IMAGE PREPROCESSING (recommended even for vision models)
 // ================================
 
 $cleanImages = [];
-foreach ($images as $img) {     
-    $clean = $img . "_clean.png";
-    shell_exec("magick \"$img\" -resize 200% -colorspace Gray -sharpen 0x1 \"$clean\"");
-    if (!file_exists($clean)) { cleanup(array_merge([$tmpFile], $images)); response(false, "Image processing failed"); }
-    $cleanImages[] = $clean;
+foreach ($images as $img) {
+    $clean = pathinfo($img, PATHINFO_FILENAME) . "_clean.png";
+
+    $cmd = "magick " . escapeshellarg($img)
+         . " -resize 200%"
+         . " -colorspace Gray"
+         . " -sharpen 0x1"
+         . " -contrast-stretch 0 "
+         . escapeshellarg($clean);
+
+    shell_exec($cmd);
+
+    if (!file_exists($clean)) {
+        cleanup(array_merge([$tmpFile], $images));
+        response(false, "Image preprocessing failed");
+    }
+
+    $cleanImages[] = $img;
 }
 
 // ================================
-// 7. OCR
-// ================================
-
-$text = '';
-foreach ($cleanImages as $clean) {
-    $pageText = shell_exec(TESSERACT . " \"$clean\" stdout -l eng+fil");
-    if ($pageText) $text .= "\n" . $pageText;
-}
-if (!$text) { cleanup(array_merge([$tmpFile], $images, $cleanImages)); response(false, "OCR failed"); }
-
-// ================================
-// 8. BUILD PROMPT
+// 7. BUILD PROMPT
 // ================================
 
 if ($ocrtype === 'pwd_id') {
     $fields = [
-        "full_name" => "Juan Dela Cruz",
-        "type_of_disability" => "Physical Disability",
-        "id_number" => "just find what looks like an ID number",
-        "address" => "Brgy. San Isidro, Quezon City, Metro Manila, Philippines"
+        "type_of_disability"    => "Physical Disability"
     ];
 } elseif ($ocrtype === 'medical_certificate') {
     $fields = [
-        "patient_name" => "just find a name that looks like the patient name",
-        "date" => "just find a date that looks like the issue date",
-        "diagnosis" => "just find the diagnosis information",
-        "doctor_name" => "just find a name that looks like the doctor's name",
-        "clinic_name" => "just find a name that looks like the clinic or hospital name"
+        "date"                  => "YYYY-MM-DD"
     ];
-} else {
+}  elseif ($ocrtype === 'membership_proof') {
     $fields = [
-        "summary" => "The document contains general medical information including patient details, diagnosis, and treatment recommendations."
+        "is_membership"         => "true or false"
+    ];
+}  elseif ($ocrtype === 'certificate_proof') {
+    $fields = [
+        "cert_name"             => "Name of the Certificate",
+        "issued_by"             => "Issuing Organization",
+        "date_completed"        => "YYYY-MM-DD"
+    ];
+}
+else {
+    $fields = [
+        "summary" => "short summary of document content",
     ];
 }
 
-$prompt = buildOcrPrompt($fields, $text);
+$prompt = buildOcrPrompt($fields, $cleanImages, $ocrtype);
+
+$model = implode('', [
+    chr(109), chr(105), chr(110), chr(105), chr(115), chr(116), chr(114),
+    chr(97), chr(108), chr(45), chr(51), chr(58), chr(49), chr(52), chr(98),
+    chr(45), chr(99), chr(108), chr(111), chr(117), chr(100)
+]);
+
+$model = base64_decode('bWluaXN0cmFsLTM6MTRiLWNsb3Vk');
+
+$aiResponse = callOCR($model, $prompt, $cleanImages);
+
+if (!$aiResponse || empty($aiResponse['response'])) {
+    response(false, "Did not return any response");
+}
 
 // ================================
-// 9. CALL AI
-// ================================
-
-$aiResponse = callAI("phi4-mini:3.8b", $prompt);
-if (!$aiResponse || empty($aiResponse['response'])) response(false, "AI extraction failed");
-
-// ================================
-// 10. PARSE AI JSON
+// 8. PARSE RESPONSE
 // ================================
 
 $aiText = trim($aiResponse['response']);
+$aiText = preg_replace('/```json\s*|\s*```/', '', $aiText);
 $aiText = preg_replace('/<think>.*?<\/think>/s', '', $aiText);
-$aiText = preg_replace('/```json|```/', '', $aiText);
 
-preg_match_all('/\{(?:[^{}]|(?R))*\}/s', $aiText, $matches);
-if (empty($matches[0])) response(false, "No JSON found in AI response", ["raw_ai_response"=>$aiText]);
+preg_match('/\{.*\}/s', $aiText, $matches);
+if (empty($matches)) {
+    response(false, "No JSON found in response", ["raw" => $aiText]);
+}
 
-$jsonOnly = end($matches[0]);
+$jsonOnly = $matches[0];
 $parsed = json_decode($jsonOnly, true);
-if (json_last_error() !== JSON_ERROR_NONE) response(false, "AI returned invalid JSON", ["json_error"=>json_last_error_msg(), "raw_ai_response"=>$jsonOnly]);
+
+if (json_last_error() !== JSON_ERROR_NONE) {
+    response(false, "Invalid JSON", [
+        "error" => json_last_error_msg(),
+        "raw"   => $jsonOnly
+    ]);
+}
 
 // ================================
-// 11. FINAL RESULT
+// 9. FINAL RESULT
 // ================================
 
 $result = [
-    "ocrtype" => $ocrtype,
-    "ai_data" => $parsed,   
-    "raw_text" => $text
+    "ocrtype"  => $ocrtype,
+    "ai_data"  => $parsed,
+    "images"   => array_map('basename', $cleanImages),
 ];
 
 cleanup(array_merge([$tmpFile], $images, $cleanImages));
 
-response(true, "OCR completed", $result);
+response(true, "Extraction completed", $result);
 
 ?>

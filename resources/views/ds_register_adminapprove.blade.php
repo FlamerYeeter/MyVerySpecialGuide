@@ -689,322 +689,198 @@ function setupUpload(inputId, displayId, labelId, hintId) {
       console.warn('[cleanup] error', e);
     }
   }
-  // --------------------------------------------------------------------
 
-    // Robust date parser that supports many human formats and Filipino month names
-    function parseDateString(raw) {
-        if (!raw) return null;
-        let s = String(raw).trim();
-        if (!s) return null;
-        // remove HTML entities and extra punctuation
-        s = s.replace(/&nbsp;|\u00A0/g, ' ');
-        s = s.replace(/(\d)(st|nd|rd|th)\b/gi, '$1');
-        s = s.replace(/[.,]/g, ' ');
-        s = s.replace(/\s+/g, ' ').trim();
+    // These variables should live in the same scope as fileInput, display, labelEl, hintEl, etc.
+    let isProcessing = false;
+    let currentFileURL = null;
+    let lastChangeTime = 0;
 
-        // Filipino month name mapping
-        const monthMap = {
-            'enero':'january','pebrero':'february','pebr':'february','febrero':'february','marso':'march','abril':'april','mayo':'may',
-            'hunyo':'june','hulyo':'july','agosto':'august','setyembre':'september','septiembre':'september','oktubre':'october',
-            'nobyembre':'november','disyembre':'december','dic':'december','diciembre':'december'
-        };
+    if (!fileInput.dataset.changeListenerAttached) {
+        fileInput.addEventListener('change', async function (e) {
+            const now = Date.now();
 
-        // normalize month names to English
-        s = s.replace(new RegExp(Object.keys(monthMap).join('|'), 'ig'), function(m){
-            return monthMap[m.toLowerCase()] || m;
-        });
-
-        // Try Date.parse first (handles many English formats)
-        let ts = Date.parse(s);
-        if (!isNaN(ts)) return new Date(ts);
-
-        // Try common numeric formats: dd/mm/yyyy, mm/dd/yyyy, yyyy-mm-dd
-        let m;
-        // yyyy-mm-dd or yyyy/mm/dd
-        m = s.match(/^(\d{4})[\-\/](\d{1,2})[\-\/](\d{1,2})$/);
-        if (m) return new Date(parseInt(m[1],10), parseInt(m[2],10)-1, parseInt(m[3],10));
-
-        // dd-mm-yyyy or dd/mm/yyyy or mm-dd-yyyy
-        m = s.match(/^(\d{1,2})[\-\/](\d{1,2})[\-\/](\d{2,4})$/);
-        if (m) {
-            let a = parseInt(m[1],10), b = parseInt(m[2],10), y = parseInt(m[3],10);
-            if (y < 100) y = y < 50 ? 2000 + y : 1900 + y;
-            // if first > 12, treat as day-first; if second > 12 treat as day-second; else prefer day-first (common outside US)
-            let day, month;
-            if (a > 12) { day = a; month = b; }
-            else if (b > 12) { day = b; month = a; }
-            else { day = a; month = b; }
-            return new Date(y, month - 1, day);
-        }
-
-        // MonthName dd yyyy or MonthName dd, yyyy
-        m = s.match(/^([A-Za-z]+)\s+(\d{1,2})\s+(\d{2,4})$/);
-        if (m) {
-            const monthName = m[1].toLowerCase();
-            const day = parseInt(m[2],10);
-            let year = parseInt(m[3],10);
-            if (year < 100) year = year < 50 ? 2000 + year : 1900 + year;
-            const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
-            const mi = months.indexOf(monthName);
-            if (mi >= 0) return new Date(year, mi, day);
-        }
-
-        // dd MonthName yyyy
-        m = s.match(/^(\d{1,2})\s+([A-Za-z]+)\s+(\d{2,4})$/);
-        if (m) {
-            const day = parseInt(m[1],10);
-            const monthName = m[2].toLowerCase();
-            let year = parseInt(m[3],10);
-            if (year < 100) year = year < 50 ? 2000 + year : 1900 + year;
-            const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
-            const mi = months.indexOf(monthName);
-            if (mi >= 0) return new Date(year, mi, day);
-        }
-
-        // fallback: try to extract first 4-digit year and month/day nearby
-        m = s.match(/(\d{1,2})[\s\-\/]*([A-Za-z]+)[\s\-\/]*(\d{2,4})/);
-        if (m) {
-            const day = parseInt(m[1],10);
-            const monthName = m[2].toLowerCase();
-            let year = parseInt(m[3],10);
-            if (year < 100) year = year < 50 ? 2000 + year : 1900 + year;
-            const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
-            const mi = months.indexOf(monthName);
-            if (mi >= 0) return new Date(year, mi, day);
-        }
-
-        return null;
-    }
-
-    function isOlderThanMonths(dateObj, months) {
-        if (!dateObj || !(dateObj instanceof Date) || isNaN(dateObj.getTime())) return false;
-        const cutoff = new Date();
-        cutoff.setMonth(cutoff.getMonth() - months);
-        return dateObj < cutoff;
-    }
-
-    // Extracts candidate date substrings from a block of text and returns parsed Date objects
-    function extractDatesFromText(text) {
-        const results = [];
-        if (!text || typeof text !== 'string') return results;
-        // Tokenize by whitespace and common punctuation
-        const tokens = text.replace(/[,()\r\n]/g, ' ').split(/\s+/).filter(Boolean);
-        // Try windows of up to 5 tokens to capture formats like "December 20 2025" or "20 December 2025"
-        for (let i = 0; i < tokens.length; i++) {
-            for (let len = 1; len <= 5 && i + len <= tokens.length; len++) {
-                const slice = tokens.slice(i, i + len).join(' ');
-                const d = parseDateString(slice);
-                if (d && !results.find(x => x.getTime() === d.getTime())) results.push(d);
+            // ── Guard 1: already processing ────────────────────────────────
+            if (isProcessing) {
+                console.log("[upload-guard] Already processing – skipped");
+                return;
             }
-        }
-        return results;
-    }
 
+            // ── Guard 2: too soon after last change (prevents double-fire) ──
+            if (now - lastChangeTime < 300) {
+                console.log("[upload-guard] Change event too soon (<300ms) – ignored");
+                return;
+            }
+            lastChangeTime = now;
 
-  fileInput.addEventListener('change', () => {
-    const file = fileInput.files[0];
-    if (!file) {
-      resetDisplay();
-      return;
-    }
+            isProcessing = true;
+            console.log("[upload] Change event started", new Date().toISOString());
 
-    if (fileURL) URL.revokeObjectURL(fileURL);
-    fileURL = URL.createObjectURL(file);
+            try {
+                const file = fileInput.files?.[0];
+                if (!file) {
+                    resetDisplay();
+                    return;
+                }
 
-    const ext = file.name.split('.').pop().toLowerCase();
-    const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️'
-               : ext === 'pdf' ? '📄'
-               : '📁';
+                // Clean up old object URL
+                if (currentFileURL) {
+                    URL.revokeObjectURL(currentFileURL);
+                }
+                currentFileURL = URL.createObjectURL(file);
 
-    display.innerHTML = `
-      <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl">${icon}</span>
-          <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
-        </div>
-        <div class="flex gap-2">
-          <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
-          <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
-        </div>
-      </div>
-    `;
+                const ext = file.name.split('.').pop().toLowerCase();
+                const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️'
+                        : ext === 'pdf' ? '📄'
+                        : '📁';
 
-        // Unique admin keys
-        let nameKey, dataKey, typeKey, ocrtype;
-        if (inputId === 'proofFile') {
-            nameKey = 'admin_uploaded_proof_name';
-            dataKey = 'admin_uploaded_proof_data';
-            typeKey = 'admin_uploaded_proof_type';
-            ocrtype = 'membership_proof';
-        } else if (inputId === 'pwdidFile') {
-            nameKey = 'admin_uploaded_pwd_name';
-            dataKey = 'admin_uploaded_pwd_data';
-            typeKey = 'admin_uploaded_pwd_type';
-            ocrtype = 'pwd_id';
-        } else {
-            nameKey = 'admin_uploaded_med_name';
-            dataKey = 'admin_uploaded_med_data';
-            typeKey = 'admin_uploaded_med_type';
-            ocrtype = 'medical_certificate';
-        }
+                display.innerHTML = `
+                    <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
+                        <div class="flex items-center gap-2">
+                            <span class="text-2xl">${icon}</span>
+                            <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">
+                                View / Tingnan
+                            </button>
+                            <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">
+                                Remove / Alisin
+                            </button>
+                        </div>
+                    </div>
+                `;
 
-    // Save file to storage
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        localStorage.setItem(nameKey, file.name);
-        localStorage.setItem(dataKey, reader.result);
-        localStorage.setItem(typeKey, ext);
-        // Also persist into the shared education/review array so other pages see the proof
-        try {
-            if (inputId === 'proofFile') {
-                const arrKey = 'uploadedProofs_proof';
+                // Determine storage keys & OCR type
+                let nameKey, dataKey, typeKey, ocrtype;
+                if (inputId === 'proofFile') {
+                    nameKey = 'admin_uploaded_proof_name';
+                    dataKey = 'admin_uploaded_proof_data';
+                    typeKey = 'admin_uploaded_proof_type';
+                    ocrtype = 'membership_proof';
+                } else if (inputId === 'pwdidFile') {
+                    nameKey = 'admin_uploaded_pwd_name';
+                    dataKey = 'admin_uploaded_pwd_data';
+                    typeKey = 'admin_uploaded_pwd_type';
+                    ocrtype = 'pwd_id';
+                } else {
+                    nameKey = 'admin_uploaded_med_name';
+                    dataKey = 'admin_uploaded_med_data';
+                    typeKey = 'admin_uploaded_med_type';
+                    ocrtype = 'medical_certificate';
+                }
+
+                // Read file as Data URL
+                const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = () => reject(reader.error || new Error("FileReader failed"));
+                    reader.readAsDataURL(file);
+                });
+
+                console.log("[upload] File read completed");
+
+                // Save to localStorage
+                localStorage.setItem(nameKey, file.name);
+                localStorage.setItem(dataKey, dataUrl);
+                localStorage.setItem(typeKey, ext);
+                console.info('[adminapprove] saved upload to localStorage', nameKey);
+
+                // Prepare and send to backend
+                const payload = {
+                    type: ocrtype,
+                    ocr_name: file.name,
+                    ocr_data: dataUrl,
+                    ocr_type: ext
+                };
+
+                console.log("[upload] Sending OCR request for:", file.name);
+                // debugger;   // ← keep if you need to inspect payload
+
+                const response = await fetch('db/ocr-validation.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                let result;
                 try {
-                    const raw = localStorage.getItem(arrKey);
-                    let arr = [];
-                    if (raw) {
-                        try { arr = JSON.parse(raw || '[]') || []; } catch(e){ arr = []; }
+                    result = await response.json();
+                } catch (jsonErr) {
+                    console.warn("Invalid JSON from server", jsonErr);
+                    result = { message: 'Invalid response format' };
+                }
+
+                if (response.ok) {
+                    console.log('OCR Result:', result);
+
+                    const detectedType = result.data?.ocrtype;
+                    const aiData = result.data?.ai_data || {};
+
+                    if (detectedType === 'pwd_id' && ocrtype === 'pwd_id') {
+                        alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                    } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
+                        alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                    } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
+                        alert(`Is Member of DSAPI: ${aiData.is_membership || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                    } else {
+                        alert(`OCR Type: ${detectedType || ocrtype} processed successfully.`);
                     }
-                    // remove any existing item with same filename then push
-                    arr = (arr || []).filter(it => !(it && (it.name||it.filename) && (it.name||it.filename) === file.name));
-                    arr.push({ name: file.name, type: ext, data: reader.result });
-                    localStorage.setItem(arrKey, JSON.stringify(arr));
-                } catch(e){}
-            }
-        } catch(e){}
-        // ✅ Save data to backend 
-        const data = {
-            type: ocrtype,
-            ocr_name: file.name,
-            ocr_data: reader.result,
-            ocr_type: ext
-        };
+                } else {
+                    alert(`Error ${response.status}: ${result.message || 'Unknown server error'}`);
+                }
 
-        fetch('db/ocr-validation.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-        })
-        .then(response => {
-            // Always try to parse JSON, even on errors
-            return response.json().then(jsonData => ({
-                ok: response.ok,
-                status: response.status,
-                body: jsonData
-            }));
-        })
-        .then(res => {
-            if (res.ok) {
-                // ✅ Success (HTTP 200)
-                console.log('OCR Result:', res.body);
-                // If this was a medical certificate OCR, enforce date validation (client-side)
-                try {
-                    const resp = res.body || {};
-                    const ai = (resp.data && resp.data.ai_data) ? resp.data.ai_data : {};
-                    if (ocrtype === 'medical_certificate') {
-                        // Gather date candidates from AI fields and raw OCR text; prefer the newest parsed date
-                        const aiDateCandidates = [];
-                        const dateFields = [ai.date, ai.issue_date, ai.issued_date, ai.date_issued, ai.issued, ai.issueDate, ai.issuedOn, ai.date_issued_on];
-                        dateFields.forEach(x => { if (x && String(x).trim()) aiDateCandidates.push(String(x).trim()); });
+                // Attach button listeners (only once per file selection)
+                const viewBtn = display.querySelector('.viewBtn');
+                const removeBtn = display.querySelector('.removeBtn');
 
-                        // also parse the raw_text for date-like substrings
-                        const rawText = (resp.data && resp.data.raw_text) ? String(resp.data.raw_text) : '';
-                        const textDates = extractDatesFromText(rawText);
+                if (viewBtn) {
+                    viewBtn.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        openModal(currentFileURL, ext);
+                    });
+                }
 
-                        // parse AI candidates
-                        const parsedCandidates = aiDateCandidates.map(s => parseDateString(s)).filter(Boolean);
-                        // include parsed dates from raw text
-                        textDates.forEach(d => parsedCandidates.push(d));
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', (ev) => {
+                        ev.preventDefault();
+                        resetDisplay();
+                        fileInput.value = '';
 
-                        // choose the most recent date (max timestamp)
-                        let chosen = null;
-                        parsedCandidates.forEach(d => {
-                            if (!chosen || d.getTime() > chosen.getTime()) chosen = d;
-                        });
-
-                        if (chosen) {
-                            if (isOlderThanMonths(chosen, 3)) {
-                                alert('Medical certificate appears to be older than 3 months and has been rejected. Please upload a more recent certificate.');
-                                try { resetDisplay(); } catch(e){}
-                                try { fileInput.value = ''; } catch(e){}
-                                try { if (fileURL) URL.revokeObjectURL(fileURL); fileURL = null; } catch(e){}
-                                try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
-                                try { cleanupUploadedFileByName(file?.name || localStorage.getItem(nameKey)); } catch(e){}
-                                return; // stop further processing for this upload
-                            }
-                        } else {
-                            // no confidently parsed date found — do not auto-reject; log for visibility
-                            console.warn('No confident date found in AI fields or OCR text for medical certificate. Skipping auto-reject.');
+                        if (currentFileURL) {
+                            URL.revokeObjectURL(currentFileURL);
+                            currentFileURL = null;
                         }
-                    }
-                } catch (err) {
-                    console.warn('Date validation failed', err);
+
+                        localStorage.removeItem(nameKey);
+                        localStorage.removeItem(dataKey);
+                        localStorage.removeItem(typeKey);
+
+                        cleanupUploadedFileByName(file?.name || localStorage.getItem(nameKey));
+
+                        console.info('[adminapprove] removed upload and cleaned legacy keys for', nameKey);
+                    });
                 }
 
-                // generic user-facing notifications
-                if (res.body.data.ocrtype == 'pwd_id' && ocrtype == 'pwd_id') {
-                    alert('Disability: ' + (res.body.data.ai_data.type_of_disability || '') + ' — OCR processed successfully.');
-                }
-                else if (res.body.data.ocrtype == 'medical_certificate' && ocrtype == 'medical_certificate') {
-                    alert('Medical certificate processed successfully.');
-                }
-                else {
-                    alert('OCR Type: ' + (res.body.data.ocrtype || '') + ' processed successfully.');
-                }
-              
-                // Access like:
-                // res.body.status
-                // res.body.message
-                // res.body.data.name, etc.
-            } else {
-                // ❌ Error
-                alert(`Error ${res.status}: ${res.body.message || 'Unknown error'}`);
+                labelEl.textContent = 'File Uploaded:';
+                hintEl.style.display = 'none';
+
+            } catch (err) {
+                console.error('[upload] Processing failed:', err);
+                alert('Something went wrong while processing the file.');
             }
-        })
-        .catch(err => {
-            console.error('Fetch error:', err);
-            alert('Failed to fetch OCR data.');
+            finally {
+                isProcessing = false;
+                fileInput.value = '';   // Clear input so same file can be selected again if needed
+                console.log("[upload] Processing finished", new Date().toISOString());
+            }
         });
 
-        console.info('[adminapprove] saved upload to localStorage', nameKey);
-      } catch (err) {
-        console.warn('Failed to save upload in localStorage', err);
-      }
-    };
-    reader.readAsDataURL(file);
-
-    // View
-    display.querySelector('.viewBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      openModal(fileURL, ext);
-    });
-
-    // Remove
-    display.querySelector('.removeBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      resetDisplay();
-      fileInput.value = '';
-
-      if (fileURL) URL.revokeObjectURL(fileURL);
-      fileURL = null;
-
-      // Remove admin keys
-      localStorage.removeItem(nameKey);
-      localStorage.removeItem(dataKey);
-      localStorage.removeItem(typeKey);
-
-      // ⭐ NEW: full cleanup fix
-      cleanupUploadedFileByName(
-        file?.name || localStorage.getItem(nameKey)
-      );
-
-      console.info('[adminapprove] removed upload and cleaned legacy keys for', nameKey);
-    });
-
-    labelEl.textContent = 'File Uploaded:';
-    hintEl.style.display = 'none';
-  });
-
+        fileInput.dataset.changeListenerAttached = 'true';
+        console.log("[upload] Change listener attached (one-time)");
+    } else {
+        console.log("[upload] Change listener already attached – skipped re-attachment");
+    }
+    
   // Modal preview
   function openModal(url, ext) {
     modal.classList.remove('hidden');

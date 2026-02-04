@@ -992,9 +992,212 @@
                                 hideFileInfo();
                             }
                         }
+
                     });
                 });
             }
+                        if (typeof hideFileInfo === "function") hideFileInfo();
+                        console.log("File input cleared & education localStorage removed");
+                    } else {
+                        fileUploadSection.style.display = "block"; // show section
+                        console.log("certYes selected → fileuploadSection shown");
+                    }
+                }
+            };
+
+            // Initial check on page load
+            updateSectionVisibility();
+
+            // Add change listeners to all cert radios
+            certRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    // Save selection to localStorage
+                    localStorage.setItem("review_certs", radio.value);
+                    console.log("Saved cert:", radio.value);
+
+                    // Update visibility & clear file if needed
+                    updateSectionVisibility();
+                });
+            });
+
+        });
+    </script>
+
+    <script>
+        (function() {
+            const section = document.getElementById('cert_section');
+            const container = document.getElementById('certs_container');
+            const tpl = document.getElementById('cert_template');
+            const hidden = document.getElementById('certificates');
+            const addBtn = document.getElementById('addCertBtn');
+            const radios = Array.from(document.querySelectorAll('input[name="certs"]'));
+
+            if (!section || !container || !tpl || !hidden || !addBtn || !radios.length) return;
+
+            function parseHidden() {
+                try {
+                    return JSON.parse(hidden.value || '[]');
+                } catch (e) {
+                    return [];
+                }
+            }
+
+            function writeHidden(arr) {
+                try {
+                    hidden.value = JSON.stringify(arr || []);
+                } catch (e) {
+                    hidden.value = '[]';
+                }
+            }
+
+            function debounce(fn, wait) {
+                let t;
+                return function() {
+                    clearTimeout(t);
+                    t = setTimeout(() => fn.apply(this, arguments), wait);
+                };
+            }
+
+            function syncFromUI() {
+                const list = [];
+                Array.from(container.children).forEach(block => {
+                    const name = block.querySelector('input[name="certificate_name"]')?.value?.trim() || '';
+                    const issued = block.querySelector('input[name="issued_by"]')?.value?.trim() || '';
+                    const date = block.querySelector('input[name="date_completed"]')?.value?.trim() || '';
+                    const desc = block.querySelector('input[name="training_description"]')?.value?.trim() || '';
+                    if (name || issued || date || desc) list.push({
+                        certificate_name: name,
+                        issued_by: issued,
+                        date_completed: date,
+                        training_description: desc
+                    });
+                });
+                writeHidden(list);
+            }
+
+            const debouncedSync = debounce(syncFromUI, 150);
+
+            function createUploadSlotForNode(targetNode) {
+                const suf = String(Date.now()) + Math.floor(Math.random()*1000);
+                const slot = document.createElement('div');
+                slot.className = 'mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3';
+
+                const left = document.createElement('div');
+                left.className = 'flex-1';
+                const label = document.createElement('p');
+                label.className = 'font-medium text-gray-800 text-sm sm:text-base';
+                label.innerHTML = `<span id="validcertLabel_${suf}" class="flex items-center gap-2"><span>Upload File (Image or PDF)</span></span>`;
+                const hint = document.createElement('p');
+                hint.id = `validcertHint_${suf}`;
+                hint.className = 'text-gray-600 italic text-xs sm:text-sm mt-1';
+                hint.innerHTML = '(Mag-upload ng larawan o PDF ng iyong Certificates/Trainings)<br /><br />Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />';
+                const display = document.createElement('div');
+                display.id = `validcertDisplay_${suf}`;
+                const fileuploadWrap = document.createElement('div');
+                fileuploadWrap.id = `fileuploadSection_${suf}`;
+                fileuploadWrap.className = 'mt-3';
+                const proofInfo = document.createElement('div');
+                proofInfo.id = `proofFileInfo_${suf}`;
+                fileuploadWrap.appendChild(proofInfo);
+                left.appendChild(label);
+                left.appendChild(hint);
+                left.appendChild(display);
+                left.appendChild(fileuploadWrap);
+
+                const right = document.createElement('div');
+                right.className = 'flex-shrink-0 flex flex-col items-center sm:items-end space-y-2';
+                const lab = document.createElement('label');
+                lab.htmlFor = `validcertFile_${suf}`;
+                lab.className = 'cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition';
+                lab.textContent = '📁 Choose File / Pumili ng File';
+                const inp = document.createElement('input');
+                inp.type = 'file'; inp.accept = '.jpg,.jpeg,.png,.pdf'; inp.id = `validcertFile_${suf}`; inp.className = 'hidden';
+                const verr = document.createElement('div');
+                verr.className = 'upload-error w-full text-sm text-right';
+                right.appendChild(lab); right.appendChild(inp); right.appendChild(verr);
+
+                slot.appendChild(left); slot.appendChild(right);
+
+                // wire input -> targetNode hidden fields and display
+                inp.addEventListener('change', function() {
+                    const f = this.files && this.files[0];
+                    if (!f) return;
+                    const name = f.name || '';
+                    const type = String(name.split('.').pop()||'').toLowerCase();
+                    if (!['jpg','jpeg','png','pdf'].includes(type)) { alert('Invalid file type. Only JPG, PNG, or PDF allowed.'); this.value=''; return; }
+                    if (f.size > 5 * 1024 * 1024) { alert('File too large. Max 5MB.'); this.value=''; return; }
+                    const reader = new FileReader();
+                    reader.onload = function(e){
+                        try{
+                            const data = e.target.result;
+                            // write into targetNode hidden inputs
+                            const hdData = targetNode.querySelector('input[name="certificate_file_data"]');
+                            const hdName = targetNode.querySelector('input[name="certificate_file_name"]');
+                            const hdType = targetNode.querySelector('input[name="certificate_file_type"]');
+                            if (hdData) hdData.value = data;
+                            if (hdName) hdName.value = name;
+                            if (hdType) hdType.value = type;
+                            // render proofInfo
+                            proofInfo.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${['jpg','jpeg','png'].includes(type)?'🖼️':'📄'}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${name.length>60?name.slice(0,57)+'...':name}</span><div class="flex gap-2"><button type="button" class="view-file bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button><button type="button" class="remove-file bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button></div></div>`;
+                            // hook view/remove
+                            const vb = proofInfo.querySelector('.view-file');
+                            const rb = proofInfo.querySelector('.remove-file');
+                            if (vb) vb.addEventListener('click', function(){ if (typeof window.openModalPreview === 'function') return window.openModalPreview(name, data, type); const modal = document.getElementById('fileModal'); const mc = document.getElementById('modalContent'); if(mc) mc.innerHTML = `<h3 class="font-semibold mb-2">${name}</h3>` + (['jpg','jpeg','png'].includes(type)?`<img src="${data}" class="max-h-[70vh] mx-auto rounded-lg"/>`:(type==='pdf'?`<iframe src="${data}" class="w-full h-[70vh] rounded-lg border" title="${name}"></iframe>`:'')); if(modal) modal.classList.remove('hidden'); });
+                            if (rb) rb.addEventListener('click', function(){ if (hdData) hdData.value=''; if (hdName) hdName.value=''; if (hdType) hdType.value=''; proofInfo.innerHTML=''; inp.value='';
+                                // sync
+                                try{ const evt = new Event('input',{bubbles:true}); targetNode.querySelectorAll('input').forEach(i=>i.dispatchEvent(evt)); }catch(e){}
+                            });
+                            // trigger sync
+                            try{ const evt = new Event('input',{bubbles:true}); targetNode.querySelectorAll('input').forEach(i=>i.dispatchEvent(evt)); }catch(e){}
+  
+                            // OCR processing
+                            debugger;
+                            const datas = {
+                                type: 'certificate_proof',
+                                ocr_name: f.name,
+                                ocr_data: reader.result,
+                                ocr_type: type
+                            };
+
+                            fetch('db/ocr-validation.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(datas)
+                            })
+                            .then(response => {
+                                // Always try to parse JSON, even on errors
+                                return response.json().then(jsonData => ({
+                                    ok: response.ok,
+                                    status: response.status,
+                                    body: jsonData
+                                }));
+                            })
+                            .then(res => {
+                                if (res.ok) {
+                                    debugger;
+                                    console.log('OCR Result:', res.body);
+                                    if (res.body.data.ocrtype == 'certificate_proof') {
+                                        alert('Cert Name: ' + res.body.data.ai_data.cert_name + ' Issued By: ' + res.body.data.ai_data.issued_by + ' Date Completed: ' + res.body.data.ai_data.date_completed + ' OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                                    }
+                                    else {
+                                        alert('OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                                    }
+                                
+                                } else {
+                                    // ❌ Error
+                                    alert(`Error ${res.status}: ${res.body.message || 'Unknown error'}`);
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Fetch error:', err);
+                                alert('Failed to fetch OCR data.');
+                            });  
+
+                        }catch(err){ console.warn(err); }
+
+                    };
+
+
 
             // init UI from storage
             (function init() {

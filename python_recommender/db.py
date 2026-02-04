@@ -38,7 +38,7 @@ def get_connection():
     Defaults are taken from the repository's `public/db/oracledb.php` but we DO NOT
     read/modify that file — these are just safe defaults.
     """
-    host = os.environ.get("ORACLE_HOST", "103.38.251.55")
+    host = os.environ.get("ORACLE_HOST", "mvsg.arkiease.com")
     port = int(os.environ.get("ORACLE_PORT", 1521))
     service = os.environ.get("ORACLE_SERVICE", "APXPDB")
     user = os.environ.get("ORACLE_USER", "MVSG")
