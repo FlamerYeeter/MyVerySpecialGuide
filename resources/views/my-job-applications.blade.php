@@ -136,6 +136,22 @@
 
             let allApps = [];
 
+            // Update the stat cards based on current `allApps`
+            function updateStats() {
+                try {
+                    const apps = allApps || [];
+                    const total = apps.length || 0;
+                    const pending = apps.filter(a => { const s = (a.status || '').toString().toLowerCase(); return s.indexOf('pending') !== -1; }).length;
+                    const underReview = apps.filter(a => { const s = (a.status || '').toString().toLowerCase(); return s.indexOf('review') !== -1; }).length;
+                    const elTotal = document.getElementById('statTotalCount');
+                    const elPending = document.getElementById('statPendingCount');
+                    const elReviewed = document.getElementById('statReviewedCount');
+                    if (elTotal) elTotal.textContent = total;
+                    if (elPending) elPending.textContent = pending;
+                    if (elReviewed) elReviewed.textContent = underReview;
+                } catch (e) { console.debug('updateStats failed', e); }
+            }
+
             function tryParseDate(v){
                 if (!v) return null;
                 let d = new Date(v);
@@ -336,24 +352,8 @@
                     }
                         allApps = j.applications || [];
                         // update stat cards
-                        (function updateStats(apps){
-                            const total = apps.length || 0;
-                            // Normalize and count statuses coming from JOB_CAPACITY (jc_status)
-                            const pending = apps.filter(a => {
-                                const s = (a.status || '').toString().toLowerCase();
-                                return s.indexOf('pending') !== -1;
-                            }).length;
-                            const underReview = apps.filter(a => {
-                                const s = (a.status || '').toString().toLowerCase();
-                                return s.indexOf('review') !== -1; // matches 'reviewed' or 'under_review'
-                            }).length;
-                            const elTotal = document.getElementById('statTotalCount');
-                            const elPending = document.getElementById('statPendingCount');
-                            const elReviewed = document.getElementById('statReviewedCount');
-                            if (elTotal) elTotal.textContent = total;
-                            if (elPending) elPending.textContent = pending;
-                            if (elReviewed) elReviewed.textContent = underReview;
-                        })(allApps);
+                        // update stat cards
+                        updateStats();
                         renderFiltered();
                 }catch(err){
                     container.innerHTML = `<div class="p-6 text-center text-red-600">Error loading applications</div>`;
@@ -393,16 +393,18 @@
                             body: JSON.stringify({ application_id: appId })
                         });
                         const j = await res.json().catch(() => null);
-                        if (j && j.success){
+                            if (j && j.success){
                             // if server deleted the application, remove it from local list
                             if (j.deleted) {
                                 allApps = (allApps || []).filter(a => String(a.id) !== String(appId));
                                 renderFiltered();
+                                updateStats();
                                 return;
                             }
                             // update local model and re-render (fallback)
                             allApps = (allApps || []).map(a => { if (String(a.id) === String(appId)) a.status = (j.status || 'withdrawn'); return a; });
                             renderFiltered();
+                            updateStats();
                         } else {
                             // If server returned allowed_statuses, offer a sensible retry
                             if (j && Array.isArray(j.allowed_statuses) && j.allowed_statuses.length){
