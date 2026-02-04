@@ -45,7 +45,12 @@ SELECT a.ID,
        a.PHONE_NUMBER,
        a.COMPLETE_ADDRESS,
     a.CREATED_AT,
-    a.STATUS,
+    -- prefer latest status from JOB_CAPACITY (per job_posting_id + user)
+    (SELECT STATUS FROM (
+         SELECT STATUS FROM MVSG.JOB_CAPACITY jc2
+         WHERE jc2.JOB_POSTING_ID = a.JOB_POSTING_ID AND jc2.USER_ID = a.GUARDIAN_ID
+         ORDER BY jc2.UPDATED_AT DESC
+     ) jc_sub WHERE ROWNUM = 1) AS JC_STATUS,
        jp.COMPANY_NAME,
        jp.JOB_ROLE,
        jp.ADDRESS AS JOB_ADDRESS
@@ -78,7 +83,8 @@ while ($row = oci_fetch_assoc($stid)) {
         'phone_number' => $row['PHONE_NUMBER'] ?? null,
         'complete_address' => $row['COMPLETE_ADDRESS'] ?? null,
         'created_at' => isset($row['CREATED_AT']) ? $row['CREATED_AT'] : null,
-        'status' => $row['STATUS'] ?? null,
+        // Use JOB_CAPACITY status exclusively (no fallback to APPLICATIONS.STATUS)
+        'status' => $row['JC_STATUS'] ?? null,
         'company_name' => $row['COMPANY_NAME'] ?? null,
         'job_role' => $row['JOB_ROLE'] ?? null,
         'job_address' => $row['JOB_ADDRESS'] ?? null,
