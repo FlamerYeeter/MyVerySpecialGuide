@@ -349,23 +349,23 @@ setupEditSection("editAccountBtn", "accountSection");
   <div class="space-y-6">
     <!-- Proof of Membership -->
         <!-- Proof of Membership -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div class="flex-1">
-        <p class="font-medium text-gray-800 text-sm sm:text-base">Upload Proof of Membership</p>
-        <p class="text-gray-600 italic text-xs sm:text-sm mt-1">
-          (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br>
-          Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b>
-        </p>
-        <div id="proofDisplay"></div>
-      </div>
-      <div class="flex flex-col sm:flex-row sm:items-center gap-2">
-        <!-- wrap file input inside label so click reliably reaches the input -->
-        <label for="proofFile" class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition inline-flex items-center gap-2">
-          📁 Choose File / Pumili ng File
-          <input id="proofFile" type="file" accept=".jpg,.jpeg,.png,.pdf" class="sr-only" disabled />
-        </label>
-      </div>
-    </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 hidden" aria-hidden="true">
+            <div class="flex-1">
+                <p class="font-medium text-gray-800 text-sm sm:text-base">Upload Proof of Membership</p>
+                <p class="text-gray-600 italic text-xs sm:text-sm mt-1">
+                    (Mag-upload ng larawan o PDF bilang patunay ng pagiging miyembro.)<br>
+                    Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b>
+                </p>
+                <div id="proofDisplay"></div>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                <!-- wrap file input inside label so click reliably reaches the input -->
+                <label for="proofFile" class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition inline-flex items-center gap-2">
+                    📁 Choose File / Pumili ng File
+                    <input id="proofFile" type="file" accept=".jpg,.jpeg,.png,.pdf" class="sr-only" disabled />
+                </label>
+            </div>
+        </div>
 
     <!-- PWD ID -->
     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">

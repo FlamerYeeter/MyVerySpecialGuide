@@ -130,13 +130,13 @@ $lob_med->writeTemporary($medcerts, OCI_TEMP_BLOB);
 // ——— 1. INSERT user_guardian ———
 $sql1 = "INSERT INTO user_guardian (
     id, role, first_name, last_name, email, contact_number, password,
-    age, education, school,
+     education, school,
     guardian_first_name, guardian_last_name, guardian_email,
     guardian_contact_number, relationship_to_user, created_at, updated_at,
     address, types_of_ds, proof_of_membership, certificates, username, med_certificates
 ) VALUES (
     :v0,'User',:v2,:v3,:v4,:v5,:v6,
-    :v7,:v8,:v9,
+     :v8,:v9,
     :v11,:v12,:v13,:v14,:v15,SYSDATE,SYSDATE,
     :v16,:v17,:v18,:v19,:v20,:v21
 )";
@@ -150,7 +150,7 @@ oci_bind_by_name($stid1, ':v3',  $lastName);
 oci_bind_by_name($stid1, ':v4',  $email);
 oci_bind_by_name($stid1, ':v5',  $phone);
 oci_bind_by_name($stid1, ':v6',  $password);
-oci_bind_by_name($stid1, ':v7',  $age);
+oci_bind_by_name($stid1, ':v8',  $edu_level);
 oci_bind_by_name($stid1, ':v8',  $edu_level);
 oci_bind_by_name($stid1, ':v9',  $school_name);
 oci_bind_by_name($stid1, ':v11', $gf);

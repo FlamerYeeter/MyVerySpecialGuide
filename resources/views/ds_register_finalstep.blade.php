@@ -280,7 +280,15 @@
   agree1?.addEventListener('change', toggleCreateButton);
   agree2?.addEventListener('change', toggleCreateButton);
 
-  // ✅ Handle create account
+  // ✅ Handle create account (with enhanced console debugging)
+  // Global error handlers to capture uncaught errors/rejections in DevTools
+  window.addEventListener('error', function (ev) {
+    try { console.error('[global error]', ev.message, ev.error || ev.filename || ev); } catch(e){}
+  });
+  window.addEventListener('unhandledrejection', function (ev) {
+    try { console.error('[unhandled rejection]', ev.reason); } catch(e){}
+  });
+
   createBtn?.addEventListener('click', function(e){
     e.preventDefault();
 
@@ -293,10 +301,10 @@
 
     let jobExperiencesRaw = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || '[]';
     let jobExperiences = [];
-    try { jobExperiences = JSON.parse(jobExperiencesRaw || '[]'); } catch(e){ jobExperiences = []; }
+    try { jobExperiences = JSON.parse(jobExperiencesRaw || '[]'); } catch(err){ jobExperiences = []; }
     const derivedYears = (Array.isArray(jobExperiences) ? jobExperiences.map(j => j.start_year || j.year || '').filter(Boolean) : []);
-    
-    // ✅ Save data to backend 
+
+    // Save data to backend
     const data = {
       education: localStorage.getItem('edu_level'),
       job_experiences: localStorage.getItem('job_experiences'),
@@ -314,29 +322,54 @@
       certificates: localStorage.getItem('certificates') || localStorage.getItem('education_certificates') || '[]'
     };
 
-    debugger;
+    // Debug: log payload size and keys (avoid dumping huge binary in case of large data URLs)
+    try {
+      const safeSummary = Object.keys(data).reduce((acc, k) => {
+        try {
+          const v = data[k];
+          if (!v) acc[k] = null;
+          else if (typeof v === 'string' && v.length > 200) acc[k] = `${v.slice(0,120)}... (${v.length} chars)`;
+          else acc[k] = v;
+        } catch(e){ acc[k] = typeof data[k]; }
+        return acc;
+      }, {});
+      console.groupCollapsed('[registration] submitting payload summary');
+      console.debug('payload summary', safeSummary);
+      console.groupEnd();
+    } catch(e){ console.warn('could not summarize payload', e); }
 
-    //show loading here
+    // show loading here (optional)
 
     fetch('db/registration-data.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     })
-    .then(response => {
-      debugger;
+    .then(async response => {
+      // always capture response body for debugging
+      let text = null;
+      try { text = await response.text(); } catch(e) { text = null; }
+
+      console.groupCollapsed('[registration] server response');
+      console.debug('status', response.status);
+      console.debug('statusText', response.statusText);
+      console.debug('body (text)', text);
+      try { const parsed = text ? JSON.parse(text) : null; console.debug('body (json)', parsed); } catch(e) { console.debug('body not JSON'); }
+      console.groupEnd();
+
       if (response.status === 200) {
-        // ✅ Success
-        successModal.classList.remove('hidden');
-        return response.json(); // optional, if you need the response data
-      } else if (response.status === 500) {
-        // ❌ Server error
-        alert('Invalid Data. Please try again later.');
-      } else {
-        // Optional: handle other statuses
-        alert(`Unexpected response: ${response.status}`);
+        // Success
+        try { successModal.classList.remove('hidden'); } catch(e){}
+        return;
       }
-        //close loading here
+
+      // Non-200: report full details to console and alert user to check DevTools
+      console.error('[registration] failed — status', response.status, 'body:', text);
+      try { alert('Invalid Data. Please try again later. See console (DevTools) for details.'); } catch(e){}
+    })
+    .catch(err => {
+      console.error('[registration] fetch error', err);
+      try { alert('Network error — see console (DevTools) for details.'); } catch(e){}
     });
 
   });
