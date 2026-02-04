@@ -575,87 +575,6 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         fileInput.addEventListener('change', async function (e) {
             const now = Date.now();
 
-<<<<<<< Updated upstream
-    if (fileURL) URL.revokeObjectURL(fileURL);
-    fileURL = URL.createObjectURL(file);
-
-    const ext = file.name.split('.').pop().toLowerCase();
-    const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️'
-               : ext === 'pdf' ? '📄'
-               : '📁';
-
-    display.innerHTML = `
-      <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
-        <div class="flex items-center gap-2">
-          <span class="text-2xl">${icon}</span>
-          <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
-        </div>
-        <div class="flex gap-2">
-          <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
-          <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
-        </div>
-      </div>
-    `;
-
-    // Unique admin keys
-    let nameKey, dataKey, typeKey;
-    if (inputId === 'proofFile') {
-      nameKey = 'admin_uploaded_proof_name';
-      dataKey = 'admin_uploaded_proof_data';
-      typeKey = 'admin_uploaded_proof_type';
-    } else {
-      nameKey = 'admin_uploaded_med_name';
-      dataKey = 'admin_uploaded_med_data';
-      typeKey = 'admin_uploaded_med_type';
-    }
-
-    // Save file to storage
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        localStorage.setItem(nameKey, file.name);
-        localStorage.setItem(dataKey, reader.result);
-        localStorage.setItem(typeKey, ext);
-        console.info('[adminapprove] saved upload to localStorage', nameKey);
-      } catch (err) {
-        console.warn('Failed to save upload in localStorage', err);
-      }
-    };
-    reader.readAsDataURL(file);
-
-    // View
-    display.querySelector('.viewBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      openModal(fileURL, ext);
-    });
-
-    // Remove
-    display.querySelector('.removeBtn').addEventListener('click', (e) => {
-      e.preventDefault();
-      resetDisplay();
-      fileInput.value = '';
-
-      if (fileURL) URL.revokeObjectURL(fileURL);
-      fileURL = null;
-
-      // Remove admin keys
-      localStorage.removeItem(nameKey);
-      localStorage.removeItem(dataKey);
-      localStorage.removeItem(typeKey);
-
-      // ⭐ NEW: full cleanup fix
-      cleanupUploadedFileByName(
-        file?.name || localStorage.getItem(nameKey)
-      );
-
-      console.info('[adminapprove] removed upload and cleaned legacy keys for', nameKey);
-    });
-
-    labelEl.textContent = 'File Uploaded:';
-    hintEl.style.display = 'none';
-  });
-
-=======
             // ── Guard 1: already processing ────────────────────────────────
             if (isProcessing) {
                 console.log("[upload-guard] Already processing – skipped");
@@ -838,7 +757,6 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         console.log("[upload] Change listener already attached – skipped re-attachment");
     }
     
->>>>>>> Stashed changes
   // Modal preview
   function openModal(url, ext) {
     modal.classList.remove('hidden');

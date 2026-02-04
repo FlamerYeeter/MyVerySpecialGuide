@@ -68,6 +68,7 @@ $status            = $data['workplace'] ?? null;
 $proof = base64ToBlob($data['admin_uploaded_proof_data'] ?? '');
 $medcerts = base64ToBlob($data['admin_uploaded_med_data'] ?? '');
 $certs = base64ToBlob($data['uploadedProofs_proof'] ?? '');
+$pwdid = base64ToBlob($data['admin_uploaded_pwd_data'] ?? '');
 
 // Personal
 $firstName   = $user_info['firstName'] ?? null;
@@ -79,6 +80,7 @@ $address     = $user_info['address'] ?? null;
 $username    = $user_info['username'] ?? null;
 $password    = password_hash($user_info['password'] ?? 'temp123', PASSWORD_DEFAULT);
 $types_of_ds = $user_info['r_dsType1'] ?? null;
+$birthdate   = $user_info['birthdate'] ?? null;
 
 // Guardian
 $gf = $user_info['g_first_name'] ?? null;
@@ -105,11 +107,15 @@ $allGood = true;
 $lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
 $lob_certs = oci_new_descriptor($conn, OCI_D_LOB);
 $lob_med   = oci_new_descriptor($conn, OCI_D_LOB);
+$lob_pwd   = oci_new_descriptor($conn, OCI_D_LOB);
 
-// Write binary data to LOB
-$lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
-$lob_certs->writeTemporary($certsBlob, OCI_TEMP_BLOB);
-$lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
+
+/* Write Binary Data */
+
+if ($proofBlob) $lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
+if ($certsBlob) $lob_certs->writeTemporary($certsBlob, OCI_TEMP_BLOB);
+if ($medBlob)   $lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
+if ($pwdBlob)   $lob_pwd->writeTemporary($pwdBlob, OCI_TEMP_BLOB);
 
 // ——— 1. INSERT user_guardian ———
 $sql1 = "INSERT INTO user_guardian (
@@ -117,12 +123,12 @@ $sql1 = "INSERT INTO user_guardian (
     age, education, school,
     guardian_first_name, guardian_last_name, guardian_email,
     guardian_contact_number, relationship_to_user, created_at, updated_at,
-    address, types_of_ds, proof_of_membership, certificates, username, med_certificates
+    address, types_of_ds, proof_of_membership, certificates, username, med_certificates, pwd_id, date_of_birth
 ) VALUES (
     :v0,'User',:v2,:v3,:v4,:v5,:v6,
     :v7,:v8,:v9,
     :v11,:v12,:v13,:v14,:v15,SYSDATE,SYSDATE,
-    :v16,:v17,:v18,:v19,:v20,:v21
+    :v16,:v17,:v18,:v19,:v20,:v21,:v22,TO_DATE(:v23,'YYYY-MM-DD')
 )";
 
 $stid1 = oci_parse($conn, $sql1);
@@ -150,6 +156,8 @@ oci_bind_by_name($stid1, ':v20', $username);
 oci_bind_by_name($stid1, ':v18', $lob_proof, -1, OCI_B_BLOB);
 oci_bind_by_name($stid1, ':v19', $lob_certs, -1, OCI_B_BLOB);
 oci_bind_by_name($stid1, ':v21', $lob_med,   -1, OCI_B_BLOB);
+oci_bind_by_name($stid1, ':v22', $lob_pwd,   -1, OCI_B_BLOB);
+oci_bind_by_name($stid1, ':v23', $birthdate);
 
 // EXECUTE
 if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {

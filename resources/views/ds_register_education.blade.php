@@ -1176,8 +1176,6 @@
                                 console.log("certYes selected → fileuploadSection shown");
                             }
                         }
-<<<<<<< Updated upstream
-=======
                         if (typeof hideFileInfo === "function") hideFileInfo();
                         console.log("File input cleared & education localStorage removed");
                     } else {
@@ -1376,7 +1374,6 @@
                             });  
 
                         }catch(err){ console.warn(err); }
->>>>>>> Stashed changes
                     };
 
                     // Initial check on page load

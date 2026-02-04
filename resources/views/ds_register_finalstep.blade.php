@@ -303,6 +303,7 @@
       selected_work_year: localStorage.getItem('selected_work_year'),
       admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
       admin_uploaded_proof_data: localStorage.getItem('admin_uploaded_proof_data'),
+      admin_uploaded_pwd_id: localStorage.getItem('admin_uploaded_pwd_id'),
       uploadedProofs_proof: localStorage.getItem('uploadedProofs_proof'),
       workplace: localStorage.getItem('workplace'),
       jobPreferences: localStorage.getItem('jobPreferences'),
