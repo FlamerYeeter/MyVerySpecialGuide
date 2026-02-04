@@ -157,7 +157,7 @@
     </div>
     <div>
       <label class="block font-bold text-2xl text-gray-800 mb-2">Date of Birth <span class="text-red-500">*</span></label>
-      <input type="date" name="date_of_birth"
+      <input type="date" name="date_of_birth" id="date_of_birth"
         class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
     </div>
     <div>
