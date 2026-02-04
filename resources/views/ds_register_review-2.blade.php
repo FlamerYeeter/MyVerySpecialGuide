@@ -2038,6 +2038,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
                     // Diagnostic: scan localStorage for candidate keys and render a small debug block
                     function showCertDebug() {
+                        // Debugging disabled in production UI — no-op
+                        return;
                         try {
                             const reviewContainer = document.getElementById('certificateReview');
                             if (!reviewContainer) return;
