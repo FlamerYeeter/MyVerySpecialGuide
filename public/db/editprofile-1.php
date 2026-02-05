@@ -49,7 +49,11 @@ $binds = [];
 /* User fields */
 if (array_key_exists('first_name', $data)) { $sets[] = "first_name = :fn"; $binds[':fn'] = $data['first_name']; }
 if (array_key_exists('last_name',  $data)) { $sets[] = "last_name = :ln"; $binds[':ln'] = $data['last_name']; }
-if (array_key_exists('age',        $data)) { $sets[] = "age = :age"; $binds[':age'] = $data['age']; }
+if (array_key_exists('date_of_birth', $data)) {
+    // store as DATE; accept empty string to mean NULL
+    $sets[] = "date_of_birth = CASE WHEN :dob IS NULL OR :dob = '' THEN NULL ELSE TO_DATE(:dob,'YYYY-MM-DD') END";
+    $binds[':dob'] = $data['date_of_birth'];
+}
 if (array_key_exists('email',      $data)) { $sets[] = "email = :email"; $binds[':email'] = $data['email']; }
 if (array_key_exists('phone',      $data)) { $sets[] = "contact_number = :phone"; $binds[':phone'] = $data['phone']; }
 if (array_key_exists('address',    $data)) { $sets[] = "address = :addr"; $binds[':addr'] = $data['address']; }

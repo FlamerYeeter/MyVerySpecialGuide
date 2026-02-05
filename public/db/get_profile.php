@@ -46,7 +46,7 @@ if (!$conn) {
 $sql = "SELECT id, first_name, last_name, email, contact_number, TO_CHAR(date_of_birth,'YYYY-MM-DD') AS DATE_OF_BIRTH, address,
                types_of_ds, guardian_first_name, guardian_last_name, guardian_email,
                guardian_contact_number, username, relationship_to_user,
-               proof_of_membership, med_certificates, certificates, school, education
+               PWD_ID, med_certificates, certificates, school, education
         FROM user_guardian
         WHERE id = :id";
 $stid = oci_parse($conn, $sql);
@@ -71,9 +71,9 @@ $file_lengths = [
     'other_len' => 0,
 ];
 
-if (!empty($row['PROOF_OF_MEMBERSHIP'])) {
-    $files['proof'] = base64_encode($row['PROOF_OF_MEMBERSHIP']);
-    $file_lengths['proof_len'] = strlen($row['PROOF_OF_MEMBERSHIP']);
+if (!empty($row['PWD_ID'])) {
+    $files['proof'] = base64_encode($row['PWD_ID']);
+    $file_lengths['proof_len'] = strlen($row['PWD_ID']);
 }
 if (!empty($row['MED_CERTIFICATES'])) {
     $files['med'] = base64_encode($row['MED_CERTIFICATES']);
@@ -85,7 +85,7 @@ if (!empty($row['CERTIFICATES'])) {
 }
 
 // remove raw blobs from $row to keep JSON smaller (they are in $files now)
-unset($row['PROOF_OF_MEMBERSHIP'], $row['MED_CERTIFICATES'], $row['CERTIFICATES']);
+unset($row['PWD_ID'], $row['MED_CERTIFICATES'], $row['CERTIFICATES']);
 $row['EDUCATION_LEVEL'] = isset($row['EDUCATION']) ? $row['EDUCATION'] : '';
 $row['SCHOOL_NAME']     = isset($row['SCHOOL']) ? $row['SCHOOL'] : '';
 $row['CERTIFICATES_UPLOADED'] = (!empty($files['other_certs'])) ? true : false;

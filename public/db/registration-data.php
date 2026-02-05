@@ -135,7 +135,7 @@ $sql1 = "INSERT INTO user_guardian (
      education, school,
     guardian_first_name, guardian_last_name, guardian_email,
     guardian_contact_number, relationship_to_user, created_at, updated_at,
-    address, types_of_ds, proof_of_membership, certificates, username, med_certificates
+    address, types_of_ds, PWD_ID, certificates, username, med_certificates
 ) VALUES (
     :v0,'User',:v2,:v3,:v4,:v5,:v6,
     CASE WHEN :v7 IS NULL OR :v7 = '' THEN NULL ELSE TO_DATE(:v7,'YYYY-MM-DD') END,

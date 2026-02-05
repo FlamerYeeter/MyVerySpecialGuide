@@ -93,6 +93,7 @@
                                         <div id="fileLinks" class="mt-3 space-x-4" style="display:none;">
                                             <a id="proofFileLink" class="text-blue-600 underline" target="_blank" rel="noopener" href="#">View / Download Proof of Membership</a>
                                             <a id="medFileLink" class="text-blue-600 underline" target="_blank" rel="noopener" href="#">View / Download Medical Certificate</a>
+                                            <a id="otherFileLink" class="text-blue-600 underline" target="_blank" rel="noopener" href="#">View / Download Certificates</a>
                                         </div>
 
                                         <!-- NOTE: "Click to Add Certificates / Training Details" removed per request -->
@@ -547,17 +548,50 @@ document.addEventListener('DOMContentLoaded', () => {
             const fileLinks = document.getElementById('fileLinks');
             const proofA = document.getElementById('proofFileLink');
             const medA = document.getElementById('medFileLink');
+            const otherA = document.getElementById('otherFileLink');
             const files = json.files || {};
             const lengths = json.file_lengths || {};
             let shown = false;
-            if (files.proof || (lengths.proof_len && lengths.proof_len > 0)) {
-                if (proofA) { proofA.href = '/db/get_file.php?type=proof'; proofA.style.display = ''; }
-                shown = true;
+            // Prefer inline base64 payloads returned in `json.files` when available.
+            // Only show anchors with a valid href; force-download data: URLs.
+            let anyShown = false;
+            function setLink(a, dataB64, fallbackUrl, filename) {
+                if (!a) return false;
+                if (dataB64) {
+                    a.href = 'data:application/octet-stream;base64,' + dataB64;
+                    a.setAttribute('download', filename || 'file');
+                    a.style.display = '';
+                    // ensure clicking downloads instead of navigating in some browsers
+                    a.addEventListener('click', function (ev) {
+                        try {
+                            if ((a.href || '').slice(0,5) === 'data:') {
+                                ev.preventDefault();
+                                const link = document.createElement('a');
+                                link.href = a.href;
+                                link.download = a.getAttribute('download') || filename || 'file';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                            }
+                        } catch (e) { /* ignore */ }
+                    });
+                    return true;
+                }
+                if (fallbackUrl && fallbackUrl.length) {
+                    a.href = fallbackUrl;
+                    a.removeAttribute('download');
+                    a.style.display = '';
+                    return true;
+                }
+                a.style.display = 'none';
+                return false;
             }
-            if (files.med || (lengths.med_len && lengths.med_len > 0)) {
-                if (medA) { medA.href = '/db/get_file.php?type=med'; medA.style.display = ''; }
-                shown = true;
-            }
+
+            if (setLink(proofA, files.proof, (lengths.proof_len && lengths.proof_len > 0) ? '/db/get_file.php?type=proof' : '', 'proof.pdf')) anyShown = true;
+            if (setLink(medA, files.med, (lengths.med_len && lengths.med_len > 0) ? '/db/get_file.php?type=med' : '', 'medical.pdf')) anyShown = true;
+            if (setLink(otherA, files.other_certs, (lengths.other_len && lengths.other_len > 0) ? '/db/get_file.php?type=other' : '', 'certificates.pdf')) anyShown = true;
+
+            if (fileLinks) fileLinks.style.display = anyShown ? '' : 'none';
             if (fileLinks) fileLinks.style.display = shown ? '' : 'none';
         } catch(e) { /* non-critical */ }
 

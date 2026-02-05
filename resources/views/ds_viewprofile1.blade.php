@@ -62,9 +62,9 @@
                                     class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
                             <div>
-                                <label for="age" class="block text-lg font-semibold mb-3">Age <span
-                                        class="text-gray-500">(Edad)</span></label>
-                                <input id="age" type="text" disabled
+                                <label for="date_of_birth" class="block text-lg font-semibold mb-3">Date of Birth <span
+                                    class="text-gray-500">(Petsa ng Kapanganakan)</span></label>
+                                <input id="date_of_birth" type="date" disabled
                                     class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
                         </div>
@@ -225,7 +225,7 @@
                             <!-- Membership -->
                             <div>
                                 <label class="block text-lg font-semibold mb-2">
-                                    Proof of Membership <span class="text-gray-500 italic">Uploaded file (if any)</span>
+                                    PWD ID <span class="text-gray-500 italic">Uploaded file (if any)</span>
                                 </label>
                                 <div id="r_proof"
                                     class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
@@ -385,9 +385,25 @@
         
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    fetch('/db/get_profile.php', { credentials: 'same-origin' })
-        .then(r => r.json())
-        .then(json => {
+    // prefer a known guardian id (window.__mvsg_guardian_id), then localStorage, then server-side session
+    const __server_guardian_id = @json(Auth::id() ?? session('guardian_id') ?? session('user_id') ?? null);
+    (function(){
+        let url = '/db/get_profile.php';
+        const gid = window.__mvsg_guardian_id || localStorage.getItem('user_id') || __server_guardian_id;
+        console.debug('profile fetch using gid=', gid, 'window.__mvsg_guardian_id=', window.__mvsg_guardian_id, 'localStorage.user_id=', localStorage.getItem('user_id'), 'server=', __server_guardian_id);
+        if (gid) url += '?guardian_id=' + encodeURIComponent(gid);
+        fetch(url, { credentials: 'same-origin' })
+            .then(async r => {
+                const text = await r.text();
+                console.log('get_profile raw response status:', r.status, 'text length:', text.length, 'preview:', text.slice(0,200));
+                if (!text) throw new Error('Empty response body from get_profile.php (status ' + r.status + ')');
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    throw new Error('Failed to parse JSON from get_profile.php: ' + e.message + ' -- raw:' + text.slice(0,1000));
+                }
+            })
+            .then(json => {
             console.log('get_profile response:', json);
 
             if (!json.success) {
@@ -463,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             set('first_name', u.FIRST_NAME);
             set('last_name', u.LAST_NAME);
-            set('age', u.AGE);
+            set('date_of_birth', u.DATE_OF_BIRTH);
             set('email', u.EMAIL);
             set('phone', u.CONTACT_NUMBER);
             set('address', u.ADDRESS);
@@ -568,13 +584,14 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(err => {
             console.error('profile fetch error', err);
         });
+    })();
 });
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     // list of fields to toggle (personal + guardian)
     const fieldIds = [
-        "first_name","last_name","age","email","phone","address","r_dsType1",
+        "first_name","last_name","date_of_birth","email","phone","address","r_dsType1",
         "g_first_name","g_last_name","g_email","g_phone","guardian_relationship"
     ];
 

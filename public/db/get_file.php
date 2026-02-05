@@ -12,7 +12,7 @@ if (empty($id)) {
 }
 $type = $_GET['type'] ?? 'proof'; // 'proof' | 'med' | 'other'
 $colMap = [
-    'proof' => ['col'=>'PROOF_OF_MEMBERSHIP','name'=>'proof.pdf'],
+    'proof' => ['col'=>'PWD_ID','name'=>'proof.pdf'],
     'med'   => ['col'=>'MED_CERTIFICATES','name'=>'medical.pdf'],
     'other' => ['col'=>'CERTIFICATES','name'=>'certificates.pdf'],
 ];
@@ -67,14 +67,21 @@ if (!$row || empty($row['FILEBLOB'])) {
     exit;
 }
 $data = $row['FILEBLOB'];
-// determine content type from data prefix (simple PDF check), fallback to octet-stream
-if ($data !== null && strlen($data) > 4 && substr($data, 0, 4) === '%PDF') {
-    header('Content-Type: application/pdf');
-} else {
-    header('Content-Type: application/octet-stream');
-}
+// detect MIME type from binary data and choose a sensible filename/extension
+$finfo = new finfo(FILEINFO_MIME_TYPE);
+$mime = $finfo->buffer($data) ?: 'application/octet-stream';
+$extMap = [
+    'application/pdf' => 'pdf',
+    'image/png'       => 'png',
+    'image/jpeg'      => 'jpg',
+    'image/gif'       => 'gif',
+];
+$ext = isset($extMap[$mime]) ? $extMap[$mime] : 'bin';
+$baseName = pathinfo($colMap[$type]['name'], PATHINFO_FILENAME);
+$filename = $baseName . '.' . $ext;
+header('Content-Type: ' . $mime);
 header('Content-Length: ' . strlen($data));
-header('Content-Disposition: inline; filename="' . $colMap[$type]['name'] . '"');
+header('Content-Disposition: inline; filename="' . $filename . '"');
 echo $data;
 exit;
 ?>

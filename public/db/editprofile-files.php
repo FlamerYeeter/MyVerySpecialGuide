@@ -17,7 +17,7 @@ if (!$conn) {
 }
 
 $allowedCols = [
-    'proof' => 'PROOF_OF_MEMBERSHIP',
+    'proof' => 'PWD_ID',
     'med'   => 'MED_CERTIFICATES',
     'other' => 'CERTIFICATES'
 ];
