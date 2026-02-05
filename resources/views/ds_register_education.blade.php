@@ -992,10 +992,6 @@
                                 hideFileInfo();
                             }
                         }
-
-                    });
-                });
-            }
                         if (typeof hideFileInfo === "function") hideFileInfo();
                         console.log("File input cleared & education localStorage removed");
                     } else {
@@ -1194,7 +1190,6 @@
                             });  
 
                         }catch(err){ console.warn(err); }
-
                     };
 
 

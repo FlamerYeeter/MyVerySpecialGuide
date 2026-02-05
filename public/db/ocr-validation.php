@@ -71,7 +71,7 @@ PROMPT;
 
 function callOCR($model, $prompt, $images = [])
 {
-    $url = "http://localhost:11434/api/generate";
+    $url = "http://192.168.100.30:11434/api/generate";
 
     $payload = [
         "model"    => $model,
