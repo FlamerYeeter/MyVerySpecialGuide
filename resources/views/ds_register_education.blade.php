@@ -1145,49 +1145,6 @@
                             });
                             // trigger sync
                             try{ const evt = new Event('input',{bubbles:true}); targetNode.querySelectorAll('input').forEach(i=>i.dispatchEvent(evt)); }catch(e){}
-  
-                            // OCR processing
-                            debugger;
-                            const datas = {
-                                type: 'certificate_proof',
-                                ocr_name: f.name,
-                                ocr_data: reader.result,
-                                ocr_type: type
-                            };
-
-                            fetch('db/ocr-validation.php', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(datas)
-                            })
-                            .then(response => {
-                                // Always try to parse JSON, even on errors
-                                return response.json().then(jsonData => ({
-                                    ok: response.ok,
-                                    status: response.status,
-                                    body: jsonData
-                                }));
-                            })
-                            .then(res => {
-                                if (res.ok) {
-                                    debugger;
-                                    console.log('OCR Result:', res.body);
-                                    if (res.body.data.ocrtype == 'certificate_proof') {
-                                        alert('Cert Name: ' + res.body.data.ai_data.cert_name + ' Issued By: ' + res.body.data.ai_data.issued_by + ' Date Completed: ' + res.body.data.ai_data.date_completed + ' OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
-                                    }
-                                    else {
-                                        alert('OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
-                                    }
-                                
-                                } else {
-                                    // ❌ Error
-                                    alert(`Error ${res.status}: ${res.body.message || 'Unknown error'}`);
-                                }
-                            })
-                            .catch(err => {
-                                console.error('Fetch error:', err);
-                                alert('Failed to fetch OCR data.');
-                            });  
 
                         }catch(err){ console.warn(err); }
                     };
@@ -1723,6 +1680,50 @@
                                     try { if (typeof window.showFileList === 'function') window.showFileList(filtered); } catch(e){}
                                 }
                             } catch(e) { console.warn('persist per-entry file failed', e); }
+
+                            // OCR processing
+                            debugger;
+                            const datas = {
+                                type: 'certificate_proof',
+                                ocr_name: f.name,
+                                ocr_data: reader.result,
+                                ocr_type: type
+                            };
+
+                            fetch('db/ocr-validation.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(datas)
+                            })
+                            .then(response => {
+                                // Always try to parse JSON, even on errors
+                                return response.json().then(jsonData => ({
+                                    ok: response.ok,
+                                    status: response.status,
+                                    body: jsonData
+                                }));
+                            })
+                            .then(res => {
+                                if (res.ok) {
+                                    debugger;
+                                    console.log('OCR Result:', res.body);
+                                    if (res.body.data.ocrtype == 'certificate_proof') {
+                                        alert('Cert Name: ' + res.body.data.ai_data.cert_name + ' Issued By: ' + res.body.data.ai_data.issued_by + ' Date Completed: ' + res.body.data.ai_data.date_completed + ' OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                                    }
+                                    else {
+                                        alert('OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
+                                    }
+                                
+                                } else {
+                                    // ❌ Error
+                                    alert(`Error ${res.status}: ${res.body.message || 'Unknown error'}`);
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Fetch error:', err);
+                                alert('Failed to fetch OCR data.');
+                            });  
+
                         }catch(err){ console.warn(err); }
                     };
                     reader.onerror = function(){ alert('Failed to read file'); };
