@@ -198,42 +198,94 @@
                 </div>
             </div>
 
-            <!-- Type of Down Syndrome -->
-            <div
-                class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-5">
 
-                <!-- Text Section -->
+        <!-- Container -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col gap-8 mt-5">
+
+            <!-- Type of Down Syndrome Section -->
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <!-- Text -->
                 <div class="flex-1">
-                    <h3
-                        class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                        Type of Down Syndrome <span class="text-[#4B5258] text-m">(optional)</span>
+                    <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                        Type of Down Syndrome 
+                        <span class="text-red-500 text-sm">(required)</span>
                     </h3>
+
                     <p class="text-black-600 text-xs sm:text-sm leading-snug mt-1">
-                        You may fill this in if you already have records or a doctor’s assessment that shows your type
-                        of Down syndrome.
-                        It’s perfectly okay if you’re not aware of it yet — you can leave it blank.
+                        Please select the type of Down syndrome if you already have medical records or information from a doctor.
                     </p>
 
-                    <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4">
-                        (Opsyonal lamang ito. Maaari mo itong sagutan kung mayroon ka nang tala o pagsusuri mula sa
-                        doktor na nagpapakita
-                        ng uri ng iyong Down syndrome. Ayos lang din kung hindi mo pa ito alam — maaari mo itong
-                        laktawan.)
-                    </p>
+                    <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4"> 
+                        (Mangyaring piliin ang uri ng Down syndrome kung mayroon ka nang medical records o impormasyon mula sa doktor.)
+                    </p> 
                 </div>
 
-                <!-- Dropdown Selector -->
-                <div class="flex-shrink-0 w-full sm:w-auto">
-                    <select id="dsType" name="dsType"
-                        class="w-full sm:w-60 border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">-- Select Type --</option>
+                <!-- Dropdown -->
+                <div class="w-full sm:w-60 sm:mt-[50px]">
+                    <select id="dsType" name="dsType" required
+                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="" disabled selected>-- Select Type --</option>
                         <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
                         <option value="Mosaic Down Syndrome">Mosaic Down Syndrome</option>
-                        <option value="Translocation Down">Translocation Down Syndrome</option>
+                        <option value="Translocation Down Syndrome">Translocation Down Syndrome</option>
                     </select>
                 </div>
             </div>
 
+        <!-- Type of Congenital or Developmental Disability Section -->
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+            <!-- Text -->
+            <div class="flex-1">
+                <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
+                    Congenital or Developmental Disability
+                    <span class="text-red-500 text-sm">(required)</span>
+                </h3>
+
+                <p class="text-black-600 text-xs sm:text-sm leading-snug mt-1">
+                    Please select the type of Congenital or Developmental Disability based on medical records or a doctor’s assessment.
+                </p>
+
+                <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4"> 
+                    (Mangyaring piliin ang uri ng Congenital o Developmental Disability batay sa iyong mga medical record o pagsusuri ng doktor.)
+                </p> 
+            </div>
+
+            <!-- Dropdown + Others Input -->
+            <div class="w-full sm:w-60 sm:mt-[45px]">
+                <select id="cddType" name="cddType" required
+                    class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="" disabled selected>-- Select Type --</option>
+                    <option value="Congenital Heart Defects">Congenital Heart Defects</option>
+                    <option value="Hearing/Vision">Hearing/Vision</option>
+                    <option value="Thyroid issues">Thyroid issues</option>
+                    <option value="Low Muscle Tone (Hypotonia)">Low Muscle Tone (Hypotonia)</option>
+                    <option value="Others">Others:</option>
+                </select>
+
+                <!-- Input for "Others" -->
+                <input type="text" id="cddTypeOther" name="cddTypeOther" placeholder="Please specify"
+                    class="w-full border border-gray-300 rounded-lg p-2 mt-2 hidden focus:ring-blue-500 focus:border-blue-500" />
+            </div>
+        </div>
+
+        <script>
+            const dropdown = document.getElementById('cddType');
+            const otherInput = document.getElementById('cddTypeOther');
+
+            dropdown.addEventListener('change', function() {
+                if (this.value === 'Others') {
+                    otherInput.classList.remove('hidden');
+                    otherInput.required = true; // Gawing required kapag pinili ang Others
+                } else {
+                    otherInput.classList.add('hidden');
+                    otherInput.required = false;
+                    otherInput.value = ''; // Clear input kapag iba ang pinili
+                }
+            });
+        </script>
+
+        </div>
 
             <!-- Guardian Information -->
             <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
@@ -495,6 +547,7 @@
     <div class="upload-error w-full text-sm text-right"></div>
   </div>
 </div>
+
 
 <!-- Medical Certificate -->
 <div class="mt-8 text-left px-2 sm:px-4">
