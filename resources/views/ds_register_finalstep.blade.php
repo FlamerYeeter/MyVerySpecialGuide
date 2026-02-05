@@ -315,6 +315,7 @@
       selected_work_year: (localStorage.getItem('selected_work_year') ? localStorage.getItem('selected_work_year') : JSON.stringify(derivedYears)),
       admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
       admin_uploaded_proof_data: localStorage.getItem('admin_uploaded_proof_data'),
+      admin_uploaded_pwd_data: localStorage.getItem('admin_uploaded_pwd_data'),
       uploadedProofs_proof: localStorage.getItem('uploadedProofs_proof'),
       workplace: localStorage.getItem('workplace'),
       jobPreferences: localStorage.getItem('jobPreferences'),
