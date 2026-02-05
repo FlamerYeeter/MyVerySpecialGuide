@@ -203,7 +203,7 @@ if ($ext === '.pdf') {
 
 $cleanImages = [];
 foreach ($images as $img) {
-    $clean = pathinfo($img, PATHINFO_FILENAME) . "_clean.png";
+    $clean = $tmpFile . pathinfo($img, PATHINFO_FILENAME) . "_clean.png";
 
     $cmd = "magick " . escapeshellarg($img)
          . " -resize 200%"
