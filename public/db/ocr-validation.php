@@ -165,7 +165,13 @@ if (!$ext) response(false, "Unsupported file type");
 // 4. CREATE TEMP FILE
 // ================================
 
-$tmp = tempnam(sys_get_temp_dir(), 'ocr_');
+$tmpDir = getenv('TEMP') ?: getenv('TMP');
+
+if (!$tmpDir) {
+    $tmpDir = sys_get_temp_dir();
+}
+
+$tmp = tempnam($tmpDir, 'ocr_');
 $tmpFile = $tmp . $ext;
 rename($tmp, $tmpFile);
 file_put_contents($tmpFile, $fileData);

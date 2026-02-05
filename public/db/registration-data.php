@@ -81,10 +81,12 @@ $school_name  = $school_name ?? ($data['school_name'] ?? $data['school'] ?? null
 $is_graduate       = $data['review_certs'] ?? null;
 $license_type      = $data['selected_work_year'] ?? null;
 $status            = $data['workplace'] ?? null;
-$proof = base64ToBlob($data['admin_uploaded_proof_data'] ?? '');
+// $proof = base64ToBlob($data['admin_uploaded_proof_data'] ?? '');
 $medcerts = base64ToBlob($data['admin_uploaded_med_data'] ?? '');
-$certs = base64ToBlob($data['uploadedProofs_proof'] ?? '');
-$pwdid = base64ToBlob($data['admin_uploaded_pwd_data'] ?? '');
+$pwdid    = base64ToBlob($data['admin_uploaded_pwd_data'] ?? '');
+
+$medBlob = $medcerts;
+$pwdBlob = $pwdid;
 
 // Personal
 $firstName   = $user_info['firstName'] ?? null;
@@ -120,60 +122,99 @@ oci_set_action($conn, "Registration Transaction");
 
 // BEGIN TRANSACTION
 $allGood = true;
-$lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
-$lob_certs = oci_new_descriptor($conn, OCI_D_LOB);
+// $lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
 $lob_med   = oci_new_descriptor($conn, OCI_D_LOB);
 $lob_pwd   = oci_new_descriptor($conn, OCI_D_LOB);
 
-
 /* Write Binary Data */
 
-if ($proofBlob) $lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
-if ($certsBlob) $lob_certs->writeTemporary($certsBlob, OCI_TEMP_BLOB);
+// if ($proofBlob) $lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
 if ($medBlob)   $lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
 if ($pwdBlob)   $lob_pwd->writeTemporary($pwdBlob, OCI_TEMP_BLOB);
 
-// ——— 1. INSERT user_guardian ———
-$sql1 = "INSERT INTO user_guardian (
-    id, role, first_name, last_name, email, contact_number, password,
-    age, education, school,
-    guardian_first_name, guardian_last_name, guardian_email,
-    guardian_contact_number, relationship_to_user, created_at, updated_at,
-    address, types_of_ds, proof_of_membership, certificates, username, med_certificates, pwd_id, date_of_birth
+// -------- 1. INSERT user_guardian --------
+$sql1 = "
+INSERT INTO user_guardian (
+    id,
+    role,
+    first_name,
+    last_name,
+    email,
+    contact_number,
+    password,
+    age,
+    education,
+    school,
+    guardian_first_name,
+    guardian_last_name,
+    guardian_email,
+    guardian_contact_number,
+    relationship_to_user,
+    created_at,
+    updated_at,
+    address,
+    types_of_ds,
+    username,
+    med_certificates,
+    pwd_id,
+    date_of_birth
 ) VALUES (
-    :v0,'User',:v2,:v3,:v4,:v5,:v6,
-    :v7,:v8,:v9,
-    :v11,:v12,:v13,:v14,:v15,SYSDATE,SYSDATE,
-    :v16,:v17,:v18,:v19,:v20,:v21,:v22,TO_DATE(:v23,'YYYY-MM-DD')
+    :id,
+    'User',
+    :first_name,
+    :last_name,
+    :email,
+    :contact_number,
+    :password,
+    :age,
+    :education,
+    :school,
+    :guardian_first_name,
+    :guardian_last_name,
+    :guardian_email,
+    :guardian_contact_number,
+    :relationship,
+    SYSDATE,
+    SYSDATE,
+    :address,
+    :types_of_ds,
+    :username,
+    :med_certificates,
+    :pwd_id,
+    TO_DATE(:birthdate,'YYYY-MM-DD')
 )";
 
 $stid1 = oci_parse($conn, $sql1);
 
-// ----- TEXT BINDS -----
-oci_bind_by_name($stid1, ':v0',  $user_guardian_id);
-oci_bind_by_name($stid1, ':v2',  $firstName);
-oci_bind_by_name($stid1, ':v3',  $lastName);
-oci_bind_by_name($stid1, ':v4',  $email);
-oci_bind_by_name($stid1, ':v5',  $phone);
-oci_bind_by_name($stid1, ':v6',  $password);
-oci_bind_by_name($stid1, ':v7',  $age);
-oci_bind_by_name($stid1, ':v8',  $edu_level);
-oci_bind_by_name($stid1, ':v9',  $school_name);
-oci_bind_by_name($stid1, ':v11', $gf);
-oci_bind_by_name($stid1, ':v12', $gl);
-oci_bind_by_name($stid1, ':v13', $ge);
-oci_bind_by_name($stid1, ':v14', $gp);
-oci_bind_by_name($stid1, ':v15', $gr);
-oci_bind_by_name($stid1, ':v16', $address);
-oci_bind_by_name($stid1, ':v17', $types_of_ds);
-oci_bind_by_name($stid1, ':v20', $username);
+/* ---------- TEXT BINDS ---------- */
 
-// ----- BLOB BINDS -----
-oci_bind_by_name($stid1, ':v18', $lob_proof, -1, OCI_B_BLOB);
-oci_bind_by_name($stid1, ':v19', $lob_certs, -1, OCI_B_BLOB);
-oci_bind_by_name($stid1, ':v21', $lob_med,   -1, OCI_B_BLOB);
-oci_bind_by_name($stid1, ':v22', $lob_pwd,   -1, OCI_B_BLOB);
-oci_bind_by_name($stid1, ':v23', $birthdate);
+oci_bind_by_name($stid1, ':id',            $user_guardian_id);
+oci_bind_by_name($stid1, ':first_name',    $firstName);
+oci_bind_by_name($stid1, ':last_name',     $lastName);
+oci_bind_by_name($stid1, ':email',         $email);
+oci_bind_by_name($stid1, ':contact_number',$phone);
+oci_bind_by_name($stid1, ':password',      $password);
+
+oci_bind_by_name($stid1, ':age',           $age);
+oci_bind_by_name($stid1, ':education',     $edu_level);
+oci_bind_by_name($stid1, ':school',        $school_name);
+
+oci_bind_by_name($stid1, ':guardian_first_name', $gf);
+oci_bind_by_name($stid1, ':guardian_last_name',  $gl);
+oci_bind_by_name($stid1, ':guardian_email',      $ge);
+oci_bind_by_name($stid1, ':guardian_contact_number', $gp);
+oci_bind_by_name($stid1, ':relationship',        $gr);
+
+oci_bind_by_name($stid1, ':address',       $address);
+oci_bind_by_name($stid1, ':types_of_ds',   $types_of_ds);
+oci_bind_by_name($stid1, ':username',      $username);
+oci_bind_by_name($stid1, ':birthdate',     $birthdate);
+
+
+/* ---------- BLOB BINDS ---------- */
+
+oci_bind_by_name($stid1, ':med_certificates', $lob_med, -1, OCI_B_BLOB);
+oci_bind_by_name($stid1, ':pwd_id',           $lob_pwd, -1, OCI_B_BLOB);
 
 // EXECUTE
 if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
