@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -601,6 +601,29 @@
 </div>
 
 <script>
+function validateMedicalCertificateDate(dateString, errorContainer) {
+    if (!dateString) {
+        if (errorContainer) errorContainer.textContent = "Unable to detect the medical certificate date.";
+        return false;
+    }
+    const today = new Date();
+    const certDate = new Date(dateString);
+    
+    // Add 3 months to certificate date
+    const expiryDate = new Date(certDate);
+    expiryDate.setMonth(expiryDate.getMonth() + 3);
+    
+    if (today > expiryDate) {
+        if (errorContainer) errorContainer.textContent = "Medical certificate must be within 3 months only.";
+        return false;
+    } 
+    else {
+        if (errorContainer) errorContainer.textContent = "";
+        alert("Medical certificate is valid!");
+        return true; 
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
     setupUpload('pwdidFile', 'pwdidDisplay', 'pwdidLabel', 'pwdidHint');
@@ -872,7 +895,34 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     if (detectedType === 'pwd_id' && ocrtype === 'pwd_id') {
                         alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
-                        alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                        // Use medDisplay as the error container (create a child .ocr-error if missing)
+                        let medDisplayEl = document.getElementById('medDisplay');
+                        let errorBox = null;
+                        if (medDisplayEl) {
+                            errorBox = medDisplayEl.querySelector('.ocr-error');
+                            if (!errorBox) {
+                                errorBox = document.createElement('div');
+                                errorBox.className = 'ocr-error mt-2 text-sm text-red-600';
+                                medDisplayEl.appendChild(errorBox);
+                            }
+                        } else {
+                            // fallback plain object
+                            errorBox = { textContent: '' };
+                        }
+
+                        const isValid = validateMedicalCertificateDate(aiData.date, errorBox);
+                        if (isValid) {
+                            alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                        } else {
+                            // let user choose to accept expired date or cancel
+                            const accept = confirm(`Detected medical date ${aiData.date || '?'} appears to be older than 3 months. Accept anyway?`);
+                            if (accept) {
+                                alert(`Medical Date: ${aiData.date || '?'} accepted by user. OCR Type: ${detectedType} processed.`);
+                                if (errorBox && errorBox.textContent) errorBox.textContent = '';
+                            } else {
+                                alert('Please upload a valid medical certificate within 3 months.');
+                            }
+                        }
                     } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
                         alert(`Is Member of DSAPI: ${aiData.is_membership || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else {
