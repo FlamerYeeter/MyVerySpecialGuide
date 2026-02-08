@@ -196,6 +196,29 @@
         </select>
     </div>
 
+    <!-- Congenital or Developmental Disability -->
+    <div>
+        <label for="r_cddType1" class="font-semibold text-gray-800 text-sm sm:text-base">Congenital or Developmental Disability</label>
+        <p class="text-gray-600 italic text-xs sm:text-sm">Pumili ng uri</p>
+        <select id="r_cddType1" disabled
+            class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-800">
+            <option value="" disabled selected>-- Select Type --</option>
+                    <option value="Congenital Heart Defects">Congenital Heart Defects</option>
+                    <option value="Hearing/Vision">Hearing/Vision</option>
+                    <option value="Thyroid issues">Thyroid issues</option>
+                    <option value="Low Muscle Tone (Hypotonia)">Low Muscle Tone (Hypotonia)</option>
+            <option value="Others">Others:</option>
+        </select>
+
+        <!-- Other — specify display: shown only when 'Others' is selected and populated from draft -->
+        <div id="r_cddType1_other_wrapper" class="mt-2 hidden">
+            <label class="font-semibold text-gray-800 text-sm sm:text-base">Other — specify</label>
+            <p id="r_cddType1_other" class="text-gray-700 italic mt-1"></p>
+            <input id="r_cddType1_other_input" type="text" disabled
+                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-800 hidden" placeholder="Please specify" />
+        </div>
+    </div>
+
     <!-- Guardian Info -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -327,6 +350,29 @@ function setupEditSection(buttonId, sectionId) {
             this.classList.add("bg-green-600", "hover:bg-green-700");
             this.dataset.mode = "editing";
         }
+        // If this is the personal info section, ensure the CDD "Other" UI matches edit/view mode
+        try{
+            if(sectionId === 'registerreview1'){
+                const sel = section.querySelector('#r_cddType1');
+                const otherInput = section.querySelector('#r_cddType1_other_input');
+                const otherP = section.querySelector('#r_cddType1_other');
+                if(otherInput){
+                    if(this.dataset.mode === 'editing'){
+                        // editing mode: show input when Others selected
+                        otherInput.disabled = false;
+                        // prefer populating from paragraph if present
+                        try{ if(otherP && (!otherInput.value || otherInput.value.trim()==='')) otherInput.value = otherP.textContent || ''; }catch(e){}
+                        if(sel && String(sel.value||'').toLowerCase().includes('other')){ otherP.classList.add('hidden'); otherInput.classList.remove('hidden'); } else { otherInput.classList.add('hidden'); if(otherP) otherP.classList.remove('hidden'); }
+                    } else {
+                        // view mode: hide input, show paragraph (copy value into paragraph)
+                        try{ if(otherP) otherP.textContent = (otherInput.value && otherInput.value.trim()) ? String(otherInput.value).trim() : (otherP.textContent || '(no details provided)'); }catch(e){}
+                        otherInput.disabled = true;
+                        otherInput.classList.add('hidden');
+                        if(otherP) otherP.classList.remove('hidden');
+                    }
+                }
+            }
+        }catch(e){}
     });
 }
 
@@ -1033,6 +1079,9 @@ setupEditSection("editAccountBtn", "accountSection");
                         draft.guardian.relationship = draft.guardian.relationship || text('r_guardian_relationship');
 
                         draft.dsType = draft.dsType || text('r_dsType');
+                        draft.cddType = draft.cddType || text('r_cddType1');
+                        // include 'Other' text when present (from either the input or display)
+                        draft.cddTypeOther = draft.cddTypeOther || text('r_cddType1_other_input') || text('r_cddType1_other');
 
                         const proof = text('r_proof');
                         if (proof && proof !== 'No file uploaded') {
@@ -1201,6 +1250,28 @@ setupEditSection("editAccountBtn", "accountSection");
                     // Check many possible locations and key names for DS type (top-level, personal, and legacy keys)
                     const ds = d.dsType || d.ds_type || d.r_dsType1 || d.r_dsType || p.dsType || p.ds_type || p.r_dsType1 || p.r_dsType || p.type || '';
                     if (ds) setSelectByValueOrText('r_dsType1', ds);
+                    // cdd type (Congenital / Developmental Disability)
+                    const cdd = d.cddType || d.cdd_type || d.r_cddType1 || p.cddType || p.cdd_type || p.r_cddType1 || p.disability || '';
+                    if (cdd) {
+                        setSelectByValueOrText('r_cddType1', cdd);
+                        // Populate 'Other' text from the draft if present
+                        try{
+                            const other = d.cddTypeOther || d.cdd_type_other || (d.personal && (d.personal.cddTypeOther || d.personal.cdd_type || d.personal.cdd_type_other)) || '';
+                            const wrapper = document.getElementById('r_cddType1_other_wrapper');
+                            const pEl = document.getElementById('r_cddType1_other');
+                            const inputEl = document.getElementById('r_cddType1_other_input');
+                            if(wrapper && pEl){
+                                if(other && other.toString().trim() !== ''){
+                                    wrapper.classList.remove('hidden');
+                                    pEl.textContent = String(other).trim();
+                                    pEl.classList.remove('hidden');
+                                    if(inputEl){ inputEl.value = String(other); inputEl.classList.add('hidden'); inputEl.disabled = true; }
+                                } else {
+                                    // let other display logic run elsewhere
+                                }
+                            }
+                        }catch(e){}
+                    }
                     return true;
                 }catch(e){ console.warn('[review-fallback] applyOnce failed', e); return false; }
             }
@@ -1251,7 +1322,8 @@ setupEditSection("editAccountBtn", "accountSection");
                         p && p.then && p.then(function(r){ console.debug('[review1] client->server sync result', r); }).catch(function(err){ console.debug('[review1] client->server sync error', err); });
                         await Promise.race([p, new Promise(res=>setTimeout(()=>res(null), 2000))]);
                     } catch(e){}
-    window.location.href = '{{ route('registerreview2') }}';
+                    try{ if(typeof saveDraftAndEdit === 'function') saveDraftAndEdit(); }catch(e){}
+        window.location.href = '{{ route('registerreview2') }}';
                 });
             }
         })();
@@ -1534,7 +1606,7 @@ setupEditSection("editAccountBtn", "accountSection");
                 try { console.debug('[review] personalInfo (p):', p); } catch(e){}
                 const dsType = resolveDsType(data, p);
                 try { console.debug('[review] resolved dsType:', dsType); } catch(e){}
-                // ensure Down Syndrome info is shown in review (set the SELECT with id r_dsType1)
+                    // ensure Down Syndrome info is shown in review (set the SELECT with id r_dsType1)
                 try {
                     // prefer using the page's select-setter if available so we get fuzzy matching and change events
                     if (dsType) {
@@ -1575,6 +1647,62 @@ setupEditSection("editAccountBtn", "accountSection");
                                 } catch(e) { console.warn('[review] set r_dsType1 direct failed', e); }
                             }
                         }
+                    }
+
+                    // Attempt to resolve Congenital/Developmental Disability and set review select `r_cddType1`
+                    try {
+                        const resolveCddType = (root, personal) => {
+                            try {
+                                const candidates = [];
+                                candidates.push(root?.cddType, root?.cdd_type, root?.cdd, root?.congenital, root?.developmental, root?.disability);
+                                candidates.push(personal?.cddType, personal?.cdd_type, personal?.cdd, personal?.congenital, personal?.developmental, personal?.disability);
+                                const found = findFirstMatching(root || {}, ['cdd', 'cddType', 'cdd_type', 'disability', 'congenital', 'developmental', 'hearing', 'vision', 'autism', 'cerebral']);
+                                if (found) candidates.push(found);
+                                for (const c of candidates) {
+                                    if (!c) continue;
+                                    if (typeof c === 'object') {
+                                        if (Array.isArray(c) && c.length) return c.join(', ');
+                                        const label = c.label || c.name || c.type || c.text || c.value || c.display || null;
+                                        if (label && String(label).trim()) return String(label).trim();
+                                        try { return JSON.stringify(c); } catch(e){}
+                                    }
+                                    if (String(c).trim()) return String(c).trim();
+                                }
+                            } catch(e){}
+                            return '';
+                        };
+
+                        const cddType = (typeof resolveCddType === 'function') ? resolveCddType(data, p) : (data.cddType || p.cddType || '');
+                        if (cddType) {
+                            if (typeof setSelectByValueOrText === 'function') setSelectByValueOrText('r_cddType1', cddType);
+                            else {
+                                const sel = document.getElementById('r_cddType1');
+                                if (sel) { try { sel.value = cddType; sel.dispatchEvent(new Event('change',{bubbles:true})); } catch(e){} }
+                            }
+                            // also populate any explicit 'Other' text coming from the draft/data
+                            try{
+                                const otherText = data && (data.cddTypeOther || data.cdd_type_other) ? (data.cddTypeOther || data.cdd_type_other) : (p && (p.cddTypeOther || p.cdd_type_other) ? (p.cddTypeOther || p.cdd_type_other) : '');
+                                const wrapper = document.getElementById('r_cddType1_other_wrapper');
+                                const pEl = document.getElementById('r_cddType1_other');
+                                const inputEl = document.getElementById('r_cddType1_other_input');
+                                if(wrapper && pEl){
+                                    if(otherText && String(otherText).trim() !== ''){
+                                        wrapper.classList.remove('hidden');
+                                        if(!sel || sel.disabled) {
+                                            // view mode
+                                            pEl.textContent = String(otherText).trim();
+                                            pEl.classList.remove('hidden');
+                                            if(inputEl){ inputEl.value = String(otherText); inputEl.classList.add('hidden'); inputEl.disabled = true; }
+                                        } else {
+                                            // edit mode
+                                            if(inputEl){ inputEl.value = String(otherText); inputEl.classList.remove('hidden'); inputEl.disabled = false; }
+                                            if(pEl) pEl.classList.add('hidden');
+                                        }
+                                    }
+                                }
+                            }catch(e){}
+                        }
+                    } catch(e){ console.warn('[review] set r_cddType1 failed', e); }
                     } else {
                         // nothing found, leave default -- do not overwrite empty select
                     }
@@ -2122,6 +2250,64 @@ setupEditSection("editAccountBtn", "accountSection");
 </script>
 
   <!-- Modal for viewing files -->
+    <script>
+    (function(){
+        function tryParse(s){ try{ return s? JSON.parse(s): null; }catch(e){ return null; } }
+        function readDraftCandidates(){
+            return window.__mvsg_lastLoadedDraft || tryParse(localStorage.getItem('rpi_personal1')) || tryParse(sessionStorage.getItem('rpi_personal1')) || tryParse(localStorage.getItem('registrationDraft')) || null;
+        }
+
+        function showCddOtherIfNeeded(){
+            try{
+                const sel = document.getElementById('r_cddType1');
+                const wrapper = document.getElementById('r_cddType1_other_wrapper');
+            const textEl = document.getElementById('r_cddType1_other');
+            const inputEl = document.getElementById('r_cddType1_other_input');
+                if(!sel || !wrapper || !textEl) return;
+                const val = (sel.value || '').toString().toLowerCase().trim();
+                const isOther = val === 'others' || val.includes('other');
+
+                let otherText = '';
+                const d = readDraftCandidates();
+                if(d){
+                    otherText = d.cddTypeOther || d.cdd_type_other || (d.personal && (d.personal.cddTypeOther || d.personal.cdd_type || d.personal.cdd_type_other)) || '';
+                }
+
+                // Determine whether we're in edit mode (select enabled)
+                const editing = !sel.disabled;
+
+                if(isOther){
+                    wrapper.classList.remove('hidden');
+                    if(editing){
+                        // show input for editing
+                        if(inputEl){ inputEl.classList.remove('hidden'); inputEl.disabled = false; inputEl.value = otherText || ''; }
+                        if(textEl) textEl.classList.add('hidden');
+                    } else {
+                        // view-only: show paragraph
+                        if(textEl) textEl.textContent = otherText ? String(otherText).trim() : '(no details provided)';
+                        if(textEl) textEl.classList.remove('hidden');
+                        if(inputEl){ inputEl.classList.add('hidden'); inputEl.disabled = true; }
+                    }
+                } else {
+                    wrapper.classList.add('hidden');
+                    if(textEl) textEl.textContent = '';
+                    if(inputEl){ inputEl.classList.add('hidden'); inputEl.disabled = true; }
+                }
+            }catch(e){/* ignore */}
+        }
+
+        document.addEventListener('DOMContentLoaded', function(){
+            showCddOtherIfNeeded();
+            const sel = document.getElementById('r_cddType1');
+            if(sel){
+                sel.addEventListener('change', showCddOtherIfNeeded);
+            }
+            window.addEventListener('storage', function(e){ if(e && (e.key==='rpi_personal1' || e.key==='registrationDraft' || e.key==='registration_draft')) setTimeout(showCddOtherIfNeeded, 60); });
+            window.addEventListener('mvsg:adminSaved', function(){ setTimeout(showCddOtherIfNeeded, 80); });
+            window.addEventListener('mvsg:populateDone', function(){ setTimeout(showCddOtherIfNeeded, 80); });
+        });
+    })();
+    </script>
   <div id="fileModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
     <div class="bg-white rounded-lg max-w-3xl w-full p-4 sm:p-6 relative">
       <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-600 hover:text-gray-800 text-lg font-bold">&times;</button>

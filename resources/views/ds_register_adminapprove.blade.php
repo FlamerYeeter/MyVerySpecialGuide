@@ -630,6 +630,135 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
 });
 
+// Apply OCR'd AI data into matching form fields when possible
+function applyOcrDataToForm(aiData, detectedType, ocrtype) {
+    try {
+        if (!aiData || typeof aiData !== 'object') return;
+
+        // Name -> first / last
+        if (aiData.name) {
+            const full = String(aiData.name).trim();
+            const parts = full.split(/\s+/);
+            if (parts.length) {
+                const firstEl = document.getElementById('first_name');
+                const lastEl = document.getElementById('last_name');
+                if (firstEl) firstEl.value = parts[0] || '';
+                if (lastEl) lastEl.value = parts.slice(1).join(' ') || '';
+            }
+        }
+
+        // Date of birth -> birthdate input (try multiple keys)
+        const dob = aiData.date_of_birth || aiData.birthdate || aiData.dob || aiData.birthday;
+        if (dob) {
+            const parsed = new Date(dob);
+            if (!Number.isNaN(parsed.getTime())) {
+                const yyyy = parsed.getFullYear();
+                const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+                const dd = String(parsed.getDate()).padStart(2, '0');
+                const el = document.getElementById('birthdate');
+                if (el) el.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+
+        // Phone
+        const phone = aiData.phone || aiData.mobile || aiData.contact;
+        if (phone) {
+            const el = document.getElementById('phone');
+            if (el) {
+                // naive normalization: keep digits and leading +
+                const normalized = String(phone).replace(/[^\d+]/g, '');
+                el.value = normalized;
+            }
+        }
+
+        // Address
+        if (aiData.address) {
+            const el = document.getElementById('address');
+            if (el) el.value = String(aiData.address || '');
+        }
+
+        // Disability -> intelligent mapping:
+        // - If AI mentions Down syndrome (trisomy/mosaic/translocation), map to `dsType` select
+        // - Otherwise, attempt to match `cddType`; fallback to `Others` with text placed in cddTypeOther
+        if (aiData.type_of_disability || aiData.disability) {
+            const rawVal = String(aiData.type_of_disability || aiData.disability).trim();
+            const val = rawVal.toLowerCase();
+
+            // keywords that indicate Down Syndrome
+            const dsKeywords = ['trisomy', 'trisomy 21', 'down syndrome', 'mosaic', 'translocation', 'downs'];
+
+            const dsSelect = document.getElementById('dsType');
+            const cddSelect = document.getElementById('cddType');
+            const cddOther = document.getElementById('cddTypeOther');
+
+            // if mentions DS, try to set dsType
+            const mentionsDs = dsKeywords.some(k => val.includes(k));
+            if (mentionsDs && dsSelect) {
+                let set = false;
+                for (let i = 0; i < dsSelect.options.length; i++) {
+                    const opt = dsSelect.options[i];
+                    if (!opt.value) continue;
+                    const ov = opt.value.toLowerCase();
+                    if (val.includes('trisomy') && ov.includes('trisomy')) { dsSelect.value = opt.value; set = true; break; }
+                    if (val.includes('mosaic') && ov.includes('mosaic')) { dsSelect.value = opt.value; set = true; break; }
+                    if (val.includes('translocation') && ov.includes('translocation')) { dsSelect.value = opt.value; set = true; break; }
+                    if (ov.includes('down') && val.includes('down')) { dsSelect.value = opt.value; set = true; break; }
+                }
+                if (!set) {
+                    // no exact match — try to pick first ds option
+                    if (dsSelect.options.length > 1) dsSelect.selectedIndex = 1;
+                }
+
+                // if we matched to dsType, clear any cddOther
+                if (cddOther) { cddOther.classList.add('hidden'); cddOther.required = false; cddOther.value = ''; }
+            } else if (cddSelect) {
+                // try to match CDD options
+                let matched = false;
+                for (let i = 0; i < cddSelect.options.length; i++) {
+                    const opt = cddSelect.options[i];
+                    if (!opt.value) continue;
+                    const ov = opt.value.toLowerCase();
+                    if (ov.includes(val) || val.includes(ov) || ov.split(/\W+/).some(tok => val.includes(tok))) {
+                        cddSelect.value = opt.value;
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched && cddOther) {
+                    cddSelect.value = 'Others';
+                    cddOther.classList.remove('hidden');
+                    cddOther.required = true;
+                    cddOther.value = rawVal;
+                }
+            }
+        }
+
+        // For membership proofs, show small summary in proofDisplay
+        if (detectedType === 'membership_proof' && (typeof aiData.is_membership !== 'undefined')) {
+            const disp = document.getElementById('proofDisplay');
+            if (disp) {
+                disp.innerHTML = `<div class="mt-2 text-sm text-green-700">Membership detected: ${aiData.is_membership ? 'Yes' : 'No'}${aiData.member_name ? ' — ' + aiData.member_name : ''}</div>`;
+            }
+        }
+
+        // For medical certificate, show detected exam date in medDisplay
+        if (detectedType === 'medical_certificate' && aiData.date) {
+            const md = document.getElementById('medDisplay');
+            if (md) {
+                // try to format date
+                let txt = String(aiData.date || '');
+                try { const d = new Date(aiData.date); if (!Number.isNaN(d.getTime())) { txt = d.toISOString().slice(0,10); } } catch(e){}
+                const prev = md.querySelector('.ocr-summary');
+                if (prev) prev.textContent = `Detected medical date: ${txt}`;
+                else md.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected medical date: ${txt}</div>`);
+            }
+        }
+
+    } catch (e) {
+        console.warn('applyOcrDataToForm failed', e);
+    }
+}
+
 function setupUpload(inputId, displayId, labelId, hintId) {
   const fileInput = document.getElementById(inputId);
   const display = document.getElementById(displayId);
@@ -893,6 +1022,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     const aiData = result.data?.ai_data || {};
 
                     if (detectedType === 'pwd_id' && ocrtype === 'pwd_id') {
+                        // autofill basic fields from PWD ID
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
                         alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
                         // Use medDisplay as the error container (create a child .ocr-error if missing)
@@ -910,6 +1042,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             errorBox = { textContent: '' };
                         }
 
+                        // autofill where possible
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+
                         const isValid = validateMedicalCertificateDate(aiData.date, errorBox);
                         if (isValid) {
                             alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
@@ -924,8 +1060,13 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             }
                         }
                     } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
                         alert(`Is Member of DSAPI: ${aiData.is_membership || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else {
+                        // generic autofill attempt
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
                         alert(`OCR Type: ${detectedType || ocrtype} processed successfully.`);
                     }
                 } else {
@@ -1275,6 +1416,34 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         }
                     }catch(e){}
                 }
+
+                // cddType (Congenital/Developmental Disability)
+                try{
+                    const cdd = d.cddType || d.cdd_type || p.cddType || p.cdd_type || d.r_cddType1 || p.r_cddType1 || d.disability || p.disability || '';
+                    if(cdd){
+                        const selectCdd = document.getElementById('cddType');
+                        const otherCdd = document.getElementById('cddTypeOther');
+                        let matchedCdd = false;
+                        if(selectCdd){
+                            for(const opt of selectCdd.options){
+                                if(String(opt.value||'').toLowerCase()===String(cdd).toLowerCase() || String(opt.textContent||'').toLowerCase()===String(cdd).toLowerCase()){
+                                    selectCdd.value = opt.value; matchedCdd = true; break;
+                                }
+                            }
+                        }
+                        if(!matchedCdd && otherCdd){
+                            otherCdd.classList.remove('hidden'); otherCdd.required = true; otherCdd.value = String(cdd||'');
+                            if(selectCdd){ for(const opt of selectCdd.options){ if(String(opt.value||'').toLowerCase().includes('other')){ selectCdd.value = opt.value; break; } } }
+                        }
+                        // also populate explicit other-text field when present in the draft
+                        try{
+                            const otherText = d.cddTypeOther || d.cdd_type_other || (p && (p.cddTypeOther || p.cdd_type_other)) || '';
+                            if(otherText && otherCdd){ otherCdd.classList.remove('hidden'); otherCdd.value = String(otherText); otherCdd.required = true; }
+                        }catch(e){}
+                        if(matchedCdd){ try{ if(selectCdd) selectCdd.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} }
+                        applied = true;
+                    }
+                }catch(e){ console.warn('[adminapprove] applyDraft cddType failed', e); }
 
                 // guardian
                 const g = d.guardian || d.guardianInfo || d;
@@ -1779,6 +1948,11 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     username: data.username || '',
                     // persist selected Down Syndrome type (if present) under multiple keys for compatibility
                     dsType: data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                    // persist CDD (Congenital/Developmental Disability)
+                    cddType: data.cddType || (document.getElementById('cddType') ? document.getElementById('cddType').value : '') || '',
+                    // persist optional "Other" text when 'Others' is chosen
+                    cddTypeOther: data.cddTypeOther || (document.getElementById('cddTypeOther') ? document.getElementById('cddTypeOther').value : '') || '',
+                    r_cddType1: data.r_cddType1 || data.cddType || (document.getElementById('cddType') ? document.getElementById('cddType').value : '') || '',
                     r_dsType1: data.r_dsType1 || data.r_dsType || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
                     r_dsType: data.r_dsType || data.r_dsType1 || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
                     guardian_first: data.guardian_first || data.guardianFirst || '',
