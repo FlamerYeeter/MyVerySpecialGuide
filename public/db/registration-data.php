@@ -100,6 +100,16 @@ $password    = password_hash($user_info['password'] ?? 'temp123', PASSWORD_DEFAU
 $types_of_ds = $user_info['r_dsType1'] ?? null;
 $birthdate   = $user_info['birthdate'] ?? null;
 
+// Congenital/Developmental Disability (CDD) - accept from nested rpi_personal or top-level keys
+$cdd_type = null;
+// Accept many possible key names from different frontend pages: prefer nested user_info (rpi_personal)
+// Common keys: r_cddType1, cddType, cdd_type, cddTypeOther, r_cddType1_other
+$cdd_type = $user_info['r_cddType1'] ?? $user_info['r_cdd_type'] ?? $user_info['cddType'] ?? $user_info['cdd_type'] ?? $user_info['cddTypeOther'] ?? $user_info['cdd_type_other'] ?? $user_info['r_cddType1_other'] ?? null;
+// Fallback to top-level payload keys
+if (!$cdd_type) {
+    $cdd_type = $data['r_cddType1'] ?? $data['r_cdd_type'] ?? $data['cddType'] ?? $data['cdd_type'] ?? $data['cddTypeOther'] ?? $data['cdd_type_other'] ?? $data['r_cddType1_other'] ?? null;
+}
+
 // Guardian
 $gf = $user_info['g_first_name'] ?? null;
 $gl = $user_info['g_last_name'] ?? null;
@@ -154,6 +164,7 @@ INSERT INTO user_guardian (
     updated_at,
     address,
     types_of_ds,
+    cdd_type,
     username,
     med_certificates,
     pwd_id,
@@ -178,6 +189,7 @@ INSERT INTO user_guardian (
     SYSDATE,
     :address,
     :types_of_ds,
+    :cdd_type,
     :username,
     :med_certificates,
     :pwd_id,
@@ -207,6 +219,7 @@ oci_bind_by_name($stid1, ':relationship',        $gr);
 
 oci_bind_by_name($stid1, ':address',       $address);
 oci_bind_by_name($stid1, ':types_of_ds',   $types_of_ds);
+oci_bind_by_name($stid1, ':cdd_type',       $cdd_type);
 oci_bind_by_name($stid1, ':username',      $username);
 oci_bind_by_name($stid1, ':birthdate',     $birthdate);
 
