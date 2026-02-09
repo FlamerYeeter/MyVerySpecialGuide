@@ -59,6 +59,18 @@ if (!$data) {
     die(json_encode(['success' => false, 'error' => 'Invalid JSON']));
 }
 
+// DEBUG: persist received payload for troubleshooting CDD_TYPE issues (temporary)
+try {
+    $debugPath = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_registration_payload.json';
+    @file_put_contents($debugPath, json_encode(['received_at' => date('c'), 'raw_json' => $json, 'decoded_keys' => array_keys(is_array($data)?$data:[] )], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    // also write parsed rpi_personal for easy inspection
+    if (!empty($data['rpi_personal'])) {
+        $p = json_decode($data['rpi_personal'], true);
+        $debugP = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_rpi_personal.json';
+        @file_put_contents($debugP, json_encode(['received_at' => date('c'), 'rpi_personal_parsed' => $p], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+} catch (Exception $e) { /* ignore debug failures */ }
+
 // ——— EXTRACT DATA ———
 $user_info         = json_decode($data['rpi_personal'] ?? '{}', true);
 // Robustly extract education level and school name (accept JSON object or plain string)

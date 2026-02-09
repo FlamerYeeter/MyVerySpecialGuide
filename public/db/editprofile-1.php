@@ -59,6 +59,13 @@ if (array_key_exists('phone',      $data)) { $sets[] = "contact_number = :phone"
 if (array_key_exists('address',    $data)) { $sets[] = "address = :addr"; $binds[':addr'] = $data['address']; }
 if (array_key_exists('r_dsType1',  $data)) { $sets[] = "types_of_ds = :types"; $binds[':types'] = $data['r_dsType1']; }
 
+// Congenital/Developmental Disability (CDD)
+if (array_key_exists('r_cddType1', $data) || array_key_exists('cddType', $data) || array_key_exists('cdd_type', $data)) {
+    $cddVal = $data['r_cddType1'] ?? $data['cddType'] ?? $data['cdd_type'] ?? null;
+    $sets[] = "cdd_type = :cdd";
+    $binds[':cdd'] = $cddVal;
+}
+
 /* Guardian fields */
 if (array_key_exists('g_first_name', $data)) { $sets[] = "guardian_first_name = :gf"; $binds[':gf'] = $data['g_first_name']; }
 if (array_key_exists('g_last_name',  $data)) { $sets[] = "guardian_last_name = :gl"; $binds[':gl'] = $data['g_last_name']; }

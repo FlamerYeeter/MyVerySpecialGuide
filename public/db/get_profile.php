@@ -41,14 +41,13 @@ if (!$conn) {
     exit;
 }
 
-// include LOB columns; do NOT return password
-// return DATE_OF_BIRTH as YYYY-MM-DD string (DB uses DATE column)
 $sql = "SELECT id, first_name, last_name, email, contact_number, TO_CHAR(date_of_birth,'YYYY-MM-DD') AS DATE_OF_BIRTH, address,
-               types_of_ds, guardian_first_name, guardian_last_name, guardian_email,
-               guardian_contact_number, username, relationship_to_user,
-               PWD_ID, med_certificates, certificates, school, education
-        FROM user_guardian
-        WHERE id = :id";
+           types_of_ds, cdd_type,
+           guardian_first_name, guardian_last_name, guardian_email,
+           guardian_contact_number, username, relationship_to_user,
+           PWD_ID, med_certificates, certificates, school, education
+    FROM user_guardian
+    WHERE id = :id";
 $stid = oci_parse($conn, $sql);
 oci_bind_by_name($stid, ':id', $id);
 oci_execute($stid);

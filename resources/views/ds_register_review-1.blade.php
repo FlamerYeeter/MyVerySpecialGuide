@@ -2143,6 +2143,10 @@ setupEditSection("editAccountBtn", "accountSection");
                         birthdate: data.birthdate || data.birthDate || data.birth_date || '',
                         address: data.address || '',
                         username: data.username || '',
+                        // Congenital/Developmental Disability (CDD) fields
+                        cddType: data.cddType || data.cdd_type || data.r_cddType1 || data.r_cddType || '',
+                        cddTypeOther: data.cddTypeOther || data.cdd_type_other || data.r_cddType1_other || '',
+                        r_cddType1: data.r_cddType1 || data.cddType || '',
                         g_first_name: data.g_first_name || data.guardianFirst || '',
                         g_last_name: data.g_last_name || data.guardianLast || '',
                         g_email: data.g_email || '',
