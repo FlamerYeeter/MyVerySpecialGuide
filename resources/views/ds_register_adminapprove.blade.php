@@ -20,6 +20,35 @@
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
         transform: scale(1.03);
     }
+    
+    /* OCR Loading Spinner */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .ocr-spinner {
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #2E2EFF;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    .ocr-loading-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background-color: #f0f4ff;
+      border: 1px solid #2E2EFF;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+    .ocr-loading-text {
+      font-size: 14px;
+      color: #1e40af;
+      font-weight: 500;
+    }
     </style>
 </head>
 
@@ -990,6 +1019,16 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 localStorage.setItem(typeKey, ext);
                 console.info('[adminapprove] saved upload to localStorage', nameKey);
 
+                // Create and show loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'ocr-loading-container';
+                loadingDiv.id = `ocr-loading-${inputId}`;
+                loadingDiv.innerHTML = `
+                    <div class="ocr-spinner"></div>
+                    <span class="ocr-loading-text">Processing OCR... Please wait</span>
+                `;
+                display.appendChild(loadingDiv);
+
                 // Prepare and send to backend
                 const payload = {
                     type: ocrtype,
@@ -1001,16 +1040,30 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 console.log("[upload] Sending OCR request for:", file.name);
                 // debugger;   // ← keep if you need to inspect payload
 
-                const response = await fetch('db/ocr-validation.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                let response;
+                try {
+                    response = await fetch('db/ocr-validation.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (fetchErr) {
+                    // Remove loading indicator on network error
+                    const loading = document.getElementById(`ocr-loading-${inputId}`);
+                    if (loading) loading.remove();
+                    console.error('[upload] Fetch failed:', fetchErr);
+                    alert('Network error: Failed to connect to OCR service');
+                    isProcessing = false;
+                    return;
+                }
 
                 let result;
                 try {
                     result = await response.json();
                 } catch (jsonErr) {
+                    // Remove loading indicator on JSON parse error
+                    const loading = document.getElementById(`ocr-loading-${inputId}`);
+                    if (loading) loading.remove();
                     console.warn("Invalid JSON from server", jsonErr);
                     result = { message: 'Invalid response format' };
                 }
@@ -1025,6 +1078,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         // autofill basic fields from PWD ID
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        // Remove loading indicator
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
                         alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
                         // Use medDisplay as the error container (create a child .ocr-error if missing)
@@ -1047,6 +1103,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
 
                         const isValid = validateMedicalCertificateDate(aiData.date, errorBox);
+                        // Remove loading indicator
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
+                        
                         if (isValid) {
                             alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
                         } else {
@@ -1062,14 +1122,23 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        // Remove loading indicator
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
                         alert(`Is Member of DSAPI: ${aiData.is_membership || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else {
                         // generic autofill attempt
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        // Remove loading indicator
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
                         alert(`OCR Type: ${detectedType || ocrtype} processed successfully.`);
                     }
                 } else {
+                    // Remove loading indicator on error
+                    const loading = document.getElementById(`ocr-loading-${inputId}`);
+                    if (loading) loading.remove();
                     alert(`Error ${response.status}: ${result.message || 'Unknown server error'}`);
                 }
 
@@ -1109,6 +1178,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 hintEl.style.display = 'none';
 
             } catch (err) {
+                // Remove loading indicator on error
+                const loading = document.getElementById(`ocr-loading-${inputId}`);
+                if (loading) loading.remove();
                 console.error('[upload] Processing failed:', err);
                 alert('Something went wrong while processing the file.');
             }
