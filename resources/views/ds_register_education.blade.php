@@ -659,6 +659,49 @@
         });
     </script>
 
+    <script>
+        // Diagnostic probe: confirm education scripts loaded, show relevant LS keys,
+        // and capture any file input change events (delegated) so we see if handlers fire.
+        (function(){
+            try{
+                console.debug('[education] probe:init');
+                const dumpKeys = ['uploadedCertificates_education','uploadedProofs_proof','uploadedProofs1','uploadedProofs','review_certs'];
+                const snap = {};
+                dumpKeys.forEach(k => { try { snap[k] = localStorage.getItem(k); } catch (e) { snap[k] = '<err>'; } });
+                console.debug('[education] storage snapshot', snap);
+
+                // delegated listener for any file input change anywhere on page
+                document.addEventListener('change', function(ev){
+                    try{
+                        const t = ev.target;
+                        if (!t) return;
+                        if (t.tagName && t.tagName.toLowerCase() === 'input' && t.type === 'file') {
+                            console.debug('[education] file-input change captured', t.id || t.name || '(no-id)', t.files && t.files.length);
+                        }
+                    } catch(err) {
+                        console.warn('[education] probe change handler error', err);
+                    }
+                }, true);
+            } catch (e) {
+                console.warn('[education] probe init failed', e);
+            }
+        })();
+    </script>
+
+    <script>
+        // Ensure a global canonical key exists so other inline handlers can reference it
+        try {
+            window.LS_KEY = window.LS_KEY || 'uploadedCertificates_education';
+            // also create a simple global var for older closures that expect LS_KEY in scope
+            if (typeof LS_KEY === 'undefined') {
+                var LS_KEY = window.LS_KEY; // eslint-disable-line no-var
+            }
+            console.debug('[education] global LS_KEY ensured', window.LS_KEY);
+        } catch (e) {
+            console.warn('[education] failed to ensure global LS_KEY', e);
+        }
+    </script>
+
     <!-- Small inline helper to toggle selection and write the value -->
     <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_education.blade.php
@@ -897,6 +940,7 @@
                     if (adminNames.length && Array.isArray(arr)) {
                         arr = arr.filter(it => !(it && it.name && adminNames.includes(String(it.name))));
                     }
+                    console.debug('[education] loadSavedProofs raw:', raw, 'parsed length:', Array.isArray(arr)?arr.length:0);
                     return arr;
                 } catch (e) {
                     return [];
@@ -906,10 +950,66 @@
             window.saveProofs = function(list) {
                 try {
                     localStorage.setItem(LS_KEY, JSON.stringify(list || []));
+                    console.debug('[education] saveProofs: saved', Array.isArray(list)?list.length:0, 'items to', LS_KEY);
                 } catch (e) {
                     console.warn("saveProofs failed", e);
+                    // surface possible quota or serialization errors
+                    try { console.debug('[education] saveProofs attempting fallback write'); localStorage.setItem(LS_KEY, '[]'); } catch (ee) { console.error('[education] fallback write failed', ee); }
                 }
             }
+
+            // Migrate legacy proof keys into the canonical `uploadedCertificates_education` key.
+            // This runs once on page load when canonical key is missing or null.
+            window.migrateLegacyProofs = function() {
+                try {
+                    const canonRaw = localStorage.getItem(LS_KEY);
+                    if (canonRaw && canonRaw !== 'null') return; // canonical exists
+
+                    const migrated = [];
+
+                    // Helper: normalize and push array-format legacy keys
+                    const tryPushArrayKey = (k) => {
+                        try {
+                            const raw = localStorage.getItem(k);
+                            if (!raw || raw === 'null') return;
+                            const parsed = JSON.parse(raw);
+                            if (Array.isArray(parsed) && parsed.length) {
+                                parsed.forEach(it => {
+                                    if (!it) return;
+                                    const name = it.name || it.fileName || it.certificate_file_name || it.uploadedProofName || it.filename;
+                                    const data = it.data || it.fileData || it.certificate_file_data || it.uploadedProofData || it.dataUrl || it.file || it.fileDataUrl;
+                                    const type = it.type || it.fileType || it.certificate_file_type || it.uploadedProofType || (name ? String(name).split('.').pop().toLowerCase() : '');
+                                    if (name && data) migrated.push({name: name, type: type || getFileType(name), data: data});
+                                });
+                            }
+                        } catch (e) { /* ignore */ }
+                    };
+
+                    ['uploadedCertificates_education','uploadedProofs_proof','uploadedProofs1','uploadedProofs','uploadedProofs_proof'].forEach(tryPushArrayKey);
+
+                    // Single-file legacy keys (common variants)
+                    const singleSets = [
+                        ['uploadedProofName','uploadedProofData','uploadedProofType'],
+                        ['uploadedProofName1','uploadedProofData1','uploadedProofType1'],
+                        ['uploadedProofName0','uploadedProofData0','uploadedProofType0']
+                    ];
+                    singleSets.forEach(([nK,dK,tK]) => {
+                        try {
+                            const name = localStorage.getItem(nK);
+                            const data = localStorage.getItem(dK);
+                            const type = localStorage.getItem(tK);
+                            if (name && data) migrated.push({name: name, type: type || getFileType(name), data: data});
+                        } catch (e) { /* ignore */ }
+                    });
+
+                    if (migrated.length) {
+                        localStorage.setItem(LS_KEY, JSON.stringify(migrated));
+                        console.debug('[review-2] migrateLegacyProofs: migrated', migrated.length, 'items into', LS_KEY);
+                    }
+                } catch (e) {
+                    console.warn('migrateLegacyProofs failed', e);
+                }
+            };
 
             window.hideFileInfo = function() {
                 if (!fileInfo) return;
@@ -994,11 +1094,9 @@
                         }
                         if (typeof hideFileInfo === "function") hideFileInfo();
                         console.log("File input cleared & education localStorage removed");
-                    } else {
-                        fileUploadSection.style.display = "block"; // show section
-                        console.log("certYes selected → fileuploadSection shown");
-                    }
-                }
+                    });
+                });
+
             };
 
             // Initial check on page load
@@ -1153,6 +1251,8 @@
 
             // init UI from storage
             (function init() {
+                // run migration from legacy keys (if canonical key missing)
+                try { if (typeof window.migrateLegacyProofs === 'function') window.migrateLegacyProofs(); } catch(e) { console.warn('migration call failed', e); }
                 const saved = window.loadSavedProofs();
                 if (saved && saved.length) {
                     if (fileuploadSection) fileuploadSection.style.display = "block";
@@ -1676,8 +1776,11 @@
                                     const existing = window.loadSavedProofs ? window.loadSavedProofs() : (JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]);
                                     const filtered = (Array.isArray(existing) ? existing.filter(f => String((f && (f.name||f.filename||'')).toLowerCase()) !== fname.toLowerCase()) : []);
                                     filtered.push({ name: fname, type: ftype, data: fdata });
-                                    try { if (typeof window.saveProofs === 'function') window.saveProofs(filtered); else localStorage.setItem(LS_KEY, JSON.stringify(filtered)); } catch(e){}
-                                    try { if (typeof window.showFileList === 'function') window.showFileList(filtered); } catch(e){}
+                                    try { 
+                                        console.debug('[education] persisting per-entry file', fname, 'size:', (fdata||'').length);
+                                        if (typeof window.saveProofs === 'function') window.saveProofs(filtered); else localStorage.setItem(LS_KEY, JSON.stringify(filtered)); 
+                                    } catch(e){ console.warn('[education] persist failed', e); }
+                                    try { if (typeof window.showFileList === 'function') window.showFileList(filtered); } catch(e){ console.warn('[education] showFileList failed', e); }
                                 }
                             } catch(e) { console.warn('persist per-entry file failed', e); }
 
@@ -1839,130 +1942,130 @@
                     writeHidden([]);
                 }
             });
-        })();
-    </script>
+                })();
+            </script>
 
-</body>
+            <script>
+                // Restore education form state when user returns to this page
+                window.addEventListener('DOMContentLoaded', function() {
+                    try {
+                        const edu_level = localStorage.getItem('edu_level');
+                        const school_name = localStorage.getItem('school_name');
+                        const review_certs = localStorage.getItem('review_certs');
+                        const certs_json = localStorage.getItem('education_certificates');
 
-</html>
-
-<script>
-    // Restore education form state when user returns to this page
-    window.addEventListener('DOMContentLoaded', function() {
-        try {
-            const edu_level = localStorage.getItem('edu_level');
-            const school_name = localStorage.getItem('school_name');
-            const review_certs = localStorage.getItem('review_certs');
-            const certs_json = localStorage.getItem('education_certificates');
-
-            if (edu_level) {
-                const el = document.getElementById('edu_level');
-                if (el) {
-                    el.value = edu_level;
-                    el.dispatchEvent(new Event('change', {
-                        bubbles: true
-                    }));
-                }
-            }
-            // Restore visual selection on education cards
-            try {
-                const v = (edu_level || '').toString();
-                if (v) {
-                    // attempts: attribute data-edu, data-value, id, or matching label text inside .education-card
-                    let found = null;
-                    found = document.querySelector('.education-card[data-edu="' + v + '"]') || document
-                        .querySelector('.education-card[data-value="' + v + '"]') || document.getElementById(
-                            'edu_' + v.replace(/\s+/g, '_'));
-                    if (!found) {
-                        document.querySelectorAll('.education-card').forEach(c => {
-                            try {
-                                const txt = (c.textContent || '').trim().toLowerCase();
-                                if (txt && txt.indexOf(v.toLowerCase()) !== -1) found = found || c;
-                            } catch (e) {}
-                        });
-                    }
-                    if (found) {
-                        document.querySelectorAll('.education-card').forEach(c => c.classList.remove(
-                            'selected'));
-                        found.classList.add('selected');
-                    }
-                }
-            } catch (e) {
-                console.debug('could not restore education card selection', e);
-            }
-            if (school_name) {
-                const s = document.getElementById('school_name');
-                if (s) {
-                    s.value = school_name;
-                    s.dispatchEvent(new Event('input', {
-                        bubbles: true
-                    }));
-                }
-            }
-
-            if (review_certs) {
-                const radio = document.querySelector('input[name="certs"][value="' + review_certs + '"]');
-                if (radio) {
-                    radio.checked = true;
-                    radio.dispatchEvent(new Event('change', {
-                        bubbles: true
-                    }));
-                }
-            }
-
-            if (certs_json) {
-                try {
-                    const arr = JSON.parse(certs_json || '[]');
-                    if (Array.isArray(arr) && arr.length) {
-                        // put canonical data into hidden field so existing certificate UI code picks it up
-                        const hidden = document.getElementById('certificates');
-                        if (hidden) hidden.value = JSON.stringify(arr);
-
-                        // if the certificate UI builder already exists, rebuild the UI entries to reflect saved data
-                        setTimeout(() => {
-                            try {
-                                const container = document.getElementById('certs_container');
-                                const tpl = document.getElementById('cert_template');
-                                if (!container || !tpl) return;
-                                // clear existing
-                                container.innerHTML = '';
-                                arr.forEach(item => {
-                                    const node = tpl.content.firstElementChild.cloneNode(true);
-                                    const nameEl = node.querySelector(
-                                        'input[name="certificate_name"]');
-                                    const issuedEl = node.querySelector(
-                                        'input[name="issued_by"]');
-                                    const dateEl = node.querySelector(
-                                        'input[name="date_completed"]');
-                                    const descEl = node.querySelector(
-                                        'input[name="training_description"]');
-                                    if (nameEl) nameEl.value = item.certificate_name || item
-                                        .name || item.title || '';
-                                    if (issuedEl) issuedEl.value = item.issued_by || item
-                                        .issuer || '';
-                                    if (dateEl) dateEl.value = item.date_completed || item
-                                        .date || '';
-                                    if (descEl) descEl.value = item.training_description || item
-                                        .description || '';
-                                    container.appendChild(node);
-                                });
-                                // notify sync handlers
-                                container.querySelectorAll('input').forEach(i => i.dispatchEvent(
-                                    new Event('input', {
-                                        bubbles: true
-                                    })));
-                            } catch (e) {
-                                console.warn('cert restore failed', e);
+                        if (edu_level) {
+                            const el = document.getElementById('edu_level');
+                            if (el) {
+                                el.value = edu_level;
+                                el.dispatchEvent(new Event('change', {
+                                    bubbles: true
+                                }));
                             }
-                        }, 50);
-                    }
-                } catch (e) {
-                    console.warn('invalid education_certificates', e);
-                }
-            }
+                        }
+                        // Restore visual selection on education cards
+                        try {
+                            const v = (edu_level || '').toString();
+                            if (v) {
+                                // attempts: attribute data-edu, data-value, id, or matching label text inside .education-card
+                                let found = null;
+                                found = document.querySelector('.education-card[data-edu="' + v + '"]') || document
+                                    .querySelector('.education-card[data-value="' + v + '"]') || document.getElementById(
+                                        'edu_' + v.replace(/\s+/g, '_'));
+                                if (!found) {
+                                    document.querySelectorAll('.education-card').forEach(c => {
+                                        try {
+                                            const txt = (c.textContent || '').trim().toLowerCase();
+                                            if (txt && txt.indexOf(v.toLowerCase()) !== -1) found = found || c;
+                                        } catch (e) {}
+                                    });
+                                }
+                                if (found) {
+                                    document.querySelectorAll('.education-card').forEach(c => c.classList.remove(
+                                        'selected'));
+                                    found.classList.add('selected');
+                                }
+                            }
+                        } catch (e) {
+                            console.debug('could not restore education card selection', e);
+                        }
+                        if (school_name) {
+                            const s = document.getElementById('school_name');
+                            if (s) {
+                                s.value = school_name;
+                                s.dispatchEvent(new Event('input', {
+                                    bubbles: true
+                                }));
+                            }
+                        }
 
-        } catch (e) {
-            console.warn('education restore failed', e);
-        }
-    });
-</script>
+                        if (review_certs) {
+                            const radio = document.querySelector('input[name="certs"][value="' + review_certs + '"]');
+                            if (radio) {
+                                radio.checked = true;
+                                radio.dispatchEvent(new Event('change', {
+                                    bubbles: true
+                                }));
+                            }
+                        }
+
+                        if (certs_json) {
+                            try {
+                                const arr = JSON.parse(certs_json || '[]');
+                                if (Array.isArray(arr) && arr.length) {
+                                    // put canonical data into hidden field so existing certificate UI code picks it up
+                                    const hidden = document.getElementById('certificates');
+                                    if (hidden) hidden.value = JSON.stringify(arr);
+
+                                    // if the certificate UI builder already exists, rebuild the UI entries to reflect saved data
+                                    setTimeout(() => {
+                                        try {
+                                            const container = document.getElementById('certs_container');
+                                            const tpl = document.getElementById('cert_template');
+                                            if (!container || !tpl) return;
+                                            // clear existing
+                                            container.innerHTML = '';
+                                            arr.forEach(item => {
+                                                const node = tpl.content.firstElementChild.cloneNode(true);
+                                                const nameEl = node.querySelector(
+                                                    'input[name="certificate_name"]');
+                                                const issuedEl = node.querySelector(
+                                                    'input[name="issued_by"]');
+                                                const dateEl = node.querySelector(
+                                                    'input[name="date_completed"]');
+                                                const descEl = node.querySelector(
+                                                    'input[name="training_description"]');
+                                                if (nameEl) nameEl.value = item.certificate_name || item
+                                                    .name || item.title || '';
+                                                if (issuedEl) issuedEl.value = item.issued_by || item
+                                                    .issuer || '';
+                                                if (dateEl) dateEl.value = item.date_completed || item
+                                                    .date || '';
+                                                if (descEl) descEl.value = item.training_description || item
+                                                    .description || '';
+                                                container.appendChild(node);
+                                            });
+                                            // notify sync handlers
+                                            container.querySelectorAll('input').forEach(i => i.dispatchEvent(
+                                                new Event('input', {
+                                                    bubbles: true
+                                                })));
+                                        } catch (e) {
+                                            console.warn('cert restore failed', e);
+                                        }
+                                    }, 50);
+                                }
+                            } catch (e) {
+                                console.warn('invalid education_certificates', e);
+                            }
+                        }
+
+                    } catch (e) {
+                        console.warn('education restore failed', e);
+                    }
+                });
+            </script>
+
+        </body>
+
+        </html>

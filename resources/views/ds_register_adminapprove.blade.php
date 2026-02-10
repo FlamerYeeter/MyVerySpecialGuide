@@ -770,6 +770,17 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         }
 
+        // For PWD ID OCR, show detected Type of Disability under the PWD display (like med date)
+        if (detectedType === 'pwd_id' && aiData.type_of_disability) {
+            const pd = document.getElementById('pwdidDisplay');
+            if (pd) {
+                const txt = String(aiData.type_of_disability || '');
+                const prev = pd.querySelector('.ocr-summary');
+                if (prev) prev.textContent = `Detected disability: ${txt}`;
+                else pd.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected disability: ${txt}</div>`);
+            }
+        }
+
         // For medical certificate, show detected exam date in medDisplay
         if (detectedType === 'medical_certificate' && aiData.date) {
             const md = document.getElementById('medDisplay');
@@ -1110,14 +1121,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         if (isValid) {
                             alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
                         } else {
-                            // let user choose to accept expired date or cancel
-                            const accept = confirm(`Detected medical date ${aiData.date || '?'} appears to be older than 3 months. Accept anyway?`);
-                            if (accept) {
-                                alert(`Medical Date: ${aiData.date || '?'} accepted by user. OCR Type: ${detectedType} processed.`);
-                                if (errorBox && errorBox.textContent) errorBox.textContent = '';
-                            } else {
-                                alert('Please upload a valid medical certificate within 3 months.');
+                            // Enforce strict 3-month rule: do not accept expired medical certificates.
+                            // `validateMedicalCertificateDate` already sets `errorBox.textContent` with a message.
+                            if (errorBox && errorBox.textContent) {
+                                // keep the OCR error visible in the UI; don't prompt the user to accept.
+                                console.warn('Rejected medical certificate date (older than 3 months):', aiData.date);
                             }
+                            // Optionally notify user once via alert to explain why the file was rejected.
+                            alert(`Detected medical date ${aiData.date || '?'} is older than 3 months and cannot be accepted. Please upload a valid medical certificate within 3 months.`);
                         }
                     } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
@@ -1905,6 +1916,31 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             if (!hasUploadedFileFor('pwdidFile')) {
                 errors.push({ id: 'pwdidFile', msg: 'Please upload your PWD ID.' });
             }
+
+            // If OCR produced a medical date, validate it and prevent proceeding when invalid
+            try {
+                const mdEl = document.getElementById('medDisplay');
+                if (mdEl) {
+                    let errEl = mdEl.querySelector('.ocr-error');
+                    if (!errEl) {
+                        errEl = document.createElement('div');
+                        errEl.className = 'ocr-error mt-2 text-sm text-red-600';
+                        mdEl.appendChild(errEl);
+                    } else {
+                        errEl.textContent = '';
+                    }
+                    const summary = mdEl.querySelector('.ocr-summary');
+                    if (summary) {
+                        const txt = String(summary.textContent || '').replace(/Detected medical date:\s*/i, '').trim();
+                        if (txt) {
+                            const ok = validateMedicalCertificateDate(txt, errEl);
+                            if (!ok) {
+                                errors.push({ id: 'medFile', msg: 'Medical certificate appears expired or invalid.' });
+                            }
+                        }
+                    }
+                }
+            } catch (e) { /* ignore OCR validation errors */ }
 
             if (errors.length) {
                 // show errors; focus first error and scroll into view

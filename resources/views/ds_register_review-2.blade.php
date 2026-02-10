@@ -2301,7 +2301,26 @@ document.addEventListener("DOMContentLoaded", () => {
         // 1) array-style storage used by Education page (canonical for review-2)
         try {
             // Prefer canonical education key(s): include uploadedCertificates_education and education_certificates
-            const arrRaw = localStorage.getItem('uploadedCertificates_education') || localStorage.getItem('education_certificates') || sessionStorage.getItem('uploadedCertificates_education') || window.__mvsg_uploadedCertificates_education || localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || localStorage.getItem('uploadedProofs_proof') || '[]';
+            // try canonical keys first, remember which key provided data so removals can write back
+            const tryKeys = [
+                'uploadedCertificates_education',
+                'education_certificates',
+                // session / global fallback
+                'uploadedCertificates_education_session',
+                // legacy arrays
+                'uploadedProofs1',
+                'uploadedProofs',
+                'uploadedProofs_proof'
+            ];
+            let arrRaw = null;
+            let sourceKey = null;
+            for (const k of tryKeys) {
+                try {
+                    const v = (k === 'uploadedCertificates_education_session') ? sessionStorage.getItem('uploadedCertificates_education') : localStorage.getItem(k);
+                    if (v !== null && v !== undefined && String(v).trim() !== '') { arrRaw = v; sourceKey = k; break; }
+                } catch(e){}
+            }
+            if (!arrRaw) { arrRaw = '[]'; sourceKey = null; }
             let arr = [];
             try {
                 try { console.debug('[review-2] loadSavedCerts arrRaw preview:', String(arrRaw||'').slice(0,200)); } catch(e){}
@@ -2320,9 +2339,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const normalized = arr.map(it => {
                     if (!it) return null;
                     if (typeof it === 'string') return { name: it, type: (it.split('.').pop()||'').toLowerCase(), data: null };
-                    return { name: it.name || it.filename || '', type: (it.type || (it.name||'').split('.').pop()||'').toLowerCase(), data: it.data || it.url || null };
+                    // accept many possible key names used across pages:
+                    const name = it.name || it.filename || it.certificate_file_name || it.certificate_name || it.fileName || it.name_raw || '';
+                    const data = it.data || it.url || it.certificate_file_data || it.fileData || it.dataUrl || null;
+                    const type = (it.type || it.certificate_file_type || (name||'').split('.').pop() || '').toLowerCase();
+                    return { name: name || '', type: (type||'').toLowerCase(), data };
                 }).filter(Boolean);
-                if (normalized.length) return { list: normalized, hasCertFlag: localStorage.getItem('review_certs') || null };
+                if (normalized.length) return { list: normalized, hasCertFlag: localStorage.getItem('review_certs') || null, sourceKey };
             }
         } catch(e){ /* ignore parse errors */ }
 
@@ -2331,7 +2354,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const type = readFirst(['uploadedProofType1','uploadedProofType','uploadedProofType0','uploaded_proof_type','proofType']);
             const name = readFirst(['uploadedProofName1','uploadedProofName','uploadedProofName0','uploaded_proof_name','proofName']);
         if (data && name) {
-            return { list: [{ name, type: (type||name.split('.').pop()).toLowerCase(), data }], hasCertFlag: localStorage.getItem('review_certs') || null };
+            // single-file legacy keys — indicate special sourceKey 'single-legacy' so remove can clean legacy keys
+            return { list: [{ name, type: (type||name.split('.').pop()).toLowerCase(), data }], hasCertFlag: localStorage.getItem('review_certs') || null, sourceKey: 'single-legacy' };
         }
 
         // IMPORTANT: do NOT read admin_uploaded_* here — admin files belong to review-1 only
@@ -2346,15 +2370,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
         const nameSafe = String(item.name || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         return `
-        <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3" data-idx="${idx}">
-            <span class="text-2xl">${icon}</span>
-            <span class="text-sm text-gray-700 truncate max-w-[420px]">${nameSafe}</span>
-            <div class="ml-auto flex gap-2">
-                <button type="button" data-idx="${idx}" data-action="view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
-                <button type="button" data-idx="${idx}" data-action="remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+            <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3" data-idx="${idx}">
+                <span class="text-2xl">${icon}</span>
+                <span class="text-sm text-gray-700 truncate max-w-[420px]">${nameSafe}</span>
+                <div class="ml-auto flex gap-2">
+                    <button type="button" data-idx="${idx}" data-action="view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
+                    <button type="button" data-idx="${idx}" data-action="replace" class="bg-[#0ea5a0] text-white text-xs px-3 py-1 rounded-md">Replace</button>
+                    <button type="button" data-idx="${idx}" data-action="remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+                </div>
             </div>
-        </div>
-        `;
+            `;
     }
 
     // replace the previous renderPreviewBlock with one that uses loadSavedCerts()
@@ -2364,7 +2389,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!reviewContainer) return;
         const listEl = document.getElementById('certsList');
         const noEl = document.getElementById('noCertsMsg');
+        // Debug: snapshot relevant storage keys to aid troubleshooting when files don't appear
+        try {
+            console.debug('[review-2] storage keys snapshot', {
+                uploadedCertificates_education: localStorage.getItem('uploadedCertificates_education'),
+                uploadedProofs_proof: localStorage.getItem('uploadedProofs_proof'),
+                uploadedProofs1: localStorage.getItem('uploadedProofs1'),
+                uploadedProofs: localStorage.getItem('uploadedProofs'),
+                review_certs: localStorage.getItem('review_certs')
+            });
+        } catch (e) { /* ignore console errors */ }
+
         const saved = loadSavedCerts();
+        try { console.debug('[review-2] loadSavedCerts result', saved); } catch(e){}
 
         // explicit "no"
         if (saved.hasCertFlag && String(saved.hasCertFlag).toLowerCase() === 'no') {
@@ -2396,24 +2433,67 @@ document.addEventListener("DOMContentLoaded", () => {
                     btn.addEventListener('click', (ev) => {
                         const idx = Number(ev.currentTarget.dataset.idx);
                         try {
-                            const arrRaw = localStorage.getItem('uploadedProofs1');
-                            if (arrRaw) {
-                                const arr = JSON.parse(arrRaw || '[]') || [];
-                                if (Array.isArray(arr) && arr.length > idx) {
-                                    arr.splice(idx,1);
-                                    localStorage.setItem('uploadedProofs1', JSON.stringify(arr));
+                            const key = saved && saved.sourceKey ? saved.sourceKey : null;
+                            if (key && key !== 'single-legacy') {
+                                // read array, remove index, write back
+                                try {
+                                    const arr = JSON.parse(localStorage.getItem(key) || '[]') || [];
+                                    if (Array.isArray(arr) && arr.length > idx) {
+                                        arr.splice(idx,1);
+                                        localStorage.setItem(key, JSON.stringify(arr));
+                                    }
+                                } catch(e){}
+                            } else if (key === 'single-legacy' || !key) {
+                                // clean legacy single-file keys if present (same behavior as review-1)
+                                const fname = saved.list[idx] && saved.list[idx].name;
+                                if (fname) {
+                                    ['uploadedProofName','uploadedProofData','uploadedProofType',
+                                    'uploadedProofName1','uploadedProofData1','uploadedProofType1',
+                                    'uploadedProofName0','uploadedProofData0','uploadedProofType0','uploaded_proof_name','uploaded_proof_data','uploaded_proof_type','proofName','proofData'].forEach(k=>{
+                                        try { const v = localStorage.getItem(k); if (v && String(v).includes(fname)) localStorage.removeItem(k); } catch(e){}
+                                    });
                                 }
                             }
                         } catch(e){}
-                        const fname = saved.list[idx] && saved.list[idx].name;
-                        if (fname) {
-                            ['uploadedProofName','uploadedProofData','uploadedProofType',
-                            'uploadedProofName1','uploadedProofData1','uploadedProofType1',
-                            'uploadedProofName0','uploadedProofData0','uploadedProofType0'].forEach(k=>{
-                                try { const v = localStorage.getItem(k); if (v && String(v).includes(fname)) localStorage.removeItem(k); } catch(e){}
-                            });
-                        }
                         setTimeout(renderPreviewBlock, 30);
+                    });
+                });
+                // wire replace handlers
+                listEl.querySelectorAll('[data-action="replace"]').forEach(btn => {
+                    btn.addEventListener('click', (ev) => {
+                        const idx = Number(ev.currentTarget.dataset.idx);
+                        const it = saved.list && saved.list[idx];
+                        // create an ephemeral file input to pick replacement
+                        const picker = document.createElement('input');
+                        picker.type = 'file';
+                        picker.accept = '.jpg,.jpeg,.png,.pdf';
+                        picker.style.display = 'none';
+                        document.body.appendChild(picker);
+                        picker.addEventListener('change', function() {
+                            const f = this.files && this.files[0];
+                            if (!f) { picker.remove(); return; }
+                            const reader = new FileReader();
+                            reader.onload = function(e){
+                                try {
+                                    const dataUrl = e.target.result;
+                                    const name = f.name || '';
+                                    const type = (name.split('.').pop()||'').toLowerCase();
+                                    // update saved array and persist to the same key if possible
+                                    const arr = Array.isArray(saved.list) ? saved.list.slice() : [];
+                                    arr[idx] = { name, type, data: dataUrl };
+                                    const writeKey = (saved && saved.sourceKey && saved.sourceKey !== 'single-legacy') ? saved.sourceKey : 'uploadedCertificates_education';
+                                    try {
+                                        localStorage.setItem(writeKey, JSON.stringify(arr));
+                                        console.debug('[review-2] replaced file at', idx, 'and wrote to', writeKey);
+                                    } catch (e) { console.warn('[review-2] write failed', e); }
+                                    setTimeout(renderPreviewBlock, 40);
+                                } catch (e) { console.warn('replace handler failed', e); }
+                                picker.remove();
+                            };
+                            reader.onerror = function(){ picker.remove(); };
+                            reader.readAsDataURL(f);
+                        });
+                        picker.click();
                     });
                 });
             } else {
