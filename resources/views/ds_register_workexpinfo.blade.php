@@ -396,56 +396,56 @@
 
             <!-- top-level typed start year removed per UX request — per-job start_year remains editable -->
 
-            <!-- Upload resume 
+            <!-- Upload Work Exp Certificate -->
                     <div class="mt-8 text-left px-2 sm:px-4">
                         <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                            Please upload your Resume.
+                            Please upload your Work Experience Certificate.
                             <button type="button"
                                 class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                                data-tts-en="Please upload your Resume."
-                                data-tts-tl="Paki-upload ang iyong resume.">🔊</button>
+                                data-tts-en="Please upload your Work Experience Certificate."
+                                data-tts-tl="Paki-upload ang iyong Certificate ng Work Experience.">🔊</button>
                         </label>
 
                         <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
-                           Upload your resume to show your work experience, skills, and qualifications.
+                           Upload your work experience certificate as supporting proof.
                         </p>
 
                         <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-                            (I-upload ang iyong resume upang maipakita ang iyong karanasan sa trabaho, kasanayan, at kwalipikasyon.)
+                            (I-upload ang iyong certificate ng karanasan sa trabaho bilang karagdagang patunay.)
                         </p>
 
-                        <!-- Upload Section 
+                        <!-- Upload Section -->
                         <div
                             class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div class="flex-1">
                                 <p class="font-medium text-gray-800 text-sm sm:text-base">
-                                    <span id="resumeLabel" class="flex items-center gap-2">
+                                    <span id="workexpcertLabel" class="flex items-center gap-2">
                                         <span>Upload File (Image or PDF)</span>
                                     </span>
                                 </p>
-                                <p id="resumeHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-                                    (Mag-upload ng larawan o PDF ng iyong Resume)<br /><br />
+                                <p id="workexpcertHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
+                                    (Mag-upload ng larawan o PDF ng iyong Certificate)<br /><br />
                                     Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
                                 </p>
 
-                                <!-- File Info Display 
-                                <div id="resumeDisplay"></div>
+                                <!-- File Info Display -->
+                                <div id="workexpcertDisplay"></div>
                             </div>
 
-                            <!-- Upload button + input wrapped so validation message is appended below the button 
+                            <!-- Upload button + input wrapped so validation message is appended below the button -->
                             <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
-                                <label for="resumeFile"
+                                <label for="workexpcertFile"
                                     class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
                                     📁 Choose File / Pumili ng File
                                 </label>
-                                <input id="resumeFile" name="resume" type="file" accept=".jpg,.jpeg,.png,.pdf"
+                                <input id="workexpcertFile" name="workexpcert" type="file" accept=".jpg,.jpeg,.png,.pdf"
                                     class="hidden" />
-                                <!-- validation will be appended here (under the button) 
+                                <!-- validation will be appended here (under the button) -->
                                 <div class="upload-error w-full text-sm text-right"></div>
                             </div>
-                        </div>-->
+                        </div>
 
-                        <!-- Modal for preview (shared) 
+                        <!-- Modal for preview (shared) -->
                         <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
                         <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
                             <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
@@ -455,11 +455,11 @@
 
                         <script>
                         (function(){
-                            const inp = document.getElementById('resumeFile');
-                            const display = document.getElementById('resumeDisplay');
-                            const label = document.getElementById('resumeLabel');
-                            const hint = document.getElementById('resumeHint');
-                            const LS_KEY = 'uploadedResume_file';
+                            const inp = document.getElementById('workexpcertFile');
+                            const display = document.getElementById('workexpcertDisplay');
+                            const label = document.getElementById('workexpcertLabel');
+                            const hint = document.getElementById('workexpcertHint');
+                            const LS_KEY = 'uploadedWorkExp_file';
                             function getExt(n){ return String(n||'').split('.').pop().toLowerCase(); }
                             async function readAsDataURL(f){ return await new Promise((res,rej)=>{ const r=new FileReader(); r.onerror=()=>rej(); r.onload=()=>res(r.result); r.readAsDataURL(f); }); }
 
@@ -528,7 +528,7 @@
                             // init existing
                                     try{ const saved = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]; if(saved && saved.length) renderDisplayFromList(saved); }catch(e){}
                         })();
-                        </script>-->
+                        </script>
 
             <!-- Experiences Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
@@ -574,7 +574,7 @@
                                     class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" readonly/>
                             </div>
 
-                            <!-- Job Description -->
+                            <!-- Job Description 
                             <div class="sm:col-span-2 flex flex-col">
                                 <label for="job_description"
                                     class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job Description</label>
@@ -582,7 +582,7 @@
                                     class="job_description w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
                                     placeholder="What you did (e.g. cleaned tables, organized shelves)" readonly>
                          </textarea>
-                            </div>
+                            </div>-->
                         </div>
                     </div>
                 </template>
