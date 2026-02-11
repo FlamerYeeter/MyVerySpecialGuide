@@ -659,6 +659,30 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
 });
 
+// Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
+window.formatDateWords = function(raw) {
+    if (!raw && raw !== 0) return '';
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    try {
+        const d = new Date(raw);
+        if (!Number.isNaN(d.getTime())) {
+            const dd = d.getDate();
+            const mm = months[d.getMonth()];
+            const yyyy = d.getFullYear();
+            return `${mm} ${dd}, ${yyyy}`;
+        }
+    } catch(e) {}
+    const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) {
+        const yyyy = m[1];
+        const mmIdx = parseInt(m[2],10) - 1;
+        const dd = parseInt(m[3],10);
+        const mm = months[mmIdx] || m[2];
+        return `${mm} ${dd}, ${yyyy}`;
+    }
+    return String(raw).slice(0,10);
+}
+
 // Apply OCR'd AI data into matching form fields when possible
 function applyOcrDataToForm(aiData, detectedType, ocrtype) {
     try {
@@ -781,13 +805,13 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         }
 
-        // For medical certificate, show detected exam date in medDisplay
+        // For medical certificate, show detected exam date in medDisplay (formatted)
         if (detectedType === 'medical_certificate' && aiData.date) {
             const md = document.getElementById('medDisplay');
             if (md) {
-                // try to format date
-                let txt = String(aiData.date || '');
-                try { const d = new Date(aiData.date); if (!Number.isNaN(d.getTime())) { txt = d.toISOString().slice(0,10); } } catch(e){}
+                // format using helper if available
+                let raw = aiData.date || '';
+                let txt = (window.formatDateWords ? window.formatDateWords(raw) : String(raw).slice(0,10));
                 const prev = md.querySelector('.ocr-summary');
                 if (prev) prev.textContent = `Detected medical date: ${txt}`;
                 else md.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected medical date: ${txt}</div>`);

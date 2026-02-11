@@ -419,6 +419,7 @@
                                         </label>
                                         <input type="date" name="date_completed"
                                             class="date_completed w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" readonly/>
+                                        <div class="date-completed-display text-sm text-gray-700 mt-1 hidden"></div>
                                         <p class="italic text-xs text-gray-500 mt-1">(Petsa kung kailan natapos)</p>
                                     </div>
 
@@ -438,6 +439,33 @@
                                 </div>
                             </div>
                         </template>
+
+                        <script>
+                            // Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
+                            window.formatDateWords = function(raw) {
+                                if (!raw && raw !== 0) return '';
+                                const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                                try {
+                                    const d = new Date(raw);
+                                    if (!Number.isNaN(d.getTime())) {
+                                        const dd = d.getDate();
+                                        const mm = months[d.getMonth()];
+                                        const yyyy = d.getFullYear();
+                                        return `${mm} ${dd}, ${yyyy}`;
+                                    }
+                                } catch(e) {}
+                                // try ISO-like YYYY-MM-DD
+                                const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+                                if (m) {
+                                    const yyyy = m[1];
+                                    const mmIdx = parseInt(m[2],10) - 1;
+                                    const dd = parseInt(m[3],10);
+                                    const mm = months[mmIdx] || m[2];
+                                    return `${mm} ${dd}, ${yyyy}`;
+                                }
+                                return String(raw).slice(0,10);
+                            };
+                        </script>
 
                         <div class="mt-6 text-center mb-8">
                             <button id="addCertBtn" type="button"
@@ -1877,6 +1905,13 @@
                                                             dateCompletedEl.value = String(raw).slice(0,10);
                                                         }
                                                     } catch(e){ dateCompletedEl.value = String(raw).slice(0,10); }
+
+                                                    // also set human-readable display with month name
+                                                    try {
+                                                        const displayEl = targetNode.querySelector('.date-completed-display');
+                                                        const formatted = window.formatDateWords ? window.formatDateWords(raw || dateCompletedEl.value) : String(dateCompletedEl.value).slice(0,10);
+                                                        if (displayEl) { displayEl.textContent = formatted; displayEl.classList.remove('hidden'); }
+                                                    } catch(e) {}
                                                 }
 
                                                 // trigger input events so any listeners react
@@ -1943,6 +1978,14 @@
                     node.querySelector('input[name="certificate_name"]').value = item.certificate_name || '';
                     node.querySelector('input[name="issued_by"]').value = item.issued_by || '';
                     node.querySelector('input[name="date_completed"]').value = item.date_completed || '';
+                    // set readable display for date completed
+                    try {
+                        const disp = node.querySelector('.date-completed-display');
+                        if (disp && item.date_completed) {
+                            disp.textContent = (window.formatDateWords ? window.formatDateWords(item.date_completed) : String(item.date_completed).slice(0,10));
+                            disp.classList.remove('hidden');
+                        }
+                    } catch(e) {}
                     node.querySelector('input[name="training_description"]').value = item.training_description || '';
                 }
                 const removeBtn = node.querySelector('.remove-cert');
