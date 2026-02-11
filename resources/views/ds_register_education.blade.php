@@ -443,27 +443,33 @@
                         <script>
                             // Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
                             window.formatDateWords = function(raw) {
-                                if (!raw && raw !== 0) return '';
+                                if (raw === null || typeof raw === 'undefined' || raw === '') return '';
                                 const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
                                 try {
-                                    const d = new Date(raw);
+                                    // normalize strings
+                                    const s = String(raw).trim();
+                                    // try parsing with Date first
+                                    const d = new Date(s);
                                     if (!Number.isNaN(d.getTime())) {
-                                        const dd = d.getDate();
-                                        const mm = months[d.getMonth()];
-                                        const yyyy = d.getFullYear();
-                                        return `${mm} ${dd}, ${yyyy}`;
+                                        const day = d.getDate();
+                                        const monthName = months[d.getMonth()];
+                                        const year = d.getFullYear();
+                                        return `${monthName} ${day}, ${year}`;
                                     }
-                                } catch(e) {}
+                                } catch (e) {
+                                    // fallthrough to ISO-like parsing
+                                }
                                 // try ISO-like YYYY-MM-DD
                                 const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
                                 if (m) {
                                     const yyyy = m[1];
-                                    const mmIdx = parseInt(m[2],10) - 1;
-                                    const dd = parseInt(m[3],10);
+                                    const mmIdx = parseInt(m[2], 10) - 1;
+                                    const dd = parseInt(m[3], 10);
                                     const mm = months[mmIdx] || m[2];
                                     return `${mm} ${dd}, ${yyyy}`;
                                 }
-                                return String(raw).slice(0,10);
+                                // fallback: return up to first 15 chars to avoid overly long strings
+                                return String(raw).slice(0, 15);
                             };
                         </script>
 
