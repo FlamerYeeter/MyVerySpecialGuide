@@ -156,7 +156,7 @@
   <button
     type="button"
     id="createAccountBtn"
-    class="w-full sm:w-[530px] bg-[#2E2EFF] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-blue-700 transition-all duration-200"
+    class="w-full sm:w-[530px] bg-[#2E2EFF] hover:bg-blue-600 text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm transition-all duration-300"
   >
     Create Account
   </button>
@@ -179,6 +179,14 @@
       <h3 class="text-2xl font-bold mb-2">Account<br/>Successfully Created!</h3>
       <p class="text-gray-700 mb-6">Congratulations! Click OK to proceed to login.</p>
       <button id="createdModalOk" class="bg-[#2E2EFF] hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-md transition-all duration-200">Okay</button>
+    </div>
+  </div>
+
+  <!-- Creating Loading Modal -->
+  <div id="creatingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
+      <div class="border-4 border-blue-500 border-t-transparent rounded-full w-14 h-14 animate-spin mb-4"></div>
+      <p class="text-gray-800 font-medium">Creating account, please wait...</p>
     </div>
   </div>
 
@@ -268,12 +276,14 @@
   function toggleCreateButton() {
     if (agree1.checked && agree2.checked) {
       createBtn.disabled = false;
-      createBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-      createBtn.classList.add('bg-[#1E40AF]', 'hover:bg-[#1E88E5]');
+      // remove any disabled/previous background or hover classes that may conflict
+      createBtn.classList.remove('bg-gray-400', 'cursor-not-allowed', 'bg-[#2E2EFF]', 'hover:bg-blue-600');
+      createBtn.classList.add('bg-[#2E2EFF]', 'hover:bg-blue-600');
     } else {
       createBtn.disabled = true;
+      // make visually disabled and remove active styles
       createBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-      createBtn.classList.remove('bg-[#1E40AF]', 'hover:bg-[#1E88E5]');
+      createBtn.classList.remove('bg-[#2E2EFF]', 'hover:bg-blue-600');
     }
   }
 
@@ -337,7 +347,9 @@
       console.groupEnd();
     } catch(e){ console.warn('could not summarize payload', e); }
 
-    // show loading here (optional)
+    // show loading modal
+    const creatingModal = document.getElementById('creatingModal');
+    try { if (creatingModal) creatingModal.classList.remove('hidden'); } catch(e){}
 
     fetch('db/registration-data.php', {
       method: 'POST',
@@ -357,17 +369,20 @@
       console.groupEnd();
 
       if (response.status === 200) {
-        // Success
+        // Success — hide creating modal then show success
+        try { if (creatingModal) creatingModal.classList.add('hidden'); } catch(e){}
         try { successModal.classList.remove('hidden'); } catch(e){}
         return;
       }
 
       // Non-200: report full details to console and alert user to check DevTools
       console.error('[registration] failed — status', response.status, 'body:', text);
+      try { if (creatingModal) creatingModal.classList.add('hidden'); } catch(e){}
       try { alert('Invalid Data. Please try again later. See console (DevTools) for details.'); } catch(e){}
     })
     .catch(err => {
       console.error('[registration] fetch error', err);
+      try { if (creatingModal) creatingModal.classList.add('hidden'); } catch(e){}
       try { alert('Network error — see console (DevTools) for details.'); } catch(e){}
     });
 

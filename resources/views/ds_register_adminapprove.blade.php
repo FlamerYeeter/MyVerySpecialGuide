@@ -423,6 +423,7 @@
                                 <input id="showCreatePassword" type="checkbox" class="h-4 w-4" />
                                 <span>Show password</span>
                             </label>
+                            <div id="passwordSuccess" class="mt-1 text-sm text-green-600 hidden">✅ Strong password. Ready to go!</div>
                     </div>
                 </div>
                  
@@ -679,6 +680,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
     } catch(e) { console.warn('showPassword init failed', e); }
+    // password strength hint
+    try {
+        const pwd = document.getElementById('password');
+        const pwdMsg = document.getElementById('passwordMessage');
+        const pwdSuccess = document.getElementById('passwordSuccess');
+        if (pwd) {
+            const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            pwd.addEventListener('input', function(e){
+                try {
+                    const val = String(e.target.value || '');
+                    if (re.test(val)) {
+                        if (pwdSuccess) pwdSuccess.classList.remove('hidden');
+                        if (pwdMsg) pwdMsg.classList.add('hidden');
+                    } else {
+                        if (pwdSuccess) pwdSuccess.classList.add('hidden');
+                        // show rule message only when there's input
+                        if (pwdMsg) {
+                            if (val.trim().length) pwdMsg.classList.remove('hidden'); else pwdMsg.classList.add('hidden');
+                        }
+                    }
+                } catch(e) {}
+            });
+        }
+    } catch(e) { console.warn('password hint init failed', e); }
 });
 
 // Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
