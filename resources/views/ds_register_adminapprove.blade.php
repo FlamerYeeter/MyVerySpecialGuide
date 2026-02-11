@@ -790,7 +790,7 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
         if (detectedType === 'membership_proof' && (typeof aiData.is_membership !== 'undefined')) {
             const disp = document.getElementById('proofDisplay');
             if (disp) {
-                disp.innerHTML = `<div class="mt-2 text-sm text-green-700">Membership detected: ${aiData.is_membership ? 'Yes' : 'No'}${aiData.member_name ? ' — ' + aiData.member_name : ''}</div>`;
+                disp.innerHTML = `<div class="mt-2 text-sm text-green-700">Membership Detected: ${aiData.is_membership ? 'Yes' : 'No'}${aiData.member_name ? ' — ' + aiData.member_name : ''}</div>`;
             }
         }
 
@@ -800,8 +800,8 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             if (pd) {
                 const txt = String(aiData.type_of_disability || '');
                 const prev = pd.querySelector('.ocr-summary');
-                if (prev) prev.textContent = `Detected disability: ${txt}`;
-                else pd.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected disability: ${txt}</div>`);
+                if (prev) prev.textContent = `Detected Disability: ${txt}`;
+                else pd.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected Disability: ${txt}</div>`);
             }
         }
 
@@ -813,8 +813,8 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
                 let raw = aiData.date || '';
                 let txt = (window.formatDateWords ? window.formatDateWords(raw) : String(raw).slice(0,10));
                 const prev = md.querySelector('.ocr-summary');
-                if (prev) prev.textContent = `Detected medical date: ${txt}`;
-                else md.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected medical date: ${txt}</div>`);
+                if (prev) prev.textContent = `Detected Medical Date: ${txt}`;
+                else md.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected Medical Date: ${txt}</div>`);
             }
         }
 

@@ -1923,7 +1923,9 @@
                                                 // optionally show a small confirmation under proofInfo
                                                 try {
                                                     const prev = proofInfo.querySelector('.ocr-summary');
-                                                    const txt = `Detected: ${ai.cert_name || '(name)'} — ${ai.issued_by || ai.issuer || '(issuer)'} ${ai.date_completed ? '('+ (new Date(ai.date_completed)).toISOString().slice(0,10) +')' : ''}`;
+                                                    const detectedDate = ai.date_completed || ai.date || '';
+                                                    const formattedDetectedDate = window.formatDateWords ? window.formatDateWords(detectedDate) : (detectedDate ? String(detectedDate).slice(0,10) : '');
+                                                    const txt = `Detected: ${ai.cert_name || '(name)'} — ${ai.issued_by || ai.issuer || '(issuer)'}${formattedDetectedDate ? ' ('+ formattedDetectedDate +')' : ''}`;
                                                     if (prev) prev.textContent = txt; else proofInfo.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">${txt}</div>`);
                                                 } catch(e){}
 
