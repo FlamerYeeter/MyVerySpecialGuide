@@ -46,6 +46,29 @@
         .tts-btn.speaking { transform: scale(1.04); box-shadow: 0 8px 24px rgba(30,64,175,0.12); }
 
         /* no global floating preview; use small per-field preview containers */
+
+        /* Review2: make certificate text-only details match education page styling */
+        .cert-details {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 0.75rem 0.9rem;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        }
+        .cert-details .title {
+            font-weight: 600;
+            color: #1f2937; /* gray-800 */
+            margin-bottom: 0.25rem;
+        }
+        .cert-details .meta {
+            color: #4b5563; /* gray-600 */
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        .cert-no-file {
+            color: #6b7280; /* gray-500 */
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -2410,6 +2433,55 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+            // If there are no uploaded files but certificate text entries exist, render text-only entries
+            try {
+                // read certificate text entries from multiple possible keys (education writes to education_certificates)
+                function readCertTextArray() {
+                    try {
+                        const tryKeys = ['certificates','education_certificates'];
+                        for (const k of tryKeys) {
+                            const v = localStorage.getItem(k);
+                            if (v) {
+                                try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch(e) {}
+                            }
+                        }
+                        const ep = localStorage.getItem('education_profile');
+                        if (ep) {
+                            try { const parsed = JSON.parse(ep); if (parsed && Array.isArray(parsed.certificates)) return parsed.certificates; } catch(e) {}
+                        }
+                    } catch(e){}
+                    return null;
+                }
+                const certsFallbackArr = readCertTextArray();
+                if ((!Array.isArray(saved.list) || saved.list.length === 0) && Array.isArray(certsFallbackArr) && certsFallbackArr.length) {
+                    if (noEl) noEl.style.display = 'none';
+                    listEl.innerHTML = '';
+                    const esc = s => (s===null||s===undefined)?'':String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    const fmt = function(raw){ try { const d=new Date(String(raw)); if (!isNaN(d.getTime())) return d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}); } catch(e){} return String(raw||''); };
+                    certsFallbackArr.forEach((cert, idx) => {
+                        const card = document.createElement('div');
+                        card.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+                        card.setAttribute('data-idx', idx);
+                        card.innerHTML = `<span class="text-2xl">📁</span><div class="flex-1"></div>`;
+                        const details = document.createElement('div');
+                        details.className = 'cert-details';
+                        const cname = cert.certificate_name || cert.certificateName || cert.name || '';
+                        const issuer = cert.issued_by || cert.issuedBy || cert.issuer || '';
+                        const date = cert.date_completed || cert.dateCompleted || cert.completed || '';
+                        const desc = cert.training_description || cert.trainingDescription || '';
+                        details.innerHTML = `
+                            <div class="title">${esc(cname) || '<span class="text-gray-400">(no name)</span>'}</div>
+                            <div class="meta">${issuer ? '<strong>Issued By:</strong> ' + esc(issuer) : ''}</div>
+                            <div class="meta mt-1">${date ? '<strong>Date Completed:</strong> ' + esc(fmt(date)) : ''}</div>
+                            ${desc ? '<div class="meta mt-2"> <strong>What I learned:</strong> ' + esc(desc) + '</div>' : ''}
+                        `;
+                        card.appendChild(details);
+                        listEl.appendChild(card);
+                    });
+                    return;
+                }
+            } catch(e) { console.debug('render text-only certs fallback failed', e); }
+
         // render stacked list into certsList (preserve certsEdit and other controls)
         if (Array.isArray(saved.list) && saved.list.length) {
             if (noEl) noEl.style.display = 'none';
@@ -2419,6 +2491,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 listEl.innerHTML = '';
                 // move children from wrapper into listEl (keeps event observers scoped)
                 Array.from(wrapper.children).forEach(ch => listEl.appendChild(ch));
+
+                // Also render any certificate text-only entries (those saved in 'certificates' but without an uploaded file)
+                try {
+                    const certsArr = (function(){
+                        try {
+                            const tryKeys = ['certificates','education_certificates'];
+                            for (const k of tryKeys) {
+                                const v = localStorage.getItem(k);
+                                if (v) { try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch(e) {} }
+                            }
+                            const ep = localStorage.getItem('education_profile');
+                            if (ep) { try { const parsed = JSON.parse(ep); if (parsed && Array.isArray(parsed.certificates)) return parsed.certificates; } catch(e) {} }
+                        } catch(e){}
+                        return null;
+                    })();
+                    // helper escaper/formatter
+                    const esc = s => (s===null||s===undefined)?'':String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    const fmt = function(raw){ try { const d=new Date(String(raw)); if (!isNaN(d.getTime())) return d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}); } catch(e){} return String(raw||''); };
+                    if (Array.isArray(certsArr) && certsArr.length) {
+                        // if there are more text entries than files, append text-only cards
+                        if (certsArr.length > saved.list.length) {
+                            for (let i = saved.list.length; i < certsArr.length; i++) {
+                                const noFileCard = document.createElement('div');
+                                noFileCard.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+                                noFileCard.setAttribute('data-idx', i);
+                                noFileCard.innerHTML = `<span class="text-2xl">📁</span><span class="text-sm text-gray-700">No uploaded file</span><div class="ml-auto flex gap-2"></div>`;
+                                listEl.appendChild(noFileCard);
+                            }
+                        }
+
+                        // attach details to all cards (file-backed or text-only) by index
+                        Array.from(listEl.children).forEach((card, idx) => {
+                            const cert = certsArr[idx] || null;
+                            if (!cert) return;
+                            const cname = cert.certificate_name || cert.certificateName || cert.name || '';
+                            const issuer = cert.issued_by || cert.issuedBy || cert.issuer || '';
+                            const date = cert.date_completed || cert.dateCompleted || cert.completed || '';
+                            const desc = cert.training_description || cert.trainingDescription || cert.training_description || '';
+                            const details = document.createElement('div');
+                            details.className = 'cert-details';
+                            details.innerHTML = `
+                                <div class="font-semibold text-gray-800">${esc(cname) || '<span class="text-gray-400">(no name)</span>'}</div>
+                                <div class="text-sm text-gray-600">${issuer ? '<strong>Issued By:</strong> ' + esc(issuer) : ''}</div>
+                                <div class="text-sm text-gray-600 mt-1">${date ? '<strong>Date Completed:</strong> ' + esc(fmt(date)) : ''}</div>
+                                ${desc ? '<div class="text-sm text-gray-700 mt-2"><strong>What I learned:</strong> ' + esc(desc) + '</div>' : ''}
+                            `;
+                            card.appendChild(details);
+                        });
+                    }
+                } catch(e){ console.debug('attach cert text failed', e); }
 
                 // bind view/remove on the newly-inserted nodes
                 listEl.querySelectorAll('[data-action="view"]').forEach(btn => {
