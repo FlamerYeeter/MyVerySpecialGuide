@@ -395,7 +395,7 @@
             </div>  -->
 
             <!-- top-level typed start year removed per UX request — per-job start_year remains editable -->
-
+{{-- 
             <!-- Upload Work Exp Certificate -->
                     <div class="mt-8 text-left px-2 sm:px-4">
                         <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
@@ -528,7 +528,7 @@
                             // init existing
                                     try{ const saved = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]; if(saved && saved.length) renderDisplayFromList(saved); }catch(e){}
                         })();
-                        </script>
+                        </script> --}}
 
             <!-- Experiences Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
@@ -552,7 +552,7 @@
                                     Title</label>
                                 <input id="job_title" name="job_title"
                                     class="job_title w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="e.g. Kitchen Helper" readonly/>
+                                    placeholder="e.g. Kitchen Helper"/>
                             </div>
 
                             <!-- Company Name -->
@@ -561,7 +561,7 @@
                                     class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Company Name</label>
                                 <input id="company_name" name="company_name"
                                     class="company_name w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="e.g., McDonald's or University of Makati" readonly/>
+                                    placeholder="e.g., McDonald's or University of Makati"/>
                             </div>
 
                             <!-- Work Year -->
@@ -574,31 +574,36 @@
                                     class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" readonly/>
                             </div>
 
-                            <!-- Job Description 
+                            <!-- Job Description  -->
                             <div class="sm:col-span-2 flex flex-col">
                                 <label for="job_description"
                                     class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job Description</label>
                                 <textarea id="job_description" name="job_description"
                                     class="job_description w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="What you did (e.g. cleaned tables, organized shelves)" readonly>
+                                    placeholder="What you did (e.g. cleaned tables, organized shelves)">
                          </textarea>
-                            </div>-->
+                            </div>
                         </div>
                     </div>
                 </template>
 
-                <!-- ADD for the backend+ When the user selects a work year (e.g. “1–2 years”), that choice should be copied
-                    to the first Job Experience entry automatically. -->
-                <!-- When the user adds another Job Experience, the selected work year should still be remembered
-                    and included (renewed) in the newly added section. -->
-
+                <!-- Add Another Work Exp Button  -->
+                <div class="mt-4 text-center">
+                    <button id="addJobBtn" type="button"
+                        class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Another Work Experience
+                    </button>
+                </div>
 
                 <input id="work_experiences" type="hidden" value="[]" />
                 <input id="work_years" type="hidden" value="" />
 
-                <!-- Add Another Work Exp Button removed (no longer needed) -->
                 <!-- Next Button -->
-                <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
+                <div class="flex flex-col items-center justify-center mt-6 mb-6 space-y-3 px-2">
                     <div id="workExpError" class="text-red-600 text-sm text-center"></div>
                     <button id="workExpNext" type="button"
                         class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
