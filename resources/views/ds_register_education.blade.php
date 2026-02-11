@@ -419,7 +419,9 @@
                                         </label>
                                         <input type="date" name="date_completed"
                                             class="date_completed w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" readonly/>
-                                        <div class="date-completed-display text-sm text-gray-700 mt-1 hidden"></div>
+                                        <input type="text" tabindex="-1" aria-hidden="true"
+                                            class="date-completed-display w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-700 focus:ring-0 focus:outline-none bg-white mt-1 hidden"
+                                            readonly />
                                         <p class="italic text-xs text-gray-500 mt-1">(Petsa kung kailan natapos)</p>
                                     </div>
 
@@ -1910,7 +1912,7 @@
                                                     try {
                                                         const displayEl = targetNode.querySelector('.date-completed-display');
                                                         const formatted = window.formatDateWords ? window.formatDateWords(raw || dateCompletedEl.value) : String(dateCompletedEl.value).slice(0,10);
-                                                        if (displayEl) { displayEl.textContent = formatted; displayEl.classList.remove('hidden'); }
+                                                        if (displayEl) { displayEl.value = formatted; displayEl.classList.remove('hidden'); }
                                                     } catch(e) {}
                                                 }
 
@@ -1981,10 +1983,10 @@
                     node.querySelector('input[name="issued_by"]').value = item.issued_by || '';
                     node.querySelector('input[name="date_completed"]').value = item.date_completed || '';
                     // set readable display for date completed
-                    try {
+                        try {
                         const disp = node.querySelector('.date-completed-display');
                         if (disp && item.date_completed) {
-                            disp.textContent = (window.formatDateWords ? window.formatDateWords(item.date_completed) : String(item.date_completed).slice(0,10));
+                            disp.value = (window.formatDateWords ? window.formatDateWords(item.date_completed) : String(item.date_completed).slice(0,10));
                             disp.classList.remove('hidden');
                         }
                     } catch(e) {}
