@@ -416,11 +416,13 @@
                                     pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
                                     title="Password must have at least 1 uppercase letter, 1 lowercase letter, 1 number, and be 8+ characters long."
                                     class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
-                            <label for="togglePassword" class="text-sm text-gray-700 cursor-pointer leading-snug">
-                                 <p id="passwordMessage" 
-                                class="mt-1 text-sm text-red-500 italic hidden">
+                            <p id="passwordMessage" class="mt-1 text-sm text-red-500 italic hidden">
                                 Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
-                                </p>
+                            </p>
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-2">
+                                <input id="showCreatePassword" type="checkbox" class="h-4 w-4" />
+                                <span>Show password</span>
+                            </label>
                     </div>
                 </div>
                  
@@ -473,6 +475,10 @@
                     <input id="confirmPassword" name="confirmPassword" type="password"
                         placeholder="Re-enter your password"
                         class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+                    <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-2">
+                        <input id="showConfirmPassword" type="checkbox" class="h-4 w-4" />
+                        <span>Show password</span>
+                    </label>
                 </div>
                   <p id="confirmMessage" class="mt-1 text-sm text-red-500 italic hidden">
                     Passwords do not match.
@@ -657,6 +663,22 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
     setupUpload('pwdidFile', 'pwdidDisplay', 'pwdidLabel', 'pwdidHint');
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
+    try {
+        const createToggle = document.getElementById('showCreatePassword');
+        if (createToggle) {
+            createToggle.addEventListener('change', function(e){
+                const show = !!e.target.checked;
+                try { const el = document.getElementById('password'); if (el) el.type = show ? 'text' : 'password'; } catch(e){}
+            });
+        }
+        const confirmToggle = document.getElementById('showConfirmPassword');
+        if (confirmToggle) {
+            confirmToggle.addEventListener('change', function(e){
+                const show = !!e.target.checked;
+                try { const el = document.getElementById('confirmPassword'); if (el) el.type = show ? 'text' : 'password'; } catch(e){}
+            });
+        }
+    } catch(e) { console.warn('showPassword init failed', e); }
 });
 
 // Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
@@ -1110,12 +1132,93 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     const aiData = result.data?.ai_data || {};
 
                     if (detectedType === 'pwd_id' && ocrtype === 'pwd_id') {
-                        // autofill basic fields from PWD ID
+                        // Validate detected disability against selected form values.
+                        let pwdDisplayEl = document.getElementById('pwdidDisplay');
+                        let errorBox = null;
+                        if (pwdDisplayEl) {
+                            errorBox = pwdDisplayEl.querySelector('.ocr-error');
+                            if (!errorBox) {
+                                errorBox = document.createElement('div');
+                                errorBox.className = 'ocr-error mt-2 text-sm text-red-600';
+                                pwdDisplayEl.appendChild(errorBox);
+                            }
+                        } else {
+                            errorBox = { textContent: '' };
+                        }
+
+                        const detectedDisability = String(aiData.type_of_disability || aiData.disability || aiData.type || '').trim();
+
+                        // determine selected disability from form
+                        const dsSelectEl = document.getElementById('dsType');
+                        const cddSelectEl = document.getElementById('cddType');
+                        const cddOtherEl = document.getElementById('cddTypeOther');
+
+                        const selectedDs = dsSelectEl && dsSelectEl.value ? String(dsSelectEl.value).trim() : '';
+                        const selectedCdd = cddSelectEl && cddSelectEl.value ? String(cddSelectEl.value).trim() : '';
+                        const selectedCddOther = cddOtherEl && cddOtherEl.value ? String(cddOtherEl.value).trim() : '';
+
+                        function normalize(s){ return String(s||'').toLowerCase(); }
+                        function matchesSelected(det) {
+                            if (!det) return false;
+                            const d = normalize(det);
+                            // check Down Syndrome keywords first
+                            const dsKeywords = ['trisomy','trisomy 21','down syndrome','downs','mosaic','translocation'];
+                            if (selectedDs) {
+                                const sd = normalize(selectedDs);
+                                // if user selected any dsType, ensure AI mentions DS keywords
+                                if (dsKeywords.some(k => d.includes(k) || sd.includes(k))) return true;
+                                // also allow if selectedDs contains 'down' and detected mentions 'down'
+                                if (sd.includes('down') && d.includes('down')) return true;
+                                return false;
+                            }
+                            if (selectedCdd && selectedCdd.toLowerCase() !== 'others') {
+                                const sc = normalize(selectedCdd);
+                                if (d.includes(sc) || sc.includes(d)) return true;
+                                // token-based match
+                                const toks = sc.split(/\W+/).filter(Boolean);
+                                if (toks.some(t => d.includes(t))) return true;
+                                return false;
+                            }
+                            if (selectedCddOther) {
+                                const sc = normalize(selectedCddOther);
+                                if (d.includes(sc) || sc.includes(d)) return true;
+                                return false;
+                            }
+                            // If no selection to compare to, accept if AI provided a disability string
+                            return !!detectedDisability;
+                        }
+
+                        const isMatch = matchesSelected(detectedDisability);
+
+                        if (!isMatch) {
+                            // invalid PWD ID for current selection — craft a helpful message
+                            let msg;
+                            if (!detectedDisability) {
+                                msg = 'No disability detected in the uploaded PWD ID. Please upload a valid PWD ID that shows the disability type.';
+                            } else {
+                                msg = `Detected disability "${detectedDisability}" does not match the selected disability. Please upload a valid PWD ID or update the selected disability.`;
+                            }
+
+                            if (errorBox) errorBox.textContent = msg;
+                            // cleanup stored upload keys
+                            try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                            // remove displayed preview
+                            try { resetDisplay(); } catch(e){}
+                            // remove loading indicator
+                            const loading = document.getElementById(`ocr-loading-${inputId}`);
+                            if (loading) loading.remove();
+                            alert(msg);
+                            isProcessing = false;
+                            return;
+                        }
+
+                        // If match, autofill and persist
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
                         // Remove loading indicator
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
+                        if (pwdDisplayEl && pwdDisplayEl.querySelector('.ocr-error')) pwdDisplayEl.querySelector('.ocr-error').textContent = '';
                         alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
                         // Use medDisplay as the error container (create a child .ocr-error if missing)
