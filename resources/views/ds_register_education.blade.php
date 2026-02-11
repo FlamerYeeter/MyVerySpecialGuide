@@ -39,13 +39,41 @@
             /* light blue */
         }
 
-        .tts-btn.speaking {
-            background-color: #2563eb !important;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
-            transform: scale(1.03);
-        }
-    </style>
-    </style>
+                .tts-btn.speaking {
+                        background-color: #2563eb !important;
+                        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+                        transform: scale(1.03);
+                }
+
+                /* OCR Loading Spinner */
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                .ocr-spinner {
+                    border: 4px solid #e5e7eb;
+                    border-top: 4px solid #2E2EFF;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    animation: spin 1s linear infinite;
+                }
+                .ocr-loading-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 12px;
+                    background-color: #f0f4ff;
+                    border: 1px solid #2E2EFF;
+                    border-radius: 8px;
+                    margin-top: 12px;
+                }
+                .ocr-loading-text {
+                    font-size: 14px;
+                    color: #1e40af;
+                    font-weight: 500;
+                }
+        </style>
 </head>
 
 <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
@@ -1793,12 +1821,25 @@
                                 ocr_type: type
                             };
 
+                            // Create and show loading indicator
+                            const loadingId = `ocr-loading-${Date.now()}`;
+                            const loadingDiv = document.createElement('div');
+                            loadingDiv.className = 'ocr-loading-container';
+                            loadingDiv.id = loadingId;
+                            loadingDiv.innerHTML = `
+                                <div class="ocr-spinner"></div>
+                                <span class="ocr-loading-text">Processing OCR... Please wait</span>
+                            `;
+                            try { if (proofInfo) proofInfo.appendChild(loadingDiv); else if (targetNode) targetNode.appendChild(loadingDiv); } catch(e){}
+
                             fetch('db/ocr-validation.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(datas)
                             })
                             .then(response => {
+                                // remove loading early so UI is responsive even if parsing fails
+                                try{ const ld = document.getElementById(loadingId); if(ld) ld.remove(); }catch(e){}
                                 // Always try to parse JSON, even on errors
                                 return response.json().then(jsonData => ({
                                     ok: response.ok,
@@ -1810,19 +1851,61 @@
                                 if (res.ok) {
                                     debugger;
                                     console.log('OCR Result:', res.body);
-                                    if (res.body.data.ocrtype == 'certificate_proof') {
-                                        alert('Cert Name: ' + res.body.data.ai_data.cert_name + ' Issued By: ' + res.body.data.ai_data.issued_by + ' Date Completed: ' + res.body.data.ai_data.date_completed + ' OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
-                                    }
-                                    else {
-                                        alert('OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
-                                    }
-                                
+                                    try {
+                                        const detected = res.body.data && res.body.data.ocrtype;
+                                        const ai = res.body.data && res.body.data.ai_data ? res.body.data.ai_data : {};
+                                        if (detected === 'certificate_proof') {
+                                            // Autofill inputs within this certificate entry (targetNode)
+                                            try {
+                                                const certNameEl = targetNode.querySelector('input[name="certificate_name"]');
+                                                const issuedByEl = targetNode.querySelector('input[name="issued_by"]');
+                                                const dateCompletedEl = targetNode.querySelector('input[name="date_completed"]');
+
+                                                if (certNameEl && ai.cert_name) certNameEl.value = ai.cert_name;
+                                                if (issuedByEl && (ai.issued_by || ai.issuer)) issuedByEl.value = ai.issued_by || ai.issuer || '';
+                                                if (dateCompletedEl && (ai.date_completed || ai.date)) {
+                                                    // try to parse to yyyy-mm-dd
+                                                    let raw = ai.date_completed || ai.date;
+                                                    try {
+                                                        const d = new Date(raw);
+                                                        if (!Number.isNaN(d.getTime())) {
+                                                            const yyyy = d.getFullYear();
+                                                            const mm = String(d.getMonth()+1).padStart(2,'0');
+                                                            const dd = String(d.getDate()).padStart(2,'0');
+                                                            dateCompletedEl.value = `${yyyy}-${mm}-${dd}`;
+                                                        } else {
+                                                            dateCompletedEl.value = String(raw).slice(0,10);
+                                                        }
+                                                    } catch(e){ dateCompletedEl.value = String(raw).slice(0,10); }
+                                                }
+
+                                                // trigger input events so any listeners react
+                                                try { [certNameEl, issuedByEl, dateCompletedEl].forEach(el=>{ if(el){ el.dispatchEvent(new Event('input',{bubbles:true})); }}); } catch(e){}
+
+                                                // persist a lightweight summary for later
+                                                try { localStorage.setItem('education_ocr', JSON.stringify({ type: 'certificate_proof', data: ai })); } catch(e){}
+
+                                                // optionally show a small confirmation under proofInfo
+                                                try {
+                                                    const prev = proofInfo.querySelector('.ocr-summary');
+                                                    const txt = `Detected: ${ai.cert_name || '(name)'} — ${ai.issued_by || ai.issuer || '(issuer)'} ${ai.date_completed ? '('+ (new Date(ai.date_completed)).toISOString().slice(0,10) +')' : ''}`;
+                                                    if (prev) prev.textContent = txt; else proofInfo.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">${txt}</div>`);
+                                                } catch(e){}
+
+                                            } catch(e) { console.warn('Failed to autofill certificate fields', e); }
+                                        } else {
+                                            // other OCR types — show basic notification
+                                            alert('OCR Type: ' + detected + ' processed successfully.');
+                                        }
+                                    } catch(e) { console.warn('Processing OCR result failed', e); }
+
                                 } else {
                                     // ❌ Error
                                     alert(`Error ${res.status}: ${res.body.message || 'Unknown error'}`);
                                 }
                             })
                             .catch(err => {
+                                try{ const ld = document.getElementById(loadingId); if(ld) ld.remove(); }catch(e){}
                                 console.error('Fetch error:', err);
                                 alert('Failed to fetch OCR data.');
                             });  
