@@ -417,9 +417,9 @@
                                                 alt="Calendar icon" class="w-5 h-5" />
                                             Date Completed
                                         </label>
-                                        <input type="text" name="date_completed" 
-                                         class="date_completed w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-700 focus:ring-0 focus:outline-none bg-white mt-1"
-                                            placeholder="e.g. February 12, 2026" readonly />
+                                                     <input type="text" name="date_completed" 
+                                                      class="date-completed-display w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-700 focus:ring-0 focus:outline-none bg-white mt-1"
+                                                          placeholder="e.g. February 12, 2026" readonly />
                                         <p class="italic text-xs text-gray-500 mt-1">(Petsa kung kailan natapos)</p>
                                     </div>
 
