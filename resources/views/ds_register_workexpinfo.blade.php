@@ -395,9 +395,8 @@
             </div>  -->
 
             <!-- top-level typed start year removed per UX request — per-job start_year remains editable -->
-{{-- 
-            <!-- Upload Work Exp Certificate -->
-                    <div class="mt-8 text-left px-2 sm:px-4">
+        <!-- Upload Work Exp Certificate -->
+            <div class="mt-8 text-left px-2 sm:px-4">
                         <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
                             Please upload your Work Experience Certificate.
                             <button type="button"
@@ -528,7 +527,7 @@
                             // init existing
                                     try{ const saved = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]; if(saved && saved.length) renderDisplayFromList(saved); }catch(e){}
                         })();
-                        </script> --}}
+                        </script>
 
             <!-- Experiences Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
