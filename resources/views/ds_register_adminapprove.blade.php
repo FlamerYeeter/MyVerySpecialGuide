@@ -280,38 +280,51 @@
                 </p> 
             </div>
 
-            <!-- Dropdown + Others Input -->
-            <div class="w-full sm:w-60 sm:mt-[45px]">
-                <select id="cddType" name="cddType" required
-                    class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="" disabled selected>-- Select Type --</option>
-                    <option value="Congenital Heart Defects">Congenital Heart Defects</option>
-                    <option value="Hearing/Vision">Hearing/Vision</option>
-                    <option value="Thyroid issues">Thyroid issues</option>
-                    <option value="Low Muscle Tone (Hypotonia)">Low Muscle Tone (Hypotonia)</option>
-                    <option value="Others">Others:</option>
-                </select>
+                <!-- Checkbox group + Others Input -->
+            <div class="w-full sm:w-60 sm:mt-[10px]" id="cddType">
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2"><input type="checkbox" name="cddType[]" value="Congenital Heart Defects" class="cdd-checkbox"> Congenital Heart Defects</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="cddType[]" value="Hearing/Vision" class="cdd-checkbox"> Hearing/Vision</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="cddType[]" value="Thyroid issues" class="cdd-checkbox"> Thyroid issues</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="cddType[]" value="Low Muscle Tone (Hypotonia)" class="cdd-checkbox"> Low Muscle Tone (Hypotonia)</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="cddTypeOtherChk" name="cddType[]" value="Others" class="cdd-checkbox"> Others</label>
+                </div>
 
-                <!-- Input for "Others" -->
+                <!-- Input for "Others" (toggled when checkbox checked) -->
                 <input type="text" id="cddTypeOther" name="cddTypeOther" placeholder="Please specify"
                     class="w-full border border-gray-300 rounded-lg p-2 mt-2 hidden focus:ring-blue-500 focus:border-blue-500" />
+
+                <!-- hidden canonical value for legacy scripts -->
+                <input type="hidden" id="cddTypeHidden" name="cddTypeHidden" value="" />
             </div>
         </div>
 
         <script>
-            const dropdown = document.getElementById('cddType');
-            const otherInput = document.getElementById('cddTypeOther');
+            (function(){
+                const checkboxes = Array.from(document.querySelectorAll('#cddType input.cdd-checkbox'));
+                const otherChk = document.getElementById('cddTypeOtherChk');
+                const otherInput = document.getElementById('cddTypeOther');
+                const hidden = document.getElementById('cddTypeHidden');
 
-            dropdown.addEventListener('change', function() {
-                if (this.value === 'Others') {
-                    otherInput.classList.remove('hidden');
-                    otherInput.required = true; // Gawing required kapag pinili ang Others
-                } else {
-                    otherInput.classList.add('hidden');
-                    otherInput.required = false;
-                    otherInput.value = ''; // Clear input kapag iba ang pinili
+                function updateHidden() {
+                    const vals = checkboxes.filter(c=>c.checked).map(c=>String(c.value||'').trim()).filter(Boolean);
+                    hidden.value = vals.join(', ');
                 }
-            });
+
+                checkboxes.forEach(cb => {
+                    cb.addEventListener('change', function(){
+                        if (otherChk && otherChk.checked) {
+                            otherInput.classList.remove('hidden'); otherInput.required = true;
+                        } else {
+                            otherInput.classList.add('hidden'); otherInput.required = false; if(otherInput) otherInput.value='';
+                        }
+                        updateHidden();
+                    });
+                });
+
+                // ensure hidden sync on manual other input change too
+                if (otherInput) otherInput.addEventListener('input', updateHidden);
+            })();
         </script>
 
         </div>
@@ -788,7 +801,7 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             const dsKeywords = ['trisomy', 'trisomy 21', 'down syndrome', 'mosaic', 'translocation', 'downs'];
 
             const dsSelect = document.getElementById('dsType');
-            const cddSelect = document.getElementById('cddType');
+            const cddContainer = document.getElementById('cddType');
             const cddOther = document.getElementById('cddTypeOther');
 
             // if mentions DS, try to set dsType
@@ -811,21 +824,21 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
 
                 // if we matched to dsType, clear any cddOther
                 if (cddOther) { cddOther.classList.add('hidden'); cddOther.required = false; cddOther.value = ''; }
-            } else if (cddSelect) {
-                // try to match CDD options
+            } else if (cddContainer) {
+                // try to match CDD checkbox options
+                const boxes = Array.from(cddContainer.querySelectorAll('input[type="checkbox"][name="cddType[]"]'));
                 let matched = false;
-                for (let i = 0; i < cddSelect.options.length; i++) {
-                    const opt = cddSelect.options[i];
-                    if (!opt.value) continue;
-                    const ov = opt.value.toLowerCase();
-                    if (ov.includes(val) || val.includes(ov) || ov.split(/\W+/).some(tok => val.includes(tok))) {
-                        cddSelect.value = opt.value;
-                        matched = true;
-                        break;
-                    }
+                for (const b of boxes) {
+                    try{
+                        const ov = String(b.value||'').toLowerCase();
+                        if (!ov) continue;
+                        if (ov.includes(val) || val.includes(ov) || ov.split(/\W+/).some(tok => val.includes(tok))) {
+                            b.checked = true; matched = true; // keep searching to allow multiple matches
+                        }
+                    }catch(e){}
                 }
                 if (!matched && cddOther) {
-                    cddSelect.value = 'Others';
+                    const otherChk = document.getElementById('cddTypeOtherChk'); if (otherChk) otherChk.checked = true;
                     cddOther.classList.remove('hidden');
                     cddOther.required = true;
                     cddOther.value = rawVal;
@@ -1173,13 +1186,13 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
                         const detectedDisability = String(aiData.type_of_disability || aiData.disability || aiData.type || '').trim();
 
-                        // determine selected disability from form
+                        // determine selected disability from form (supports checkbox group)
                         const dsSelectEl = document.getElementById('dsType');
-                        const cddSelectEl = document.getElementById('cddType');
+                        const cddContainer = document.getElementById('cddType');
                         const cddOtherEl = document.getElementById('cddTypeOther');
 
                         const selectedDs = dsSelectEl && dsSelectEl.value ? String(dsSelectEl.value).trim() : '';
-                        const selectedCdd = cddSelectEl && cddSelectEl.value ? String(cddSelectEl.value).trim() : '';
+                        const selectedCddArr = cddContainer ? Array.from(cddContainer.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean) : [];
                         const selectedCddOther = cddOtherEl && cddOtherEl.value ? String(cddOtherEl.value).trim() : '';
 
                         function normalize(s){ return String(s||'').toLowerCase(); }
@@ -1192,21 +1205,29 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                                 const sd = normalize(selectedDs);
                                 // if user selected any dsType, ensure AI mentions DS keywords
                                 if (dsKeywords.some(k => d.includes(k) || sd.includes(k))) return true;
-                                // also allow if selectedDs contains 'down' and detected mentions 'down'
                                 if (sd.includes('down') && d.includes('down')) return true;
                                 return false;
                             }
-                            if (selectedCdd && selectedCdd.toLowerCase() !== 'others') {
-                                const sc = normalize(selectedCdd);
-                                if (d.includes(sc) || sc.includes(d)) return true;
-                                // token-based match
-                                const toks = sc.split(/\W+/).filter(Boolean);
-                                if (toks.some(t => d.includes(t))) return true;
+
+                            if (selectedCddArr && selectedCddArr.length) {
+                                // prefer explicit non-Others selections
+                                const nonOther = selectedCddArr.filter(x=>String(x||'').toLowerCase()!=='others');
+                                const candidates = nonOther.length ? nonOther : (selectedCddOther ? [selectedCddOther] : []);
+                                for(const scRaw of candidates){
+                                    const sc = normalize(scRaw);
+                                    if (!sc) continue;
+                                    if (d.includes(sc) || sc.includes(d)) return true;
+                                    const toks = sc.split(/\W+/).filter(Boolean);
+                                    if (toks.some(t => d.includes(t))) return true;
+                                }
                                 return false;
                             }
+
                             if (selectedCddOther) {
                                 const sc = normalize(selectedCddOther);
                                 if (d.includes(sc) || sc.includes(d)) return true;
+                                const toks2 = sc.split(/\W+/).filter(Boolean);
+                                if (toks2.some(t => d.includes(t))) return true;
                                 return false;
                             }
                             // If no selection to compare to, accept if AI provided a disability string
@@ -1652,30 +1673,56 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     }catch(e){}
                 }
 
-                // cddType (Congenital/Developmental Disability)
+                // cddType (Congenital/Developmental Disability) — supports multiple selections
                 try{
-                    const cdd = d.cddType || d.cdd_type || p.cddType || p.cdd_type || d.r_cddType1 || p.r_cddType1 || d.disability || p.disability || '';
-                    if(cdd){
-                        const selectCdd = document.getElementById('cddType');
-                        const otherCdd = document.getElementById('cddTypeOther');
-                        let matchedCdd = false;
-                        if(selectCdd){
-                            for(const opt of selectCdd.options){
-                                if(String(opt.value||'').toLowerCase()===String(cdd).toLowerCase() || String(opt.textContent||'').toLowerCase()===String(cdd).toLowerCase()){
-                                    selectCdd.value = opt.value; matchedCdd = true; break;
-                                }
+                    let cdd = d.cddType || d.cdd_type || p.cddType || p.cdd_type || d.r_cddType1 || p.r_cddType1 || d.disability || p.disability || '';
+                    const container = document.getElementById('cddType');
+                    const otherCdd = document.getElementById('cddTypeOther');
+                    const hidden = document.getElementById('cddTypeHidden');
+
+                    if(!container) { /* still mark applied if cdd exists */ if(cdd) applied = true; }
+
+                    // normalize incoming cdd into array of strings
+                    let items = [];
+                    if (Array.isArray(cdd)) items = cdd.map(x=>String(x||'').trim()).filter(Boolean);
+                    else if (typeof cdd === 'string') {
+                        // accept comma/semicolon separated values or plain single string
+                        items = cdd.split(/[;,|\n]+/).map(x=>String(x||'').trim()).filter(Boolean);
+                        if(items.length===0 && cdd.trim()) items = [cdd.trim()];
+                    } else if (cdd) items = [String(cdd)];
+
+                    // also consider explicit other-text
+                    const otherText = d.cddTypeOther || d.cdd_type_other || (p && (p.cddTypeOther || p.cdd_type_other)) || '';
+                    if (otherText && !items.includes(String(otherText).trim())) items.push(String(otherText).trim());
+
+                    if(items.length){
+                        // clear existing checks first
+                        const boxes = container ? Array.from(container.querySelectorAll('input[type="checkbox"][name="cddType[]"]')) : [];
+                        boxes.forEach(b=>{ b.checked = false; });
+
+                        const unmatched = [];
+                        items.forEach(val => {
+                            const low = String(val||'').toLowerCase();
+                            let matched = false;
+                            for(const b of boxes){
+                                try{
+                                    const bv = String(b.value||'').toLowerCase();
+                                    if(bv === low || bv.includes(low) || String(b.nextSibling && b.nextSibling.textContent||'').toLowerCase().includes(low)){
+                                        b.checked = true; matched = true; break;
+                                    }
+                                }catch(e){}
                             }
-                        }
-                        if(!matchedCdd && otherCdd){
-                            otherCdd.classList.remove('hidden'); otherCdd.required = true; otherCdd.value = String(cdd||'');
-                            if(selectCdd){ for(const opt of selectCdd.options){ if(String(opt.value||'').toLowerCase().includes('other')){ selectCdd.value = opt.value; break; } } }
-                        }
-                        // also populate explicit other-text field when present in the draft
-                        try{
-                            const otherText = d.cddTypeOther || d.cdd_type_other || (p && (p.cddTypeOther || p.cdd_type_other)) || '';
-                            if(otherText && otherCdd){ otherCdd.classList.remove('hidden'); otherCdd.value = String(otherText); otherCdd.required = true; }
-                        }catch(e){}
-                        if(matchedCdd){ try{ if(selectCdd) selectCdd.dispatchEvent(new Event('change',{bubbles:true})); }catch(e){} }
+                            if(!matched) unmatched.push(val);
+                        });
+
+                        // if there are unmatched items, populate Others
+                        if(unmatched.length && otherCdd){ otherCdd.classList.remove('hidden'); otherCdd.required = true; otherCdd.value = unmatched.join(', '); const chk = document.getElementById('cddTypeOtherChk'); if(chk) chk.checked = true; }
+
+                        // update hidden canonical value for legacy code
+                        if(hidden) hidden.value = items.join(', ');
+
+                        // trigger change handlers
+                        if(container){ container.dispatchEvent(new Event('change',{bubbles:true})); }
                         applied = true;
                     }
                 }catch(e){ console.warn('[adminapprove] applyDraft cddType failed', e); }
@@ -2209,10 +2256,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     // persist selected Down Syndrome type (if present) under multiple keys for compatibility
                     dsType: data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
                     // persist CDD (Congenital/Developmental Disability)
-                    cddType: data.cddType || (document.getElementById('cddType') ? document.getElementById('cddType').value : '') || '',
+                    cddType: data.cddType || (function(){ try{ const el=document.getElementById('cddType'); if(!el) return ''; const hidden=document.getElementById('cddTypeHidden'); if(hidden && hidden.value) return hidden.value; const vals = Array.from(el.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean); return vals.join(', '); }catch(e){return '';} })() || '',
                     // persist optional "Other" text when 'Others' is chosen
                     cddTypeOther: data.cddTypeOther || (document.getElementById('cddTypeOther') ? document.getElementById('cddTypeOther').value : '') || '',
-                    r_cddType1: data.r_cddType1 || data.cddType || (document.getElementById('cddType') ? document.getElementById('cddType').value : '') || '',
+                    r_cddType1: data.r_cddType1 || data.cddType || (function(){ try{ const el=document.getElementById('cddType'); if(!el) return ''; const hidden=document.getElementById('cddTypeHidden'); if(hidden && hidden.value) return hidden.value; const vals = Array.from(el.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean); return vals.join(', '); }catch(e){return '';} })() || '',
                     r_dsType1: data.r_dsType1 || data.r_dsType || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
                     r_dsType: data.r_dsType || data.r_dsType1 || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
                     guardian_first: data.guardian_first || data.guardianFirst || '',

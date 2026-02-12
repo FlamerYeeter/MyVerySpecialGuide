@@ -110,7 +110,22 @@ $address     = $user_info['address'] ?? null;
 $username    = $user_info['username'] ?? null;
 $password    = password_hash($user_info['password'] ?? 'temp123', PASSWORD_DEFAULT);
 $types_of_ds = $user_info['r_dsType1'] ?? null;
-$birthdate   = $user_info['birthdate'] ?? null;
+$birthdate_raw   = $user_info['birthdate'] ?? null;
+
+// Normalize and validate birthdate to 'YYYY-MM-DD' or null to avoid invalid TO_DATE calls
+$birthdate = null;
+if (!empty($birthdate_raw)) {
+    try {
+        // Take only first 10 chars in case time is included
+        $candidate = substr(trim((string)$birthdate_raw), 0, 10);
+        $dt = DateTime::createFromFormat('Y-m-d', $candidate);
+        if ($dt && $dt->format('Y-m-d') === $candidate) {
+            // Ensure year is not 0
+            $yr = intval($dt->format('Y'));
+            if ($yr !== 0) $birthdate = $dt->format('Y-m-d');
+        }
+    } catch (Exception $e) { $birthdate = null; }
+}
 
 // Congenital/Developmental Disability (CDD) - accept from nested rpi_personal or top-level keys
 $cdd_type = null;
@@ -121,6 +136,31 @@ $cdd_type = $user_info['r_cddType1'] ?? $user_info['r_cdd_type'] ?? $user_info['
 if (!$cdd_type) {
     $cdd_type = $data['r_cddType1'] ?? $data['r_cdd_type'] ?? $data['cddType'] ?? $data['cdd_type'] ?? $data['cddTypeOther'] ?? $data['cdd_type_other'] ?? $data['r_cddType1_other'] ?? null;
 }
+
+// Normalize CDD value to a string and ensure it fits the DB column size (VARCHAR2(50)).
+try {
+    if (is_array($cdd_type)) {
+        $cdd_type = implode(', ', $cdd_type);
+    }
+    $cdd_type = $cdd_type !== null ? trim((string)$cdd_type) : null;
+
+    // If value too long for DB column, truncate and record a debug trace
+    if ($cdd_type !== null && mb_strlen($cdd_type, 'UTF-8') > 50) {
+        $debugNote = [
+            'warning' => 'cdd_type_truncated',
+            'original_length' => mb_strlen($cdd_type, 'UTF-8'),
+            'max_length' => 50,
+            'original_value' => $cdd_type,
+            'received_at' => date('c')
+        ];
+        try {
+            $dbgFile = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_cdd_truncation.json';
+            @file_put_contents($dbgFile, json_encode($debugNote, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        } catch (Exception $e) { /* ignore logging failure */ }
+        // Truncate safely using multibyte substring
+        $cdd_type = mb_substr($cdd_type, 0, 50, 'UTF-8');
+    }
+} catch (Exception $e) { /* keep original behavior if anything unexpected happens */ }
 
 // Guardian
 $gf = $user_info['g_first_name'] ?? null;
@@ -205,7 +245,7 @@ INSERT INTO user_guardian (
     :username,
     :med_certificates,
     :pwd_id,
-    TO_DATE(:birthdate,'YYYY-MM-DD')
+    CASE WHEN :birthdate IS NULL OR TRIM(:birthdate) = '' THEN NULL ELSE TO_DATE(:birthdate,'YYYY-MM-DD') END
 )";
 
 $stid1 = oci_parse($conn, $sql1);
@@ -307,6 +347,43 @@ if ($allGood) {
         $c_name   = trim($ce['certificate_name'] ?? $ce['name'] ?? $ce['certificate'] ?? '');
         $c_issued = trim($ce['issued_by'] ?? $ce['issuer'] ?? '');
         $c_date   = trim($ce['date_completed'] ?? $ce['date'] ?? '');
+        // Normalize certificate date to 'YYYY-MM-DD' or NULL to avoid ORA-01841
+        $c_date_norm = null;
+        $extracted_year = null;
+        if ($c_date !== '') {
+            $candidate = substr(trim((string)$c_date), 0, 10);
+            $dt = DateTime::createFromFormat('Y-m-d', $candidate);
+            if ($dt && $dt->format('Y-m-d') === $candidate) {
+                $yr = intval($dt->format('Y'));
+                if ($yr !== 0) {
+                    $c_date_norm = $dt->format('Y-m-d');
+                    $extracted_year = $yr;
+                }
+            } else {
+                // attempt to extract a 4-digit year; do not invent full date to avoid incorrect DB inserts
+                if (preg_match('/(\d{4})/', $c_date, $m)) {
+                    $yr = intval($m[1]);
+                    if ($yr !== 0) {
+                        $extracted_year = $yr;
+                        // keep normalized date NULL to avoid inserting a guessed date
+                        $c_date_norm = null;
+                    }
+                }
+            }
+
+            // Write per-certificate debug info (append as JSON lines)
+            try {
+                $certDbg = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_certificate_years.json';
+                $dbgEntry = [
+                    'logged_at' => date('c'),
+                    'certificate_name' => $c_name,
+                    'original_date' => $c_date,
+                    'normalized_date' => $c_date_norm,
+                    'extracted_year' => $extracted_year
+                ];
+                @file_put_contents($certDbg, json_encode($dbgEntry, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . PHP_EOL, FILE_APPEND);
+            } catch (Exception $e) { /* ignore logging failure */ }
+        }
         $c_learn  = trim($ce['training_description'] ?? $ce['description'] ?? $ce['what_you_learned'] ?? '');
 
         // skip totally empty entries
@@ -324,7 +401,8 @@ if ($allGood) {
         oci_bind_by_name($stidc, ':gid',   $user_guardian_id);
         oci_bind_by_name($stidc, ':gname', $c_name);
         oci_bind_by_name($stidc, ':gissued', $c_issued);
-        oci_bind_by_name($stidc, ':gdate', $c_date);
+        // bind normalized date (or NULL) to avoid TO_DATE errors on malformed dates
+        oci_bind_by_name($stidc, ':gdate', $c_date_norm);
         oci_bind_by_name($stidc, ':glearn', $c_learn);
 
         if (!oci_execute($stidc, OCI_NO_AUTO_COMMIT)) {

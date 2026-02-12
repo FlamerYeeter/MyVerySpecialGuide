@@ -200,15 +200,11 @@
     <div>
         <label for="r_cddType1" class="font-semibold text-gray-800 text-sm sm:text-base">Congenital or Developmental Disability</label>
         <p class="text-gray-600 italic text-xs sm:text-sm">Pumili ng uri</p>
-        <select id="r_cddType1" disabled
-            class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500 bg-gray-50 text-gray-800">
-            <option value="" disabled selected>-- Select Type --</option>
-                    <option value="Congenital Heart Defects">Congenital Heart Defects</option>
-                    <option value="Hearing/Vision">Hearing/Vision</option>
-                    <option value="Thyroid issues">Thyroid issues</option>
-                    <option value="Low Muscle Tone (Hypotonia)">Low Muscle Tone (Hypotonia)</option>
-            <option value="Others">Others:</option>
-        </select>
+        <div id="r_cddType1" aria-disabled="true"
+            class="w-full border border-gray-300 rounded-lg p-3 bg-gray-50 text-gray-800 min-h-[52px]">
+            <!-- Rendered read-only list of selected CDD values (populated by scripts). -->
+            <div id="r_cddType1_list" class="flex flex-wrap gap-2"></div>
+        </div>
 
         <!-- Other — specify display: shown only when 'Others' is selected and populated from draft -->
         <div id="r_cddType1_other_wrapper" class="mt-2 hidden">
@@ -217,7 +213,45 @@
             <input id="r_cddType1_other_input" type="text" disabled
                 class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-800 hidden" placeholder="Please specify" />
         </div>
+
+        <!-- Edit-mode checkboxes (hidden in view mode) -->
+        <div id="r_cddType1_edit" class="mt-3 hidden">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <label class="inline-flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <input type="checkbox" value="Congenital Heart Defects" data-label="Congenital Heart Defects" class="mr-2" />
+                    <span class="text-gray-800">Congenital Heart Defects</span>
+                </label>
+                <label class="inline-flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <input type="checkbox" value="Hearing/Vision" data-label="Hearing/Vision" class="mr-2" />
+                    <span class="text-gray-800">Hearing/Vision</span>
+                </label>
+                <label class="inline-flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <input type="checkbox" value="Thyroid issues" data-label="Thyroid issues" class="mr-2" />
+                    <span class="text-gray-800">Thyroid issues</span>
+                </label>
+                <label class="inline-flex items-center p-2 rounded-md hover:bg-gray-50">
+                    <input type="checkbox" value="Low Muscle Tone (Hypotonia)" data-label="Low Muscle Tone (Hypotonia)" class="mr-2" />
+                    <span class="text-gray-800">Low Muscle Tone (Hypotonia)</span>
+                </label>
+            </div>
+            <div class="mt-3">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" value="Others" data-label="Others" id="r_cddType1_edit_others_chk" class="mr-2" />
+                    <span class="text-gray-800">Others</span>
+                </label>
+                <input id="r_cddType1_edit_other" type="text" class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 hidden" placeholder="Please specify" />
+            </div>
+        </div>
     </div>
+
+    <script>
+    (function(){
+        try{
+            const sel = document.getElementById('r_cddType1');
+            if(sel) sel.disabled = true;
+        }catch(e){}
+    })();
+    </script>
 
     <!-- Guardian Info -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -356,20 +390,73 @@ function setupEditSection(buttonId, sectionId) {
                 const sel = section.querySelector('#r_cddType1');
                 const otherInput = section.querySelector('#r_cddType1_other_input');
                 const otherP = section.querySelector('#r_cddType1_other');
-                if(otherInput){
-                    if(this.dataset.mode === 'editing'){
-                        // editing mode: show input when Others selected
-                        otherInput.disabled = false;
-                        // prefer populating from paragraph if present
-                        try{ if(otherP && (!otherInput.value || otherInput.value.trim()==='')) otherInput.value = otherP.textContent || ''; }catch(e){}
-                        if(sel && String(sel.value||'').toLowerCase().includes('other')){ otherP.classList.add('hidden'); otherInput.classList.remove('hidden'); } else { otherInput.classList.add('hidden'); if(otherP) otherP.classList.remove('hidden'); }
-                    } else {
-                        // view mode: hide input, show paragraph (copy value into paragraph)
-                        try{ if(otherP) otherP.textContent = (otherInput.value && otherInput.value.trim()) ? String(otherInput.value).trim() : (otherP.textContent || '(no details provided)'); }catch(e){}
-                        otherInput.disabled = true;
-                        otherInput.classList.add('hidden');
-                        if(otherP) otherP.classList.remove('hidden');
+                const editContainer = section.querySelector('#r_cddType1_edit');
+                const pillList = section.querySelector('#r_cddType1_list');
+
+                // Helper to escape HTML (uses existing global if present)
+                function _escapeHtml(s){ try{ if(window.escapeHtml) return window.escapeHtml(s); return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }catch(e){ return String(s||''); } }
+
+                if(this.dataset.mode === 'editing'){
+                    // Entering edit mode: show checkboxes, hide read-only pills
+                    if(sel) try{ sel.disabled = false; }catch(e){}
+                    if(editContainer){
+                        // Populate checkboxes from pill list (if any)
+                        const current = pillList ? Array.from(pillList.children).map(ch=> (ch.textContent||'').trim()) : [];
+                        Array.from(editContainer.querySelectorAll('input[type=checkbox]')).forEach(cb=>{
+                            const label = cb.dataset.label || cb.value || '';
+                            cb.checked = current.some(it=> String(it).toLowerCase() === String(label).toLowerCase());
+                        });
+
+                        // Wire Others checkbox -> show/hide other text input inside edit container
+                        const otherChk = editContainer.querySelector('#r_cddType1_edit_others_chk');
+                        const otherEditInput = editContainer.querySelector('#r_cddType1_edit_other');
+                        if(otherChk && otherEditInput){
+                            // set initial value from paragraph or hidden input
+                            try{ if((otherEditInput.value||'').trim()==='') otherEditInput.value = otherP ? (otherP.textContent||'') : (otherInput ? (otherInput.value||'') : ''); }catch(e){}
+                            otherEditInput.disabled = !otherChk.checked;
+                            if(otherChk.checked) otherEditInput.classList.remove('hidden'); else otherEditInput.classList.add('hidden');
+                            otherChk.addEventListener('change', function(){ if(this.checked){ otherEditInput.disabled = false; otherEditInput.classList.remove('hidden'); } else { otherEditInput.disabled = true; otherEditInput.classList.add('hidden'); } });
+                        }
+
+                        editContainer.classList.remove('hidden');
+                        if(pillList && pillList.parentElement) pillList.parentElement.classList.add('hidden');
                     }
+
+                    // Also enable the legacy other input so existing logic can interact if needed
+                    if(otherInput){ otherInput.disabled = false; try{ if(otherP && (!otherInput.value || otherInput.value.trim()==='')) otherInput.value = otherP.textContent || ''; }catch(e){} }
+
+                } else {
+                    // Leaving edit mode (saving): hide edit UI, render pill-list from checked boxes
+                    if(sel) try{ sel.disabled = true; }catch(e){}
+                    if(editContainer){
+                        const checked = Array.from(editContainer.querySelectorAll('input[type=checkbox]:checked')).map(cb=> cb.dataset.label || cb.value || '');
+                        if(pillList){
+                            if(checked.length){
+                                pillList.innerHTML = checked.map(v=> `<span class="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-3 py-1 text-sm text-gray-800 shadow-sm">${_escapeHtml(v)}</span>`).join('');
+                            } else {
+                                pillList.innerHTML = '<p class="text-gray-600 italic">No value selected.</p>';
+                            }
+                            if(pillList.parentElement) pillList.parentElement.classList.remove('hidden');
+                        }
+
+                        // Sync Other wrapper based on checked state
+                        const otherChk = editContainer.querySelector('#r_cddType1_edit_others_chk');
+                        const otherEditInput = editContainer.querySelector('#r_cddType1_edit_other');
+                        const otherWrapper = section.querySelector('#r_cddType1_other_wrapper');
+                        if(otherChk && otherWrapper){
+                            if(otherChk.checked){
+                                otherWrapper.classList.remove('hidden');
+                                try{ if(otherEditInput && otherEditInput.value && otherEditInput.value.trim()) otherP.textContent = otherEditInput.value.trim(); }catch(e){}
+                            } else {
+                                otherWrapper.classList.add('hidden');
+                            }
+                        }
+
+                        editContainer.classList.add('hidden');
+                    }
+
+                    // Disable legacy other input and copy saved value back to paragraph
+                    if(otherInput){ try{ if(otherP) otherP.textContent = (otherInput.value && otherInput.value.trim()) ? String(otherInput.value).trim() : (otherP.textContent || '(no details provided)'); }catch(e){} otherInput.disabled = true; otherInput.classList.add('hidden'); if(otherP) otherP.classList.remove('hidden'); }
                 }
             }
         }catch(e){}
@@ -1054,7 +1141,16 @@ setupEditSection("editAccountBtn", "accountSection");
                             try {
                                 if (typeof el.value !== 'undefined' && el.value !== null && String(el.value).trim() !== '') return String(el.value).trim();
                             } catch (e) {}
-                            try { return el.textContent ? el.textContent.trim() : ''; } catch (e) { return ''; }
+                            try {
+                                // If this element renders a list (e.g., r_cddType1 -> r_cddType1_list), return joined items
+                                try {
+                                    const listChild = document.getElementById(id + '_list');
+                                    if (listChild && listChild.children && listChild.children.length) {
+                                        return Array.from(listChild.children).map(c => (c.textContent||'').trim()).filter(Boolean).join(', ');
+                                    }
+                                } catch(_){}
+                                return el.textContent ? el.textContent.trim() : '';
+                            } catch (e) { return ''; }
                         };
 
                         // Personal fields
@@ -1187,7 +1283,32 @@ setupEditSection("editAccountBtn", "accountSection");
                 try{
                     if(!value) return false;
                     const el = document.getElementById(id);
-                    if(!el || el.tagName !== 'SELECT') return false;
+                    if(!el) return false;
+                    // If element is not a SELECT, render a read-only list (used for multi-value CDD)
+                    if(el.tagName !== 'SELECT'){
+                        try{
+                            const listContainer = document.getElementById(id + '_list') || el;
+                            // build items array from value (accept arrays or comma/semicolon separated strings)
+                            let items = [];
+                            if (Array.isArray(value)) items = value.map(x=>String(x||'').trim()).filter(Boolean);
+                            else if (typeof value === 'string') items = String(value).split(/[;,|\n]+/).map(s=>s.trim()).filter(Boolean);
+                            else items = [String(value||'')].filter(Boolean);
+
+                            // fallback: if nothing parsed but value present, use raw
+                            if(!items.length && value) items = [String(value)];
+
+                            // render pills
+                            listContainer.innerHTML = '';
+                            items.forEach(it => {
+                                const span = document.createElement('span');
+                                span.className = 'inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-3 py-1 text-sm text-gray-800 shadow-sm';
+                                span.textContent = it;
+                                listContainer.appendChild(span);
+                            });
+                            try{ (el || listContainer).dispatchEvent(new Event('change',{bubbles:true})); } catch(e){}
+                            return true;
+                        }catch(e){ return false; }
+                    }
 
                     const normalizeStr = s => String(s||'').toLowerCase().replace(/\(.*?\)/g,'').replace(/[\W_]+/g,' ').trim();
                     const wantRaw = String(value||'');
@@ -1685,6 +1806,7 @@ setupEditSection("editAccountBtn", "accountSection");
                                 const wrapper = document.getElementById('r_cddType1_other_wrapper');
                                 const pEl = document.getElementById('r_cddType1_other');
                                 const inputEl = document.getElementById('r_cddType1_other_input');
+                                const sel = document.getElementById('r_cddType1');
                                 if(wrapper && pEl){
                                     if(otherText && String(otherText).trim() !== ''){
                                         wrapper.classList.remove('hidden');
@@ -2156,6 +2278,32 @@ setupEditSection("editAccountBtn", "accountSection");
                         password: data.password || '',
                     };
 
+                    // Ensure we capture CDD selections from rendered pills or edit checkboxes
+                    try{
+                        // prefer explicit pill list if present
+                        const list = document.getElementById('r_cddType1_list');
+                        let cddVals = [];
+                        if(list && list.children && list.children.length){
+                            cddVals = Array.from(list.children).map(ch => (ch.textContent||'').trim()).filter(Boolean);
+                        } else {
+                            // fallback: read edit checkboxes if visible
+                            const edit = document.getElementById('r_cddType1_edit');
+                            if(edit){
+                                cddVals = Array.from(edit.querySelectorAll('input[type=checkbox]:checked')).map(cb=> (cb.dataset.label||cb.value||'').trim()).filter(Boolean);
+                            }
+                        }
+                        if(cddVals && cddVals.length){
+                            draft.cddType = cddVals.join(', ');
+                            draft.r_cddType1 = cddVals.join(', ');
+                        }
+                        // capture Other text from edit input or paragraph
+                        const otherEdit = document.getElementById('r_cddType1_edit_other');
+                        const otherP = document.getElementById('r_cddType1_other');
+                        const otherInput = document.getElementById('r_cddType1_other_input');
+                        const otherVal = (otherEdit && otherEdit.value) ? otherEdit.value.trim() : (otherInput && otherInput.value ? otherInput.value.trim() : (otherP && otherP.textContent ? otherP.textContent.trim() : ''));
+                        if(otherVal) draft.cddTypeOther = otherVal;
+                    }catch(e){}
+
                     try {
                         localStorage.setItem('rpi_personal1', JSON.stringify(draft));
                     } catch (err) {
@@ -2263,22 +2411,35 @@ setupEditSection("editAccountBtn", "accountSection");
 
         function showCddOtherIfNeeded(){
             try{
-                const sel = document.getElementById('r_cddType1');
+                const container = document.getElementById('r_cddType1');
+                const list = document.getElementById('r_cddType1_list');
                 const wrapper = document.getElementById('r_cddType1_other_wrapper');
-            const textEl = document.getElementById('r_cddType1_other');
-            const inputEl = document.getElementById('r_cddType1_other_input');
-                if(!sel || !wrapper || !textEl) return;
-                const val = (sel.value || '').toString().toLowerCase().trim();
-                const isOther = val === 'others' || val.includes('other');
+                const textEl = document.getElementById('r_cddType1_other');
+                const inputEl = document.getElementById('r_cddType1_other_input');
+                if(!container || !wrapper || !textEl) return;
 
-                let otherText = '';
-                const d = readDraftCandidates();
-                if(d){
-                    otherText = d.cddTypeOther || d.cdd_type_other || (d.personal && (d.personal.cddTypeOther || d.personal.cdd_type || d.personal.cdd_type_other)) || '';
+                // Determine if 'Others' is among rendered items
+                let isOther = false;
+                if(list){
+                    const items = Array.from(list.children).map(c=>String(c.textContent||'').toLowerCase().trim());
+                    isOther = items.some(it => it === 'others' || it.includes('other'));
                 }
 
-                // Determine whether we're in edit mode (select enabled)
-                const editing = !sel.disabled;
+                // fallback: check draft candidates if rendered list is empty
+                if(!isOther){
+                    const d = readDraftCandidates();
+                    const raw = d && (d.cddType || d.cdd_type || d.r_cddType1 || (d.personal && (d.personal.cddType || d.personal.cdd_type))) || '';
+                    if(raw && String(raw).toLowerCase().includes('other')) isOther = true;
+                }
+
+                let otherText = '';
+                const d2 = readDraftCandidates();
+                if(d2){
+                    otherText = d2.cddTypeOther || d2.cdd_type_other || (d2.personal && (d2.personal.cddTypeOther || d2.personal.cdd_type || d2.personal.cdd_type_other)) || '';
+                }
+
+                // Determine whether we're in edit mode by checking the Other input's disabled state
+                const editing = !!(inputEl && !inputEl.disabled);
 
                 if(isOther){
                     wrapper.classList.remove('hidden');

@@ -314,32 +314,64 @@
     try { jobExperiences = JSON.parse(jobExperiencesRaw || '[]'); } catch(err){ jobExperiences = []; }
     const derivedYears = (Array.isArray(jobExperiences) ? jobExperiences.map(j => j.start_year || j.year || '').filter(Boolean) : []);
 
-    // Save data to backend
-    const data = {
-      education: localStorage.getItem('edu_level'),
-      job_experiences: localStorage.getItem('job_experiences'),
-      review_certs: localStorage.getItem('review_certs'),
-      rpi_personal: localStorage.getItem('rpi_personal1'),
-      school_name: localStorage.getItem('school_name'),
-      selected_work_experience: localStorage.getItem('selected_work_experience'),
-      selected_work_year: (localStorage.getItem('selected_work_year') ? localStorage.getItem('selected_work_year') : JSON.stringify(derivedYears)),
-      admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
-      admin_uploaded_pwd_data: localStorage.getItem('admin_uploaded_pwd_data'), 
-      workplace: localStorage.getItem('workplace'),
-      jobPreferences: localStorage.getItem('jobPreferences'),
-      skills1_selected: localStorage.getItem('skills1_selected'),
-      certificates: localStorage.getItem('certificates') || localStorage.getItem('education_certificates') || '[]'
-    };
+    // Save data to backend --- sanitize work-year values to avoid invalid years (e.g. 0) being sent
+    (function(){
+      // try to read saved selected_work_year (may be JSON string or CSV)
+      let savedYearsRaw = localStorage.getItem('selected_work_year') || localStorage.getItem('work_years') || null;
+      let savedYears = [];
+      if (savedYearsRaw) {
+        try { savedYears = JSON.parse(savedYearsRaw); }
+        catch(e) { savedYears = String(savedYearsRaw).split(/[;,\|\n]+/).map(s=>s.trim()).filter(Boolean); }
+      }
+      // fallback to derivedYears (from job experiences) if none
+      if ((!savedYears || !savedYears.length) && Array.isArray(derivedYears) && derivedYears.length) savedYears = derivedYears.slice();
+
+      // helper: extract first 4-digit year token
+      const extractYear = (v) => {
+        if (v === null || v === undefined) return null;
+        const s = String(v);
+        const m = s.match(/(\d{4})/);
+        if (m) {
+          const y = parseInt(m[1],10);
+          if (!Number.isNaN(y)) return y;
+        }
+        return null;
+      };
+
+      const nowYear = new Date().getFullYear();
+      const validYears = Array.from(new Set((savedYears||[]).map(extractYear).filter(y => typeof y === 'number' && y >= 1900 && y <= nowYear)));
+
+      // Build payload
+      const data = {
+        education: localStorage.getItem('edu_level'),
+        job_experiences: localStorage.getItem('job_experiences'),
+        review_certs: localStorage.getItem('review_certs'),
+        rpi_personal: localStorage.getItem('rpi_personal1'),
+        school_name: localStorage.getItem('school_name'),
+        selected_work_experience: localStorage.getItem('selected_work_experience'),
+        selected_work_year: JSON.stringify(validYears),
+        admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
+        admin_uploaded_pwd_data: localStorage.getItem('admin_uploaded_pwd_data'), 
+        workplace: localStorage.getItem('workplace'),
+        jobPreferences: localStorage.getItem('jobPreferences'),
+        skills1_selected: localStorage.getItem('skills1_selected'),
+        certificates: localStorage.getItem('certificates') || localStorage.getItem('education_certificates') || '[]'
+      };
+
+      // replace previous data variable in outer scope by attaching to window for the fetch below
+      window.__mvsg_registration_payload = data;
+    })();
 
     // Debug: log payload size and keys (avoid dumping huge binary in case of large data URLs)
     try {
-      const safeSummary = Object.keys(data).reduce((acc, k) => {
+      const payloadForSummary = window.__mvsg_registration_payload || {};
+      const safeSummary = Object.keys(payloadForSummary).reduce((acc, k) => {
         try {
-          const v = data[k];
+          const v = payloadForSummary[k];
           if (!v) acc[k] = null;
           else if (typeof v === 'string' && v.length > 200) acc[k] = `${v.slice(0,120)}... (${v.length} chars)`;
           else acc[k] = v;
-        } catch(e){ acc[k] = typeof data[k]; }
+        } catch(e){ acc[k] = typeof payloadForSummary[k]; }
         return acc;
       }, {});
       console.groupCollapsed('[registration] submitting payload summary');
@@ -351,10 +383,11 @@
     const creatingModal = document.getElementById('creatingModal');
     try { if (creatingModal) creatingModal.classList.remove('hidden'); } catch(e){}
 
+    const __mvsg_payload_to_send = window.__mvsg_registration_payload || (typeof data !== 'undefined' ? data : {});
     fetch('db/registration-data.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(__mvsg_payload_to_send)
     })
     .then(async response => {
       // always capture response body for debugging
