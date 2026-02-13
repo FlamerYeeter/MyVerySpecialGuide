@@ -14,6 +14,40 @@
       .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
       .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
     </style>
+    <script>
+      // Polyfill for crypto.randomUUID for older browsers or insecure contexts
+      (function(){
+        try {
+          if (typeof self === 'undefined') return;
+          if (!self.crypto) self.crypto = self.msCrypto || {};
+          if (typeof self.crypto.randomUUID === 'function') return; // already available
+
+          var getRandomBytes = function(count) {
+            if (self.crypto && typeof self.crypto.getRandomValues === 'function') {
+              var arr = new Uint8Array(count);
+              self.crypto.getRandomValues(arr);
+              return arr;
+            }
+            // fallback to Math.random when crypto not available (less secure)
+            var arr2 = new Uint8Array(count);
+            for (var i = 0; i < count; i++) arr2[i] = Math.floor(Math.random() * 256);
+            return arr2;
+          };
+
+          self.crypto.randomUUID = function() {
+            var bytes = getRandomBytes(16);
+            // Per RFC4122 v4: set version and variant bits
+            bytes[6] = (bytes[6] & 0x0f) | 0x40;
+            bytes[8] = (bytes[8] & 0x3f) | 0x80;
+            var hex = [];
+            for (var i = 0; i < bytes.length; i++) hex.push(bytes[i].toString(16).padStart(2,'0'));
+            return hex.slice(0,4).join('') + '-' + hex.slice(4,6).join('') + '-' + hex.slice(6,8).join('') + '-' + hex.slice(8,10).join('') + '-' + hex.slice(10,16).join('');
+          };
+        } catch (e) {
+          // ignore - polyfill best-effort
+        }
+      })();
+    </script>
   </head>
 
   <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">

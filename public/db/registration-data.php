@@ -1,6 +1,10 @@
 <?php
 require_once 'oracledb.php';
 
+// Debug / response helpers
+$proof = null;
+$certs = [];
+$lastError = null;
 function generateNumericId() {
     $micro = str_replace('.', '', (string)microtime(true));
     $rand = random_int(1000, 9999);
@@ -70,6 +74,14 @@ try {
         @file_put_contents($debugP, json_encode(['received_at' => date('c'), 'rpi_personal_parsed' => $p], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
     }
 } catch (Exception $e) { /* ignore debug failures */ }
+
+// helper to write debug errors safely
+function write_debug_error($filename, $payload) {
+    try {
+        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $filename;
+        @file_put_contents($path, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    } catch (Exception $e) { /* ignore debug write errors */ }
+}
 
 // ——— EXTRACT DATA ———
 $user_info         = json_decode($data['rpi_personal'] ?? '{}', true);
@@ -185,14 +197,22 @@ oci_set_action($conn, "Registration Transaction");
 // BEGIN TRANSACTION
 $allGood = true;
 // $lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
-$lob_med   = oci_new_descriptor($conn, OCI_D_LOB);
-$lob_pwd   = oci_new_descriptor($conn, OCI_D_LOB);
-
 /* Write Binary Data */
 
 // if ($proofBlob) $lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
-if ($medBlob)   $lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
-if ($pwdBlob)   $lob_pwd->writeTemporary($pwdBlob, OCI_TEMP_BLOB);
+// Create LOB descriptors only when we actually have binary data to write.
+$lob_med = null;
+$lob_pwd = null;
+
+/* Write Binary Data */
+if ($medBlob) {
+    $lob_med = oci_new_descriptor($conn, OCI_D_LOB);
+    $lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
+}
+if ($pwdBlob) {
+    $lob_pwd = oci_new_descriptor($conn, OCI_D_LOB);
+    $lob_pwd->writeTemporary($pwdBlob, OCI_TEMP_BLOB);
+}
 
 // -------- 1. INSERT user_guardian --------
 $sql1 = "
@@ -278,13 +298,32 @@ oci_bind_by_name($stid1, ':birthdate',     $birthdate);
 
 /* ---------- BLOB BINDS ---------- */
 
-oci_bind_by_name($stid1, ':med_certificates', $lob_med, -1, OCI_B_BLOB);
-oci_bind_by_name($stid1, ':pwd_id',           $lob_pwd, -1, OCI_B_BLOB);
+// Bind LOBs only when descriptors are present; otherwise bind NULL placeholders to avoid
+// invalid LOB locator errors (ORA-22275) when no file was uploaded.
+if (is_object($lob_med)) {
+    oci_bind_by_name($stid1, ':med_certificates', $lob_med, -1, OCI_B_BLOB);
+} else {
+    $null_med = null;
+    oci_bind_by_name($stid1, ':med_certificates', $null_med);
+}
+if (is_object($lob_pwd)) {
+    oci_bind_by_name($stid1, ':pwd_id', $lob_pwd, -1, OCI_B_BLOB);
+} else {
+    $null_pwd = null;
+    oci_bind_by_name($stid1, ':pwd_id', $null_pwd);
+}
 
 // EXECUTE
 if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
     $e = oci_error($stid1);
+    $lastError = $e;
     $allGood = false;
+    write_debug_error('temp_debug_registration_sql_error_user_guardian.json', [
+        'stage' => 'user_guardian_insert',
+        'error' => $e,
+        'payload_summary' => array_keys(is_array($data)?$data:[]),
+        'time' => date('c')
+    ]);
 }
 
 // ——— 2. INSERT job_experiences ———
@@ -328,7 +367,14 @@ if ($allGood) {
 
         if (!oci_execute($stid2, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($stid2);
+            $lastError = $e;
             $allGood = false;
+            write_debug_error('temp_debug_registration_sql_error_job_experience.json', [
+                'stage'=>'job_experience_insert',
+                'error'=>$e,
+                'work_item'=>$work,
+                'time'=>date('c')
+            ]);
             break;
         }
         oci_free_statement($stid2);
@@ -407,7 +453,14 @@ if ($allGood) {
 
         if (!oci_execute($stidc, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($stidc);
+            $lastError = $e;
             $allGood = false;
+            write_debug_error('temp_debug_registration_sql_error_certificate.json', [
+                'stage'=>'guardian_certificate_insert',
+                'error'=>$e,
+                'certificate'=>$ce,
+                'time'=>date('c')
+            ]);
             oci_free_statement($stidc);
             break;
         }
@@ -424,7 +477,15 @@ function insertGuardianDetail($conn, $guardian_id, $type, $value) {
     oci_bind_by_name($stid, ':type', $type);
     oci_bind_by_name($stid, ':value', $value);
     $ok = oci_execute($stid, OCI_NO_AUTO_COMMIT);
-    if (!$ok) $GLOBALS['allGood'] = false;
+    if (!$ok) {
+        $err = oci_error($stid);
+        $GLOBALS['allGood'] = false;
+        global $lastError;
+        $lastError = $err;
+        write_debug_error('temp_debug_registration_sql_error_user_profile.json', [
+            'stage'=>'user_profile_insert', 'error'=>$err, 'guardian_id'=>$guardian_id, 'type'=>$type, 'value'=>$value, 'time'=>date('c')
+        ]);
+    }
     oci_free_statement($stid);
 }
 
@@ -452,11 +513,20 @@ if ($allGood) {
 } else {
     oci_rollback($conn);
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => $e['message'] ?? 'Transaction failed']);
+    // provide last error details in debug field while keeping top-level message concise
+    $msg = 'Transaction failed';
+    if (isset($lastError) && is_array($lastError) && !empty($lastError['message'])) {
+        $msg = $lastError['message'];
+    }
+    echo json_encode(['success' => false, 'error' => $msg, 'debug' => $lastError]);
 }
 
 // ——— CLEANUP ———
 oci_free_statement($stid1);
 if (isset($stid2)) oci_free_statement($stid2);
 oci_close($conn);
+
+// free LOB descriptors if allocated
+try { if (is_object($lob_med)) $lob_med->free(); } catch(Exception $e) {}
+try { if (is_object($lob_pwd)) $lob_pwd->free(); } catch(Exception $e) {}
 ?>
