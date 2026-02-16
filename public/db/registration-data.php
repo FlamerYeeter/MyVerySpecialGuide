@@ -197,21 +197,24 @@ oci_set_action($conn, "Registration Transaction");
 // BEGIN TRANSACTION
 $allGood = true;
 // $lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
+// Always allocate LOB descriptors. To avoid "invalid LOB locator" errors
+// ensure a temporary LOB is written even when no data is provided
+$lob_med   = oci_new_descriptor($conn, OCI_D_LOB);
+$lob_pwd   = oci_new_descriptor($conn, OCI_D_LOB);
+
 /* Write Binary Data */
 
 // if ($proofBlob) $lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
-// Create LOB descriptors only when we actually have binary data to write.
-$lob_med = null;
-$lob_pwd = null;
-
-/* Write Binary Data */
-if ($medBlob) {
-    $lob_med = oci_new_descriptor($conn, OCI_D_LOB);
-    $lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
+try {
+    // Write provided blob data or an empty temporary LOB when absent
+    $lob_med->writeTemporary($medBlob ?? '', OCI_TEMP_BLOB);
+} catch (Exception $e) {
+    // If writing fails, leave as-is and let later execute surface the error
 }
-if ($pwdBlob) {
-    $lob_pwd = oci_new_descriptor($conn, OCI_D_LOB);
-    $lob_pwd->writeTemporary($pwdBlob, OCI_TEMP_BLOB);
+try {
+    $lob_pwd->writeTemporary($pwdBlob ?? '', OCI_TEMP_BLOB);
+} catch (Exception $e) {
+    // ignore; error handling below will catch execution failures
 }
 
 // -------- 1. INSERT user_guardian --------
@@ -298,20 +301,8 @@ oci_bind_by_name($stid1, ':birthdate',     $birthdate);
 
 /* ---------- BLOB BINDS ---------- */
 
-// Bind LOBs only when descriptors are present; otherwise bind NULL placeholders to avoid
-// invalid LOB locator errors (ORA-22275) when no file was uploaded.
-if (is_object($lob_med)) {
-    oci_bind_by_name($stid1, ':med_certificates', $lob_med, -1, OCI_B_BLOB);
-} else {
-    $null_med = null;
-    oci_bind_by_name($stid1, ':med_certificates', $null_med);
-}
-if (is_object($lob_pwd)) {
-    oci_bind_by_name($stid1, ':pwd_id', $lob_pwd, -1, OCI_B_BLOB);
-} else {
-    $null_pwd = null;
-    oci_bind_by_name($stid1, ':pwd_id', $null_pwd);
-}
+oci_bind_by_name($stid1, ':med_certificates', $lob_med, -1, OCI_B_BLOB);
+oci_bind_by_name($stid1, ':pwd_id',           $lob_pwd, -1, OCI_B_BLOB);
 
 // EXECUTE
 if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
@@ -527,6 +518,6 @@ if (isset($stid2)) oci_free_statement($stid2);
 oci_close($conn);
 
 // free LOB descriptors if allocated
-try { if (is_object($lob_med)) $lob_med->free(); } catch(Exception $e) {}
-try { if (is_object($lob_pwd)) $lob_pwd->free(); } catch(Exception $e) {}
+try { if (isset($lob_med) && is_object($lob_med)) $lob_med->free(); } catch(Exception $e) {}
+try { if (isset($lob_pwd) && is_object($lob_pwd)) $lob_pwd->free(); } catch(Exception $e) {}
 ?>
