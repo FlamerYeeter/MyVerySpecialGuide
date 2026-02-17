@@ -26,6 +26,11 @@
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
         transform: scale(1.03);
     }
+    /* Suggestions dropdown for Other input */
+    .suggestions-container { position: relative; }
+    .suggestions-list { position: absolute; left: 0; right: 0; z-index: 60; background: white; border: 1px solid rgba(209,213,219,1); border-radius: 0.5rem; box-shadow: 0 6px 18px rgba(15,23,42,0.08); max-height: 12rem; overflow: auto; }
+    .suggestion-item { padding: 0.5rem 0.75rem; cursor: pointer; }
+    .suggestion-item:hover, .suggestion-item.highlight { background: rgba(243,244,246,1); }
     </style>
 </head>
 
@@ -249,6 +254,9 @@
                     <input id="skills1_other_text" name="skills1_other_text" type="text"
                         aria-labelledby="skills1_other_label" placeholder="Type your answer here"
                         class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    <div id="skills1_suggestions" class="suggestions-container mt-2">
+                        <ul id="skills1_suggestions_list" class="suggestions-list hidden"></ul>
+                    </div>
                 </div>
             </div>
 
@@ -533,6 +541,167 @@
                     } catch (e) {
                         console.warn('skills_page1 init failed', e);
                     }
+                });
+                // Autosuggest for "Other" input: populate from existing skill cards
+                document.addEventListener('DOMContentLoaded', function(){
+                    try{
+                        const input = document.getElementById('skills1_other_text');
+                        const listEl = document.getElementById('skills1_suggestions_list');
+                        const container = document.getElementById('skills1_suggestions');
+                        if (!input || !listEl || !container) return;
+
+                        // Build pool of skill values (exclude 'other')
+                        const pool = Array.from(document.querySelectorAll('.skills-card[data-value]')).map(card=>{
+                            return { value: (card.getAttribute('data-value')||'').trim(), title: (card.querySelector('h3')?.textContent||'').trim(), card };
+                        }).filter(x=>x.value && x.value.toLowerCase()!=='other');
+
+                        // Additional suggestions (not present as cards). Edit this list to add more.
+                        const extraSuggestions = [
+                            'Using Computer',
+                            'Organizing Things',
+                            'Helping People',
+                            'Art & Creativity',
+                            'Attention to Details',
+                            'Working With Others',
+                            'Problem Solving',
+                            'Time Management',
+                            'Customer Service',
+                            'Cash Handling',
+                            'Cleaning',
+                            'Cooking',
+                            'Inventory Counting',
+                            'Stocking Shelves',
+                            'Basic Sewing',
+                            'Gardening',
+                            'Packaging',
+                            'Delivery Assistance',
+                            'Data Entry',
+                            'Typing',
+                            'Basic Math',
+                            'Retail Sales',
+                            'Order Picking',
+                            'Machine Operation',
+                            'Forklift Operation',
+                            'Quality Inspection',
+                            'Labeling',
+                            'Telephone Handling',
+                            'Scheduling',
+                            'Basic First Aid',
+                            'Language Skills (Tagalog)',
+                            'Language Skills (English)',
+                            'Translation',
+                            'Cashiering',
+                            'Sales Assistance',
+                            'Merchandising',
+                            'Basic Carpentry',
+                            'Painting',
+                            'Electrical Help',
+                            'Plumbing Assistance',
+                            'Phone Support',
+                            'Social Media',
+                            'Photography',
+                            'Video Editing',
+                            'Graphic Design',
+                            'Teaching Assistance',
+                            'Childcare',
+                            'Elderly Care',
+                            'Personal Care',
+                            'Laundry',
+                            'Packing & Shipping',
+                            'Warehouse Management',
+                            'Order Fulfillment',
+                            'Route Assistance',
+                            'Basic Accounting',
+                            'Bookkeeping',
+                            'Data Analysis',
+                            'Microsoft Excel',
+                            'Google Sheets',
+                            'Inventory Management',
+                            'Health & Safety Awareness',
+                            'Food Handling',
+                            'Barista',
+                            'Bartending',
+                            'Retail POS',
+                            'Sales Negotiation',
+                            'Receptionist',
+                            'Event Setup'
+                        ];
+
+                        // Merge extras into pool (avoid duplicates)
+                        const lowerExists = new Set(pool.map(p=>p.value.toLowerCase()));
+                        extraSuggestions.forEach(s => {
+                            if (!s) return;
+                            if (!lowerExists.has(String(s).toLowerCase())) pool.push({ value: s, title: s, card: null, extra: true });
+                        });
+
+                        function renderSuggestions(q){
+                            listEl.innerHTML = '';
+                            if (!q || String(q).trim().length===0) { listEl.classList.add('hidden'); return; }
+                            const qq = String(q).toLowerCase();
+                            const matches = pool.filter(p => p.value.toLowerCase().includes(qq) || p.title.toLowerCase().includes(qq)).slice(0,8);
+                            if (!matches.length) { listEl.classList.add('hidden'); return; }
+                            matches.forEach(m => {
+                                const li = document.createElement('li');
+                                li.className = 'suggestion-item';
+                                li.textContent = m.title || m.value;
+                                li.dataset.value = m.value;
+                                li.addEventListener('click', function(){
+                                    try{
+                                        const v = this.dataset.value;
+                                        // attempt to find an existing card for this suggestion
+                                        const target = document.querySelector('.skills-card[data-value="'+v+'"]');
+                                        if (target) {
+                                            // deselect 'other' if selected, then select the matched card
+                                            const otherCard = document.querySelector('.skills-card[data-value="other"]');
+                                            if (otherCard && otherCard.classList.contains('selected')) toggleSkills1Choice(otherCard,'other');
+                                            if (!target.classList.contains('selected')) toggleSkills1Choice(target, v);
+                                            input.value = '';
+                                        } else {
+                                            // Not an existing card: ensure 'Other' is selected and fill the input with suggestion
+                                            const otherCard = document.querySelector('.skills-card[data-value="other"]');
+                                            if (otherCard && !otherCard.classList.contains('selected')) toggleSkills1Choice(otherCard,'other');
+                                            input.value = this.textContent || v;
+                                            input.focus();
+                                        }
+                                        listEl.classList.add('hidden');
+                                    }catch(e){console.error(e);} 
+                                });
+                                listEl.appendChild(li);
+                            });
+                            listEl.classList.remove('hidden');
+                        }
+
+                        // show suggestions on input
+                        input.addEventListener('input', function(){ renderSuggestions(this.value); });
+                        input.addEventListener('focus', function(){ renderSuggestions(this.value); });
+
+                        // keyboard navigation
+                        let highlighted = -1;
+                        function updateHighlight(){
+                            const items = Array.from(listEl.querySelectorAll('.suggestion-item'));
+                            items.forEach((it,i)=> it.classList.toggle('highlight', i===highlighted));
+                            if (highlighted>=0 && items[highlighted]) items[highlighted].scrollIntoView({ block: 'nearest' });
+                        }
+                        input.addEventListener('keydown', function(e){
+                            const items = Array.from(listEl.querySelectorAll('.suggestion-item'));
+                            if (!items.length) return;
+                            if (e.key === 'ArrowDown'){ e.preventDefault(); highlighted = Math.min(highlighted+1, items.length-1); updateHighlight(); }
+                            else if (e.key === 'ArrowUp'){ e.preventDefault(); highlighted = Math.max(highlighted-1, 0); updateHighlight(); }
+                            else if (e.key === 'Enter'){
+                                e.preventDefault();
+                                if (highlighted>=0 && items[highlighted]) items[highlighted].click();
+                                else {
+                                    // treat as free text: ensure other card selected
+                                    const otherCard = document.querySelector('.skills-card[data-value="other"]');
+                                    if (otherCard && !otherCard.classList.contains('selected')) toggleSkills1Choice(otherCard,'other');
+                                }
+                                listEl.classList.add('hidden'); highlighted = -1;
+                            }
+                        });
+
+                        // hide when clicking outside
+                        document.addEventListener('click', function(e){ if (!e.target.closest('#skills1_suggestions') && e.target !== input) listEl.classList.add('hidden'); });
+                    }catch(e){ console.warn('skills suggestions init failed', e); }
                 });
             </script>
             <script>
