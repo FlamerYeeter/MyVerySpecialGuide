@@ -1,6 +1,10 @@
 <?php
 require_once 'oracledb.php';
 
+// Debug / response helpers
+$proof = null;
+$certs = [];
+$lastError = null;
 function generateNumericId() {
     $micro = str_replace('.', '', (string)microtime(true));
     $rand = random_int(1000, 9999);
@@ -59,6 +63,26 @@ if (!$data) {
     die(json_encode(['success' => false, 'error' => 'Invalid JSON']));
 }
 
+// DEBUG: persist received payload for troubleshooting CDD_TYPE issues (temporary)
+try {
+    $debugPath = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_registration_payload.json';
+    @file_put_contents($debugPath, json_encode(['received_at' => date('c'), 'raw_json' => $json, 'decoded_keys' => array_keys(is_array($data)?$data:[] )], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    // also write parsed rpi_personal for easy inspection
+    if (!empty($data['rpi_personal'])) {
+        $p = json_decode($data['rpi_personal'], true);
+        $debugP = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_rpi_personal.json';
+        @file_put_contents($debugP, json_encode(['received_at' => date('c'), 'rpi_personal_parsed' => $p], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    }
+} catch (Exception $e) { /* ignore debug failures */ }
+
+// helper to write debug errors safely
+function write_debug_error($filename, $payload) {
+    try {
+        $path = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . $filename;
+        @file_put_contents($path, json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    } catch (Exception $e) { /* ignore debug write errors */ }
+}
+
 // ——— EXTRACT DATA ———
 $user_info         = json_decode($data['rpi_personal'] ?? '{}', true);
 // Robustly extract education level and school name (accept JSON object or plain string)
@@ -98,7 +122,57 @@ $address     = $user_info['address'] ?? null;
 $username    = $user_info['username'] ?? null;
 $password    = password_hash($user_info['password'] ?? 'temp123', PASSWORD_DEFAULT);
 $types_of_ds = $user_info['r_dsType1'] ?? null;
-$birthdate   = $user_info['birthdate'] ?? null;
+$birthdate_raw   = $user_info['birthdate'] ?? null;
+
+// Normalize and validate birthdate to 'YYYY-MM-DD' or null to avoid invalid TO_DATE calls
+$birthdate = null;
+if (!empty($birthdate_raw)) {
+    try {
+        // Take only first 10 chars in case time is included
+        $candidate = substr(trim((string)$birthdate_raw), 0, 10);
+        $dt = DateTime::createFromFormat('Y-m-d', $candidate);
+        if ($dt && $dt->format('Y-m-d') === $candidate) {
+            // Ensure year is not 0
+            $yr = intval($dt->format('Y'));
+            if ($yr !== 0) $birthdate = $dt->format('Y-m-d');
+        }
+    } catch (Exception $e) { $birthdate = null; }
+}
+
+// Congenital/Developmental Disability (CDD) - accept from nested rpi_personal or top-level keys
+$cdd_type = null;
+// Accept many possible key names from different frontend pages: prefer nested user_info (rpi_personal)
+// Common keys: r_cddType1, cddType, cdd_type, cddTypeOther, r_cddType1_other
+$cdd_type = $user_info['r_cddType1'] ?? $user_info['r_cdd_type'] ?? $user_info['cddType'] ?? $user_info['cdd_type'] ?? $user_info['cddTypeOther'] ?? $user_info['cdd_type_other'] ?? $user_info['r_cddType1_other'] ?? null;
+// Fallback to top-level payload keys
+if (!$cdd_type) {
+    $cdd_type = $data['r_cddType1'] ?? $data['r_cdd_type'] ?? $data['cddType'] ?? $data['cdd_type'] ?? $data['cddTypeOther'] ?? $data['cdd_type_other'] ?? $data['r_cddType1_other'] ?? null;
+}
+
+// Normalize CDD value to a string and ensure it fits the DB column size (VARCHAR2(50)).
+try {
+    if (is_array($cdd_type)) {
+        $cdd_type = implode(', ', $cdd_type);
+    }
+    $cdd_type = $cdd_type !== null ? trim((string)$cdd_type) : null;
+
+    // If value too long for DB column, truncate and record a debug trace
+    if ($cdd_type !== null && mb_strlen($cdd_type, 'UTF-8') > 50) {
+        $debugNote = [
+            'warning' => 'cdd_type_truncated',
+            'original_length' => mb_strlen($cdd_type, 'UTF-8'),
+            'max_length' => 50,
+            'original_value' => $cdd_type,
+            'received_at' => date('c')
+        ];
+        try {
+            $dbgFile = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_cdd_truncation.json';
+            @file_put_contents($dbgFile, json_encode($debugNote, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        } catch (Exception $e) { /* ignore logging failure */ }
+        // Truncate safely using multibyte substring
+        $cdd_type = mb_substr($cdd_type, 0, 50, 'UTF-8');
+    }
+} catch (Exception $e) { /* keep original behavior if anything unexpected happens */ }
 
 // Guardian
 $gf = $user_info['g_first_name'] ?? null;
@@ -123,14 +197,25 @@ oci_set_action($conn, "Registration Transaction");
 // BEGIN TRANSACTION
 $allGood = true;
 // $lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
+// Always allocate LOB descriptors. To avoid "invalid LOB locator" errors
+// ensure a temporary LOB is written even when no data is provided
 $lob_med   = oci_new_descriptor($conn, OCI_D_LOB);
 $lob_pwd   = oci_new_descriptor($conn, OCI_D_LOB);
 
 /* Write Binary Data */
 
 // if ($proofBlob) $lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
-if ($medBlob)   $lob_med->writeTemporary($medBlob, OCI_TEMP_BLOB);
-if ($pwdBlob)   $lob_pwd->writeTemporary($pwdBlob, OCI_TEMP_BLOB);
+try {
+    // Write provided blob data or an empty temporary LOB when absent
+    $lob_med->writeTemporary($medBlob ?? '', OCI_TEMP_BLOB);
+} catch (Exception $e) {
+    // If writing fails, leave as-is and let later execute surface the error
+}
+try {
+    $lob_pwd->writeTemporary($pwdBlob ?? '', OCI_TEMP_BLOB);
+} catch (Exception $e) {
+    // ignore; error handling below will catch execution failures
+}
 
 // -------- 1. INSERT user_guardian --------
 $sql1 = "
@@ -154,6 +239,7 @@ INSERT INTO user_guardian (
     updated_at,
     address,
     types_of_ds,
+    cdd_type,
     username,
     med_certificates,
     pwd_id,
@@ -178,10 +264,11 @@ INSERT INTO user_guardian (
     SYSDATE,
     :address,
     :types_of_ds,
+    :cdd_type,
     :username,
     :med_certificates,
     :pwd_id,
-    TO_DATE(:birthdate,'YYYY-MM-DD')
+    CASE WHEN :birthdate IS NULL OR TRIM(:birthdate) = '' THEN NULL ELSE TO_DATE(:birthdate,'YYYY-MM-DD') END
 )";
 
 $stid1 = oci_parse($conn, $sql1);
@@ -207,6 +294,7 @@ oci_bind_by_name($stid1, ':relationship',        $gr);
 
 oci_bind_by_name($stid1, ':address',       $address);
 oci_bind_by_name($stid1, ':types_of_ds',   $types_of_ds);
+oci_bind_by_name($stid1, ':cdd_type',       $cdd_type);
 oci_bind_by_name($stid1, ':username',      $username);
 oci_bind_by_name($stid1, ':birthdate',     $birthdate);
 
@@ -219,7 +307,14 @@ oci_bind_by_name($stid1, ':pwd_id',           $lob_pwd, -1, OCI_B_BLOB);
 // EXECUTE
 if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
     $e = oci_error($stid1);
+    $lastError = $e;
     $allGood = false;
+    write_debug_error('temp_debug_registration_sql_error_user_guardian.json', [
+        'stage' => 'user_guardian_insert',
+        'error' => $e,
+        'payload_summary' => array_keys(is_array($data)?$data:[]),
+        'time' => date('c')
+    ]);
 }
 
 // ——— 2. INSERT job_experiences ———
@@ -263,7 +358,14 @@ if ($allGood) {
 
         if (!oci_execute($stid2, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($stid2);
+            $lastError = $e;
             $allGood = false;
+            write_debug_error('temp_debug_registration_sql_error_job_experience.json', [
+                'stage'=>'job_experience_insert',
+                'error'=>$e,
+                'work_item'=>$work,
+                'time'=>date('c')
+            ]);
             break;
         }
         oci_free_statement($stid2);
@@ -282,6 +384,43 @@ if ($allGood) {
         $c_name   = trim($ce['certificate_name'] ?? $ce['name'] ?? $ce['certificate'] ?? '');
         $c_issued = trim($ce['issued_by'] ?? $ce['issuer'] ?? '');
         $c_date   = trim($ce['date_completed'] ?? $ce['date'] ?? '');
+        // Normalize certificate date to 'YYYY-MM-DD' or NULL to avoid ORA-01841
+        $c_date_norm = null;
+        $extracted_year = null;
+        if ($c_date !== '') {
+            $candidate = substr(trim((string)$c_date), 0, 10);
+            $dt = DateTime::createFromFormat('Y-m-d', $candidate);
+            if ($dt && $dt->format('Y-m-d') === $candidate) {
+                $yr = intval($dt->format('Y'));
+                if ($yr !== 0) {
+                    $c_date_norm = $dt->format('Y-m-d');
+                    $extracted_year = $yr;
+                }
+            } else {
+                // attempt to extract a 4-digit year; do not invent full date to avoid incorrect DB inserts
+                if (preg_match('/(\d{4})/', $c_date, $m)) {
+                    $yr = intval($m[1]);
+                    if ($yr !== 0) {
+                        $extracted_year = $yr;
+                        // keep normalized date NULL to avoid inserting a guessed date
+                        $c_date_norm = null;
+                    }
+                }
+            }
+
+            // Write per-certificate debug info (append as JSON lines)
+            try {
+                $certDbg = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_certificate_years.json';
+                $dbgEntry = [
+                    'logged_at' => date('c'),
+                    'certificate_name' => $c_name,
+                    'original_date' => $c_date,
+                    'normalized_date' => $c_date_norm,
+                    'extracted_year' => $extracted_year
+                ];
+                @file_put_contents($certDbg, json_encode($dbgEntry, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE) . PHP_EOL, FILE_APPEND);
+            } catch (Exception $e) { /* ignore logging failure */ }
+        }
         $c_learn  = trim($ce['training_description'] ?? $ce['description'] ?? $ce['what_you_learned'] ?? '');
 
         // skip totally empty entries
@@ -299,12 +438,20 @@ if ($allGood) {
         oci_bind_by_name($stidc, ':gid',   $user_guardian_id);
         oci_bind_by_name($stidc, ':gname', $c_name);
         oci_bind_by_name($stidc, ':gissued', $c_issued);
-        oci_bind_by_name($stidc, ':gdate', $c_date);
+        // bind normalized date (or NULL) to avoid TO_DATE errors on malformed dates
+        oci_bind_by_name($stidc, ':gdate', $c_date_norm);
         oci_bind_by_name($stidc, ':glearn', $c_learn);
 
         if (!oci_execute($stidc, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($stidc);
+            $lastError = $e;
             $allGood = false;
+            write_debug_error('temp_debug_registration_sql_error_certificate.json', [
+                'stage'=>'guardian_certificate_insert',
+                'error'=>$e,
+                'certificate'=>$ce,
+                'time'=>date('c')
+            ]);
             oci_free_statement($stidc);
             break;
         }
@@ -321,7 +468,15 @@ function insertGuardianDetail($conn, $guardian_id, $type, $value) {
     oci_bind_by_name($stid, ':type', $type);
     oci_bind_by_name($stid, ':value', $value);
     $ok = oci_execute($stid, OCI_NO_AUTO_COMMIT);
-    if (!$ok) $GLOBALS['allGood'] = false;
+    if (!$ok) {
+        $err = oci_error($stid);
+        $GLOBALS['allGood'] = false;
+        global $lastError;
+        $lastError = $err;
+        write_debug_error('temp_debug_registration_sql_error_user_profile.json', [
+            'stage'=>'user_profile_insert', 'error'=>$err, 'guardian_id'=>$guardian_id, 'type'=>$type, 'value'=>$value, 'time'=>date('c')
+        ]);
+    }
     oci_free_statement($stid);
 }
 
@@ -349,11 +504,20 @@ if ($allGood) {
 } else {
     oci_rollback($conn);
     http_response_code(500);
-    echo json_encode(['success' => false, 'error' => $e['message'] ?? 'Transaction failed']);
+    // provide last error details in debug field while keeping top-level message concise
+    $msg = 'Transaction failed';
+    if (isset($lastError) && is_array($lastError) && !empty($lastError['message'])) {
+        $msg = $lastError['message'];
+    }
+    echo json_encode(['success' => false, 'error' => $msg, 'debug' => $lastError]);
 }
 
 // ——— CLEANUP ———
 oci_free_statement($stid1);
 if (isset($stid2)) oci_free_statement($stid2);
 oci_close($conn);
+
+// free LOB descriptors if allocated
+try { if (isset($lob_med) && is_object($lob_med)) $lob_med->free(); } catch(Exception $e) {}
+try { if (isset($lob_pwd) && is_object($lob_pwd)) $lob_pwd->free(); } catch(Exception $e) {}
 ?>

@@ -14,6 +14,40 @@
       .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
       .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
     </style>
+    <script>
+      // Polyfill for crypto.randomUUID for older browsers or insecure contexts
+      (function(){
+        try {
+          if (typeof self === 'undefined') return;
+          if (!self.crypto) self.crypto = self.msCrypto || {};
+          if (typeof self.crypto.randomUUID === 'function') return; // already available
+
+          var getRandomBytes = function(count) {
+            if (self.crypto && typeof self.crypto.getRandomValues === 'function') {
+              var arr = new Uint8Array(count);
+              self.crypto.getRandomValues(arr);
+              return arr;
+            }
+            // fallback to Math.random when crypto not available (less secure)
+            var arr2 = new Uint8Array(count);
+            for (var i = 0; i < count; i++) arr2[i] = Math.floor(Math.random() * 256);
+            return arr2;
+          };
+
+          self.crypto.randomUUID = function() {
+            var bytes = getRandomBytes(16);
+            // Per RFC4122 v4: set version and variant bits
+            bytes[6] = (bytes[6] & 0x0f) | 0x40;
+            bytes[8] = (bytes[8] & 0x3f) | 0x80;
+            var hex = [];
+            for (var i = 0; i < bytes.length; i++) hex.push(bytes[i].toString(16).padStart(2,'0'));
+            return hex.slice(0,4).join('') + '-' + hex.slice(4,6).join('') + '-' + hex.slice(6,8).join('') + '-' + hex.slice(8,10).join('') + '-' + hex.slice(10,16).join('');
+          };
+        } catch (e) {
+          // ignore - polyfill best-effort
+        }
+      })();
+    </script>
   </head>
 
   <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
@@ -156,7 +190,7 @@
   <button
     type="button"
     id="createAccountBtn"
-    class="w-full sm:w-[530px] bg-[#2E2EFF] text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm hover:bg-blue-700 transition-all duration-200"
+    class="w-full sm:w-[530px] bg-[#2E2EFF] hover:bg-blue-600 text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm transition-all duration-300"
   >
     Create Account
   </button>
@@ -179,6 +213,14 @@
       <h3 class="text-2xl font-bold mb-2">Account<br/>Successfully Created!</h3>
       <p class="text-gray-700 mb-6">Congratulations! Click OK to proceed to login.</p>
       <button id="createdModalOk" class="bg-[#2E2EFF] hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-md transition-all duration-200">Okay</button>
+    </div>
+  </div>
+
+  <!-- Creating Loading Modal -->
+  <div id="creatingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
+      <div class="border-4 border-blue-500 border-t-transparent rounded-full w-14 h-14 animate-spin mb-4"></div>
+      <p class="text-gray-800 font-medium">Creating account, please wait...</p>
     </div>
   </div>
 
@@ -268,12 +310,14 @@
   function toggleCreateButton() {
     if (agree1.checked && agree2.checked) {
       createBtn.disabled = false;
-      createBtn.classList.remove('bg-gray-400', 'cursor-not-allowed');
-      createBtn.classList.add('bg-[#1E40AF]', 'hover:bg-[#1E88E5]');
+      // remove any disabled/previous background or hover classes that may conflict
+      createBtn.classList.remove('bg-gray-400', 'cursor-not-allowed', 'bg-[#2E2EFF]', 'hover:bg-blue-600');
+      createBtn.classList.add('bg-[#2E2EFF]', 'hover:bg-blue-600');
     } else {
       createBtn.disabled = true;
+      // make visually disabled and remove active styles
       createBtn.classList.add('bg-gray-400', 'cursor-not-allowed');
-      createBtn.classList.remove('bg-[#1E40AF]', 'hover:bg-[#1E88E5]');
+      createBtn.classList.remove('bg-[#2E2EFF]', 'hover:bg-blue-600');
     }
   }
 
@@ -304,32 +348,64 @@
     try { jobExperiences = JSON.parse(jobExperiencesRaw || '[]'); } catch(err){ jobExperiences = []; }
     const derivedYears = (Array.isArray(jobExperiences) ? jobExperiences.map(j => j.start_year || j.year || '').filter(Boolean) : []);
 
-    // Save data to backend
-    const data = {
-      education: localStorage.getItem('edu_level'),
-      job_experiences: localStorage.getItem('job_experiences'),
-      review_certs: localStorage.getItem('review_certs'),
-      rpi_personal: localStorage.getItem('rpi_personal1'),
-      school_name: localStorage.getItem('school_name'),
-      selected_work_experience: localStorage.getItem('selected_work_experience'),
-      selected_work_year: (localStorage.getItem('selected_work_year') ? localStorage.getItem('selected_work_year') : JSON.stringify(derivedYears)),
-      admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
-      admin_uploaded_pwd_data: localStorage.getItem('admin_uploaded_pwd_data'), 
-      workplace: localStorage.getItem('workplace'),
-      jobPreferences: localStorage.getItem('jobPreferences'),
-      skills1_selected: localStorage.getItem('skills1_selected'),
-      certificates: localStorage.getItem('certificates') || localStorage.getItem('education_certificates') || '[]'
-    };
+    // Save data to backend --- sanitize work-year values to avoid invalid years (e.g. 0) being sent
+    (function(){
+      // try to read saved selected_work_year (may be JSON string or CSV)
+      let savedYearsRaw = localStorage.getItem('selected_work_year') || localStorage.getItem('work_years') || null;
+      let savedYears = [];
+      if (savedYearsRaw) {
+        try { savedYears = JSON.parse(savedYearsRaw); }
+        catch(e) { savedYears = String(savedYearsRaw).split(/[;,\|\n]+/).map(s=>s.trim()).filter(Boolean); }
+      }
+      // fallback to derivedYears (from job experiences) if none
+      if ((!savedYears || !savedYears.length) && Array.isArray(derivedYears) && derivedYears.length) savedYears = derivedYears.slice();
+
+      // helper: extract first 4-digit year token
+      const extractYear = (v) => {
+        if (v === null || v === undefined) return null;
+        const s = String(v);
+        const m = s.match(/(\d{4})/);
+        if (m) {
+          const y = parseInt(m[1],10);
+          if (!Number.isNaN(y)) return y;
+        }
+        return null;
+      };
+
+      const nowYear = new Date().getFullYear();
+      const validYears = Array.from(new Set((savedYears||[]).map(extractYear).filter(y => typeof y === 'number' && y >= 1900 && y <= nowYear)));
+
+      // Build payload
+        const data = {
+        education: localStorage.getItem('edu_level'),
+        job_experiences: localStorage.getItem('job_experiences'),
+        review_certs: localStorage.getItem('review_certs'),
+        // rpi_personal intentionally removed to disable sending temp_debug_rpi_personal.json data
+        school_name: localStorage.getItem('school_name'),
+        selected_work_experience: localStorage.getItem('selected_work_experience'),
+        selected_work_year: JSON.stringify(validYears),
+        admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
+        admin_uploaded_pwd_data: localStorage.getItem('admin_uploaded_pwd_data'), 
+        workplace: localStorage.getItem('workplace'),
+        jobPreferences: localStorage.getItem('jobPreferences'),
+        skills1_selected: localStorage.getItem('skills1_selected'),
+        certificates: localStorage.getItem('certificates') || localStorage.getItem('education_certificates') || '[]'
+      };
+
+      // replace previous data variable in outer scope by attaching to window for the fetch below
+      window.__mvsg_registration_payload = data;
+    })();
 
     // Debug: log payload size and keys (avoid dumping huge binary in case of large data URLs)
     try {
-      const safeSummary = Object.keys(data).reduce((acc, k) => {
+      const payloadForSummary = window.__mvsg_registration_payload || {};
+      const safeSummary = Object.keys(payloadForSummary).reduce((acc, k) => {
         try {
-          const v = data[k];
+          const v = payloadForSummary[k];
           if (!v) acc[k] = null;
           else if (typeof v === 'string' && v.length > 200) acc[k] = `${v.slice(0,120)}... (${v.length} chars)`;
           else acc[k] = v;
-        } catch(e){ acc[k] = typeof data[k]; }
+        } catch(e){ acc[k] = typeof payloadForSummary[k]; }
         return acc;
       }, {});
       console.groupCollapsed('[registration] submitting payload summary');
@@ -337,12 +413,15 @@
       console.groupEnd();
     } catch(e){ console.warn('could not summarize payload', e); }
 
-    // show loading here (optional)
+    // show loading modal
+    const creatingModal = document.getElementById('creatingModal');
+    try { if (creatingModal) creatingModal.classList.remove('hidden'); } catch(e){}
 
+    const __mvsg_payload_to_send = window.__mvsg_registration_payload || (typeof data !== 'undefined' ? data : {});
     fetch('db/registration-data.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data)
+      body: JSON.stringify(__mvsg_payload_to_send)
     })
     .then(async response => {
       // always capture response body for debugging
@@ -357,17 +436,20 @@
       console.groupEnd();
 
       if (response.status === 200) {
-        // Success
+        // Success — hide creating modal then show success
+        try { if (creatingModal) creatingModal.classList.add('hidden'); } catch(e){}
         try { successModal.classList.remove('hidden'); } catch(e){}
         return;
       }
 
       // Non-200: report full details to console and alert user to check DevTools
       console.error('[registration] failed — status', response.status, 'body:', text);
+      try { if (creatingModal) creatingModal.classList.add('hidden'); } catch(e){}
       try { alert('Invalid Data. Please try again later. See console (DevTools) for details.'); } catch(e){}
     })
     .catch(err => {
       console.error('[registration] fetch error', err);
+      try { if (creatingModal) creatingModal.classList.add('hidden'); } catch(e){}
       try { alert('Network error — see console (DevTools) for details.'); } catch(e){}
     });
 

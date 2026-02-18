@@ -26,6 +26,11 @@
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
         transform: scale(1.03);
     }
+    /* Suggestions dropdown for Other input */
+    .suggestions-container { position: relative; }
+    .suggestions-list { position: absolute; left: 0; right: 0; z-index: 60; background: white; border: 1px solid rgba(209,213,219,1); border-radius: 0.5rem; box-shadow: 0 6px 18px rgba(15,23,42,0.08); max-height: 12rem; overflow: auto; }
+    .suggestion-item { padding: 0.5rem 0.75rem; cursor: pointer; }
+    .suggestion-item:hover, .suggestion-item.highlight { background: rgba(243,244,246,1); }
     </style>
 </head>
 
@@ -246,9 +251,13 @@
                     <p class="text-[13px] text-gray-600 italic mt-1 mb-3 text-justify">
                         (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
                     </p>
+                    <div id="skills1_other_chips" class="flex flex-wrap gap-2 mb-2"></div>
                     <input id="skills1_other_text" name="skills1_other_text" type="text"
-                        aria-labelledby="skills1_other_label" placeholder="Type your answer here"
+                        aria-labelledby="skills1_other_label" placeholder="Type your answer here (press Enter to add)"
                         class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    <div id="skills1_suggestions" class="suggestions-container mt-2">
+                        <ul id="skills1_suggestions_list" class="suggestions-list hidden"></ul>
+                    </div>
                 </div>
             </div>
 
@@ -534,6 +543,207 @@
                         console.warn('skills_page1 init failed', e);
                     }
                 });
+                // Autosuggest for "Other" input: populate from existing skill cards
+                document.addEventListener('DOMContentLoaded', function(){
+                    try{
+                        const input = document.getElementById('skills1_other_text');
+                        const listEl = document.getElementById('skills1_suggestions_list');
+                        const container = document.getElementById('skills1_suggestions');
+                        if (!input || !listEl || !container) return;
+
+                        // Build pool of skill values (exclude 'other')
+                        const pool = Array.from(document.querySelectorAll('.skills-card[data-value]')).map(card=>{
+                            return { value: (card.getAttribute('data-value')||'').trim(), title: (card.querySelector('h3')?.textContent||'').trim(), card };
+                        }).filter(x=>x.value && x.value.toLowerCase()!=='other');
+
+                        // Additional suggestions (not present as cards). Edit this list to add more.
+                        const extraSuggestions = [
+                            'Using Computer',
+                            'Organizing Things',
+                            'Helping People',
+                            'Art & Creativity',
+                            'Attention to Details',
+                            'Working With Others',
+                            'Problem Solving',
+                            'Time Management',
+                            'Customer Service',
+                            'Cash Handling',
+                            'Cleaning',
+                            'Cooking',
+                            'Inventory Counting',
+                            'Stocking Shelves',
+                            'Basic Sewing',
+                            'Gardening',
+                            'Packaging',
+                            'Delivery Assistance',
+                            'Data Entry',
+                            'Typing',
+                            'Basic Math',
+                            'Retail Sales',
+                            'Order Picking',
+                            'Machine Operation',
+                            'Forklift Operation',
+                            'Quality Inspection',
+                            'Labeling',
+                            'Telephone Handling',
+                            'Scheduling',
+                            'Basic First Aid',
+                            'Language Skills (Tagalog)',
+                            'Language Skills (English)',
+                            'Translation',
+                            'Cashiering',
+                            'Sales Assistance',
+                            'Merchandising',
+                            'Basic Carpentry',
+                            'Painting',
+                            'Electrical Help',
+                            'Plumbing Assistance',
+                            'Phone Support',
+                            'Social Media',
+                            'Photography',
+                            'Video Editing',
+                            'Graphic Design',
+                            'Teaching Assistance',
+                            'Childcare',
+                            'Elderly Care',
+                            'Personal Care',
+                            'Laundry',
+                            'Packing & Shipping',
+                            'Warehouse Management',
+                            'Order Fulfillment',
+                            'Route Assistance',
+                            'Basic Accounting',
+                            'Bookkeeping',
+                            'Data Analysis',
+                            'Microsoft Excel',
+                            'Google Sheets',
+                            'Inventory Management',
+                            'Health & Safety Awareness',
+                            'Food Handling',
+                            'Barista',
+                            'Bartending',
+                            'Retail POS',
+                            'Sales Negotiation',
+                            'Receptionist',
+                            'Event Setup'
+                        ];
+
+                        // Merge extras into pool (avoid duplicates)
+                        const lowerExists = new Set(pool.map(p=>p.value.toLowerCase()));
+                        extraSuggestions.forEach(s => {
+                            if (!s) return;
+                            if (!lowerExists.has(String(s).toLowerCase())) pool.push({ value: s, title: s, card: null, extra: true });
+                        });
+
+                        // helper: chips for multiple Other entries
+                        function addOtherChip(text) {
+                            try {
+                                text = String(text || '').trim();
+                                if (!text) return;
+                                const container = document.getElementById('skills1_other_chips');
+                                if (!container) return;
+                                const existing = Array.from(container.querySelectorAll('.chip')).map(c=>c.dataset.value.toLowerCase());
+                                if (existing.includes(text.toLowerCase())) return;
+                                const span = document.createElement('span');
+                                span.className = 'chip inline-flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm';
+                                span.dataset.value = text;
+                                const txt = document.createElement('span'); txt.textContent = text;
+                                const btn = document.createElement('button');
+                                btn.type = 'button';
+                                btn.className = 'ml-2 text-blue-600 font-bold hover:text-blue-800';
+                                btn.setAttribute('aria-label','Remove');
+                                btn.textContent = '✕';
+                                btn.addEventListener('click', function(){ span.remove(); });
+                                span.appendChild(txt);
+                                span.appendChild(btn);
+                                container.appendChild(span);
+                            } catch(e) { console.warn('addOtherChip failed', e); }
+                        }
+
+                        function getOtherChips() {
+                            try {
+                                const container = document.getElementById('skills1_other_chips');
+                                if (!container) return [];
+                                return Array.from(container.querySelectorAll('.chip')).map(c=>String(c.dataset.value||'').trim()).filter(Boolean);
+                            } catch(e) { return []; }
+                        }
+                        // expose helpers globally so restore/doRestore can use them
+                        try { window.addOtherChip = addOtherChip; window.getOtherChips = getOtherChips; } catch(e){}
+
+                        function renderSuggestions(q){
+                            listEl.innerHTML = '';
+                            if (!q || String(q).trim().length===0) { listEl.classList.add('hidden'); return; }
+                            const qq = String(q).toLowerCase();
+                            const matches = pool.filter(p => p.value.toLowerCase().includes(qq) || p.title.toLowerCase().includes(qq)).slice(0,8);
+                            if (!matches.length) { listEl.classList.add('hidden'); return; }
+                            matches.forEach(m => {
+                                const li = document.createElement('li');
+                                li.className = 'suggestion-item';
+                                li.textContent = m.title || m.value;
+                                li.dataset.value = m.value;
+                                li.addEventListener('click', function(){
+                                    try{
+                                        const v = this.dataset.value;
+                                        // attempt to find an existing card for this suggestion
+                                        const target = document.querySelector('.skills-card[data-value="'+v+'"]');
+                                        if (target) {
+                                            // deselect 'other' if selected, then select the matched card
+                                            const otherCard = document.querySelector('.skills-card[data-value="other"]');
+                                            if (otherCard && otherCard.classList.contains('selected')) toggleSkills1Choice(otherCard,'other');
+                                            if (!target.classList.contains('selected')) toggleSkills1Choice(target, v);
+                                            input.value = '';
+                                        } else {
+                                                    // Not an existing card: ensure 'Other' is selected and add as a chip
+                                                    const otherCard = document.querySelector('.skills-card[data-value="other"]');
+                                                    if (otherCard && !otherCard.classList.contains('selected')) toggleSkills1Choice(otherCard,'other');
+                                                    try { addOtherChip(this.textContent || v); } catch(e) { console.warn(e); }
+                                                    input.value = '';
+                                                    input.focus();
+                                                }
+                                        listEl.classList.add('hidden');
+                                    }catch(e){console.error(e);} 
+                                });
+                                listEl.appendChild(li);
+                            });
+                            listEl.classList.remove('hidden');
+                        }
+
+                        // show suggestions on input
+                        input.addEventListener('input', function(){ renderSuggestions(this.value); });
+                        input.addEventListener('focus', function(){ renderSuggestions(this.value); });
+
+                        // keyboard navigation
+                        let highlighted = -1;
+                        function updateHighlight(){
+                            const items = Array.from(listEl.querySelectorAll('.suggestion-item'));
+                            items.forEach((it,i)=> it.classList.toggle('highlight', i===highlighted));
+                            if (highlighted>=0 && items[highlighted]) items[highlighted].scrollIntoView({ block: 'nearest' });
+                        }
+                        input.addEventListener('keydown', function(e){
+                            const items = Array.from(listEl.querySelectorAll('.suggestion-item'));
+                            if (!items.length) return;
+                            if (e.key === 'ArrowDown'){ e.preventDefault(); highlighted = Math.min(highlighted+1, items.length-1); updateHighlight(); }
+                            else if (e.key === 'ArrowUp'){ e.preventDefault(); highlighted = Math.max(highlighted-1, 0); updateHighlight(); }
+                            else if (e.key === 'Enter'){
+                                e.preventDefault();
+                                if (highlighted>=0 && items[highlighted]) items[highlighted].click();
+                                else {
+                                    // treat as free text: add as a chip and ensure other card selected
+                                    try {
+                                        const val = (input.value || '').trim();
+                                        if (val) addOtherChip(val);
+                                    } catch(e) { console.warn(e); }
+                                    const otherCard = document.querySelector('.skills-card[data-value="other"]');
+                                    if (otherCard && !otherCard.classList.contains('selected')) toggleSkills1Choice(otherCard,'other');
+                                }
+                                listEl.classList.add('hidden'); highlighted = -1;
+                            }
+                        });
+
+                        // hide when clicking outside
+                        document.addEventListener('click', function(e){ if (!e.target.closest('#skills1_suggestions') && e.target !== input) listEl.classList.add('hidden'); });
+                    }catch(e){ console.warn('skills suggestions init failed', e); }
+                });
             </script>
             <script>
                 document.getElementById('skills1Next').addEventListener('click', function () {
@@ -548,14 +758,17 @@
                         const value = (card.getAttribute('data-value') || '').trim();
                         if (!value) continue;
                         if (value === 'other') {
+                            // gather chips (multiple entries) or fallback to input value
+                            const chips = (window.getOtherChips ? window.getOtherChips() : []);
                             const otherInput = document.getElementById('skills1_other_text');
-                            const otherVal = otherInput ? (otherInput.value || '').trim() : '';
-                            if (!otherVal) {
+                            const inputVal = otherInput ? (otherInput.value || '').trim() : '';
+                            if (inputVal && !chips.includes(inputVal)) chips.push(inputVal);
+                            if (!chips.length) {
                                 if (errEl) errEl.textContent = 'Please type your answer for "Other".';
                                 if (otherInput) { otherInput.focus(); otherInput.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
                                 return;
                             }
-                            selected.push(otherVal);
+                            for (const c of chips) selected.push(c);
                         } else {
                             selected.push(value);
                         }
@@ -641,6 +854,27 @@
                     if (matched) card.classList.add('selected'); else card.classList.remove('selected');
                 }catch(e){}
             });
+            // populate chips for any arr entries that don't correspond to card values/titles
+            try {
+                const matchedSet = new Set();
+                document.querySelectorAll('.skills-card').forEach(card=>{
+                    try{
+                        const v = (card.getAttribute('data-value')||'').trim().toLowerCase();
+                        const title = (card.querySelector('h3')?.textContent||'').trim().toLowerCase();
+                        if (v) matchedSet.add(v);
+                        if (title) matchedSet.add(title);
+                    }catch(e){}
+                });
+                arr.forEach(item=>{
+                    try{
+                        const s = String(item||'').trim();
+                        if (!s) return;
+                        if (!matchedSet.has(s.toLowerCase())) {
+                            if (window && window.addOtherChip) window.addOtherChip(s);
+                        }
+                    }catch(e){}
+                });
+            } catch(e) {}
         } catch (e) { console.warn('skills restore failed', e); }
     }
     if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', doRestore); else doRestore();

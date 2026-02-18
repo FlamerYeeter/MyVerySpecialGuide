@@ -46,6 +46,29 @@
         .tts-btn.speaking { transform: scale(1.04); box-shadow: 0 8px 24px rgba(30,64,175,0.12); }
 
         /* no global floating preview; use small per-field preview containers */
+
+        /* Review2: make certificate text-only details match education page styling */
+        .cert-details {
+            background-color: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.75rem;
+            padding: 0.75rem 0.9rem;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
+        }
+        .cert-details .title {
+            font-weight: 600;
+            color: #1f2937; /* gray-800 */
+            margin-bottom: 0.25rem;
+        }
+        .cert-details .meta {
+            color: #4b5563; /* gray-600 */
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+        .cert-no-file {
+            color: #6b7280; /* gray-500 */
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -2301,7 +2324,26 @@ document.addEventListener("DOMContentLoaded", () => {
         // 1) array-style storage used by Education page (canonical for review-2)
         try {
             // Prefer canonical education key(s): include uploadedCertificates_education and education_certificates
-            const arrRaw = localStorage.getItem('uploadedCertificates_education') || localStorage.getItem('education_certificates') || sessionStorage.getItem('uploadedCertificates_education') || window.__mvsg_uploadedCertificates_education || localStorage.getItem('uploadedProofs1') || localStorage.getItem('uploadedProofs') || localStorage.getItem('uploadedProofs_proof') || '[]';
+            // try canonical keys first, remember which key provided data so removals can write back
+            const tryKeys = [
+                'uploadedCertificates_education',
+                'education_certificates',
+                // session / global fallback
+                'uploadedCertificates_education_session',
+                // legacy arrays
+                'uploadedProofs1',
+                'uploadedProofs',
+                'uploadedProofs_proof'
+            ];
+            let arrRaw = null;
+            let sourceKey = null;
+            for (const k of tryKeys) {
+                try {
+                    const v = (k === 'uploadedCertificates_education_session') ? sessionStorage.getItem('uploadedCertificates_education') : localStorage.getItem(k);
+                    if (v !== null && v !== undefined && String(v).trim() !== '') { arrRaw = v; sourceKey = k; break; }
+                } catch(e){}
+            }
+            if (!arrRaw) { arrRaw = '[]'; sourceKey = null; }
             let arr = [];
             try {
                 try { console.debug('[review-2] loadSavedCerts arrRaw preview:', String(arrRaw||'').slice(0,200)); } catch(e){}
@@ -2317,12 +2359,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 try { console.debug('[review-2] parsed uploadedCertificates_education length:', Array.isArray(arr)?arr.length:null); } catch(e){}
             } catch(e){ arr = []; }
             if (Array.isArray(arr) && arr.length) {
-                const normalized = arr.map(it => {
+                const normalized = arr.map((it, _idx) => {
+                    const idx = _idx || 0;
                     if (!it) return null;
-                    if (typeof it === 'string') return { name: it, type: (it.split('.').pop()||'').toLowerCase(), data: null };
-                    return { name: it.name || it.filename || '', type: (it.type || (it.name||'').split('.').pop()||'').toLowerCase(), data: it.data || it.url || null };
+                    if (typeof it === 'string') return { name: it, type: (it.split('.').pop()||'').toLowerCase(), data: null, sourceKey, originalIndex: idx };
+                    // accept many possible key names used across pages:
+                    const name = it.name || it.filename || it.certificate_file_name || it.certificate_name || it.fileName || it.name_raw || '';
+                    const data = it.data || it.url || it.certificate_file_data || it.fileData || it.dataUrl || null;
+                    const type = (it.type || it.certificate_file_type || (name||'').split('.').pop() || '').toLowerCase();
+                    return { name: name || '', type: (type||'').toLowerCase(), data, sourceKey, originalIndex: idx };
                 }).filter(Boolean);
-                if (normalized.length) return { list: normalized, hasCertFlag: localStorage.getItem('review_certs') || null };
+                if (normalized.length) return { list: normalized, hasCertFlag: localStorage.getItem('review_certs') || null, sourceKey };
             }
         } catch(e){ /* ignore parse errors */ }
 
@@ -2331,7 +2378,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const type = readFirst(['uploadedProofType1','uploadedProofType','uploadedProofType0','uploaded_proof_type','proofType']);
             const name = readFirst(['uploadedProofName1','uploadedProofName','uploadedProofName0','uploaded_proof_name','proofName']);
         if (data && name) {
-            return { list: [{ name, type: (type||name.split('.').pop()).toLowerCase(), data }], hasCertFlag: localStorage.getItem('review_certs') || null };
+            // single-file legacy keys — indicate special sourceKey 'single-legacy' so remove can clean legacy keys
+            return { list: [{ name, type: (type||name.split('.').pop()).toLowerCase(), data }], hasCertFlag: localStorage.getItem('review_certs') || null, sourceKey: 'single-legacy' };
         }
 
         // IMPORTANT: do NOT read admin_uploaded_* here — admin files belong to review-1 only
@@ -2346,15 +2394,16 @@ document.addEventListener("DOMContentLoaded", () => {
         const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
         const nameSafe = String(item.name || '').replace(/</g,'&lt;').replace(/>/g,'&gt;');
         return `
-        <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3" data-idx="${idx}">
-            <span class="text-2xl">${icon}</span>
-            <span class="text-sm text-gray-700 truncate max-w-[420px]">${nameSafe}</span>
-            <div class="ml-auto flex gap-2">
-                <button type="button" data-idx="${idx}" data-action="view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
-                <button type="button" data-idx="${idx}" data-action="remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+            <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3" data-idx="${idx}">
+                <span class="text-2xl">${icon}</span>
+                <span class="text-sm text-gray-700 truncate max-w-[420px]">${nameSafe}</span>
+                <div class="ml-auto flex gap-2">
+                    <button type="button" data-idx="${idx}" data-action="view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
+                    <button type="button" data-idx="${idx}" data-action="replace" class="bg-[#0ea5a0] text-white text-xs px-3 py-1 rounded-md">Replace</button>
+                    <button type="button" data-idx="${idx}" data-action="remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
+                </div>
             </div>
-        </div>
-        `;
+            `;
     }
 
     // replace the previous renderPreviewBlock with one that uses loadSavedCerts()
@@ -2364,7 +2413,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!reviewContainer) return;
         const listEl = document.getElementById('certsList');
         const noEl = document.getElementById('noCertsMsg');
+        // Debug: snapshot relevant storage keys to aid troubleshooting when files don't appear
+        try {
+            console.debug('[review-2] storage keys snapshot', {
+                uploadedCertificates_education: localStorage.getItem('uploadedCertificates_education'),
+                uploadedProofs_proof: localStorage.getItem('uploadedProofs_proof'),
+                uploadedProofs1: localStorage.getItem('uploadedProofs1'),
+                uploadedProofs: localStorage.getItem('uploadedProofs'),
+                review_certs: localStorage.getItem('review_certs')
+            });
+        } catch (e) { /* ignore console errors */ }
+
         const saved = loadSavedCerts();
+        try { console.debug('[review-2] loadSavedCerts result', saved); } catch(e){}
 
         // explicit "no"
         if (saved.hasCertFlag && String(saved.hasCertFlag).toLowerCase() === 'no') {
@@ -2372,6 +2433,55 @@ document.addEventListener("DOMContentLoaded", () => {
             if (noEl) { noEl.style.display = 'block'; noEl.textContent = 'No certificates or trainings added.'; }
             return;
         }
+
+            // If there are no uploaded files but certificate text entries exist, render text-only entries
+            try {
+                // read certificate text entries from multiple possible keys (education writes to education_certificates)
+                function readCertTextArray() {
+                    try {
+                        const tryKeys = ['certificates','education_certificates'];
+                        for (const k of tryKeys) {
+                            const v = localStorage.getItem(k);
+                            if (v) {
+                                try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch(e) {}
+                            }
+                        }
+                        const ep = localStorage.getItem('education_profile');
+                        if (ep) {
+                            try { const parsed = JSON.parse(ep); if (parsed && Array.isArray(parsed.certificates)) return parsed.certificates; } catch(e) {}
+                        }
+                    } catch(e){}
+                    return null;
+                }
+                const certsFallbackArr = readCertTextArray();
+                if ((!Array.isArray(saved.list) || saved.list.length === 0) && Array.isArray(certsFallbackArr) && certsFallbackArr.length) {
+                    if (noEl) noEl.style.display = 'none';
+                    listEl.innerHTML = '';
+                    const esc = s => (s===null||s===undefined)?'':String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    const fmt = function(raw){ try { const d=new Date(String(raw)); if (!isNaN(d.getTime())) return d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}); } catch(e){} return String(raw||''); };
+                    certsFallbackArr.forEach((cert, idx) => {
+                        const card = document.createElement('div');
+                        card.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+                        card.setAttribute('data-idx', idx);
+                        card.innerHTML = `<span class="text-2xl">📁</span><div class="flex-1"></div>`;
+                        const details = document.createElement('div');
+                        details.className = 'cert-details';
+                        const cname = cert.certificate_name || cert.certificateName || cert.name || '';
+                        const issuer = cert.issued_by || cert.issuedBy || cert.issuer || '';
+                        const date = cert.date_completed || cert.dateCompleted || cert.completed || '';
+                        const desc = cert.training_description || cert.trainingDescription || '';
+                        details.innerHTML = `
+                            <div class="title">${esc(cname) || '<span class="text-gray-400">(no name)</span>'}</div>
+                            <div class="meta">${issuer ? '<strong>Issued By:</strong> ' + esc(issuer) : ''}</div>
+                            <div class="meta mt-1">${date ? '<strong>Date Completed:</strong> ' + esc(fmt(date)) : ''}</div>
+                            ${desc ? '<div class="meta mt-2"> <strong>What I learned:</strong> ' + esc(desc) + '</div>' : ''}
+                        `;
+                        card.appendChild(details);
+                        listEl.appendChild(card);
+                    });
+                    return;
+                }
+            } catch(e) { console.debug('render text-only certs fallback failed', e); }
 
         // render stacked list into certsList (preserve certsEdit and other controls)
         if (Array.isArray(saved.list) && saved.list.length) {
@@ -2382,6 +2492,56 @@ document.addEventListener("DOMContentLoaded", () => {
                 listEl.innerHTML = '';
                 // move children from wrapper into listEl (keeps event observers scoped)
                 Array.from(wrapper.children).forEach(ch => listEl.appendChild(ch));
+
+                // Also render any certificate text-only entries (those saved in 'certificates' but without an uploaded file)
+                try {
+                    const certsArr = (function(){
+                        try {
+                            const tryKeys = ['certificates','education_certificates'];
+                            for (const k of tryKeys) {
+                                const v = localStorage.getItem(k);
+                                if (v) { try { const p = JSON.parse(v); if (Array.isArray(p)) return p; } catch(e) {} }
+                            }
+                            const ep = localStorage.getItem('education_profile');
+                            if (ep) { try { const parsed = JSON.parse(ep); if (parsed && Array.isArray(parsed.certificates)) return parsed.certificates; } catch(e) {} }
+                        } catch(e){}
+                        return null;
+                    })();
+                    // helper escaper/formatter
+                    const esc = s => (s===null||s===undefined)?'':String(s).replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    const fmt = function(raw){ try { const d=new Date(String(raw)); if (!isNaN(d.getTime())) return d.toLocaleDateString(undefined,{year:'numeric',month:'long',day:'numeric'}); } catch(e){} return String(raw||''); };
+                    if (Array.isArray(certsArr) && certsArr.length) {
+                        // if there are more text entries than files, append text-only cards
+                        if (certsArr.length > saved.list.length) {
+                            for (let i = saved.list.length; i < certsArr.length; i++) {
+                                const noFileCard = document.createElement('div');
+                                noFileCard.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+                                noFileCard.setAttribute('data-idx', i);
+                                noFileCard.innerHTML = `<span class="text-2xl">📁</span><span class="text-sm text-gray-700">No uploaded file</span><div class="ml-auto flex gap-2"></div>`;
+                                listEl.appendChild(noFileCard);
+                            }
+                        }
+
+                        // attach details to all cards (file-backed or text-only) by index
+                        Array.from(listEl.children).forEach((card, idx) => {
+                            const cert = certsArr[idx] || null;
+                            if (!cert) return;
+                            const cname = cert.certificate_name || cert.certificateName || cert.name || '';
+                            const issuer = cert.issued_by || cert.issuedBy || cert.issuer || '';
+                            const date = cert.date_completed || cert.dateCompleted || cert.completed || '';
+                            const desc = cert.training_description || cert.trainingDescription || cert.training_description || '';
+                            const details = document.createElement('div');
+                            details.className = 'cert-details';
+                            details.innerHTML = `
+                                <div class="font-semibold text-gray-800">${esc(cname) || '<span class="text-gray-400">(no name)</span>'}</div>
+                                <div class="text-sm text-gray-600">${issuer ? '<strong>Issued By:</strong> ' + esc(issuer) : ''}</div>
+                                <div class="text-sm text-gray-600 mt-1">${date ? '<strong>Date Completed:</strong> ' + esc(fmt(date)) : ''}</div>
+                                ${desc ? '<div class="text-sm text-gray-700 mt-2"><strong>What I learned:</strong> ' + esc(desc) + '</div>' : ''}
+                            `;
+                            card.appendChild(details);
+                        });
+                    }
+                } catch(e){ console.debug('attach cert text failed', e); }
 
                 // bind view/remove on the newly-inserted nodes
                 listEl.querySelectorAll('[data-action="view"]').forEach(btn => {
@@ -2396,24 +2556,93 @@ document.addEventListener("DOMContentLoaded", () => {
                     btn.addEventListener('click', (ev) => {
                         const idx = Number(ev.currentTarget.dataset.idx);
                         try {
-                            const arrRaw = localStorage.getItem('uploadedProofs1');
-                            if (arrRaw) {
-                                const arr = JSON.parse(arrRaw || '[]') || [];
-                                if (Array.isArray(arr) && arr.length > idx) {
-                                    arr.splice(idx,1);
-                                    localStorage.setItem('uploadedProofs1', JSON.stringify(arr));
+                            const item = saved.list && saved.list[idx];
+                            if (!item) return;
+                            const skey = item.sourceKey || null;
+                            if (skey && skey !== 'single-legacy') {
+                                try {
+                                    const arr = JSON.parse(localStorage.getItem(skey) || '[]') || [];
+                                    if (Array.isArray(arr)) {
+                                        if (typeof item.originalIndex === 'number' && arr.length > item.originalIndex) {
+                                            arr.splice(item.originalIndex, 1);
+                                        } else {
+                                            const findIdx = arr.findIndex(a => (a && (a.name || a.fileName || a.filename)) === item.name);
+                                            if (findIdx !== -1) arr.splice(findIdx, 1);
+                                        }
+                                        localStorage.setItem(skey, JSON.stringify(arr));
+                                    }
+                                } catch(e){}
+                            } else {
+                                // legacy single-file keys cleanup (same behavior as review-1)
+                                const fname = item.name;
+                                if (fname) {
+                                    ['uploadedProofName','uploadedProofData','uploadedProofType',
+                                    'uploadedProofName1','uploadedProofData1','uploadedProofType1',
+                                    'uploadedProofName0','uploadedProofData0','uploadedProofType0','uploaded_proof_name','uploaded_proof_data','uploaded_proof_type','proofName','proofData'].forEach(k=>{
+                                        try { const v = localStorage.getItem(k); if (v && String(v).includes(fname)) localStorage.removeItem(k); } catch(e){}
+                                    });
                                 }
                             }
                         } catch(e){}
-                        const fname = saved.list[idx] && saved.list[idx].name;
-                        if (fname) {
-                            ['uploadedProofName','uploadedProofData','uploadedProofType',
-                            'uploadedProofName1','uploadedProofData1','uploadedProofType1',
-                            'uploadedProofName0','uploadedProofData0','uploadedProofType0'].forEach(k=>{
-                                try { const v = localStorage.getItem(k); if (v && String(v).includes(fname)) localStorage.removeItem(k); } catch(e){}
-                            });
-                        }
                         setTimeout(renderPreviewBlock, 30);
+                    });
+                });
+                // wire replace handlers
+                listEl.querySelectorAll('[data-action="replace"]').forEach(btn => {
+                    btn.addEventListener('click', (ev) => {
+                        const idx = Number(ev.currentTarget.dataset.idx);
+                        const it = saved.list && saved.list[idx];
+                        // create an ephemeral file input to pick replacement
+                        const picker = document.createElement('input');
+                        picker.type = 'file';
+                        picker.accept = '.jpg,.jpeg,.png,.pdf';
+                        picker.style.display = 'none';
+                        document.body.appendChild(picker);
+                        picker.addEventListener('change', function() {
+                            const f = this.files && this.files[0];
+                            if (!f) { picker.remove(); return; }
+                            const reader = new FileReader();
+                            reader.onload = function(e){
+                                try {
+                                    const dataUrl = e.target.result;
+                                    const name = f.name || '';
+                                    const type = (name.split('.').pop()||'').toLowerCase();
+                                    // prefer to persist replacement to the originating storage key for this item
+                                    try {
+                                        if (it && it.sourceKey && it.sourceKey !== 'single-legacy') {
+                                            const diskArr = JSON.parse(localStorage.getItem(it.sourceKey) || '[]') || [];
+                                            if (Array.isArray(diskArr)) {
+                                                if (typeof it.originalIndex === 'number' && diskArr.length > it.originalIndex) {
+                                                    diskArr[it.originalIndex] = { name, type, data: dataUrl };
+                                                } else {
+                                                    const findIdx = diskArr.findIndex(a => (a && (a.name || a.fileName || a.filename)) === it.name);
+                                                    if (findIdx !== -1) diskArr[findIdx] = { name, type, data: dataUrl };
+                                                    else diskArr.push({ name, type, data: dataUrl });
+                                                }
+                                                localStorage.setItem(it.sourceKey, JSON.stringify(diskArr));
+                                                console.debug('[review-2] replaced file at', idx, 'and wrote to', it.sourceKey);
+                                                setTimeout(renderPreviewBlock, 40);
+                                                picker.remove();
+                                                return;
+                                            }
+                                        }
+                                    } catch(e){ console.warn('[review-2] replace write to source failed', e); }
+
+                                    // fallback: update aggregated view and write back to canonical education key
+                                    try {
+                                        const arr = Array.isArray(saved.list) ? saved.list.slice() : [];
+                                        arr[idx] = { name, type, data: dataUrl };
+                                        localStorage.setItem('uploadedCertificates_education', JSON.stringify(arr));
+                                        console.debug('[review-2] replaced file at', idx, 'and wrote to uploadedCertificates_education');
+                                    } catch (e) { console.warn('[review-2] fallback write failed', e); }
+                                    setTimeout(renderPreviewBlock, 40);
+                                } catch (e) { console.warn('replace handler failed', e); }
+                                picker.remove();
+                            };
+                            reader.onerror = function(){ picker.remove(); };
+                            reader.readAsDataURL(f);
+                        });
+                        picker.click();
                     });
                 });
             } else {
@@ -2452,7 +2681,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // initial render and watch storage
     document.addEventListener('DOMContentLoaded', renderPreviewBlock);
     window.addEventListener('storage', function(e){
-        const watch = ['uploadedCertificates_education','education_certificates','uploadedProofs1','uploadedProofData','uploadedProofName','uploadedProofData1','uploadedProofName1','review_certs','uploadedProofs','uploadedProofs_proof','uploadedResume_file'];
+        const watch = ['uploadedCertificates_education','education_certificates','uploadedProofs1','uploadedProofData','uploadedProofName','uploadedProofData1','uploadedProofName1','review_certs','uploadedProofs','uploadedProofs_proof','uploadedResume_file','uploadedWorkExp_file'];
         if (!e.key || watch.includes(e.key)) setTimeout(renderPreviewBlock, 30);
     });
 
@@ -2476,7 +2705,21 @@ document.addEventListener("DOMContentLoaded", () => {
 (function(){
     function getResumeItem(){
         try{
-            const raw = localStorage.getItem('uploadedResume_file') || localStorage.getItem('resume') || null;
+            // 1) prefer per-job certificates stored inside job_experiences or work_experiences
+            try {
+                const rawJobs = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || null;
+                if (rawJobs) {
+                    const parsedJobs = JSON.parse(rawJobs || '[]') || [];
+                    // iterate from last to first to pick most recent uploaded cert
+                    for (let i = parsedJobs.length - 1; i >= 0; i--) {
+                        const j = parsedJobs[i];
+                        if (j && j.certificate && (j.certificate.data || j.certificate.name)) return j.certificate;
+                    }
+                }
+            } catch (e) { /* ignore per-job parse errors */ }
+
+            // 2) fall back to legacy resume/workexp single-file keys
+            const raw = localStorage.getItem('uploadedResume_file') || localStorage.getItem('uploadedWorkExp_file') || localStorage.getItem('resume') || null;
             if(!raw) return null;
             try{ const parsed = JSON.parse(raw||'null');
                 if(Array.isArray(parsed) && parsed.length) return parsed[parsed.length-1];
@@ -2491,62 +2734,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderResumeBlock(){
         try{
-            // prefer an explicit container if present, otherwise try to attach near job experiences
             let container = document.getElementById('resumeReview') || document.getElementById('review_resume') || document.getElementById('review_job_experiences') || document.getElementById('job_experiences_container') || document.getElementById('reviewContainer');
             if(!container) return;
-            // create a dedicated inner area to avoid stomping other UI
             let inner = container.querySelector('.resume-list') || container.querySelector('#resumeList');
-            if(!inner){
-                inner = document.createElement('div');
-                inner.id = 'resumeList';
-                inner.className = 'resume-list mt-3';
-                // attempt to insert at top of container
-                container.insertBefore(inner, container.firstChild);
+            if(!inner){ inner = document.createElement('div'); inner.id = 'resumeList'; inner.className = 'resume-list mt-3'; container.insertBefore(inner, container.firstChild); }
+
+            // gather per-entry certificates from job_experiences/work_experiences
+            let certs = [];
+            try {
+                const rawJobs = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || null;
+                if (rawJobs) {
+                    const parsed = JSON.parse(rawJobs || '[]') || [];
+                    for (let i = 0; i < parsed.length; i++) {
+                        const j = parsed[i];
+                        if (j && j.certificate && (j.certificate.name || j.certificate.data)) certs.push({ cert: j.certificate, index: i });
+                    }
+                }
+            } catch (e) { certs = []; }
+
+            if (!certs.length) {
+                // fallback to single legacy item
+                const it = getResumeItem();
+                if(!it){ inner.innerHTML = '<p class="text-gray-600 italic">No certificate uploaded.</p>'; return; }
+                certs = [{ cert: it, index: -1 }];
             }
 
-            const it = getResumeItem();
-            if(!it){ inner.innerHTML = '<p class="text-gray-600 italic">No resume uploaded.</p>'; return; }
+            // render stacked list
+            inner.innerHTML = '';
+            certs.forEach((entry, idx) => {
+                try {
+                    const it = entry.cert || {};
+                    const ext = (it.type || (it.name||'').split('.').pop()||'').toLowerCase();
+                    const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
+                    const nameSafe = String(it.name || 'Certificate').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    const card = document.createElement('div');
+                    card.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+                    card.innerHTML = `<div class="text-2xl">${icon}</div><div class="min-w-0"><div class="text-sm text-gray-700 truncate max-w-[520px]">${nameSafe}</div><div class="text-xs text-gray-500 mt-1">${(ext||'').toUpperCase()}</div></div><div class="ml-auto flex gap-2"><button class="view-cert bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button><button class="remove-cert bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button></div>`;
+                    // attach handlers
+                    card.querySelector('.view-cert').addEventListener('click', function(){
+                        const modal = document.getElementById('filePreviewModal') || document.getElementById('fileModal');
+                        const content = document.getElementById('filePreviewContent') || document.getElementById('modalContent');
+                        if(modal && content){
+                            content.innerHTML = `<h3 class="font-semibold mb-2">${nameSafe}</h3>`;
+                            if(['jpg','jpeg','png'].includes(ext)) content.innerHTML += `<img src="${it.data || ''}" class="max-h-[85vh] mx-auto rounded-lg shadow" />`;
+                            else if(ext==='pdf') content.innerHTML += `<iframe src="${it.data || ''}" class="w-full h-[85vh] rounded-lg border"></iframe>`;
+                            else content.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                            modal.classList.remove('hidden');
+                        } else alert('No preview available.');
+                    });
 
-            const ext = (it.type || (it.name||'').split('.').pop()||'').toLowerCase();
-            const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
-            const nameSafe = String(it.name || 'Resume').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            inner.innerHTML = `
-                <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-                    <div class="text-2xl">${icon}</div>
-                    <div class="min-w-0">
-                        <div class="text-sm text-gray-700 truncate max-w-[420px]">${nameSafe}</div>
-                        <div class="text-xs text-gray-500 mt-1">${(ext||'').toUpperCase()}</div>
-                    </div>
-                    <div class="ml-auto flex gap-2">
-                        <button id="resume_view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
-                        <button id="resume_remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
-                    </div>
-                </div>`;
+                    card.querySelector('.remove-cert').addEventListener('click', function(){
+                        try {
+                            if (entry.index >= 0) {
+                                // remove certificate from the corresponding job entry
+                                const rawJobs2 = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || null;
+                                if (rawJobs2) {
+                                    const parsed2 = JSON.parse(rawJobs2 || '[]') || [];
+                                    if (parsed2[entry.index]) { delete parsed2[entry.index].certificate; localStorage.setItem('job_experiences', JSON.stringify(parsed2)); }
+                                }
+                            } else {
+                                // legacy: remove from uploadedResume_file array
+                                const raw = localStorage.getItem('uploadedResume_file');
+                                if (raw) { const arr = JSON.parse(raw||'[]')||[]; if(arr && arr.length){ arr.pop(); localStorage.setItem('uploadedResume_file', JSON.stringify(arr)); } }
+                            }
+                        } catch(e) { console.warn(e); }
+                        setTimeout(renderResumeBlock, 40);
+                    });
 
-            inner.querySelector('#resume_view').addEventListener('click', function(){
-                // reuse preview modal if present
-                const modal = document.getElementById('filePreviewModal') || document.getElementById('fileModal');
-                const content = document.getElementById('filePreviewContent') || document.getElementById('modalContent');
-                if(modal && content){
-                    content.innerHTML = `<h3 class="font-semibold mb-2">${nameSafe}</h3>`;
-                    if(['jpg','jpeg','png'].includes(ext)) content.innerHTML += `<img src="${it.data || ''}" class="max-h-[85vh] mx-auto rounded-lg shadow" />`;
-                    else if(ext==='pdf') content.innerHTML += `<iframe src="${it.data || ''}" class="w-full h-[85vh] rounded-lg border"></iframe>`;
-                    else content.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
-                    modal.classList.remove('hidden');
-                } else {
-                    alert('No preview available.');
-                }
-            });
-
-            inner.querySelector('#resume_remove').addEventListener('click', function(){
-                try{
-                    const raw = localStorage.getItem('uploadedResume_file');
-                    if(raw){
-                        const arr = JSON.parse(raw||'[]')||[];
-                        if(arr && arr.length){ arr.pop(); localStorage.setItem('uploadedResume_file', JSON.stringify(arr)); }
-                    }
-                }catch(e){}
-                setTimeout(renderResumeBlock, 30);
+                    inner.appendChild(card);
+                } catch(e) { console.warn('render cert failed', e); }
             });
 
         }catch(e){ console.warn('renderResumeBlock failed', e); }
@@ -2554,7 +2810,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.addEventListener('DOMContentLoaded', renderResumeBlock);
     window.addEventListener('storage', function(e){
-        const watch = ['uploadedResume_file','uploadedCertificates_education','education_certificates'];
+        const watch = ['uploadedResume_file','uploadedWorkExp_file','uploadedCertificates_education','education_certificates'];
         if(!e.key || watch.includes(e.key)) setTimeout(renderResumeBlock, 40);
     });
     // expose for debugging

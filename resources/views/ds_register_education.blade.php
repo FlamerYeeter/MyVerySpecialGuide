@@ -39,13 +39,41 @@
             /* light blue */
         }
 
-        .tts-btn.speaking {
-            background-color: #2563eb !important;
-            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
-            transform: scale(1.03);
-        }
-    </style>
-    </style>
+                .tts-btn.speaking {
+                        background-color: #2563eb !important;
+                        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+                        transform: scale(1.03);
+                }
+
+                /* OCR Loading Spinner */
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                .ocr-spinner {
+                    border: 4px solid #e5e7eb;
+                    border-top: 4px solid #2E2EFF;
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    animation: spin 1s linear infinite;
+                }
+                .ocr-loading-container {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 12px;
+                    background-color: #f0f4ff;
+                    border: 1px solid #2E2EFF;
+                    border-radius: 8px;
+                    margin-top: 12px;
+                }
+                .ocr-loading-text {
+                    font-size: 14px;
+                    color: #1e40af;
+                    font-weight: 500;
+                }
+        </style>
 </head>
 
 <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
@@ -389,8 +417,9 @@
                                                 alt="Calendar icon" class="w-5 h-5" />
                                             Date Completed
                                         </label>
-                                        <input type="date" name="date_completed"
-                                            class="date_completed w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" readonly/>
+                                                     <input type="text" name="date_completed" 
+                                                      class="date-completed-display w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-700 focus:ring-0 focus:outline-none bg-white mt-1"
+                                                          placeholder="e.g. February 12, 2026" readonly />
                                         <p class="italic text-xs text-gray-500 mt-1">(Petsa kung kailan natapos)</p>
                                     </div>
 
@@ -410,6 +439,39 @@
                                 </div>
                             </div>
                         </template>
+
+                        <script>
+                            // Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
+                            window.formatDateWords = function(raw) {
+                                if (raw === null || typeof raw === 'undefined' || raw === '') return '';
+                                const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                                try {
+                                    // normalize strings
+                                    const s = String(raw).trim();
+                                    // try parsing with Date first
+                                    const d = new Date(s);
+                                    if (!Number.isNaN(d.getTime())) {
+                                        const day = d.getDate();
+                                        const monthName = months[d.getMonth()];
+                                        const year = d.getFullYear();
+                                        return `${monthName} ${day}, ${year}`;
+                                    }
+                                } catch (e) {
+                                    // fallthrough to ISO-like parsing
+                                }
+                                // try ISO-like YYYY-MM-DD
+                                const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+                                if (m) {
+                                    const yyyy = m[1];
+                                    const mmIdx = parseInt(m[2], 10) - 1;
+                                    const dd = parseInt(m[3], 10);
+                                    const mm = months[mmIdx] || m[2];
+                                    return `${mm} ${dd}, ${yyyy}`;
+                                }
+                                // fallback: return up to first 15 chars to avoid overly long strings
+                                return String(raw).slice(0, 15);
+                            };
+                        </script>
 
                         <div class="mt-6 text-center mb-8">
                             <button id="addCertBtn" type="button"
@@ -659,6 +721,49 @@
         });
     </script>
 
+    <script>
+        // Diagnostic probe: confirm education scripts loaded, show relevant LS keys,
+        // and capture any file input change events (delegated) so we see if handlers fire.
+        (function(){
+            try{
+                console.debug('[education] probe:init');
+                const dumpKeys = ['uploadedCertificates_education','uploadedProofs_proof','uploadedProofs1','uploadedProofs','review_certs'];
+                const snap = {};
+                dumpKeys.forEach(k => { try { snap[k] = localStorage.getItem(k); } catch (e) { snap[k] = '<err>'; } });
+                console.debug('[education] storage snapshot', snap);
+
+                // delegated listener for any file input change anywhere on page
+                document.addEventListener('change', function(ev){
+                    try{
+                        const t = ev.target;
+                        if (!t) return;
+                        if (t.tagName && t.tagName.toLowerCase() === 'input' && t.type === 'file') {
+                            console.debug('[education] file-input change captured', t.id || t.name || '(no-id)', t.files && t.files.length);
+                        }
+                    } catch(err) {
+                        console.warn('[education] probe change handler error', err);
+                    }
+                }, true);
+            } catch (e) {
+                console.warn('[education] probe init failed', e);
+            }
+        })();
+    </script>
+
+    <script>
+        // Ensure a global canonical key exists so other inline handlers can reference it
+        try {
+            window.LS_KEY = window.LS_KEY || 'uploadedCertificates_education';
+            // also create a simple global var for older closures that expect LS_KEY in scope
+            if (typeof LS_KEY === 'undefined') {
+                var LS_KEY = window.LS_KEY; // eslint-disable-line no-var
+            }
+            console.debug('[education] global LS_KEY ensured', window.LS_KEY);
+        } catch (e) {
+            console.warn('[education] failed to ensure global LS_KEY', e);
+        }
+    </script>
+
     <!-- Small inline helper to toggle selection and write the value -->
     <script>
         // filepath: c:\xampp\htdocs\MyVerySpecialGuide\resources\views\ds_register_education.blade.php
@@ -897,6 +1002,7 @@
                     if (adminNames.length && Array.isArray(arr)) {
                         arr = arr.filter(it => !(it && it.name && adminNames.includes(String(it.name))));
                     }
+                    console.debug('[education] loadSavedProofs raw:', raw, 'parsed length:', Array.isArray(arr)?arr.length:0);
                     return arr;
                 } catch (e) {
                     return [];
@@ -906,10 +1012,66 @@
             window.saveProofs = function(list) {
                 try {
                     localStorage.setItem(LS_KEY, JSON.stringify(list || []));
+                    console.debug('[education] saveProofs: saved', Array.isArray(list)?list.length:0, 'items to', LS_KEY);
                 } catch (e) {
                     console.warn("saveProofs failed", e);
+                    // surface possible quota or serialization errors
+                    try { console.debug('[education] saveProofs attempting fallback write'); localStorage.setItem(LS_KEY, '[]'); } catch (ee) { console.error('[education] fallback write failed', ee); }
                 }
             }
+
+            // Migrate legacy proof keys into the canonical `uploadedCertificates_education` key.
+            // This runs once on page load when canonical key is missing or null.
+            window.migrateLegacyProofs = function() {
+                try {
+                    const canonRaw = localStorage.getItem(LS_KEY);
+                    if (canonRaw && canonRaw !== 'null') return; // canonical exists
+
+                    const migrated = [];
+
+                    // Helper: normalize and push array-format legacy keys
+                    const tryPushArrayKey = (k) => {
+                        try {
+                            const raw = localStorage.getItem(k);
+                            if (!raw || raw === 'null') return;
+                            const parsed = JSON.parse(raw);
+                            if (Array.isArray(parsed) && parsed.length) {
+                                parsed.forEach(it => {
+                                    if (!it) return;
+                                    const name = it.name || it.fileName || it.certificate_file_name || it.uploadedProofName || it.filename;
+                                    const data = it.data || it.fileData || it.certificate_file_data || it.uploadedProofData || it.dataUrl || it.file || it.fileDataUrl;
+                                    const type = it.type || it.fileType || it.certificate_file_type || it.uploadedProofType || (name ? String(name).split('.').pop().toLowerCase() : '');
+                                    if (name && data) migrated.push({name: name, type: type || getFileType(name), data: data});
+                                });
+                            }
+                        } catch (e) { /* ignore */ }
+                    };
+
+                    ['uploadedCertificates_education','uploadedProofs_proof','uploadedProofs1','uploadedProofs','uploadedProofs_proof'].forEach(tryPushArrayKey);
+
+                    // Single-file legacy keys (common variants)
+                    const singleSets = [
+                        ['uploadedProofName','uploadedProofData','uploadedProofType'],
+                        ['uploadedProofName1','uploadedProofData1','uploadedProofType1'],
+                        ['uploadedProofName0','uploadedProofData0','uploadedProofType0']
+                    ];
+                    singleSets.forEach(([nK,dK,tK]) => {
+                        try {
+                            const name = localStorage.getItem(nK);
+                            const data = localStorage.getItem(dK);
+                            const type = localStorage.getItem(tK);
+                            if (name && data) migrated.push({name: name, type: type || getFileType(name), data: data});
+                        } catch (e) { /* ignore */ }
+                    });
+
+                    if (migrated.length) {
+                        localStorage.setItem(LS_KEY, JSON.stringify(migrated));
+                        console.debug('[review-2] migrateLegacyProofs: migrated', migrated.length, 'items into', LS_KEY);
+                    }
+                } catch (e) {
+                    console.warn('migrateLegacyProofs failed', e);
+                }
+            };
 
             window.hideFileInfo = function() {
                 if (!fileInfo) return;
@@ -994,11 +1156,9 @@
                         }
                         if (typeof hideFileInfo === "function") hideFileInfo();
                         console.log("File input cleared & education localStorage removed");
-                    } else {
-                        fileUploadSection.style.display = "block"; // show section
-                        console.log("certYes selected → fileuploadSection shown");
-                    }
-                }
+                    });
+                });
+
             };
 
             // Initial check on page load
@@ -1153,6 +1313,8 @@
 
             // init UI from storage
             (function init() {
+                // run migration from legacy keys (if canonical key missing)
+                try { if (typeof window.migrateLegacyProofs === 'function') window.migrateLegacyProofs(); } catch(e) { console.warn('migration call failed', e); }
                 const saved = window.loadSavedProofs();
                 if (saved && saved.length) {
                     if (fileuploadSection) fileuploadSection.style.display = "block";
@@ -1676,8 +1838,11 @@
                                     const existing = window.loadSavedProofs ? window.loadSavedProofs() : (JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]);
                                     const filtered = (Array.isArray(existing) ? existing.filter(f => String((f && (f.name||f.filename||'')).toLowerCase()) !== fname.toLowerCase()) : []);
                                     filtered.push({ name: fname, type: ftype, data: fdata });
-                                    try { if (typeof window.saveProofs === 'function') window.saveProofs(filtered); else localStorage.setItem(LS_KEY, JSON.stringify(filtered)); } catch(e){}
-                                    try { if (typeof window.showFileList === 'function') window.showFileList(filtered); } catch(e){}
+                                    try { 
+                                        console.debug('[education] persisting per-entry file', fname, 'size:', (fdata||'').length);
+                                        if (typeof window.saveProofs === 'function') window.saveProofs(filtered); else localStorage.setItem(LS_KEY, JSON.stringify(filtered)); 
+                                    } catch(e){ console.warn('[education] persist failed', e); }
+                                    try { if (typeof window.showFileList === 'function') window.showFileList(filtered); } catch(e){ console.warn('[education] showFileList failed', e); }
                                 }
                             } catch(e) { console.warn('persist per-entry file failed', e); }
 
@@ -1690,12 +1855,25 @@
                                 ocr_type: type
                             };
 
+                            // Create and show loading indicator
+                            const loadingId = `ocr-loading-${Date.now()}`;
+                            const loadingDiv = document.createElement('div');
+                            loadingDiv.className = 'ocr-loading-container';
+                            loadingDiv.id = loadingId;
+                            loadingDiv.innerHTML = `
+                                <div class="ocr-spinner"></div>
+                                <span class="ocr-loading-text">Processing OCR... Please wait</span>
+                            `;
+                            try { if (proofInfo) proofInfo.appendChild(loadingDiv); else if (targetNode) targetNode.appendChild(loadingDiv); } catch(e){}
+
                             fetch('db/ocr-validation.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify(datas)
                             })
                             .then(response => {
+                                // remove loading early so UI is responsive even if parsing fails
+                                try{ const ld = document.getElementById(loadingId); if(ld) ld.remove(); }catch(e){}
                                 // Always try to parse JSON, even on errors
                                 return response.json().then(jsonData => ({
                                     ok: response.ok,
@@ -1707,19 +1885,70 @@
                                 if (res.ok) {
                                     debugger;
                                     console.log('OCR Result:', res.body);
-                                    if (res.body.data.ocrtype == 'certificate_proof') {
-                                        alert('Cert Name: ' + res.body.data.ai_data.cert_name + ' Issued By: ' + res.body.data.ai_data.issued_by + ' Date Completed: ' + res.body.data.ai_data.date_completed + ' OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
-                                    }
-                                    else {
-                                        alert('OCR Type: ' + res.body.data.ocrtype + ' processed successfully.');
-                                    }
-                                
+                                    try {
+                                        const detected = res.body.data && res.body.data.ocrtype;
+                                        const ai = res.body.data && res.body.data.ai_data ? res.body.data.ai_data : {};
+                                        if (detected === 'certificate_proof') {
+                                            // Autofill inputs within this certificate entry (targetNode)
+                                            try {
+                                                const certNameEl = targetNode.querySelector('input[name="certificate_name"]');
+                                                const issuedByEl = targetNode.querySelector('input[name="issued_by"]');
+                                                const dateCompletedEl = targetNode.querySelector('input[name="date_completed"]');
+
+                                                if (certNameEl && ai.cert_name) certNameEl.value = ai.cert_name;
+                                                if (issuedByEl && (ai.issued_by || ai.issuer)) issuedByEl.value = ai.issued_by || ai.issuer || '';
+                                                if (dateCompletedEl && (ai.date_completed || ai.date)) {
+                                                    // try to parse to yyyy-mm-dd
+                                                    let raw = ai.date_completed || ai.date;
+                                                    try {
+                                                        const d = new Date(raw);
+                                                        if (!Number.isNaN(d.getTime())) {
+                                                            const yyyy = d.getFullYear();
+                                                            const mm = String(d.getMonth()+1).padStart(2,'0');
+                                                            const dd = String(d.getDate()).padStart(2,'0');
+                                                            dateCompletedEl.value = `${yyyy}-${mm}-${dd}`;
+                                                        } else {
+                                                            dateCompletedEl.value = String(raw).slice(0,10);
+                                                        }
+                                                    } catch(e){ dateCompletedEl.value = String(raw).slice(0,10); }
+
+                                                    // also set human-readable display with month name
+                                                    try {
+                                                        const displayEl = targetNode.querySelector('.date-completed-display');
+                                                        const formatted = window.formatDateWords ? window.formatDateWords(raw || dateCompletedEl.value) : String(dateCompletedEl.value).slice(0,10);
+                                                        if (displayEl) { displayEl.value = formatted; displayEl.classList.remove('hidden'); }
+                                                    } catch(e) {}
+                                                }
+
+                                                // trigger input events so any listeners react
+                                                try { [certNameEl, issuedByEl, dateCompletedEl].forEach(el=>{ if(el){ el.dispatchEvent(new Event('input',{bubbles:true})); }}); } catch(e){}
+
+                                                // persist a lightweight summary for later
+                                                try { localStorage.setItem('education_ocr', JSON.stringify({ type: 'certificate_proof', data: ai })); } catch(e){}
+
+                                                // optionally show a small confirmation under proofInfo
+                                                try {
+                                                    const prev = proofInfo.querySelector('.ocr-summary');
+                                                    const detectedDate = ai.date_completed || ai.date || '';
+                                                    const formattedDetectedDate = window.formatDateWords ? window.formatDateWords(detectedDate) : (detectedDate ? String(detectedDate).slice(0,10) : '');
+                                                    const txt = `Detected: ${ai.cert_name || '(name)'} — ${ai.issued_by || ai.issuer || '(issuer)'}${formattedDetectedDate ? ' ('+ formattedDetectedDate +')' : ''}`;
+                                                    if (prev) prev.textContent = txt; else proofInfo.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">${txt}</div>`);
+                                                } catch(e){}
+
+                                            } catch(e) { console.warn('Failed to autofill certificate fields', e); }
+                                        } else {
+                                            // other OCR types — show basic notification
+                                            alert('OCR Type: ' + detected + ' processed successfully.');
+                                        }
+                                    } catch(e) { console.warn('Processing OCR result failed', e); }
+
                                 } else {
                                     // ❌ Error
                                     alert(`Error ${res.status}: ${res.body.message || 'Unknown error'}`);
                                 }
                             })
                             .catch(err => {
+                                try{ const ld = document.getElementById(loadingId); if(ld) ld.remove(); }catch(e){}
                                 console.error('Fetch error:', err);
                                 alert('Failed to fetch OCR data.');
                             });  
@@ -1757,6 +1986,14 @@
                     node.querySelector('input[name="certificate_name"]').value = item.certificate_name || '';
                     node.querySelector('input[name="issued_by"]').value = item.issued_by || '';
                     node.querySelector('input[name="date_completed"]').value = item.date_completed || '';
+                    // set readable display for date completed
+                        try {
+                        const disp = node.querySelector('.date-completed-display');
+                        if (disp && item.date_completed) {
+                            disp.value = (window.formatDateWords ? window.formatDateWords(item.date_completed) : String(item.date_completed).slice(0,10));
+                            disp.classList.remove('hidden');
+                        }
+                    } catch(e) {}
                     node.querySelector('input[name="training_description"]').value = item.training_description || '';
                 }
                 const removeBtn = node.querySelector('.remove-cert');
@@ -1839,130 +2076,130 @@
                     writeHidden([]);
                 }
             });
-        })();
-    </script>
+                })();
+            </script>
 
-</body>
+            <script>
+                // Restore education form state when user returns to this page
+                window.addEventListener('DOMContentLoaded', function() {
+                    try {
+                        const edu_level = localStorage.getItem('edu_level');
+                        const school_name = localStorage.getItem('school_name');
+                        const review_certs = localStorage.getItem('review_certs');
+                        const certs_json = localStorage.getItem('education_certificates');
 
-</html>
-
-<script>
-    // Restore education form state when user returns to this page
-    window.addEventListener('DOMContentLoaded', function() {
-        try {
-            const edu_level = localStorage.getItem('edu_level');
-            const school_name = localStorage.getItem('school_name');
-            const review_certs = localStorage.getItem('review_certs');
-            const certs_json = localStorage.getItem('education_certificates');
-
-            if (edu_level) {
-                const el = document.getElementById('edu_level');
-                if (el) {
-                    el.value = edu_level;
-                    el.dispatchEvent(new Event('change', {
-                        bubbles: true
-                    }));
-                }
-            }
-            // Restore visual selection on education cards
-            try {
-                const v = (edu_level || '').toString();
-                if (v) {
-                    // attempts: attribute data-edu, data-value, id, or matching label text inside .education-card
-                    let found = null;
-                    found = document.querySelector('.education-card[data-edu="' + v + '"]') || document
-                        .querySelector('.education-card[data-value="' + v + '"]') || document.getElementById(
-                            'edu_' + v.replace(/\s+/g, '_'));
-                    if (!found) {
-                        document.querySelectorAll('.education-card').forEach(c => {
-                            try {
-                                const txt = (c.textContent || '').trim().toLowerCase();
-                                if (txt && txt.indexOf(v.toLowerCase()) !== -1) found = found || c;
-                            } catch (e) {}
-                        });
-                    }
-                    if (found) {
-                        document.querySelectorAll('.education-card').forEach(c => c.classList.remove(
-                            'selected'));
-                        found.classList.add('selected');
-                    }
-                }
-            } catch (e) {
-                console.debug('could not restore education card selection', e);
-            }
-            if (school_name) {
-                const s = document.getElementById('school_name');
-                if (s) {
-                    s.value = school_name;
-                    s.dispatchEvent(new Event('input', {
-                        bubbles: true
-                    }));
-                }
-            }
-
-            if (review_certs) {
-                const radio = document.querySelector('input[name="certs"][value="' + review_certs + '"]');
-                if (radio) {
-                    radio.checked = true;
-                    radio.dispatchEvent(new Event('change', {
-                        bubbles: true
-                    }));
-                }
-            }
-
-            if (certs_json) {
-                try {
-                    const arr = JSON.parse(certs_json || '[]');
-                    if (Array.isArray(arr) && arr.length) {
-                        // put canonical data into hidden field so existing certificate UI code picks it up
-                        const hidden = document.getElementById('certificates');
-                        if (hidden) hidden.value = JSON.stringify(arr);
-
-                        // if the certificate UI builder already exists, rebuild the UI entries to reflect saved data
-                        setTimeout(() => {
-                            try {
-                                const container = document.getElementById('certs_container');
-                                const tpl = document.getElementById('cert_template');
-                                if (!container || !tpl) return;
-                                // clear existing
-                                container.innerHTML = '';
-                                arr.forEach(item => {
-                                    const node = tpl.content.firstElementChild.cloneNode(true);
-                                    const nameEl = node.querySelector(
-                                        'input[name="certificate_name"]');
-                                    const issuedEl = node.querySelector(
-                                        'input[name="issued_by"]');
-                                    const dateEl = node.querySelector(
-                                        'input[name="date_completed"]');
-                                    const descEl = node.querySelector(
-                                        'input[name="training_description"]');
-                                    if (nameEl) nameEl.value = item.certificate_name || item
-                                        .name || item.title || '';
-                                    if (issuedEl) issuedEl.value = item.issued_by || item
-                                        .issuer || '';
-                                    if (dateEl) dateEl.value = item.date_completed || item
-                                        .date || '';
-                                    if (descEl) descEl.value = item.training_description || item
-                                        .description || '';
-                                    container.appendChild(node);
-                                });
-                                // notify sync handlers
-                                container.querySelectorAll('input').forEach(i => i.dispatchEvent(
-                                    new Event('input', {
-                                        bubbles: true
-                                    })));
-                            } catch (e) {
-                                console.warn('cert restore failed', e);
+                        if (edu_level) {
+                            const el = document.getElementById('edu_level');
+                            if (el) {
+                                el.value = edu_level;
+                                el.dispatchEvent(new Event('change', {
+                                    bubbles: true
+                                }));
                             }
-                        }, 50);
-                    }
-                } catch (e) {
-                    console.warn('invalid education_certificates', e);
-                }
-            }
+                        }
+                        // Restore visual selection on education cards
+                        try {
+                            const v = (edu_level || '').toString();
+                            if (v) {
+                                // attempts: attribute data-edu, data-value, id, or matching label text inside .education-card
+                                let found = null;
+                                found = document.querySelector('.education-card[data-edu="' + v + '"]') || document
+                                    .querySelector('.education-card[data-value="' + v + '"]') || document.getElementById(
+                                        'edu_' + v.replace(/\s+/g, '_'));
+                                if (!found) {
+                                    document.querySelectorAll('.education-card').forEach(c => {
+                                        try {
+                                            const txt = (c.textContent || '').trim().toLowerCase();
+                                            if (txt && txt.indexOf(v.toLowerCase()) !== -1) found = found || c;
+                                        } catch (e) {}
+                                    });
+                                }
+                                if (found) {
+                                    document.querySelectorAll('.education-card').forEach(c => c.classList.remove(
+                                        'selected'));
+                                    found.classList.add('selected');
+                                }
+                            }
+                        } catch (e) {
+                            console.debug('could not restore education card selection', e);
+                        }
+                        if (school_name) {
+                            const s = document.getElementById('school_name');
+                            if (s) {
+                                s.value = school_name;
+                                s.dispatchEvent(new Event('input', {
+                                    bubbles: true
+                                }));
+                            }
+                        }
 
-        } catch (e) {
-            console.warn('education restore failed', e);
-        }
-    });
-</script>
+                        if (review_certs) {
+                            const radio = document.querySelector('input[name="certs"][value="' + review_certs + '"]');
+                            if (radio) {
+                                radio.checked = true;
+                                radio.dispatchEvent(new Event('change', {
+                                    bubbles: true
+                                }));
+                            }
+                        }
+
+                        if (certs_json) {
+                            try {
+                                const arr = JSON.parse(certs_json || '[]');
+                                if (Array.isArray(arr) && arr.length) {
+                                    // put canonical data into hidden field so existing certificate UI code picks it up
+                                    const hidden = document.getElementById('certificates');
+                                    if (hidden) hidden.value = JSON.stringify(arr);
+
+                                    // if the certificate UI builder already exists, rebuild the UI entries to reflect saved data
+                                    setTimeout(() => {
+                                        try {
+                                            const container = document.getElementById('certs_container');
+                                            const tpl = document.getElementById('cert_template');
+                                            if (!container || !tpl) return;
+                                            // clear existing
+                                            container.innerHTML = '';
+                                            arr.forEach(item => {
+                                                const node = tpl.content.firstElementChild.cloneNode(true);
+                                                const nameEl = node.querySelector(
+                                                    'input[name="certificate_name"]');
+                                                const issuedEl = node.querySelector(
+                                                    'input[name="issued_by"]');
+                                                const dateEl = node.querySelector(
+                                                    'input[name="date_completed"]');
+                                                const descEl = node.querySelector(
+                                                    'input[name="training_description"]');
+                                                if (nameEl) nameEl.value = item.certificate_name || item
+                                                    .name || item.title || '';
+                                                if (issuedEl) issuedEl.value = item.issued_by || item
+                                                    .issuer || '';
+                                                if (dateEl) dateEl.value = item.date_completed || item
+                                                    .date || '';
+                                                if (descEl) descEl.value = item.training_description || item
+                                                    .description || '';
+                                                container.appendChild(node);
+                                            });
+                                            // notify sync handlers
+                                            container.querySelectorAll('input').forEach(i => i.dispatchEvent(
+                                                new Event('input', {
+                                                    bubbles: true
+                                                })));
+                                        } catch (e) {
+                                            console.warn('cert restore failed', e);
+                                        }
+                                    }, 50);
+                                }
+                            } catch (e) {
+                                console.warn('invalid education_certificates', e);
+                            }
+                        }
+
+                    } catch (e) {
+                        console.warn('education restore failed', e);
+                    }
+                });
+            </script>
+
+        </body>
+
+        </html>

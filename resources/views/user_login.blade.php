@@ -39,8 +39,24 @@
       <input name="email" type="text" placeholder="Email"
         value="{{ old('email') }}"
         class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-      <input name="password" type="password" placeholder="Password"
-        class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+      <div class="relative">
+        <input id="password" name="password" type="password" placeholder="Password"
+          class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10" />
+        <button type="button" id="togglePassword"
+          class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-600 hover:text-gray-800 focus:outline-none">
+          <svg id="eyeOpen" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+          <svg id="eyeClosed" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.965 9.965 0 012.223-3.417" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 3l18 18" />
+          </svg>
+        </button>
+      </div>
       <button type="submit"
         class="w-full bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold py-3 rounded-md transition-all duration-300">
         Log In
@@ -156,6 +172,27 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
       loadingModal.classList.add('hidden');
       errorDiv.style.color = 'red';
       errorDiv.textContent = 'Server error while sending reset link.';
+    }
+  });
+})();
+
+// Show / Hide password toggle
+(function(){
+  const toggle = document.getElementById('togglePassword');
+  if (!toggle) return;
+  const pw = document.getElementById('password');
+  const eyeOpen = document.getElementById('eyeOpen');
+  const eyeClosed = document.getElementById('eyeClosed');
+  toggle.addEventListener('click', function(){
+    if (!pw) return;
+    if (pw.type === 'password') {
+      pw.type = 'text';
+      if (eyeOpen) eyeOpen.classList.add('hidden');
+      if (eyeClosed) eyeClosed.classList.remove('hidden');
+    } else {
+      pw.type = 'password';
+      if (eyeOpen) eyeOpen.classList.remove('hidden');
+      if (eyeClosed) eyeClosed.classList.add('hidden');
     }
   });
 })();

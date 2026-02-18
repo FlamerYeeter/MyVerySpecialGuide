@@ -102,6 +102,22 @@
                                 <option value="Translocation Down">Translocation Down Syndrome</option>
                             </select>
                         </div>
+                        <div class="mt-8">
+                            <label for="r_cddType1" class="block text-lg font-semibold mb-3">Congenital or Developmental Disability <span
+                                    class="text-gray-500">(optional)</span></label>
+                            <select id="r_cddType1" disabled
+                                class="w-full sm:w-80 border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none"
+                                style="margin-left:-6px;">
+                                <option value="" disabled selected>-- Select Type --</option>
+                                <option value="Congenital Heart Defects">Congenital Heart Defects</option>
+                                <option value="Hearing/Vision">Hearing/Vision</option>
+                                <option value="Thyroid issues">Thyroid issues</option>
+                                <option value="Low Muscle Tone (Hypotonia)">Low Muscle Tone (Hypotonia)</option>
+                                <option value="Others">Others</option>
+                            </select>
+                            <input type="text" id="r_cddType1Other" placeholder="Please specify"
+                                class="w-full border border-gray-300 rounded-xl px-5 py-3 mt-2 hidden" />
+                        </div>
                     </section>
 
 <!-- Parent/Guardian Info -->
@@ -484,6 +500,37 @@ document.addEventListener('DOMContentLoaded', () => {
             set('phone', u.CONTACT_NUMBER);
             set('address', u.ADDRESS);
             set('r_dsType1', u.TYPES_OF_DS);
+            const cddVal = u.CDD_TYPE ?? u.cdd_type ?? u.CDDTYPE ?? u.cddType ?? u.CDD ?? u.cdd ?? '';
+            // If the returned value matches one of the known options, use it; otherwise treat as "Others" text
+            const knownCdd = [
+                'Congenital Heart Defects', 'Hearing/Vision', 'Thyroid issues', 'Low Muscle Tone (Hypotonia)'
+            ];
+            if (cddVal && knownCdd.includes(cddVal)) {
+                set('r_cddType1', cddVal);
+                set('r_cddType1Other', '');
+            } else if (cddVal) {
+                set('r_cddType1', 'Others');
+                set('r_cddType1Other', cddVal);
+            } else {
+                set('r_cddType1', '');
+                set('r_cddType1Other', '');
+            }
+
+            // Ensure the Other textbox visibility follows the selected value (visible even in view mode)
+            try {
+                const _sel = document.getElementById('r_cddType1');
+                const _other = document.getElementById('r_cddType1Other');
+                if (_sel && _other) {
+                    if (_sel.value === 'Others' || _sel.value === 'Other') {
+                        _other.classList.remove('hidden');
+                        // only required when editing
+                        _other.required = false;
+                    } else {
+                        _other.classList.add('hidden');
+                        _other.required = false;
+                    }
+                }
+            } catch(e) { /* ignore */ }
 
             // Guardian
             set('g_first_name', u.GUARDIAN_FIRST_NAME);
@@ -591,7 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     // list of fields to toggle (personal + guardian)
     const fieldIds = [
-        "first_name","last_name","date_of_birth","email","phone","address","r_dsType1",
+        "first_name","last_name","date_of_birth","email","phone","address","r_dsType1","r_cddType1","r_cddType1Other",
         "g_first_name","g_last_name","g_email","g_phone","guardian_relationship"
     ];
 
@@ -613,6 +660,36 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 el.classList.add('bg-gray-50','select-none');
                 el.classList.remove('bg-white','text-gray-900');
+            }
+        });
+
+            // If toggling edit mode, ensure the CDD "Other" input visibility follows the select.
+            // Show the Other textbox whenever the select value is Others; only make it required when editing.
+            const sel = document.getElementById('r_cddType1');
+            const other = document.getElementById('r_cddType1Other');
+            if (sel && other) {
+                if (sel.value === 'Others' || sel.value === 'Other') {
+                    other.classList.remove('hidden');
+                    other.required = !!editable; // required only in edit mode
+                } else {
+                    other.classList.add('hidden');
+                    other.required = false;
+                }
+            }
+    }
+
+    // Show/hide the Other input when editing the CDD select
+    const cddSelect = document.getElementById('r_cddType1');
+    const cddOther = document.getElementById('r_cddType1Other');
+    if (cddSelect && cddOther) {
+        cddSelect.addEventListener('change', function() {
+            if (this.value === 'Others') {
+                cddOther.classList.remove('hidden');
+                cddOther.required = true;
+            } else {
+                cddOther.classList.add('hidden');
+                cddOther.required = false;
+                cddOther.value = '';
             }
         });
     }
@@ -641,6 +718,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (el.tagName === 'SELECT') payload[id] = el.value || '';
             else payload[id] = el.value || '';
         });
+
+        // If CDD select is set to Others, prefer the text input value when saving
+        try {
+            const sel = document.getElementById('r_cddType1');
+            const other = document.getElementById('r_cddType1Other');
+            if (sel && other && (sel.value === 'Others' || sel.value === 'Other')) {
+                // prefer trimmed other input; fall back to existing select value
+                const v = (other.value || '').toString().trim();
+                if (v) payload['r_cddType1'] = v;
+            }
+        } catch (e) { /* ignore */ }
 
         try {
             const resp = await fetch('/db/editprofile-1.php', {

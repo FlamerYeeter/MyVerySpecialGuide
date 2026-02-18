@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -19,6 +19,35 @@
         background-color: #2563eb !important;
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
         transform: scale(1.03);
+    }
+    
+    /* OCR Loading Spinner */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .ocr-spinner {
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #2E2EFF;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    .ocr-loading-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      background-color: #f0f4ff;
+      border: 1px solid #2E2EFF;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+    .ocr-loading-text {
+      font-size: 14px;
+      color: #1e40af;
+      font-weight: 500;
     }
     </style>
 </head>
@@ -251,38 +280,51 @@
                 </p> 
             </div>
 
-            <!-- Dropdown + Others Input -->
-            <div class="w-full sm:w-60 sm:mt-[45px]">
-                <select id="cddType" name="cddType" required
-                    class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="" disabled selected>-- Select Type --</option>
-                    <option value="Congenital Heart Defects">Congenital Heart Defects</option>
-                    <option value="Hearing/Vision">Hearing/Vision</option>
-                    <option value="Thyroid issues">Thyroid issues</option>
-                    <option value="Low Muscle Tone (Hypotonia)">Low Muscle Tone (Hypotonia)</option>
-                    <option value="Others">Others:</option>
-                </select>
+                <!-- Checkbox group + Others Input -->
+            <div class="w-full sm:w-60 sm:mt-[10px]" id="cddType">
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2"><input type="checkbox" name="cddType[]" value="Congenital Heart Defects" class="cdd-checkbox"> Congenital Heart Defects</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="cddType[]" value="Hearing/Vision" class="cdd-checkbox"> Hearing/Vision</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="cddType[]" value="Thyroid issues" class="cdd-checkbox"> Thyroid issues</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" name="cddType[]" value="Low Muscle Tone (Hypotonia)" class="cdd-checkbox"> Low Muscle Tone (Hypotonia)</label>
+                    <label class="flex items-center gap-2"><input type="checkbox" id="cddTypeOtherChk" name="cddType[]" value="Others" class="cdd-checkbox"> Others</label>
+                </div>
 
-                <!-- Input for "Others" -->
+                <!-- Input for "Others" (toggled when checkbox checked) -->
                 <input type="text" id="cddTypeOther" name="cddTypeOther" placeholder="Please specify"
                     class="w-full border border-gray-300 rounded-lg p-2 mt-2 hidden focus:ring-blue-500 focus:border-blue-500" />
+
+                <!-- hidden canonical value for legacy scripts -->
+                <input type="hidden" id="cddTypeHidden" name="cddTypeHidden" value="" />
             </div>
         </div>
 
         <script>
-            const dropdown = document.getElementById('cddType');
-            const otherInput = document.getElementById('cddTypeOther');
+            (function(){
+                const checkboxes = Array.from(document.querySelectorAll('#cddType input.cdd-checkbox'));
+                const otherChk = document.getElementById('cddTypeOtherChk');
+                const otherInput = document.getElementById('cddTypeOther');
+                const hidden = document.getElementById('cddTypeHidden');
 
-            dropdown.addEventListener('change', function() {
-                if (this.value === 'Others') {
-                    otherInput.classList.remove('hidden');
-                    otherInput.required = true; // Gawing required kapag pinili ang Others
-                } else {
-                    otherInput.classList.add('hidden');
-                    otherInput.required = false;
-                    otherInput.value = ''; // Clear input kapag iba ang pinili
+                function updateHidden() {
+                    const vals = checkboxes.filter(c=>c.checked).map(c=>String(c.value||'').trim()).filter(Boolean);
+                    hidden.value = vals.join(', ');
                 }
-            });
+
+                checkboxes.forEach(cb => {
+                    cb.addEventListener('change', function(){
+                        if (otherChk && otherChk.checked) {
+                            otherInput.classList.remove('hidden'); otherInput.required = true;
+                        } else {
+                            otherInput.classList.add('hidden'); otherInput.required = false; if(otherInput) otherInput.value='';
+                        }
+                        updateHidden();
+                    });
+                });
+
+                // ensure hidden sync on manual other input change too
+                if (otherInput) otherInput.addEventListener('input', updateHidden);
+            })();
         </script>
 
         </div>
@@ -387,11 +429,14 @@
                                     pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
                                     title="Password must have at least 1 uppercase letter, 1 lowercase letter, 1 number, and be 8+ characters long."
                                     class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
-                            <label for="togglePassword" class="text-sm text-gray-700 cursor-pointer leading-snug">
-                                 <p id="passwordMessage" 
-                                class="mt-1 text-sm text-red-500 italic hidden">
+                            <p id="passwordMessage" class="mt-1 text-sm text-red-500 italic hidden">
                                 Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
-                                </p>
+                            </p>
+                            <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-2">
+                                <input id="showCreatePassword" type="checkbox" class="h-4 w-4" />
+                                <span>Show password</span>
+                            </label>
+                            <div id="passwordSuccess" class="mt-1 text-sm text-green-600 hidden">✅ Strong password. Ready to go!</div>
                     </div>
                 </div>
                  
@@ -444,6 +489,10 @@
                     <input id="confirmPassword" name="confirmPassword" type="password"
                         placeholder="Re-enter your password"
                         class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+                    <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-2">
+                        <input id="showConfirmPassword" type="checkbox" class="h-4 w-4" />
+                        <span>Show password</span>
+                    </label>
                 </div>
                   <p id="confirmMessage" class="mt-1 text-sm text-red-500 italic hidden">
                     Passwords do not match.
@@ -601,11 +650,238 @@
 </div>
 
 <script>
+function validateMedicalCertificateDate(dateString, errorContainer) {
+    if (!dateString) {
+        if (errorContainer) errorContainer.textContent = "Unable to detect the medical certificate date.";
+        return false;
+    }
+    const today = new Date();
+    const certDate = new Date(dateString);
+    
+    // Add 3 months to certificate date
+    const expiryDate = new Date(certDate);
+    expiryDate.setMonth(expiryDate.getMonth() + 3);
+    
+    if (today > expiryDate) {
+        if (errorContainer) errorContainer.textContent = "Medical certificate must be within 3 months only.";
+        return false;
+    } 
+    else {
+        if (errorContainer) errorContainer.textContent = "";
+        alert("Medical certificate is valid!");
+        return true; 
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
     setupUpload('pwdidFile', 'pwdidDisplay', 'pwdidLabel', 'pwdidHint');
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
+    try {
+        const createToggle = document.getElementById('showCreatePassword');
+        if (createToggle) {
+            createToggle.addEventListener('change', function(e){
+                const show = !!e.target.checked;
+                try { const el = document.getElementById('password'); if (el) el.type = show ? 'text' : 'password'; } catch(e){}
+            });
+        }
+        const confirmToggle = document.getElementById('showConfirmPassword');
+        if (confirmToggle) {
+            confirmToggle.addEventListener('change', function(e){
+                const show = !!e.target.checked;
+                try { const el = document.getElementById('confirmPassword'); if (el) el.type = show ? 'text' : 'password'; } catch(e){}
+            });
+        }
+    } catch(e) { console.warn('showPassword init failed', e); }
+    // password strength hint
+    try {
+        const pwd = document.getElementById('password');
+        const pwdMsg = document.getElementById('passwordMessage');
+        const pwdSuccess = document.getElementById('passwordSuccess');
+        if (pwd) {
+            const re = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            pwd.addEventListener('input', function(e){
+                try {
+                    const val = String(e.target.value || '');
+                    if (re.test(val)) {
+                        if (pwdSuccess) pwdSuccess.classList.remove('hidden');
+                        if (pwdMsg) pwdMsg.classList.add('hidden');
+                    } else {
+                        if (pwdSuccess) pwdSuccess.classList.add('hidden');
+                        // show rule message only when there's input
+                        if (pwdMsg) {
+                            if (val.trim().length) pwdMsg.classList.remove('hidden'); else pwdMsg.classList.add('hidden');
+                        }
+                    }
+                } catch(e) {}
+            });
+        }
+    } catch(e) { console.warn('password hint init failed', e); }
 });
+
+// Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
+window.formatDateWords = function(raw) {
+    if (!raw && raw !== 0) return '';
+    const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    try {
+        const d = new Date(raw);
+        if (!Number.isNaN(d.getTime())) {
+            const dd = d.getDate();
+            const mm = months[d.getMonth()];
+            const yyyy = d.getFullYear();
+            return `${mm} ${dd}, ${yyyy}`;
+        }
+    } catch(e) {}
+    const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) {
+        const yyyy = m[1];
+        const mmIdx = parseInt(m[2],10) - 1;
+        const dd = parseInt(m[3],10);
+        const mm = months[mmIdx] || m[2];
+        return `${mm} ${dd}, ${yyyy}`;
+    }
+    return String(raw).slice(0,10);
+}
+
+// Apply OCR'd AI data into matching form fields when possible
+function applyOcrDataToForm(aiData, detectedType, ocrtype) {
+    try {
+        if (!aiData || typeof aiData !== 'object') return;
+
+        // Name -> first / last
+        if (aiData.name) {
+            const full = String(aiData.name).trim();
+            const parts = full.split(/\s+/);
+            if (parts.length) {
+                const firstEl = document.getElementById('first_name');
+                const lastEl = document.getElementById('last_name');
+                if (firstEl) firstEl.value = parts[0] || '';
+                if (lastEl) lastEl.value = parts.slice(1).join(' ') || '';
+            }
+        }
+
+        // Date of birth -> birthdate input (try multiple keys)
+        const dob = aiData.date_of_birth || aiData.birthdate || aiData.dob || aiData.birthday;
+        if (dob) {
+            const parsed = new Date(dob);
+            if (!Number.isNaN(parsed.getTime())) {
+                const yyyy = parsed.getFullYear();
+                const mm = String(parsed.getMonth() + 1).padStart(2, '0');
+                const dd = String(parsed.getDate()).padStart(2, '0');
+                const el = document.getElementById('birthdate');
+                if (el) el.value = `${yyyy}-${mm}-${dd}`;
+            }
+        }
+
+        // Phone
+        const phone = aiData.phone || aiData.mobile || aiData.contact;
+        if (phone) {
+            const el = document.getElementById('phone');
+            if (el) {
+                // naive normalization: keep digits and leading +
+                const normalized = String(phone).replace(/[^\d+]/g, '');
+                el.value = normalized;
+            }
+        }
+
+        // Address
+        if (aiData.address) {
+            const el = document.getElementById('address');
+            if (el) el.value = String(aiData.address || '');
+        }
+
+        // Disability -> intelligent mapping:
+        // - If AI mentions Down syndrome (trisomy/mosaic/translocation), map to `dsType` select
+        // - Otherwise, attempt to match `cddType`; fallback to `Others` with text placed in cddTypeOther
+        if (aiData.type_of_disability || aiData.disability) {
+            const rawVal = String(aiData.type_of_disability || aiData.disability).trim();
+            const val = rawVal.toLowerCase();
+
+            // keywords that indicate Down Syndrome
+            const dsKeywords = ['trisomy', 'trisomy 21', 'down syndrome', 'mosaic', 'translocation', 'downs'];
+
+            const dsSelect = document.getElementById('dsType');
+            const cddContainer = document.getElementById('cddType');
+            const cddOther = document.getElementById('cddTypeOther');
+
+            // if mentions DS, try to set dsType
+            const mentionsDs = dsKeywords.some(k => val.includes(k));
+            if (mentionsDs && dsSelect) {
+                let set = false;
+                for (let i = 0; i < dsSelect.options.length; i++) {
+                    const opt = dsSelect.options[i];
+                    if (!opt.value) continue;
+                    const ov = opt.value.toLowerCase();
+                    if (val.includes('trisomy') && ov.includes('trisomy')) { dsSelect.value = opt.value; set = true; break; }
+                    if (val.includes('mosaic') && ov.includes('mosaic')) { dsSelect.value = opt.value; set = true; break; }
+                    if (val.includes('translocation') && ov.includes('translocation')) { dsSelect.value = opt.value; set = true; break; }
+                    if (ov.includes('down') && val.includes('down')) { dsSelect.value = opt.value; set = true; break; }
+                }
+                if (!set) {
+                    // no exact match — try to pick first ds option
+                    if (dsSelect.options.length > 1) dsSelect.selectedIndex = 1;
+                }
+
+                // if we matched to dsType, clear any cddOther
+                if (cddOther) { cddOther.classList.add('hidden'); cddOther.required = false; cddOther.value = ''; }
+            } else if (cddContainer) {
+                // try to match CDD checkbox options
+                const boxes = Array.from(cddContainer.querySelectorAll('input[type="checkbox"][name="cddType[]"]'));
+                let matched = false;
+                for (const b of boxes) {
+                    try{
+                        const ov = String(b.value||'').toLowerCase();
+                        if (!ov) continue;
+                        if (ov.includes(val) || val.includes(ov) || ov.split(/\W+/).some(tok => val.includes(tok))) {
+                            b.checked = true; matched = true; // keep searching to allow multiple matches
+                        }
+                    }catch(e){}
+                }
+                if (!matched && cddOther) {
+                    const otherChk = document.getElementById('cddTypeOtherChk'); if (otherChk) otherChk.checked = true;
+                    cddOther.classList.remove('hidden');
+                    cddOther.required = true;
+                    cddOther.value = rawVal;
+                }
+            }
+        }
+
+        // For membership proofs, show small summary in proofDisplay
+        if (detectedType === 'membership_proof' && (typeof aiData.is_membership !== 'undefined')) {
+            const disp = document.getElementById('proofDisplay');
+            if (disp) {
+                disp.innerHTML = `<div class="mt-2 text-sm text-green-700">Membership Detected: ${aiData.is_membership ? 'Yes' : 'No'}${aiData.member_name ? ' — ' + aiData.member_name : ''}</div>`;
+            }
+        }
+
+        // For PWD ID OCR, show detected Type of Disability under the PWD display (like med date)
+        if (detectedType === 'pwd_id' && aiData.type_of_disability) {
+            const pd = document.getElementById('pwdidDisplay');
+            if (pd) {
+                const txt = String(aiData.type_of_disability || '');
+                const prev = pd.querySelector('.ocr-summary');
+                if (prev) prev.textContent = `Detected Disability: ${txt}`;
+                else pd.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected Disability: ${txt}</div>`);
+            }
+        }
+
+        // For medical certificate, show detected exam date in medDisplay (formatted)
+        if (detectedType === 'medical_certificate' && aiData.date) {
+            const md = document.getElementById('medDisplay');
+            if (md) {
+                // format using helper if available
+                let raw = aiData.date || '';
+                let txt = (window.formatDateWords ? window.formatDateWords(raw) : String(raw).slice(0,10));
+                const prev = md.querySelector('.ocr-summary');
+                if (prev) prev.textContent = `Detected Medical Date: ${txt}`;
+                else md.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected Medical Date: ${txt}</div>`);
+            }
+        }
+
+    } catch (e) {
+        console.warn('applyOcrDataToForm failed', e);
+    }
+}
 
 function setupUpload(inputId, displayId, labelId, hintId) {
   const fileInput = document.getElementById(inputId);
@@ -838,6 +1114,16 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 localStorage.setItem(typeKey, ext);
                 console.info('[adminapprove] saved upload to localStorage', nameKey);
 
+                // Create and show loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'ocr-loading-container';
+                loadingDiv.id = `ocr-loading-${inputId}`;
+                loadingDiv.innerHTML = `
+                    <div class="ocr-spinner"></div>
+                    <span class="ocr-loading-text">Processing OCR... Please wait</span>
+                `;
+                display.appendChild(loadingDiv);
+
                 // Prepare and send to backend
                 const payload = {
                     type: ocrtype,
@@ -849,16 +1135,30 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 console.log("[upload] Sending OCR request for:", file.name);
                 // debugger;   // ← keep if you need to inspect payload
 
-                const response = await fetch('db/ocr-validation.php', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
+                let response;
+                try {
+                    response = await fetch('db/ocr-validation.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                } catch (fetchErr) {
+                    // Remove loading indicator on network error
+                    const loading = document.getElementById(`ocr-loading-${inputId}`);
+                    if (loading) loading.remove();
+                    console.error('[upload] Fetch failed:', fetchErr);
+                    alert('Network error: Failed to connect to OCR service');
+                    isProcessing = false;
+                    return;
+                }
 
                 let result;
                 try {
                     result = await response.json();
                 } catch (jsonErr) {
+                    // Remove loading indicator on JSON parse error
+                    const loading = document.getElementById(`ocr-loading-${inputId}`);
+                    if (loading) loading.remove();
                     console.warn("Invalid JSON from server", jsonErr);
                     result = { message: 'Invalid response format' };
                 }
@@ -870,15 +1170,159 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     const aiData = result.data?.ai_data || {};
 
                     if (detectedType === 'pwd_id' && ocrtype === 'pwd_id') {
+                        // Validate detected disability against selected form values.
+                        let pwdDisplayEl = document.getElementById('pwdidDisplay');
+                        let errorBox = null;
+                        if (pwdDisplayEl) {
+                            errorBox = pwdDisplayEl.querySelector('.ocr-error');
+                            if (!errorBox) {
+                                errorBox = document.createElement('div');
+                                errorBox.className = 'ocr-error mt-2 text-sm text-red-600';
+                                pwdDisplayEl.appendChild(errorBox);
+                            }
+                        } else {
+                            errorBox = { textContent: '' };
+                        }
+
+                        const detectedDisability = String(aiData.type_of_disability || aiData.disability || aiData.type || '').trim();
+
+                        // determine selected disability from form (supports checkbox group)
+                        const dsSelectEl = document.getElementById('dsType');
+                        const cddContainer = document.getElementById('cddType');
+                        const cddOtherEl = document.getElementById('cddTypeOther');
+
+                        const selectedDs = dsSelectEl && dsSelectEl.value ? String(dsSelectEl.value).trim() : '';
+                        const selectedCddArr = cddContainer ? Array.from(cddContainer.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean) : [];
+                        const selectedCddOther = cddOtherEl && cddOtherEl.value ? String(cddOtherEl.value).trim() : '';
+
+                        function normalize(s){ return String(s||'').toLowerCase(); }
+                        function matchesSelected(det) {
+                            if (!det) return false;
+                            const d = normalize(det);
+                            // check Down Syndrome keywords first
+                            const dsKeywords = ['trisomy','trisomy 21','down syndrome','downs','mosaic','translocation'];
+                            if (selectedDs) {
+                                const sd = normalize(selectedDs);
+                                // if user selected any dsType, ensure AI mentions DS keywords
+                                if (dsKeywords.some(k => d.includes(k) || sd.includes(k))) return true;
+                                if (sd.includes('down') && d.includes('down')) return true;
+                                return false;
+                            }
+
+                            if (selectedCddArr && selectedCddArr.length) {
+                                // prefer explicit non-Others selections
+                                const nonOther = selectedCddArr.filter(x=>String(x||'').toLowerCase()!=='others');
+                                const candidates = nonOther.length ? nonOther : (selectedCddOther ? [selectedCddOther] : []);
+                                for(const scRaw of candidates){
+                                    const sc = normalize(scRaw);
+                                    if (!sc) continue;
+                                    if (d.includes(sc) || sc.includes(d)) return true;
+                                    const toks = sc.split(/\W+/).filter(Boolean);
+                                    if (toks.some(t => d.includes(t))) return true;
+                                }
+                                return false;
+                            }
+
+                            if (selectedCddOther) {
+                                const sc = normalize(selectedCddOther);
+                                if (d.includes(sc) || sc.includes(d)) return true;
+                                const toks2 = sc.split(/\W+/).filter(Boolean);
+                                if (toks2.some(t => d.includes(t))) return true;
+                                return false;
+                            }
+                            // If no selection to compare to, accept if AI provided a disability string
+                            return !!detectedDisability;
+                        }
+
+                        const isMatch = matchesSelected(detectedDisability);
+
+                        if (!isMatch) {
+                            // invalid PWD ID for current selection — craft a helpful message
+                            let msg;
+                            if (!detectedDisability) {
+                                msg = 'No disability detected in the uploaded PWD ID. Please upload a valid PWD ID that shows the disability type.';
+                            } else {
+                                msg = `Detected disability "${detectedDisability}" does not match the selected disability. Please upload a valid PWD ID or update the selected disability.`;
+                            }
+
+                            if (errorBox) errorBox.textContent = msg;
+                            // cleanup stored upload keys
+                            try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                            // remove displayed preview
+                            try { resetDisplay(); } catch(e){}
+                            // remove loading indicator
+                            const loading = document.getElementById(`ocr-loading-${inputId}`);
+                            if (loading) loading.remove();
+                            alert(msg);
+                            isProcessing = false;
+                            return;
+                        }
+
+                        // If match, autofill and persist
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        // Remove loading indicator
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
+                        if (pwdDisplayEl && pwdDisplayEl.querySelector('.ocr-error')) pwdDisplayEl.querySelector('.ocr-error').textContent = '';
                         alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
-                        alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                        // Use medDisplay as the error container (create a child .ocr-error if missing)
+                        let medDisplayEl = document.getElementById('medDisplay');
+                        let errorBox = null;
+                        if (medDisplayEl) {
+                            errorBox = medDisplayEl.querySelector('.ocr-error');
+                            if (!errorBox) {
+                                errorBox = document.createElement('div');
+                                errorBox.className = 'ocr-error mt-2 text-sm text-red-600';
+                                medDisplayEl.appendChild(errorBox);
+                            }
+                        } else {
+                            // fallback plain object
+                            errorBox = { textContent: '' };
+                        }
+
+                        // autofill where possible
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+
+                        const isValid = validateMedicalCertificateDate(aiData.date, errorBox);
+                        // Remove loading indicator
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
+                        
+                        if (isValid) {
+                            alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                        } else {
+                            // Enforce strict 3-month rule: do not accept expired medical certificates.
+                            // `validateMedicalCertificateDate` already sets `errorBox.textContent` with a message.
+                            if (errorBox && errorBox.textContent) {
+                                // keep the OCR error visible in the UI; don't prompt the user to accept.
+                                console.warn('Rejected medical certificate date (older than 3 months):', aiData.date);
+                            }
+                            // Optionally notify user once via alert to explain why the file was rejected.
+                            alert(`Detected medical date ${aiData.date || '?'} is older than 3 months and cannot be accepted. Please upload a valid medical certificate within 3 months.`);
+                        }
                     } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        // Remove loading indicator
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
                         alert(`Is Member of DSAPI: ${aiData.is_membership || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else {
+                        // generic autofill attempt
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        // Remove loading indicator
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
                         alert(`OCR Type: ${detectedType || ocrtype} processed successfully.`);
                     }
                 } else {
+                    // Remove loading indicator on error
+                    const loading = document.getElementById(`ocr-loading-${inputId}`);
+                    if (loading) loading.remove();
                     alert(`Error ${response.status}: ${result.message || 'Unknown server error'}`);
                 }
 
@@ -918,6 +1362,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 hintEl.style.display = 'none';
 
             } catch (err) {
+                // Remove loading indicator on error
+                const loading = document.getElementById(`ocr-loading-${inputId}`);
+                if (loading) loading.remove();
                 console.error('[upload] Processing failed:', err);
                 alert('Something went wrong while processing the file.');
             }
@@ -1225,6 +1672,60 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         }
                     }catch(e){}
                 }
+
+                // cddType (Congenital/Developmental Disability) — supports multiple selections
+                try{
+                    let cdd = d.cddType || d.cdd_type || p.cddType || p.cdd_type || d.r_cddType1 || p.r_cddType1 || d.disability || p.disability || '';
+                    const container = document.getElementById('cddType');
+                    const otherCdd = document.getElementById('cddTypeOther');
+                    const hidden = document.getElementById('cddTypeHidden');
+
+                    if(!container) { /* still mark applied if cdd exists */ if(cdd) applied = true; }
+
+                    // normalize incoming cdd into array of strings
+                    let items = [];
+                    if (Array.isArray(cdd)) items = cdd.map(x=>String(x||'').trim()).filter(Boolean);
+                    else if (typeof cdd === 'string') {
+                        // accept comma/semicolon separated values or plain single string
+                        items = cdd.split(/[;,|\n]+/).map(x=>String(x||'').trim()).filter(Boolean);
+                        if(items.length===0 && cdd.trim()) items = [cdd.trim()];
+                    } else if (cdd) items = [String(cdd)];
+
+                    // also consider explicit other-text
+                    const otherText = d.cddTypeOther || d.cdd_type_other || (p && (p.cddTypeOther || p.cdd_type_other)) || '';
+                    if (otherText && !items.includes(String(otherText).trim())) items.push(String(otherText).trim());
+
+                    if(items.length){
+                        // clear existing checks first
+                        const boxes = container ? Array.from(container.querySelectorAll('input[type="checkbox"][name="cddType[]"]')) : [];
+                        boxes.forEach(b=>{ b.checked = false; });
+
+                        const unmatched = [];
+                        items.forEach(val => {
+                            const low = String(val||'').toLowerCase();
+                            let matched = false;
+                            for(const b of boxes){
+                                try{
+                                    const bv = String(b.value||'').toLowerCase();
+                                    if(bv === low || bv.includes(low) || String(b.nextSibling && b.nextSibling.textContent||'').toLowerCase().includes(low)){
+                                        b.checked = true; matched = true; break;
+                                    }
+                                }catch(e){}
+                            }
+                            if(!matched) unmatched.push(val);
+                        });
+
+                        // if there are unmatched items, populate Others
+                        if(unmatched.length && otherCdd){ otherCdd.classList.remove('hidden'); otherCdd.required = true; otherCdd.value = unmatched.join(', '); const chk = document.getElementById('cddTypeOtherChk'); if(chk) chk.checked = true; }
+
+                        // update hidden canonical value for legacy code
+                        if(hidden) hidden.value = items.join(', ');
+
+                        // trigger change handlers
+                        if(container){ container.dispatchEvent(new Event('change',{bubbles:true})); }
+                        applied = true;
+                    }
+                }catch(e){ console.warn('[adminapprove] applyDraft cddType failed', e); }
 
                 // guardian
                 const g = d.guardian || d.guardianInfo || d;
@@ -1615,6 +2116,31 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 errors.push({ id: 'pwdidFile', msg: 'Please upload your PWD ID.' });
             }
 
+            // If OCR produced a medical date, validate it and prevent proceeding when invalid
+            try {
+                const mdEl = document.getElementById('medDisplay');
+                if (mdEl) {
+                    let errEl = mdEl.querySelector('.ocr-error');
+                    if (!errEl) {
+                        errEl = document.createElement('div');
+                        errEl.className = 'ocr-error mt-2 text-sm text-red-600';
+                        mdEl.appendChild(errEl);
+                    } else {
+                        errEl.textContent = '';
+                    }
+                    const summary = mdEl.querySelector('.ocr-summary');
+                    if (summary) {
+                        const txt = String(summary.textContent || '').replace(/Detected medical date:\s*/i, '').trim();
+                        if (txt) {
+                            const ok = validateMedicalCertificateDate(txt, errEl);
+                            if (!ok) {
+                                errors.push({ id: 'medFile', msg: 'Medical certificate appears expired or invalid.' });
+                            }
+                        }
+                    }
+                }
+            } catch (e) { /* ignore OCR validation errors */ }
+
             if (errors.length) {
                 // show errors; focus first error and scroll into view
                 const first = errors[0];
@@ -1729,6 +2255,11 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     username: data.username || '',
                     // persist selected Down Syndrome type (if present) under multiple keys for compatibility
                     dsType: data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                    // persist CDD (Congenital/Developmental Disability)
+                    cddType: data.cddType || (function(){ try{ const el=document.getElementById('cddType'); if(!el) return ''; const hidden=document.getElementById('cddTypeHidden'); if(hidden && hidden.value) return hidden.value; const vals = Array.from(el.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean); return vals.join(', '); }catch(e){return '';} })() || '',
+                    // persist optional "Other" text when 'Others' is chosen
+                    cddTypeOther: data.cddTypeOther || (document.getElementById('cddTypeOther') ? document.getElementById('cddTypeOther').value : '') || '',
+                    r_cddType1: data.r_cddType1 || data.cddType || (function(){ try{ const el=document.getElementById('cddType'); if(!el) return ''; const hidden=document.getElementById('cddTypeHidden'); if(hidden && hidden.value) return hidden.value; const vals = Array.from(el.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean); return vals.join(', '); }catch(e){return '';} })() || '',
                     r_dsType1: data.r_dsType1 || data.r_dsType || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
                     r_dsType: data.r_dsType || data.r_dsType1 || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
                     guardian_first: data.guardian_first || data.guardianFirst || '',

@@ -395,140 +395,32 @@
             </div>  -->
 
             <!-- top-level typed start year removed per UX request — per-job start_year remains editable -->
-
-            <!-- Upload resume 
-                    <div class="mt-8 text-left px-2 sm:px-4">
+        <!-- Upload Work Exp Certificate -->
+            <div class="mt-8 text-left px-2 sm:px-4">
                         <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                            Please upload your Resume.
+                            Please upload your Work Experience Certificate.
                             <button type="button"
                                 class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                                data-tts-en="Please upload your Resume."
-                                data-tts-tl="Paki-upload ang iyong resume.">🔊</button>
+                                data-tts-en="Please upload your Work Experience Certificate."
+                                data-tts-tl="Paki-upload ang iyong Certificate ng Work Experience.">🔊</button>
                         </label>
 
                         <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
-                           Upload your resume to show your work experience, skills, and qualifications.
+                           Upload your work experience certificate as supporting proof.
                         </p>
 
                         <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-                            (I-upload ang iyong resume upang maipakita ang iyong karanasan sa trabaho, kasanayan, at kwalipikasyon.)
+                            (I-upload ang iyong certificate ng karanasan sa trabaho bilang karagdagang patunay.)
                         </p>
 
-                        <!-- Upload Section 
-                        <div
-                            class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                            <div class="flex-1">
-                                <p class="font-medium text-gray-800 text-sm sm:text-base">
-                                    <span id="resumeLabel" class="flex items-center gap-2">
-                                        <span>Upload File (Image or PDF)</span>
-                                    </span>
-                                </p>
-                                <p id="resumeHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-                                    (Mag-upload ng larawan o PDF ng iyong Resume)<br /><br />
-                                    Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
-                                </p>
-
-                                <!-- File Info Display 
-                                <div id="resumeDisplay"></div>
-                            </div>
-
-                            <!-- Upload button + input wrapped so validation message is appended below the button 
-                            <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
-                                <label for="resumeFile"
-                                    class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
-                                    📁 Choose File / Pumili ng File
-                                </label>
-                                <input id="resumeFile" name="resume" type="file" accept=".jpg,.jpeg,.png,.pdf"
-                                    class="hidden" />
-                                <!-- validation will be appended here (under the button) 
-                                <div class="upload-error w-full text-sm text-right"></div>
-                            </div>
-                        </div>-->
-
-                        <!-- Modal for preview (shared) 
+                        <!-- Per-entry certificates are used now. Top-level upload removed. -->
+                        <!-- Shared preview modal (used by per-entry view buttons) -->
                         <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
                         <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
                             <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
                             <div id="modalContent" class="p-2 text-center"></div>
                         </div>
                         </div>
-
-                        <script>
-                        (function(){
-                            const inp = document.getElementById('resumeFile');
-                            const display = document.getElementById('resumeDisplay');
-                            const label = document.getElementById('resumeLabel');
-                            const hint = document.getElementById('resumeHint');
-                            const LS_KEY = 'uploadedResume_file';
-                            function getExt(n){ return String(n||'').split('.').pop().toLowerCase(); }
-                            async function readAsDataURL(f){ return await new Promise((res,rej)=>{ const r=new FileReader(); r.onerror=()=>rej(); r.onload=()=>res(r.result); r.readAsDataURL(f); }); }
-
-                            function renderDisplayFromList(arr){
-                                try{
-                                    if(!display) return;
-                                    if(!Array.isArray(arr) || !arr.length){ display.innerHTML=''; if(hint) hint.style.display=''; if(label) label.textContent='Upload File (Image or PDF)'; return; }
-                                    const it = arr[arr.length-1];
-                                    const icon = (it.type==='pdf')? '📄' : '🖼️';
-                                    const name = (it.name||'').length>60? (it.name||'').slice(0,57)+'...': (it.name||'');
-                                    display.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${icon}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${name}</span><div class="flex gap-2"><button type="button" data-action="view" class="view-btn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button><button type="button" data-action="remove" class="remove-btn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button></div></div>`;
-                                    if(hint) hint.style.display='none';
-                                    if(label) label.textContent='File Uploaded:';
-                                }catch(e){ console.warn('renderDisplayFromList', e); }
-                            }
-
-                            if(inp){
-                                inp.addEventListener('change', async function(){
-                                    const f = this.files && this.files[0]; if(!f) return;
-                                    const ext = getExt(f.name);
-                                    if(!['jpg','jpeg','png','pdf'].includes(ext)){ alert('Invalid file type'); this.value=''; return; }
-                                    if(f.size > 5*1024*1024){ alert('File too large'); this.value=''; return; }
-                                    try{
-                                        const data = await readAsDataURL(f);
-                                        let arr = [];
-                                        try{ arr = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]; }catch(e){ arr=[]; }
-                                        arr.push({ name: f.name, type: ext, data });
-                                        try{ if(typeof window.saveProofs === 'function') window.saveProofs(arr); else localStorage.setItem(LS_KEY, JSON.stringify(arr)); }catch(e){ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }
-                                        renderDisplayFromList(arr);
-                                    }catch(e){ console.warn('resume read failed', e); }
-                                });
-                            }
-
-                            // view/remove via delegation
-                            display && display.addEventListener('click', function(ev){
-                                const t = ev.target;
-                                if(!t) return;
-                                if(t.dataset && (t.dataset.action === 'view' || t.dataset.action === 'view') || t.classList.contains('view-btn')){
-                                    try{
-                                        const arr = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[];
-                                        const it = arr && arr.length? arr[arr.length-1]: null;
-                                        if(it){
-                                            const modal = document.getElementById('fileModal');
-                                            const mc = document.getElementById('modalContent');
-                                            if(modal && mc){
-                                                mc.innerHTML = `<h3 class="font-semibold mb-2">${it.name}</h3>`;
-                                                if(['jpg','jpeg','png'].includes(it.type)) mc.innerHTML += `<img src="${it.data}" class="max-h-[70vh] mx-auto rounded-lg"/>`;
-                                                else if(it.type==='pdf') mc.innerHTML += `<iframe src="${it.data}" class="w-full h-[70vh] rounded-lg border" title="${it.name}"></iframe>`;
-                                                modal.classList.remove('hidden');
-                                            }
-                                        }
-                                    }catch(e){ console.warn(e); }
-                                } else if(t.dataset && (t.dataset.action === 'remove' || t.dataset.action === 'remove') || t.classList.contains('remove-btn')){
-                                    try{
-                                        const raw = localStorage.getItem(LS_KEY);
-                                        const arr = raw? JSON.parse(raw):[];
-                                        if(arr && arr.length){
-                                            arr.pop();
-                                            try{ localStorage.setItem(LS_KEY, JSON.stringify(arr)); }catch(e){ console.warn('save failed', e); }
-                                            renderDisplayFromList(arr);
-                                        }
-                                    }catch(e){ console.warn(e); }
-                                }
-                            });
-
-                            // init existing
-                                    try{ const saved = JSON.parse(localStorage.getItem(LS_KEY)||'[]')||[]; if(saved && saved.length) renderDisplayFromList(saved); }catch(e){}
-                        })();
-                        </script>-->
 
             <!-- Experiences Section -->
             <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
@@ -552,7 +444,7 @@
                                     Title</label>
                                 <input id="job_title" name="job_title"
                                     class="job_title w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="e.g. Kitchen Helper" readonly/>
+                                    placeholder="e.g. Kitchen Helper"/>
                             </div>
 
                             <!-- Company Name -->
@@ -561,7 +453,7 @@
                                     class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Company Name</label>
                                 <input id="company_name" name="company_name"
                                     class="company_name w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="e.g., McDonald's or University of Makati" readonly/>
+                                    placeholder="e.g., McDonald's or University of Makati"/>
                             </div>
 
                             <!-- Work Year -->
@@ -571,34 +463,52 @@
                                 <!-- Make this editable per-job so each experience can record its own start year. -->
                                 <input id="job_work_year" name="job_work_year" type="text" maxlength="4" inputmode="numeric"
                                     placeholder="e.g. 2004"
-                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" readonly/>
+                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" />
                             </div>
 
-                            <!-- Job Description -->
+                            <!-- Job Description  -->
                             <div class="sm:col-span-2 flex flex-col">
                                 <label for="job_description"
                                     class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job Description</label>
                                 <textarea id="job_description" name="job_description"
                                     class="job_description w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="What you did (e.g. cleaned tables, organized shelves)" readonly>
+                                    placeholder="What you did (e.g. cleaned tables, organized shelves)">
                          </textarea>
+                            </div>
+                            <!-- Per-entry upload for Work Experience certificate -->
+                            <div class="sm:col-span-2 mt-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Upload Certificate (optional)
+                                </label>
+                                <p class="text-gray-600 italic text-xs sm:text-sm mb-2 job_cert_hint">Accepted: .jpg .jpeg .png .pdf — Max 5MB</p>
+                                <div class="job_cert_display"></div>
+                                <label class="inline-block mt-2 bg-[#2E2EFF] text-white px-3 py-2 rounded-md cursor-pointer">
+                                    📁 Choose File
+                                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" />
+                                </label>
+                                <input type="hidden" class="job_cert_data" value="" />
                             </div>
                         </div>
                     </div>
                 </template>
 
-                <!-- ADD for the backend+ When the user selects a work year (e.g. “1–2 years”), that choice should be copied
-                    to the first Job Experience entry automatically. -->
-                <!-- When the user adds another Job Experience, the selected work year should still be remembered
-                    and included (renewed) in the newly added section. -->
-
+                <!-- Add Another Work Exp Button  -->
+                <div class="mt-4 text-center">
+                    <button id="addJobBtn" type="button"
+                        class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                            stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Another Work Experience
+                    </button>
+                </div>
 
                 <input id="work_experiences" type="hidden" value="[]" />
                 <input id="work_years" type="hidden" value="" />
 
-                <!-- Add Another Work Exp Button removed (no longer needed) -->
                 <!-- Next Button -->
-                <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
+                <div class="flex flex-col items-center justify-center mt-6 mb-6 space-y-3 px-2">
                     <div id="workExpError" class="text-red-600 text-sm text-center"></div>
                     <button id="workExpNext" type="button"
                         class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
@@ -902,12 +812,15 @@
                                 const companyName = item.querySelector('.company_name')?.value?.trim() || '';
                                 const workYear = item.querySelector('.job_work_year')?.value?.trim() || '';
                                 const jobDescription = item.querySelector('.job_description')?.value?.trim() || '';
-                                if (jobTitle || companyName || workYear || jobDescription) {
+                                let certObj = null;
+                                try { const raw = item.querySelector('.job_cert_data')?.value || ''; if (raw) certObj = JSON.parse(raw); } catch(e) { certObj = null; }
+                                if (jobTitle || companyName || workYear || jobDescription || certObj) {
                                     jobExperiences.push({
                                         title: jobTitle,
                                         company: companyName,
                                         year: workYear,
-                                        description: jobDescription
+                                        description: jobDescription,
+                                        certificate: certObj || undefined
                                     });
                                 }
                             });
@@ -1025,6 +938,86 @@
                 node.querySelectorAll('input').forEach(inp => {
                     inp.addEventListener('input', debounce(syncHiddenFromUI, 150));
                 });
+                // per-entry certificate upload handling
+                try {
+                    const fileInput = node.querySelector('.job_cert_file');
+                    const display = node.querySelector('.job_cert_display');
+                    const hiddenCert = node.querySelector('.job_cert_data');
+                    const hint = node.querySelector('.job_cert_hint');
+
+                    function renderCertFromData(obj) {
+                        try {
+                            if (!display) return;
+                            if (!obj || !obj.name) { display.innerHTML = ''; if (hint) hint.style.display = ''; return; }
+                            const icon = (obj.type === 'pdf') ? '📄' : '🖼️';
+                            const name = obj.name.length > 60 ? obj.name.slice(0,57)+'...' : obj.name;
+                            display.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${icon}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${name}</span><div class="flex gap-2"><button type="button" class="view-cert bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button><button type="button" class="remove-cert-entry bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button></div></div>`;
+                            if (hint) hint.style.display = 'none';
+                        } catch (e) { console.warn('renderCertFromData', e); }
+                    }
+
+                    if (fileInput) {
+                        fileInput.addEventListener('change', async function(){
+                            const f = this.files && this.files[0]; if (!f) return;
+                            const ext = String((f.name||'').split('.').pop()||'').toLowerCase();
+                            if (!['jpg','jpeg','png','pdf'].includes(ext)) { alert('Invalid file type'); this.value=''; return; }
+                            if (f.size > 5*1024*1024) { alert('File too large'); this.value=''; return; }
+                            try {
+                                const r = new FileReader();
+                                r.onload = function(evt) {
+                                    try {
+                                        const data = evt.target.result;
+                                        const obj = { name: f.name, type: ext, data };
+                                        if (hiddenCert) hiddenCert.value = JSON.stringify(obj);
+                                        renderCertFromData(obj);
+                                        syncHiddenFromUI();
+                                    } catch (e) { console.warn(e); }
+                                };
+                                r.readAsDataURL(f);
+                            } catch (e) { console.warn('read cert failed', e); }
+                        });
+                    }
+
+                    // delegation for view/remove buttons inside this node
+                    if (display) {
+                        display.addEventListener('click', function(ev){
+                            const t = ev.target;
+                            if (t && t.classList && t.classList.contains('view-cert')) {
+                                try {
+                                    const raw = hiddenCert ? hiddenCert.value : '';
+                                    const obj = raw ? JSON.parse(raw) : null;
+                                    if (obj && obj.data) {
+                                        const modal = document.getElementById('fileModal');
+                                        const mc = document.getElementById('modalContent');
+                                        if (modal && mc) {
+                                            mc.innerHTML = `<h3 class="font-semibold mb-2">${obj.name}</h3>`;
+                                            if (['jpg','jpeg','png'].includes(obj.type)) mc.innerHTML += `<img src="${obj.data}" class="max-h-[70vh] mx-auto rounded-lg"/>`;
+                                            else if (obj.type === 'pdf') mc.innerHTML += `<iframe src="${obj.data}" class="w-full h-[70vh] rounded-lg border" title="${obj.name}"></iframe>`;
+                                            modal.classList.remove('hidden');
+                                        }
+                                    }
+                                } catch (e) { console.warn(e); }
+                            } else if (t && t.classList && t.classList.contains('remove-cert-entry')) {
+                                try {
+                                    if (hiddenCert) hiddenCert.value = '';
+                                    renderCertFromData(null);
+                                    // clear file input
+                                    if (fileInput) fileInput.value = '';
+                                    syncHiddenFromUI();
+                                } catch (e) { console.warn(e); }
+                            }
+                        });
+                    }
+
+                    // if item already contains certificate info, populate
+                    try {
+                        if (item && (item.certificate || item.cert)) {
+                            const obj = item.certificate || item.cert;
+                            if (hiddenCert) hiddenCert.value = JSON.stringify(obj);
+                            renderCertFromData(obj);
+                        }
+                    } catch (e) { /* ignore */ }
+                } catch (e) { console.warn('per-entry cert binding failed', e); }
                 return node;
             }
 
@@ -1036,12 +1029,16 @@
                     const description = block.querySelector('.job_description')?.value?.trim() || '';
                     const company = block.querySelector('.company_name')?.value?.trim() || '';
                     const start_year = block.querySelector('.job_work_year')?.value?.trim() || '';
-                    // only include if any field present
-                    if (title || description || company || start_year) arr.push({
+                    // include certificate data if present
+                    let certObj = null;
+                    try { const raw = block.querySelector('.job_cert_data')?.value || ''; if (raw) certObj = JSON.parse(raw); } catch(e) { certObj = null; }
+                    // only include if any field present or certificate present
+                    if (title || description || company || start_year || certObj) arr.push({
                         title,
                         description,
                         company,
-                        start_year: start_year || undefined
+                        start_year: start_year || undefined,
+                        certificate: certObj || undefined
                     });
                 });
                 writeHidden(arr);
