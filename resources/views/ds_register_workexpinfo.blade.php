@@ -583,7 +583,7 @@
                          </textarea>
                             </div>
                             <!-- Per-entry upload for Work Experience certificate -->
-                            <div class="sm:col-span-2 mt-3">
+                            {{-- <div class="sm:col-span-2 mt-3">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
                                     Upload Certificate (optional)
                                 </label>
@@ -594,7 +594,7 @@
                                     <input type="file" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" />
                                 </label>
                                 <input type="hidden" class="job_cert_data" value="" />
-                            </div>
+                            </div> --}}
                         </div>
                     </div>
                 </template>
