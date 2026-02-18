@@ -2359,14 +2359,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 try { console.debug('[review-2] parsed uploadedCertificates_education length:', Array.isArray(arr)?arr.length:null); } catch(e){}
             } catch(e){ arr = []; }
             if (Array.isArray(arr) && arr.length) {
-                const normalized = arr.map(it => {
+                const normalized = arr.map((it, _idx) => {
+                    const idx = _idx || 0;
                     if (!it) return null;
-                    if (typeof it === 'string') return { name: it, type: (it.split('.').pop()||'').toLowerCase(), data: null };
+                    if (typeof it === 'string') return { name: it, type: (it.split('.').pop()||'').toLowerCase(), data: null, sourceKey, originalIndex: idx };
                     // accept many possible key names used across pages:
                     const name = it.name || it.filename || it.certificate_file_name || it.certificate_name || it.fileName || it.name_raw || '';
                     const data = it.data || it.url || it.certificate_file_data || it.fileData || it.dataUrl || null;
                     const type = (it.type || it.certificate_file_type || (name||'').split('.').pop() || '').toLowerCase();
-                    return { name: name || '', type: (type||'').toLowerCase(), data };
+                    return { name: name || '', type: (type||'').toLowerCase(), data, sourceKey, originalIndex: idx };
                 }).filter(Boolean);
                 if (normalized.length) return { list: normalized, hasCertFlag: localStorage.getItem('review_certs') || null, sourceKey };
             }
@@ -2555,19 +2556,25 @@ document.addEventListener("DOMContentLoaded", () => {
                     btn.addEventListener('click', (ev) => {
                         const idx = Number(ev.currentTarget.dataset.idx);
                         try {
-                            const key = saved && saved.sourceKey ? saved.sourceKey : null;
-                            if (key && key !== 'single-legacy') {
-                                // read array, remove index, write back
+                            const item = saved.list && saved.list[idx];
+                            if (!item) return;
+                            const skey = item.sourceKey || null;
+                            if (skey && skey !== 'single-legacy') {
                                 try {
-                                    const arr = JSON.parse(localStorage.getItem(key) || '[]') || [];
-                                    if (Array.isArray(arr) && arr.length > idx) {
-                                        arr.splice(idx,1);
-                                        localStorage.setItem(key, JSON.stringify(arr));
+                                    const arr = JSON.parse(localStorage.getItem(skey) || '[]') || [];
+                                    if (Array.isArray(arr)) {
+                                        if (typeof item.originalIndex === 'number' && arr.length > item.originalIndex) {
+                                            arr.splice(item.originalIndex, 1);
+                                        } else {
+                                            const findIdx = arr.findIndex(a => (a && (a.name || a.fileName || a.filename)) === item.name);
+                                            if (findIdx !== -1) arr.splice(findIdx, 1);
+                                        }
+                                        localStorage.setItem(skey, JSON.stringify(arr));
                                     }
                                 } catch(e){}
-                            } else if (key === 'single-legacy' || !key) {
-                                // clean legacy single-file keys if present (same behavior as review-1)
-                                const fname = saved.list[idx] && saved.list[idx].name;
+                            } else {
+                                // legacy single-file keys cleanup (same behavior as review-1)
+                                const fname = item.name;
                                 if (fname) {
                                     ['uploadedProofName','uploadedProofData','uploadedProofType',
                                     'uploadedProofName1','uploadedProofData1','uploadedProofType1',
@@ -2600,14 +2607,34 @@ document.addEventListener("DOMContentLoaded", () => {
                                     const dataUrl = e.target.result;
                                     const name = f.name || '';
                                     const type = (name.split('.').pop()||'').toLowerCase();
-                                    // update saved array and persist to the same key if possible
-                                    const arr = Array.isArray(saved.list) ? saved.list.slice() : [];
-                                    arr[idx] = { name, type, data: dataUrl };
-                                    const writeKey = (saved && saved.sourceKey && saved.sourceKey !== 'single-legacy') ? saved.sourceKey : 'uploadedCertificates_education';
+                                    // prefer to persist replacement to the originating storage key for this item
                                     try {
-                                        localStorage.setItem(writeKey, JSON.stringify(arr));
-                                        console.debug('[review-2] replaced file at', idx, 'and wrote to', writeKey);
-                                    } catch (e) { console.warn('[review-2] write failed', e); }
+                                        if (it && it.sourceKey && it.sourceKey !== 'single-legacy') {
+                                            const diskArr = JSON.parse(localStorage.getItem(it.sourceKey) || '[]') || [];
+                                            if (Array.isArray(diskArr)) {
+                                                if (typeof it.originalIndex === 'number' && diskArr.length > it.originalIndex) {
+                                                    diskArr[it.originalIndex] = { name, type, data: dataUrl };
+                                                } else {
+                                                    const findIdx = diskArr.findIndex(a => (a && (a.name || a.fileName || a.filename)) === it.name);
+                                                    if (findIdx !== -1) diskArr[findIdx] = { name, type, data: dataUrl };
+                                                    else diskArr.push({ name, type, data: dataUrl });
+                                                }
+                                                localStorage.setItem(it.sourceKey, JSON.stringify(diskArr));
+                                                console.debug('[review-2] replaced file at', idx, 'and wrote to', it.sourceKey);
+                                                setTimeout(renderPreviewBlock, 40);
+                                                picker.remove();
+                                                return;
+                                            }
+                                        }
+                                    } catch(e){ console.warn('[review-2] replace write to source failed', e); }
+
+                                    // fallback: update aggregated view and write back to canonical education key
+                                    try {
+                                        const arr = Array.isArray(saved.list) ? saved.list.slice() : [];
+                                        arr[idx] = { name, type, data: dataUrl };
+                                        localStorage.setItem('uploadedCertificates_education', JSON.stringify(arr));
+                                        console.debug('[review-2] replaced file at', idx, 'and wrote to uploadedCertificates_education');
+                                    } catch (e) { console.warn('[review-2] fallback write failed', e); }
                                     setTimeout(renderPreviewBlock, 40);
                                 } catch (e) { console.warn('replace handler failed', e); }
                                 picker.remove();
@@ -2654,7 +2681,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // initial render and watch storage
     document.addEventListener('DOMContentLoaded', renderPreviewBlock);
     window.addEventListener('storage', function(e){
-        const watch = ['uploadedCertificates_education','education_certificates','uploadedProofs1','uploadedProofData','uploadedProofName','uploadedProofData1','uploadedProofName1','review_certs','uploadedProofs','uploadedProofs_proof','uploadedResume_file'];
+        const watch = ['uploadedCertificates_education','education_certificates','uploadedProofs1','uploadedProofData','uploadedProofName','uploadedProofData1','uploadedProofName1','review_certs','uploadedProofs','uploadedProofs_proof','uploadedResume_file','uploadedWorkExp_file'];
         if (!e.key || watch.includes(e.key)) setTimeout(renderPreviewBlock, 30);
     });
 
@@ -2678,7 +2705,7 @@ document.addEventListener("DOMContentLoaded", () => {
 (function(){
     function getResumeItem(){
         try{
-            const raw = localStorage.getItem('uploadedResume_file') || localStorage.getItem('resume') || null;
+            const raw = localStorage.getItem('uploadedResume_file') || localStorage.getItem('uploadedWorkExp_file') || localStorage.getItem('resume') || null;
             if(!raw) return null;
             try{ const parsed = JSON.parse(raw||'null');
                 if(Array.isArray(parsed) && parsed.length) return parsed[parsed.length-1];
@@ -2756,7 +2783,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.addEventListener('DOMContentLoaded', renderResumeBlock);
     window.addEventListener('storage', function(e){
-        const watch = ['uploadedResume_file','uploadedCertificates_education','education_certificates'];
+        const watch = ['uploadedResume_file','uploadedWorkExp_file','uploadedCertificates_education','education_certificates'];
         if(!e.key || watch.includes(e.key)) setTimeout(renderResumeBlock, 40);
     });
     // expose for debugging

@@ -570,7 +570,7 @@
                                 <!-- Make this editable per-job so each experience can record its own start year. -->
                                 <input id="job_work_year" name="job_work_year" type="text" maxlength="4" inputmode="numeric"
                                     placeholder="e.g. 2004"
-                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" readonly/>
+                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" />
                             </div>
 
                             <!-- Job Description  -->

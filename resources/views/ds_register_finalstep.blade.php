@@ -376,11 +376,11 @@
       const validYears = Array.from(new Set((savedYears||[]).map(extractYear).filter(y => typeof y === 'number' && y >= 1900 && y <= nowYear)));
 
       // Build payload
-      const data = {
+        const data = {
         education: localStorage.getItem('edu_level'),
         job_experiences: localStorage.getItem('job_experiences'),
         review_certs: localStorage.getItem('review_certs'),
-        rpi_personal: localStorage.getItem('rpi_personal1'),
+        // rpi_personal intentionally removed to disable sending temp_debug_rpi_personal.json data
         school_name: localStorage.getItem('school_name'),
         selected_work_experience: localStorage.getItem('selected_work_experience'),
         selected_work_year: JSON.stringify(validYears),
