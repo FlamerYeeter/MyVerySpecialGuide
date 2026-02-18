@@ -582,6 +582,19 @@
                                     placeholder="What you did (e.g. cleaned tables, organized shelves)">
                          </textarea>
                             </div>
+                            <!-- Per-entry upload for Work Experience certificate -->
+                            <div class="sm:col-span-2 mt-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">
+                                    Upload Certificate (optional)
+                                </label>
+                                <p class="text-gray-600 italic text-xs sm:text-sm mb-2 job_cert_hint">Accepted: .jpg .jpeg .png .pdf — Max 5MB</p>
+                                <div class="job_cert_display"></div>
+                                <label class="inline-block mt-2 bg-[#2E2EFF] text-white px-3 py-2 rounded-md cursor-pointer">
+                                    📁 Choose File
+                                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" />
+                                </label>
+                                <input type="hidden" class="job_cert_data" value="" />
+                            </div>
                         </div>
                     </div>
                 </template>
@@ -906,12 +919,15 @@
                                 const companyName = item.querySelector('.company_name')?.value?.trim() || '';
                                 const workYear = item.querySelector('.job_work_year')?.value?.trim() || '';
                                 const jobDescription = item.querySelector('.job_description')?.value?.trim() || '';
-                                if (jobTitle || companyName || workYear || jobDescription) {
+                                let certObj = null;
+                                try { const raw = item.querySelector('.job_cert_data')?.value || ''; if (raw) certObj = JSON.parse(raw); } catch(e) { certObj = null; }
+                                if (jobTitle || companyName || workYear || jobDescription || certObj) {
                                     jobExperiences.push({
                                         title: jobTitle,
                                         company: companyName,
                                         year: workYear,
-                                        description: jobDescription
+                                        description: jobDescription,
+                                        certificate: certObj || undefined
                                     });
                                 }
                             });
@@ -1029,6 +1045,86 @@
                 node.querySelectorAll('input').forEach(inp => {
                     inp.addEventListener('input', debounce(syncHiddenFromUI, 150));
                 });
+                // per-entry certificate upload handling
+                try {
+                    const fileInput = node.querySelector('.job_cert_file');
+                    const display = node.querySelector('.job_cert_display');
+                    const hiddenCert = node.querySelector('.job_cert_data');
+                    const hint = node.querySelector('.job_cert_hint');
+
+                    function renderCertFromData(obj) {
+                        try {
+                            if (!display) return;
+                            if (!obj || !obj.name) { display.innerHTML = ''; if (hint) hint.style.display = ''; return; }
+                            const icon = (obj.type === 'pdf') ? '📄' : '🖼️';
+                            const name = obj.name.length > 60 ? obj.name.slice(0,57)+'...' : obj.name;
+                            display.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${icon}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${name}</span><div class="flex gap-2"><button type="button" class="view-cert bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button><button type="button" class="remove-cert-entry bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button></div></div>`;
+                            if (hint) hint.style.display = 'none';
+                        } catch (e) { console.warn('renderCertFromData', e); }
+                    }
+
+                    if (fileInput) {
+                        fileInput.addEventListener('change', async function(){
+                            const f = this.files && this.files[0]; if (!f) return;
+                            const ext = String((f.name||'').split('.').pop()||'').toLowerCase();
+                            if (!['jpg','jpeg','png','pdf'].includes(ext)) { alert('Invalid file type'); this.value=''; return; }
+                            if (f.size > 5*1024*1024) { alert('File too large'); this.value=''; return; }
+                            try {
+                                const r = new FileReader();
+                                r.onload = function(evt) {
+                                    try {
+                                        const data = evt.target.result;
+                                        const obj = { name: f.name, type: ext, data };
+                                        if (hiddenCert) hiddenCert.value = JSON.stringify(obj);
+                                        renderCertFromData(obj);
+                                        syncHiddenFromUI();
+                                    } catch (e) { console.warn(e); }
+                                };
+                                r.readAsDataURL(f);
+                            } catch (e) { console.warn('read cert failed', e); }
+                        });
+                    }
+
+                    // delegation for view/remove buttons inside this node
+                    if (display) {
+                        display.addEventListener('click', function(ev){
+                            const t = ev.target;
+                            if (t && t.classList && t.classList.contains('view-cert')) {
+                                try {
+                                    const raw = hiddenCert ? hiddenCert.value : '';
+                                    const obj = raw ? JSON.parse(raw) : null;
+                                    if (obj && obj.data) {
+                                        const modal = document.getElementById('fileModal');
+                                        const mc = document.getElementById('modalContent');
+                                        if (modal && mc) {
+                                            mc.innerHTML = `<h3 class="font-semibold mb-2">${obj.name}</h3>`;
+                                            if (['jpg','jpeg','png'].includes(obj.type)) mc.innerHTML += `<img src="${obj.data}" class="max-h-[70vh] mx-auto rounded-lg"/>`;
+                                            else if (obj.type === 'pdf') mc.innerHTML += `<iframe src="${obj.data}" class="w-full h-[70vh] rounded-lg border" title="${obj.name}"></iframe>`;
+                                            modal.classList.remove('hidden');
+                                        }
+                                    }
+                                } catch (e) { console.warn(e); }
+                            } else if (t && t.classList && t.classList.contains('remove-cert-entry')) {
+                                try {
+                                    if (hiddenCert) hiddenCert.value = '';
+                                    renderCertFromData(null);
+                                    // clear file input
+                                    if (fileInput) fileInput.value = '';
+                                    syncHiddenFromUI();
+                                } catch (e) { console.warn(e); }
+                            }
+                        });
+                    }
+
+                    // if item already contains certificate info, populate
+                    try {
+                        if (item && (item.certificate || item.cert)) {
+                            const obj = item.certificate || item.cert;
+                            if (hiddenCert) hiddenCert.value = JSON.stringify(obj);
+                            renderCertFromData(obj);
+                        }
+                    } catch (e) { /* ignore */ }
+                } catch (e) { console.warn('per-entry cert binding failed', e); }
                 return node;
             }
 
@@ -1040,12 +1136,16 @@
                     const description = block.querySelector('.job_description')?.value?.trim() || '';
                     const company = block.querySelector('.company_name')?.value?.trim() || '';
                     const start_year = block.querySelector('.job_work_year')?.value?.trim() || '';
-                    // only include if any field present
-                    if (title || description || company || start_year) arr.push({
+                    // include certificate data if present
+                    let certObj = null;
+                    try { const raw = block.querySelector('.job_cert_data')?.value || ''; if (raw) certObj = JSON.parse(raw); } catch(e) { certObj = null; }
+                    // only include if any field present or certificate present
+                    if (title || description || company || start_year || certObj) arr.push({
                         title,
                         description,
                         company,
-                        start_year: start_year || undefined
+                        start_year: start_year || undefined,
+                        certificate: certObj || undefined
                     });
                 });
                 writeHidden(arr);
