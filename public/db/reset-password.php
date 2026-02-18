@@ -214,12 +214,12 @@ try {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'myveryspecialguide@gmail.com';
-    $mail->Password = 'mlgs dsug zwuk rqlk'; // use app password
+    $mail->Username = 'empowerpath123@gmail.com';
+    $mail->Password = 'fvte grar olvh jvqw'; // use app password
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
 
-    $mail->setFrom('myveryspecialguide@gmail.com', 'Support');
+    $mail->setFrom('empowerpath123@gmail.com', 'Support');
     $mail->addAddress($to);
     $mail->isHTML(true);
     $mail->Subject = $subject;
