@@ -338,6 +338,17 @@ document.addEventListener("DOMContentLoaded", () => {
         } catch(e){}
       }
 
+      // 2b) fallback: check standalone 'Other' text inputs that may have been saved separately
+      try {
+        const otherKeys = ['skills1_other_text','skills_other_input','skills_other_text','skills1_other'];
+        for (const ok of otherKeys) {
+          try {
+            const v = (localStorage.getItem(ok) || '').toString().trim();
+            if (v) return [v];
+          } catch(e){}
+        }
+      } catch(e){}
+
       // 3) rpi_personal namespace (narrow to skills fields)
       try {
         const rpRaw = localStorage.getItem('rpi_personal');
