@@ -2705,6 +2705,20 @@ document.addEventListener("DOMContentLoaded", () => {
 (function(){
     function getResumeItem(){
         try{
+            // 1) prefer per-job certificates stored inside job_experiences or work_experiences
+            try {
+                const rawJobs = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || null;
+                if (rawJobs) {
+                    const parsedJobs = JSON.parse(rawJobs || '[]') || [];
+                    // iterate from last to first to pick most recent uploaded cert
+                    for (let i = parsedJobs.length - 1; i >= 0; i--) {
+                        const j = parsedJobs[i];
+                        if (j && j.certificate && (j.certificate.data || j.certificate.name)) return j.certificate;
+                    }
+                }
+            } catch (e) { /* ignore per-job parse errors */ }
+
+            // 2) fall back to legacy resume/workexp single-file keys
             const raw = localStorage.getItem('uploadedResume_file') || localStorage.getItem('uploadedWorkExp_file') || localStorage.getItem('resume') || null;
             if(!raw) return null;
             try{ const parsed = JSON.parse(raw||'null');
@@ -2720,62 +2734,75 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function renderResumeBlock(){
         try{
-            // prefer an explicit container if present, otherwise try to attach near job experiences
             let container = document.getElementById('resumeReview') || document.getElementById('review_resume') || document.getElementById('review_job_experiences') || document.getElementById('job_experiences_container') || document.getElementById('reviewContainer');
             if(!container) return;
-            // create a dedicated inner area to avoid stomping other UI
             let inner = container.querySelector('.resume-list') || container.querySelector('#resumeList');
-            if(!inner){
-                inner = document.createElement('div');
-                inner.id = 'resumeList';
-                inner.className = 'resume-list mt-3';
-                // attempt to insert at top of container
-                container.insertBefore(inner, container.firstChild);
+            if(!inner){ inner = document.createElement('div'); inner.id = 'resumeList'; inner.className = 'resume-list mt-3'; container.insertBefore(inner, container.firstChild); }
+
+            // gather per-entry certificates from job_experiences/work_experiences
+            let certs = [];
+            try {
+                const rawJobs = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || null;
+                if (rawJobs) {
+                    const parsed = JSON.parse(rawJobs || '[]') || [];
+                    for (let i = 0; i < parsed.length; i++) {
+                        const j = parsed[i];
+                        if (j && j.certificate && (j.certificate.name || j.certificate.data)) certs.push({ cert: j.certificate, index: i });
+                    }
+                }
+            } catch (e) { certs = []; }
+
+            if (!certs.length) {
+                // fallback to single legacy item
+                const it = getResumeItem();
+                if(!it){ inner.innerHTML = '<p class="text-gray-600 italic">No certificate uploaded.</p>'; return; }
+                certs = [{ cert: it, index: -1 }];
             }
 
-            const it = getResumeItem();
-            if(!it){ inner.innerHTML = '<p class="text-gray-600 italic">No resume uploaded.</p>'; return; }
+            // render stacked list
+            inner.innerHTML = '';
+            certs.forEach((entry, idx) => {
+                try {
+                    const it = entry.cert || {};
+                    const ext = (it.type || (it.name||'').split('.').pop()||'').toLowerCase();
+                    const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
+                    const nameSafe = String(it.name || 'Certificate').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                    const card = document.createElement('div');
+                    card.className = 'flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mb-3';
+                    card.innerHTML = `<div class="text-2xl">${icon}</div><div class="min-w-0"><div class="text-sm text-gray-700 truncate max-w-[520px]">${nameSafe}</div><div class="text-xs text-gray-500 mt-1">${(ext||'').toUpperCase()}</div></div><div class="ml-auto flex gap-2"><button class="view-cert bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button><button class="remove-cert bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button></div>`;
+                    // attach handlers
+                    card.querySelector('.view-cert').addEventListener('click', function(){
+                        const modal = document.getElementById('filePreviewModal') || document.getElementById('fileModal');
+                        const content = document.getElementById('filePreviewContent') || document.getElementById('modalContent');
+                        if(modal && content){
+                            content.innerHTML = `<h3 class="font-semibold mb-2">${nameSafe}</h3>`;
+                            if(['jpg','jpeg','png'].includes(ext)) content.innerHTML += `<img src="${it.data || ''}" class="max-h-[85vh] mx-auto rounded-lg shadow" />`;
+                            else if(ext==='pdf') content.innerHTML += `<iframe src="${it.data || ''}" class="w-full h-[85vh] rounded-lg border"></iframe>`;
+                            else content.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
+                            modal.classList.remove('hidden');
+                        } else alert('No preview available.');
+                    });
 
-            const ext = (it.type || (it.name||'').split('.').pop()||'').toLowerCase();
-            const icon = ext === 'pdf' ? '📄' : (['jpg','jpeg','png'].includes(ext) ? '🖼️' : '📁');
-            const nameSafe = String(it.name || 'Resume').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-            inner.innerHTML = `
-                <div class="flex items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm">
-                    <div class="text-2xl">${icon}</div>
-                    <div class="min-w-0">
-                        <div class="text-sm text-gray-700 truncate max-w-[420px]">${nameSafe}</div>
-                        <div class="text-xs text-gray-500 mt-1">${(ext||'').toUpperCase()}</div>
-                    </div>
-                    <div class="ml-auto flex gap-2">
-                        <button id="resume_view" class="bg-[#2E2EFF] text-white text-xs px-3 py-1 rounded-md">View</button>
-                        <button id="resume_remove" class="bg-[#D20103] text-white text-xs px-3 py-1 rounded-md">Remove</button>
-                    </div>
-                </div>`;
+                    card.querySelector('.remove-cert').addEventListener('click', function(){
+                        try {
+                            if (entry.index >= 0) {
+                                // remove certificate from the corresponding job entry
+                                const rawJobs2 = localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || null;
+                                if (rawJobs2) {
+                                    const parsed2 = JSON.parse(rawJobs2 || '[]') || [];
+                                    if (parsed2[entry.index]) { delete parsed2[entry.index].certificate; localStorage.setItem('job_experiences', JSON.stringify(parsed2)); }
+                                }
+                            } else {
+                                // legacy: remove from uploadedResume_file array
+                                const raw = localStorage.getItem('uploadedResume_file');
+                                if (raw) { const arr = JSON.parse(raw||'[]')||[]; if(arr && arr.length){ arr.pop(); localStorage.setItem('uploadedResume_file', JSON.stringify(arr)); } }
+                            }
+                        } catch(e) { console.warn(e); }
+                        setTimeout(renderResumeBlock, 40);
+                    });
 
-            inner.querySelector('#resume_view').addEventListener('click', function(){
-                // reuse preview modal if present
-                const modal = document.getElementById('filePreviewModal') || document.getElementById('fileModal');
-                const content = document.getElementById('filePreviewContent') || document.getElementById('modalContent');
-                if(modal && content){
-                    content.innerHTML = `<h3 class="font-semibold mb-2">${nameSafe}</h3>`;
-                    if(['jpg','jpeg','png'].includes(ext)) content.innerHTML += `<img src="${it.data || ''}" class="max-h-[85vh] mx-auto rounded-lg shadow" />`;
-                    else if(ext==='pdf') content.innerHTML += `<iframe src="${it.data || ''}" class="w-full h-[85vh] rounded-lg border"></iframe>`;
-                    else content.innerHTML += `<p class="text-gray-700">Preview not available for this file type.</p>`;
-                    modal.classList.remove('hidden');
-                } else {
-                    alert('No preview available.');
-                }
-            });
-
-            inner.querySelector('#resume_remove').addEventListener('click', function(){
-                try{
-                    const raw = localStorage.getItem('uploadedResume_file');
-                    if(raw){
-                        const arr = JSON.parse(raw||'[]')||[];
-                        if(arr && arr.length){ arr.pop(); localStorage.setItem('uploadedResume_file', JSON.stringify(arr)); }
-                    }
-                }catch(e){}
-                setTimeout(renderResumeBlock, 30);
+                    inner.appendChild(card);
+                } catch(e) { console.warn('render cert failed', e); }
             });
 
         }catch(e){ console.warn('renderResumeBlock failed', e); }
