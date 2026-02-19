@@ -65,23 +65,25 @@
     <form id="reset-form" class="flex flex-col space-y-4">
       <!-- hidden field to receive the reset token (captured from ?hash= in URL) -->
       <input type="hidden" id="resetHash" name="reset_hash" value="" />
-      <div class="text-left">
+      <div class="text-left relative">
         <input
           id="newPassword"
           type="password"
           placeholder="New Password"
-          class="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-sky-300 focus:outline-none"
+          class="w-full border border-gray-300 rounded-md p-3 pr-20 focus:ring-2 focus:ring-sky-300 focus:outline-none"
         />
+        <button type="button" class="toggle-password absolute right-2 top-1/2 -translate-y-1/2 bg-transparent text-sm text-gray-600 px-3 py-1 rounded" data-target="newPassword" aria-pressed="false">Show</button>
         <p id="newPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
       </div>
 
-      <div class="text-left">
+      <div class="text-left relative">
         <input
           id="confirmPassword"
           type="password"
           placeholder="Confirm Password"
-          class="w-full border border-gray-300 rounded-md p-3 focus:ring-2 focus:ring-sky-300 focus:outline-none"
+          class="w-full border border-gray-300 rounded-md p-3 pr-20 focus:ring-2 focus:ring-sky-300 focus:outline-none"
         />
+        <button type="button" class="toggle-password absolute right-2 top-1/2 -translate-y-1/2 bg-transparent text-sm text-gray-600 px-3 py-1 rounded" data-target="confirmPassword" aria-pressed="false">Show</button>
         <p id="confirmPasswordError" class="text-red-500 text-xs mt-1 hidden"></p>
       </div>
 
@@ -201,6 +203,24 @@
         card.classList.remove('opacity-60');
       }
     });
+
+      // Toggle show/hide for password fields
+      document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-target');
+          const input = document.getElementById(targetId);
+          if (!input) return;
+          if (input.type === 'password') {
+            input.type = 'text';
+            btn.textContent = 'Hide';
+            btn.setAttribute('aria-pressed', 'true');
+          } else {
+            input.type = 'password';
+            btn.textContent = 'Show';
+            btn.setAttribute('aria-pressed', 'false');
+          }
+        });
+      });
   </script>
 </body>
 </html>
