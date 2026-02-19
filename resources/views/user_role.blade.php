@@ -81,9 +81,8 @@
       <img src="image/role4.png" alt="Admin" class="mx-auto mb-4 w-20 sm:w-24 md:w-28">
       <h3 class="text-blue-700 font-semibold text-lg mb-2">Admin</h3>
       <p class="text-gray-600 text-sm md:text-base leading-relaxed">
-        Manages system moderation and approval workflows. Reviews and approves new employer
-        entries, user feedback, flagged content, and training materials to ensure safety,
-        relevance, and accessibility.
+       Monitor and moderate applicant and company accounts, enforce legal and ethical compliance, manage consent and accessibility policies, 
+       and generate audit log reports to ensure transparency and proper platform oversight.
       </p>
     </a>
   </div>
