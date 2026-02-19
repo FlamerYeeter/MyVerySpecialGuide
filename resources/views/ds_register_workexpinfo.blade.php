@@ -653,11 +653,24 @@
                 if (container) {
                     if (!container.children.length) {
                         const tpl = document.getElementById('job_exp_template');
-                        if (tpl) {
-                            const node = tpl.content.firstElementChild.cloneNode(true);
-                            node.querySelectorAll('input, textarea, button').forEach(el => { try { el.disabled = false; } catch (e) {} });
-                            container.appendChild(node);
-                        }
+                                if (addBtn && typeof addBtn.click === 'function') {
+                                    // Use the existing Add button handler so the entry is built with all event bindings
+                                    try { addBtn.click(); }
+                                    catch (e) {
+                                        // fallback to naive clone if click() fails
+                                        if (tpl) {
+                                            const node = tpl.content.firstElementChild.cloneNode(true);
+                                            node.querySelectorAll('input, textarea, button').forEach(el => { try { el.disabled = false; } catch (e) {} });
+                                            container.appendChild(node);
+                                        }
+                                    }
+                                } else {
+                                    if (tpl) {
+                                        const node = tpl.content.firstElementChild.cloneNode(true);
+                                        node.querySelectorAll('input, textarea, button').forEach(el => { try { el.disabled = false; } catch (e) {} });
+                                        container.appendChild(node);
+                                    }
+                                }
                     } else {
                         // enable inputs in existing entries
                         container.querySelectorAll('input, textarea, button').forEach(el => {
