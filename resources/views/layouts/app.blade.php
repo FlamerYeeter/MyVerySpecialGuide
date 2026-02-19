@@ -45,13 +45,13 @@ $manifestPath = public_path('build/manifest.json');
             <!-- Nav Links -->
             <div class="hidden lg:flex items-center gap-6 ml-auto">
                 <a href="{{ route('home') }}"
-                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
+                    class="{{ request()->routeIs('home') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
                 <a href="{{ route('about.us') }}"
-                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About EmpowerPath</a>
+                    class="{{ request()->routeIs('about.us') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">About EmpowerPath</a>
                 <a href="{{ route('about.ds') }}"
-                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
+                    class="{{ request()->routeIs('about.ds') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
                 <a href="{{ route('about.dsapi') }}" 
-                    class="text-gray-700 hover:text-blue-600 font-medium text-base md:text-lg">Down Syndrome Association</a>
+                    class="{{ request()->routeIs('about.dsapi') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">Down Syndrome Association</a>
                 <!-- Sign Up Button -->
                <a href="{{ route('register') }}"
                     class="inline-block border-2 border-[#2563EB] text-[#2563EB]
@@ -100,12 +100,12 @@ $manifestPath = public_path('build/manifest.json');
         <!-- Responsive Dropdown Menu -->
         <div id="mobile-menu" class="hidden lg:hidden mt-4 rounded-xl bg-white shadow-md px-4 py-4 space-y-3">
             <a href="{{ route('home') }}"
-                class="block text-gray-700 hover:text-blue-600 font-medium text-base">Home</a>
+                class="block {{ request()->routeIs('home') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">Home</a>
             <a href="{{ route('about.us') }}"
-                class="block text-gray-700 hover:text-blue-600 font-medium text-base">About EmpowerPath</a>
+                class="block {{ request()->routeIs('about.us') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">About EmpowerPath</a>
             <a href="{{ route('about.ds') }}"
-                class="block text-gray-700 hover:text-blue-600 font-medium text-base">About Down Syndrome</a>
-            <a href="{{ route('about.dsapi') }}" class="block text-gray-700 hover:text-blue-600 font-medium text-base">Down Syndrome
+                class="block {{ request()->routeIs('about.ds') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">About Down Syndrome</a>
+            <a href="{{ route('about.dsapi') }}" class="block {{ request()->routeIs('about.dsapi') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">Down Syndrome
                 Association</a>
             <!-- Sign Up Button -->
             <a href="{{ route('register') }}"
