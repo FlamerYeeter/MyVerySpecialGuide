@@ -99,8 +99,8 @@ try {
     $mail->isSMTP();
     $mail->Host = 'smtp.gmail.com';
     $mail->SMTPAuth = true;
-    $mail->Username = 'myveryspecialguide@gmail.com';
-    $mail->Password = 'mlgs dsug zwuk rqlk';
+    $mail->Username = 'empowerpath123@gmail.com';
+    $mail->Password = 'fvte grar olvh jvqw'; // use app password
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = 587;
 
