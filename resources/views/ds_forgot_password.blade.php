@@ -46,9 +46,9 @@
 
   <!-- Back Button -->
   <div class="absolute top-6 left-6">
-    <a href="{{ route('login') }}" class="flex items-center bg-blue-500 hover:bg-blue-600 text-white font-bold text-xl py-2 px-5 rounded-lg shadow transition-all">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5"
-          stroke="currentColor" class="w-8 h-8 mr-3">
+    <a href="{{ route('login') }}" class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-8 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
+            class="w-6 h-6">
         <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
       </svg>
       Back
@@ -87,7 +87,7 @@
 
       <button
         type="submit"
-        class="bg-sky-400 text-white font-semibold py-2.5 w-3/4 mx-auto rounded-full hover:bg-sky-500 transition">
+        class="w-full bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold py-3 rounded-md transition-all duration-300">
         Reset Password
       </button>
     </form>
