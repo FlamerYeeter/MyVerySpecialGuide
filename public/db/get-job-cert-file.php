@@ -52,10 +52,23 @@ try {
     echo 'Internal server error';
     exit;
 }
-$finfo = new finfo(FILEINFO_MIME_TYPE);
-$mime = $finfo->buffer($data) ?: 'application/octet-stream';
-$extMap = ['application/pdf'=>'pdf','image/png'=>'png','image/jpeg'=>'jpg','image/gif'=>'gif'];
-$ext = $extMap[$mime] ?? 'bin';
+    // Robust MIME detection: prefer finfo but fall back to header signature checks
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->buffer($data) ?: 'application/octet-stream';
+    if ($mime === 'application/octet-stream' || empty($mime)) {
+        $sig = substr($data, 0, 8);
+        if (strpos($sig, '%PDF') === 0) {
+            $mime = 'application/pdf';
+        } elseif (substr($sig,0,3) === "\xFF\xD8\xFF") {
+            $mime = 'image/jpeg';
+        } elseif ($sig === "\x89PNG\r\n\x1A\n") {
+            $mime = 'image/png';
+        } elseif (substr($sig,0,4) === 'GIF8') {
+            $mime = 'image/gif';
+        }
+    }
+    $extMap = ['application/pdf'=>'pdf','image/png'=>'png','image/jpeg'=>'jpg','image/gif'=>'gif'];
+    $ext = $extMap[$mime] ?? 'pdf';
 $filename = 'workexp_' . $id . '.' . $ext;
 header('Content-Type: ' . $mime);
 header('Content-Length: ' . strlen($data));

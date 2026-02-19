@@ -478,13 +478,13 @@
                             <!-- Per-entry upload for Work Experience certificate -->
                             <div class="sm:col-span-2 mt-3">
                                 <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Upload Certificate (optional)
+                                    Upload Certificate <span class="text-red-600">(required)</span>
                                 </label>
                                 <p class="text-gray-600 italic text-xs sm:text-sm mb-2 job_cert_hint">Accepted: .jpg .jpeg .png .pdf — Max 5MB</p>
                                 <div class="job_cert_display"></div>
                                 <label class="inline-block mt-2 bg-[#2E2EFF] text-white px-3 py-2 rounded-md cursor-pointer">
                                     📁 Choose File
-                                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" />
+                                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" required />
                                 </label>
                                 <input type="hidden" class="job_cert_data" value="" />
                             </div>
@@ -771,6 +771,27 @@
                                         const jobTop = document.getElementById('job_experiences_container') || document.getElementById('workExpNext');
                                         if (jobTop) jobTop.scrollIntoView({behavior:'smooth', block:'center'});
                                         return;
+                                    }
+                                }
+                            }
+
+                            // Additional validation: if not 'none', require certificate for each filled job entry
+                            if (!noneSelected) {
+                                const jobItemsForCert = Array.from(document.querySelectorAll('#job_experiences_container .job_exp_item'));
+                                for (const item of jobItemsForCert) {
+                                    const jobTitle = item.querySelector('.job_title')?.value?.trim() || '';
+                                    const companyName = item.querySelector('.company_name')?.value?.trim() || '';
+                                    const workYear = item.querySelector('.job_work_year')?.value?.trim() || '';
+                                    const jobDescription = item.querySelector('.job_description')?.value?.trim() || '';
+                                    const hasAny = jobTitle || companyName || workYear || jobDescription;
+                                    if (hasAny) {
+                                        let certObj = null;
+                                        try { const raw = item.querySelector('.job_cert_data')?.value || ''; if (raw) certObj = JSON.parse(raw); } catch(e) { certObj = null; }
+                                        if (!certObj) {
+                                            if (errorEl) errorEl.textContent = 'Please upload the certificate for each work experience you entered.';
+                                            try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
+                                            return;
+                                        }
                                     }
                                 }
                             }
