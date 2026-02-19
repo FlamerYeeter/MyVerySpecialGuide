@@ -198,6 +198,7 @@
                         <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
                         <input id="email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                            <div id="emailError" class="text-red-600 text-sm mt-1"></div>
                     </div>
 
                     <!-- Contact Number -->
@@ -370,6 +371,7 @@
                         <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
                         <input id="guardian_email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                        <div id="guardianEmailError" class="text-red-600 text-sm mt-1"></div>
                     </div>
 
                     <!-- Guardian Contact -->
@@ -2014,6 +2016,77 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 return false;
             } catch (e) { return false; }
         }
+
+        // --- Email uniqueness check ---
+        (function(){
+            const emailEl = document.getElementById('email');
+            const guardianEmailEl = document.getElementById('guardian_email');
+            const emailError = document.getElementById('emailError');
+            const guardianEmailError = document.getElementById('guardianEmailError');
+            const submitBtn = document.getElementById('createAccountBtn');
+
+            let lastEmail = '';
+            let lastGuardianEmail = '';
+            let emailOk = true;
+            let guardianEmailOk = true;
+
+            function setSubmitState() {
+                if (!emailOk || !guardianEmailOk) {
+                    if (submitBtn) { submitBtn.disabled = true; submitBtn.classList.add('bg-gray-400','cursor-not-allowed','opacity-90'); }
+                } else {
+                    if (submitBtn) { submitBtn.disabled = false; submitBtn.classList.remove('bg-gray-400','cursor-not-allowed','opacity-90'); }
+                }
+            }
+
+            function checkEmailRemote(value, cb) {
+                if (!value || value.length < 3) { cb(false); return; }
+                fetch('/db/check_email.php?email=' + encodeURIComponent(value), { credentials: 'same-origin' })
+                    .then(r => r.json())
+                    .then(j => { if (j && j.success) cb(!!j.exists); else cb(false); })
+                    .catch(() => cb(false));
+            }
+
+            function debounce(fn, wait) { let t; return function(...a){ clearTimeout(t); t = setTimeout(()=>fn.apply(this,a), wait); }; }
+
+            const debouncedCheck = debounce(function(el, isGuardian){
+                const v = el.value.trim();
+                if (!v) {
+                    if (isGuardian) { guardianEmailError.textContent = ''; guardianEmailOk = true; }
+                    else { emailError.textContent = ''; emailOk = true; }
+                    setSubmitState();
+                    return;
+                }
+                // skip if unchanged
+                if ((!isGuardian && v === lastEmail) || (isGuardian && v === lastGuardianEmail)) { return; }
+                checkEmailRemote(v, function(exists){
+                    if (exists) {
+                        if (isGuardian) {
+                            guardianEmailError.textContent = 'This email is already in use.';
+                            guardianEmailOk = false;
+                        } else {
+                            emailError.textContent = 'This email is already in use.';
+                            emailOk = false;
+                        }
+                    } else {
+                        if (isGuardian) { guardianEmailError.textContent = ''; guardianEmailOk = true; }
+                        else { emailError.textContent = ''; emailOk = true; }
+                    }
+                    setSubmitState();
+                });
+            }, 450);
+
+            if (emailEl) {
+                emailEl.addEventListener('input', (e) => { lastEmail = ''; emailOk = true; debouncedCheck(emailEl, false); });
+                emailEl.addEventListener('blur', (e) => { debouncedCheck(emailEl, false); });
+            }
+            if (guardianEmailEl) {
+                guardianEmailEl.addEventListener('input', (e) => { lastGuardianEmail = ''; guardianEmailOk = true; debouncedCheck(guardianEmailEl, true); });
+                guardianEmailEl.addEventListener('blur', (e) => { debouncedCheck(guardianEmailEl, true); });
+            }
+
+            // ensure submit state reflects any pre-filled values on load
+            window.addEventListener('load', function(){ if (emailEl && emailEl.value) debouncedCheck(emailEl, false); if (guardianEmailEl && guardianEmailEl.value) debouncedCheck(guardianEmailEl, true); });
+        })();
 
         function showFieldError(id, msg) {
             const el = document.getElementById(id);
