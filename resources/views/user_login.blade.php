@@ -99,6 +99,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
   const loadingModal = document.getElementById('loadingModal');
 
   errorDiv.textContent = ''; // clear errors
+  // ensure modal text is correct for login
+  const loadingText = loadingModal.querySelector('p');
+  if (loadingText) loadingText.textContent = 'Logging in, please wait...';
   loadingModal.classList.remove('hidden'); // show loading
 
   try {
@@ -148,6 +151,9 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     }
 
       try {
+      // set modal text for password-reset flow
+      const loadingText = loadingModal.querySelector('p');
+      if (loadingText) loadingText.textContent = 'Sending password reset link...';
       loadingModal.classList.remove('hidden');
       // include debug flag when running on localhost so developer can receive link without SMTP
       const isLocalhost = ['localhost','127.0.0.1','::1'].includes(window.location.hostname);
