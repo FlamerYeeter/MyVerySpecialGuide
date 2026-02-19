@@ -27,32 +27,59 @@ function saveBase64File($base64String, $path = '../uploads/') {
 
 function base64ToBlob($input) {
     if (empty($input)) return null;
-
     $binary = '';
 
-    // Try to decode as JSON array
-    $items = json_decode($input, true);
-    if (is_array($items)) {
-    foreach ($items as $item) {
-    if (!empty($item['data'])) {
-    if (($pos = strpos($item['data'], ',')) !== false) {
-    $item['data'] = substr($item['data'], $pos + 1);
-    }
-    $data = base64_decode($item['data'], true);
-    if ($data !== false) {
-    $binary .= $data; // append to single blob
-    }
-    }
-    }
-    return $binary !== '' ? $binary : null;
+    // If the input is already an array (client may send an array of file objects), use it
+    if (is_array($input)) {
+        $items = $input;
+    } else {
+        // If input is a string, try to json-decode it into an array; otherwise treat as single data URL/base64
+        if (is_string($input)) {
+            $decoded = json_decode($input, true);
+            $items = is_array($decoded) ? $decoded : null;
+        } else {
+            $items = null;
+        }
     }
 
-    // Single Base64 string
-    if (($pos = strpos($input, ',')) !== false) {
-    $input = substr($input, $pos + 1);
+    // If we have an array of items, iterate and collect their 'data' fields or string values
+    if (is_array($items)) {
+        foreach ($items as $item) {
+            if (is_string($item)) {
+                $str = $item;
+                if (($pos = strpos($str, ',')) !== false) {
+                    $str = substr($str, $pos + 1);
+                }
+                $data = base64_decode($str, true);
+                if ($data !== false) $binary .= $data;
+                continue;
+            }
+            if (!is_array($item)) continue;
+            if (!empty($item['data'])) {
+                $d = $item['data'];
+                if (($pos = strpos($d, ',')) !== false) $d = substr($d, $pos + 1);
+                $decoded = base64_decode($d, true);
+                if ($decoded !== false) $binary .= $decoded;
+            } elseif (!empty($item['file'])) {
+                $d = $item['file'];
+                if (($pos = strpos($d, ',')) !== false) $d = substr($d, $pos + 1);
+                $decoded = base64_decode($d, true);
+                if ($decoded !== false) $binary .= $decoded;
+            }
+        }
+        return $binary !== '' ? $binary : null;
     }
-    $data = base64_decode($input, true);
-    return $data !== false ? $data : null;
+
+    // Single Base64 string (data URL or raw base64)
+    if (is_string($input)) {
+        if (($pos = strpos($input, ',')) !== false) {
+            $input = substr($input, $pos + 1);
+        }
+        $data = base64_decode($input, true);
+        return $data !== false ? $data : null;
+    }
+
+    return null;
 }
 
 // ——— READ & VALIDATE JSON ———
@@ -63,17 +90,12 @@ if (!$data) {
     die(json_encode(['success' => false, 'error' => 'Invalid JSON']));
 }
 
-// DEBUG: persist received payload for troubleshooting CDD_TYPE issues (temporary)
-try {
-    $debugPath = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_registration_payload.json';
-    @file_put_contents($debugPath, json_encode(['received_at' => date('c'), 'raw_json' => $json, 'decoded_keys' => array_keys(is_array($data)?$data:[] )], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-    // also write parsed rpi_personal for easy inspection
-    if (!empty($data['rpi_personal'])) {
-        $p = json_decode($data['rpi_personal'], true);
-        $debugP = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_rpi_personal.json';
-        @file_put_contents($debugP, json_encode(['received_at' => date('c'), 'rpi_personal_parsed' => $p], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-    }
-} catch (Exception $e) { /* ignore debug failures */ }
+    // DEBUG: persist received payload for troubleshooting CDD_TYPE issues (temporary)
+    try {
+        $debugPath = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_registration_payload.json';
+        @file_put_contents($debugPath, json_encode(['received_at' => date('c'), 'raw_json' => $json, 'decoded_keys' => array_keys(is_array($data)?$data:[] )], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        // NOTE: intentionally do not write a separate rpi_personal debug file to avoid persisting sensitive personal JSON
+    } catch (Exception $e) { /* ignore debug failures */ }
 
 // helper to write debug errors safely
 function write_debug_error($filename, $payload) {
@@ -106,11 +128,15 @@ $is_graduate       = $data['review_certs'] ?? null;
 $license_type      = $data['selected_work_year'] ?? null;
 $status            = $data['workplace'] ?? null;
 // $proof = base64ToBlob($data['admin_uploaded_proof_data'] ?? '');
-$medcerts = base64ToBlob($data['admin_uploaded_med_data'] ?? '');
-$pwdid    = base64ToBlob($data['admin_uploaded_pwd_data'] ?? '');
+$medRaw = $data['admin_uploaded_med_data'] ?? null;
+$pwdRaw = $data['admin_uploaded_pwd_data'] ?? null;
+$medcerts = base64ToBlob($medRaw);
+$pwdid    = base64ToBlob($pwdRaw);
 
 $medBlob = $medcerts;
 $pwdBlob = $pwdid;
+// fallback recordings when LOB write not possible
+$fallback_saved_files = [];
 
 // Personal
 $firstName   = $user_info['firstName'] ?? null;
@@ -196,26 +222,11 @@ oci_set_action($conn, "Registration Transaction");
 
 // BEGIN TRANSACTION
 $allGood = true;
-// $lob_proof = oci_new_descriptor($conn, OCI_D_LOB);
-// Always allocate LOB descriptors. To avoid "invalid LOB locator" errors
-// ensure a temporary LOB is written even when no data is provided
-$lob_med   = oci_new_descriptor($conn, OCI_D_LOB);
-$lob_pwd   = oci_new_descriptor($conn, OCI_D_LOB);
+// Defer creating LOB descriptors for med/pwd until we know there's binary data.
+$lob_med = null;
+$lob_pwd = null;
 
-/* Write Binary Data */
-
-// if ($proofBlob) $lob_proof->writeTemporary($proofBlob, OCI_TEMP_BLOB);
-try {
-    // Write provided blob data or an empty temporary LOB when absent
-    $lob_med->writeTemporary($medBlob ?? '', OCI_TEMP_BLOB);
-} catch (Exception $e) {
-    // If writing fails, leave as-is and let later execute surface the error
-}
-try {
-    $lob_pwd->writeTemporary($pwdBlob ?? '', OCI_TEMP_BLOB);
-} catch (Exception $e) {
-    // ignore; error handling below will catch execution failures
-}
+/* Write Binary Data: will write into LOB locators AFTER successful insert */
 
 // -------- 1. INSERT user_guardian --------
 $sql1 = "
@@ -266,8 +277,8 @@ INSERT INTO user_guardian (
     :types_of_ds,
     :cdd_type,
     :username,
-    :med_certificates,
-    :pwd_id,
+    EMPTY_BLOB(),
+    EMPTY_BLOB(),
     CASE WHEN :birthdate IS NULL OR TRIM(:birthdate) = '' THEN NULL ELSE TO_DATE(:birthdate,'YYYY-MM-DD') END
 )";
 
@@ -298,11 +309,40 @@ oci_bind_by_name($stid1, ':cdd_type',       $cdd_type);
 oci_bind_by_name($stid1, ':username',      $username);
 oci_bind_by_name($stid1, ':birthdate',     $birthdate);
 
+// Append RETURNING clause to get ROWID only (we'll SELECT FOR UPDATE to obtain LOB locators)
+// Re-parse/prepare with RETURNING because OCI does not support modifying parsed SQL easily
+oci_free_statement($stid1);
+$sql1_return = $sql1 . " RETURNING ROWID INTO :ug_rowid";
+$stid1 = oci_parse($conn, $sql1_return);
 
-/* ---------- BLOB BINDS ---------- */
+/* ---------- RE-BIND TEXT/BASIC PARAMETERS FOR NEW statement ---------- */
+oci_bind_by_name($stid1, ':id',            $user_guardian_id);
+oci_bind_by_name($stid1, ':first_name',    $firstName);
+oci_bind_by_name($stid1, ':last_name',     $lastName);
+oci_bind_by_name($stid1, ':email',         $email);
+oci_bind_by_name($stid1, ':contact_number',$phone);
+oci_bind_by_name($stid1, ':password',      $password);
+oci_bind_by_name($stid1, ':age',           $age);
+oci_bind_by_name($stid1, ':education',     $edu_level);
+oci_bind_by_name($stid1, ':school',        $school_name);
+oci_bind_by_name($stid1, ':guardian_first_name', $gf);
+oci_bind_by_name($stid1, ':guardian_last_name',  $gl);
+oci_bind_by_name($stid1, ':guardian_email',      $ge);
+oci_bind_by_name($stid1, ':guardian_contact_number', $gp);
+oci_bind_by_name($stid1, ':relationship',        $gr);
+oci_bind_by_name($stid1, ':address',       $address);
+oci_bind_by_name($stid1, ':types_of_ds',   $types_of_ds);
+oci_bind_by_name($stid1, ':cdd_type',       $cdd_type);
+oci_bind_by_name($stid1, ':username',      $username);
+oci_bind_by_name($stid1, ':birthdate',     $birthdate);
 
-oci_bind_by_name($stid1, ':med_certificates', $lob_med, -1, OCI_B_BLOB);
-oci_bind_by_name($stid1, ':pwd_id',           $lob_pwd, -1, OCI_B_BLOB);
+// (LOB locators will be bound after we create descriptors below)
+
+
+/* ---------- RETURNING ROWID (will SELECT FOR UPDATE to obtain LOB locators) ---------- */
+// Bind only ROWID placeholder so we can SELECT FOR UPDATE to safely obtain LOB locators
+$ug_rowid = null;
+oci_bind_by_name($stid1, ':ug_rowid', $ug_rowid, 256);
 
 // EXECUTE
 if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
@@ -315,6 +355,47 @@ if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
         'payload_summary' => array_keys(is_array($data)?$data:[]),
         'time' => date('c')
     ]);
+}
+// After successful execute, obtain LOB locators using SELECT ... FOR UPDATE and write med/pwd blobs
+if ($allGood) {
+    if (($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0) || ($pwdBlob !== null && is_string($pwdBlob) && strlen($pwdBlob) > 0)) {
+        try {
+            $sel = "SELECT med_certificates, pwd_id FROM user_guardian WHERE ROWID = :rid FOR UPDATE";
+            $selt = oci_parse($conn, $sel);
+            oci_bind_by_name($selt, ':rid', $ug_rowid);
+            if (oci_execute($selt, OCI_NO_AUTO_COMMIT)) {
+                if (oci_fetch($selt)) {
+                    $lob_med_sel = oci_result($selt, 'MED_CERTIFICATES');
+                    $lob_pwd_sel = oci_result($selt, 'PWD_ID');
+                    if ($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0 && $lob_med_sel && is_object($lob_med_sel)) {
+                        try {
+                            if (method_exists($lob_med_sel, 'write')) $lob_med_sel->write($medBlob);
+                            elseif (method_exists($lob_med_sel, 'writeTemporary')) $lob_med_sel->writeTemporary($medBlob, OCI_TEMP_BLOB);
+                            elseif (method_exists($lob_med_sel, 'saveTemporary')) $lob_med_sel->saveTemporary($medBlob, OCI_TEMP_BLOB);
+                            else $lob_med_sel->write($medBlob);
+                            write_debug_error('temp_debug_med_blob_written.json', ['size_bytes'=>strlen($medBlob),'time'=>date('c')]);
+                        } catch (Exception $e) {
+                            write_debug_error('temp_debug_med_blob_error.json', ['error'=> (is_object($e)? (method_exists($e,'getMessage')?$e->getMessage():(string)$e) : (string)$e), 'time'=>date('c')]);
+                            try { if (!empty($medRaw)) { $savedm = saveBase64File($medRaw); if ($savedm) $fallback_saved_files[] = ['type'=>'med','file'=>$savedm]; write_debug_error('temp_debug_med_blob_fallback_saved.json', ['file'=>$savedm,'time'=>date('c')]); } } catch (Exception $ee) { write_debug_error('temp_debug_med_blob_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
+                        }
+                    }
+                    if ($pwdBlob !== null && is_string($pwdBlob) && strlen($pwdBlob) > 0 && $lob_pwd_sel && is_object($lob_pwd_sel)) {
+                        try {
+                            if (method_exists($lob_pwd_sel, 'write')) $lob_pwd_sel->write($pwdBlob);
+                            elseif (method_exists($lob_pwd_sel, 'writeTemporary')) $lob_pwd_sel->writeTemporary($pwdBlob, OCI_TEMP_BLOB);
+                            elseif (method_exists($lob_pwd_sel, 'saveTemporary')) $lob_pwd_sel->saveTemporary($pwdBlob, OCI_TEMP_BLOB);
+                            else $lob_pwd_sel->write($pwdBlob);
+                            write_debug_error('temp_debug_pwd_blob_written.json', ['size_bytes'=>strlen($pwdBlob),'time'=>date('c')]);
+                        } catch (Exception $e) {
+                            write_debug_error('temp_debug_pwd_blob_error.json', ['error'=> (is_object($e)? (method_exists($e,'getMessage')?$e->getMessage():(string)$e) : (string)$e), 'time'=>date('c')]);
+                            try { if (!empty($pwdRaw)) { $savedp = saveBase64File($pwdRaw); if ($savedp) $fallback_saved_files[] = ['type'=>'pwd','file'=>$savedp]; write_debug_error('temp_debug_pwd_blob_fallback_saved.json', ['file'=>$savedp,'time'=>date('c')]); } } catch (Exception $ee) { write_debug_error('temp_debug_pwd_blob_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
+                        }
+                    }
+                }
+                oci_free_statement($selt);
+            }
+        } catch (Exception $e) { write_debug_error('temp_debug_med_pwd_forupdate_error.json', ['error'=> (string)$e, 'time'=>date('c')]); }
+    }
 }
 
 // ——— 2. INSERT job_experiences ———
@@ -342,11 +423,12 @@ if ($allGood) {
             }
         }
 
+        // Insert row with EMPTY_BLOB() and RETURN the ROWID only; we'll SELECT FOR UPDATE to get LOB locator
         $sql2 = "INSERT INTO job_experience (
-                    guardian_id, job_title, company_name, work_year, job_description
+                    guardian_id, job_title, company_name, work_year, job_description, workexp_certificate
                 ) VALUES (
-                    :v1,:v2,:v3,:v4,:v5
-                )";
+                    :v1,:v2,:v3,:v4,:v5, EMPTY_BLOB()
+                ) RETURNING ROWID INTO :job_rowid";
         $stid2 = oci_parse($conn, $sql2);
 
         // bind normalized variables (not array keys directly)
@@ -355,6 +437,18 @@ if ($allGood) {
         oci_bind_by_name($stid2, ':v3', $company);
         oci_bind_by_name($stid2, ':v4', $work_year);
         oci_bind_by_name($stid2, ':v5', $description);
+
+        // Extract possible base64 certificate from job entry (keep raw for fallback)
+        $job_cert_raw = null;
+        if (!empty($work['certificate'])) $job_cert_raw = $work['certificate'];
+        elseif (!empty($work['certificate_data'])) $job_cert_raw = $work['certificate_data'];
+        elseif (!empty($work['file'])) $job_cert_raw = $work['file'];
+        elseif (!empty($work['data'])) $job_cert_raw = $work['data'];
+        $job_cert_blob = $job_cert_raw ? base64ToBlob($job_cert_raw) : null;
+
+        // Bind ROWID holder so RETURNING will provide it; we'll SELECT FOR UPDATE after execute to obtain locator
+        $job_rowid = null;
+        oci_bind_by_name($stid2, ':job_rowid', $job_rowid, 256);
 
         if (!oci_execute($stid2, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($stid2);
@@ -366,8 +460,44 @@ if ($allGood) {
                 'work_item'=>$work,
                 'time'=>date('c')
             ]);
+            oci_free_statement($stid2);
+            try { if (isset($lob_job_cert) && is_object($lob_job_cert)) $lob_job_cert->free(); } catch (Exception $ee) {}
             break;
         }
+
+        // After execute, SELECT FOR UPDATE to obtain LOB locator and write content
+        if ($job_cert_blob !== null && is_string($job_cert_blob) && strlen($job_cert_blob) > 0) {
+            try {
+                $selj = "SELECT workexp_certificate FROM job_experience WHERE ROWID = :rid FOR UPDATE";
+                $seljst = oci_parse($conn, $selj);
+                oci_bind_by_name($seljst, ':rid', $job_rowid);
+                if (oci_execute($seljst, OCI_NO_AUTO_COMMIT)) {
+                    if (oci_fetch($seljst)) {
+                        $lob_job_sel = oci_result($seljst, 'WORKEXP_CERTIFICATE');
+                        if ($lob_job_sel && is_object($lob_job_sel)) {
+                            try {
+                                if (method_exists($lob_job_sel, 'write')) $lob_job_sel->write($job_cert_blob);
+                                elseif (method_exists($lob_job_sel, 'writeTemporary')) $lob_job_sel->writeTemporary($job_cert_blob, OCI_TEMP_BLOB);
+                                elseif (method_exists($lob_job_sel, 'saveTemporary')) $lob_job_sel->saveTemporary($job_cert_blob, OCI_TEMP_BLOB);
+                                else $lob_job_sel->write($job_cert_blob);
+                                write_debug_error('temp_debug_job_certificate_blobs.json', [
+                                    'stage' => 'job_blob_written',
+                                    'size_bytes' => strlen($job_cert_blob),
+                                    'work_item' => $work,
+                                    'rowid' => $job_rowid,
+                                    'time' => date('c')
+                                ]);
+                            } catch (Exception $e) {
+                                write_debug_error('temp_debug_job_certificate_blobs_error.json', ['stage'=>'job_blob_write_failed','error'=> (string)$e,'work_item'=>$work,'time'=>date('c')]);
+                                try { if (!empty($job_cert_raw)) { $savedj = saveBase64File($job_cert_raw); if ($savedj) { $fallback_saved_files[] = ['type'=>'job','work_item'=>$work,'file'=>$savedj]; write_debug_error('temp_debug_job_certificate_fallback_saved.json', ['file'=>$savedj,'time'=>date('c')]); } } } catch (Exception $ee) { write_debug_error('temp_debug_job_certificate_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
+                            }
+                        }
+                    }
+                    oci_free_statement($seljst);
+                }
+            } catch (Exception $e) { write_debug_error('temp_debug_job_certificate_forupdate_error.json', ['error'=> (string)$e, 'time'=>date('c')]); }
+        }
+
         oci_free_statement($stid2);
     }
 }
@@ -388,22 +518,41 @@ if ($allGood) {
         $c_date_norm = null;
         $extracted_year = null;
         if ($c_date !== '') {
-            $candidate = substr(trim((string)$c_date), 0, 10);
-            $dt = DateTime::createFromFormat('Y-m-d', $candidate);
-            if ($dt && $dt->format('Y-m-d') === $candidate) {
+            $candidate = trim((string)$c_date);
+            // Try common formats: ISO, then long textual month like 'July 4, 2020', then strtotime fallback
+            $dt = DateTime::createFromFormat('Y-m-d', substr($candidate,0,10));
+            if ($dt && $dt->format('Y-m-d') === substr($candidate,0,10)) {
                 $yr = intval($dt->format('Y'));
                 if ($yr !== 0) {
                     $c_date_norm = $dt->format('Y-m-d');
                     $extracted_year = $yr;
                 }
             } else {
-                // attempt to extract a 4-digit year; do not invent full date to avoid incorrect DB inserts
-                if (preg_match('/(\d{4})/', $c_date, $m)) {
-                    $yr = intval($m[1]);
-                    if ($yr !== 0) {
-                        $extracted_year = $yr;
-                        // keep normalized date NULL to avoid inserting a guessed date
-                        $c_date_norm = null;
+                // Try parsing formats like 'July 4, 2020' or 'Jul 4, 2020'
+                $formats = ['F j, Y', 'M j, Y', 'F d, Y', 'M d, Y', 'j F Y', 'j M Y'];
+                foreach ($formats as $fmt) {
+                    $dt2 = DateTime::createFromFormat($fmt, $candidate);
+                    if ($dt2 && $dt2->format('Y') > 0) {
+                        $c_date_norm = $dt2->format('Y-m-d');
+                        $extracted_year = intval($dt2->format('Y'));
+                        break;
+                    }
+                }
+                // As a last resort, try strtotime which handles many human-readable dates
+                if ($c_date_norm === null) {
+                    $ts = strtotime($candidate);
+                    if ($ts !== false && $ts > 0) {
+                        $c_date_norm = date('Y-m-d', $ts);
+                        $extracted_year = intval(date('Y', $ts));
+                    } else {
+                        // attempt to extract a 4-digit year only
+                        if (preg_match('/(\d{4})/', $c_date, $m)) {
+                            $yr = intval($m[1]);
+                            if ($yr !== 0) {
+                                $extracted_year = $yr;
+                                $c_date_norm = null; // avoid guessing full date
+                            }
+                        }
                     }
                 }
             }
@@ -427,13 +576,15 @@ if ($allGood) {
         if ($c_name === '' && $c_issued === '' && $c_date === '' && $c_learn === '') continue;
 
         // Use TO_DATE only when a date string is provided; otherwise NULL
-        $sqlc = "INSERT INTO guardian_certificates (
-                    guardian_id, name, issued_by, date_completed, what_learned, created_at, updated_at
-                 ) VALUES (
-                    :gid, :gname, :gissued,
-                    CASE WHEN :gdate IS NULL OR :gdate = '' THEN NULL ELSE TO_DATE(:gdate,'YYYY-MM-DD') END,
-                    :glearn, SYSDATE, SYSDATE
-                 )";
+        // Prepare SQL to include optional CERTIFICATE BLOB column
+          // Insert with EMPTY_BLOB() and RETURN the locator into :gcert so we can write into it safely
+          $sqlc = "INSERT INTO guardian_certificates (
+                          guardian_id, name, issued_by, date_completed, what_learned, created_at, updated_at, certificate
+                      ) VALUES (
+                          :gid, :gname, :gissued,
+                          CASE WHEN :gdate IS NULL OR :gdate = '' THEN NULL ELSE TO_DATE(:gdate,'YYYY-MM-DD') END,
+                          :glearn, SYSDATE, SYSDATE, EMPTY_BLOB()
+                      ) RETURNING ROWID INTO :g_rowid";
         $stidc = oci_parse($conn, $sqlc);
         oci_bind_by_name($stidc, ':gid',   $user_guardian_id);
         oci_bind_by_name($stidc, ':gname', $c_name);
@@ -441,6 +592,21 @@ if ($allGood) {
         // bind normalized date (or NULL) to avoid TO_DATE errors on malformed dates
         oci_bind_by_name($stidc, ':gdate', $c_date_norm);
         oci_bind_by_name($stidc, ':glearn', $c_learn);
+
+        // Accept file data in several possible keys and keep raw for fallback
+        $cert_raw = null;
+        if (!empty($ce['data'])) $cert_raw = $ce['data'];
+        elseif (!empty($ce['file'])) $cert_raw = $ce['file'];
+        elseif (!empty($ce['certificate_data'])) $cert_raw = $ce['certificate_data'];
+        elseif (!empty($ce['certificate']) && is_string($ce['certificate'])) {
+            // some clients may place the base64 directly under 'certificate'
+            $cert_raw = $ce['certificate'];
+        }
+        $cert_blob = $cert_raw ? base64ToBlob($cert_raw) : null;
+
+        // Bind ROWID holder; we'll SELECT FOR UPDATE after execute to obtain LOB locator
+        $g_rowid = null;
+        oci_bind_by_name($stidc, ':g_rowid', $g_rowid, 256);
 
         if (!oci_execute($stidc, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($stidc);
@@ -452,8 +618,62 @@ if ($allGood) {
                 'certificate'=>$ce,
                 'time'=>date('c')
             ]);
+            // free statement and any LOB descriptor
             oci_free_statement($stidc);
+            try { if (isset($lob_cert) && is_object($lob_cert)) $lob_cert->free(); } catch (Exception $e) {}
             break;
+        }
+        // If we received binary data, use UPDATE with a bound blob to write directly (avoids LOB locator transaction issues)
+        if ($cert_blob !== null && is_string($cert_blob) && strlen($cert_blob) > 0) {
+            try {
+                $upSql = "UPDATE guardian_certificates SET certificate = :blob WHERE ROWID = :rid";
+                $upSt = oci_parse($conn, $upSql);
+                // Use a LOB descriptor and save the binary into it before executing the UPDATE
+                $lob_cert_desc = oci_new_descriptor($conn, OCI_D_LOB);
+                oci_bind_by_name($upSt, ':blob', $lob_cert_desc, -1, OCI_B_BLOB);
+                oci_bind_by_name($upSt, ':rid', $g_rowid, 256);
+                // save binary into descriptor (this writes into the bound placeholder)
+                try {
+                    if ($lob_cert_desc === false) throw new Exception('Failed to create LOB descriptor');
+                    $lob_cert_desc->save($cert_blob);
+                } catch (Exception $e) {
+                    write_debug_error('temp_debug_certificate_lob_desc_error.json', ['error'=>(string)$e,'rowid'=>$g_rowid,'cert_name'=>$c_name,'time'=>date('c')]);
+                }
+                if (oci_execute($upSt, OCI_NO_AUTO_COMMIT)) {
+                    write_debug_error('temp_debug_certificate_blobs.json', [
+                        'stage'=>'guardian_certificate_blob_written',
+                        'size_bytes'=>strlen($cert_blob),
+                        'certificate_name'=>$c_name,
+                        'rowid'=>$g_rowid,
+                        'time'=>date('c')
+                    ]);
+                    // verify written length using ROWID
+                    try {
+                        $verSqlC = "SELECT id, dbms_lob.getlength(certificate) AS L FROM guardian_certificates WHERE ROWID = :rid";
+                        $vstc = oci_parse($conn, $verSqlC);
+                        oci_bind_by_name($vstc, ':rid', $g_rowid);
+                        if (oci_execute($vstc)) {
+                            $rc = oci_fetch_array($vstc, OCI_ASSOC+OCI_RETURN_NULLS);
+                            $llenc = $rc && isset($rc['L']) ? intval($rc['L']) : 0;
+                            $idc = $rc && isset($rc['ID']) ? $rc['ID'] : null;
+                            write_debug_error('temp_debug_certificate_verify.json', ['db_id'=>$idc,'rowid'=>$g_rowid,'db_length'=>$llenc,'expected_size'=>strlen($cert_blob),'time'=>date('c')]);
+                            if ($llenc === 0) {
+                                $savedc = null;
+                                try { if (!empty($cert_raw)) { $savedc = saveBase64File($cert_raw); } } catch (Exception $e) { $savedc = null; }
+                                write_debug_error('temp_debug_certificate_zero_length.json', ['message'=>'guardian certificate blob length is zero after update','rowid'=>$g_rowid,'db_id'=>$idc,'db_length'=>$llenc,'saved_fallback'=>$savedc,'time'=>date('c')]);
+                                if ($savedc) $fallback_saved_files[] = ['type'=>'guardian_cert','certificate_name'=>$c_name,'file'=>$savedc];
+                            }
+                        }
+                        oci_free_statement($vstc);
+                    } catch (Exception $e) { write_debug_error('temp_debug_certificate_verify_error.json', ['error'=> (string)$e, 'time'=>date('c')]); }
+                } else {
+                    $e = oci_error($upSt);
+                    write_debug_error('temp_debug_certificate_blobs_error.json', ['stage'=>'guardian_certificate_update_failed','error'=>$e,'certificate'=>$ce,'time'=>date('c')]);
+                    try { if (!empty($cert_raw)) { $savedc = saveBase64File($cert_raw); if ($savedc) { $fallback_saved_files[] = ['type'=>'guardian_cert','certificate_name'=>$c_name,'file'=>$savedc]; write_debug_error('temp_debug_certificate_fallback_saved.json', ['file'=>$savedc,'time'=>date('c')]); } } } catch (Exception $ee) { write_debug_error('temp_debug_certificate_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
+                }
+                oci_free_statement($upSt);
+                try { if (isset($lob_cert_desc) && is_object($lob_cert_desc)) $lob_cert_desc->free(); } catch (Exception $e) {}
+            } catch (Exception $e) { write_debug_error('temp_debug_certificate_forupdate_error.json', ['error'=> (string)$e, 'time'=>date('c')]); }
         }
         oci_free_statement($stidc);
     }
@@ -493,14 +713,39 @@ if ($allGood) {
 }
 
 // ——— FINAL COMMIT OR ROLLBACK ———
+// Write a final debug snapshot to help trace silent failures
+try {
+    $finalDbg = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_registration_final_state.json';
+    $dbgPayload = [
+        'allGood' => $allGood,
+        'lastError' => is_array($lastError) ? $lastError : (is_object($lastError)? (method_exists($lastError,'getMessage')?$lastError->getMessage():(string)$lastError) : $lastError),
+        'timestamp' => date('c'),
+        'fallback_saved_files' => $fallback_saved_files ?? [],
+        'expected_debug_files' => [
+            'temp_debug_med_blob_written.json' => file_exists(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_med_blob_written.json'),
+            'temp_debug_pwd_blob_written.json' => file_exists(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_pwd_blob_written.json'),
+            'temp_debug_job_certificate_blobs.json' => file_exists(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_job_certificate_blobs.json'),
+            'temp_debug_certificate_blobs.json' => file_exists(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_certificate_blobs.json'),
+        ]
+    ];
+    @file_put_contents($finalDbg, json_encode($dbgPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+} catch (Exception $e) { /* ignore */ }
+
 if ($allGood) {
-    oci_commit($conn);
-    http_response_code(200);
-    echo json_encode([
-        'success' => true,
-        'guardian_id' => $user_guardian_id,
-        'files' => ['proof' => $proof, 'certs' => $certs]
-    ]);
+    $commitOk = @oci_commit($conn);
+    if (!$commitOk) {
+        $ce = oci_error($conn) ?: oci_error();
+        write_debug_error('temp_debug_registration_commit_error.json', ['error'=>$ce, 'time'=>date('c')]);
+        http_response_code(500);
+        echo json_encode(['success'=>false,'error'=>'Commit failed','debug'=>$ce]);
+    } else {
+        http_response_code(200);
+        echo json_encode([
+            'success' => true,
+            'guardian_id' => $user_guardian_id,
+            'files' => ['proof' => $proof, 'certs' => $certs]
+        ]);
+    }
 } else {
     oci_rollback($conn);
     http_response_code(500);
@@ -513,8 +758,8 @@ if ($allGood) {
 }
 
 // ——— CLEANUP ———
-oci_free_statement($stid1);
-if (isset($stid2)) oci_free_statement($stid2);
+if (isset($stid1) && is_resource($stid1)) oci_free_statement($stid1);
+if (isset($stid2) && is_resource($stid2)) oci_free_statement($stid2);
 oci_close($conn);
 
 // free LOB descriptors if allocated

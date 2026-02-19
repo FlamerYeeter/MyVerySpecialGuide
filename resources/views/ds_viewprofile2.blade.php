@@ -89,13 +89,6 @@
                                         <div id="certsList" class="space-y-2"></div>
                                         <div id="noCertsMsg" class="text-gray-600 italic">No certificates or trainings added.</div>
 
-                                        <!-- View/Download links for server-stored files -->
-                                        <div id="fileLinks" class="mt-3 space-x-4" style="display:none;">
-                                            <a id="proofFileLink" class="text-blue-600 underline" target="_blank" rel="noopener" href="#">View / Download Proof of Membership</a>
-                                            <a id="medFileLink" class="text-blue-600 underline" target="_blank" rel="noopener" href="#">View / Download Medical Certificate</a>
-                                            <a id="otherFileLink" class="text-blue-600 underline" target="_blank" rel="noopener" href="#">View / Download Certificates</a>
-                                        </div>
-
                                         <!-- NOTE: "Click to Add Certificates / Training Details" removed per request -->
                                         <!-- Inline edit panel (hidden until Edit clicked) -->
                                         <div id="certsEdit" class="hidden mt-4">
@@ -524,13 +517,52 @@ document.addEventListener('DOMContentLoaded', () => {
                     const learned = it.WHAT_LEARNED || it.what_learned || it.what_you_learned || '';
 
                     const card = document.createElement('div');
-                    card.className = 'mb-3 p-3 border rounded-md bg-white shadow-sm';
+                    card.className = 'mb-3 p-3 border rounded-md bg-white shadow-sm relative';
                     const title = name ? `<div class="font-semibold text-gray-800">${escapeHtml(name)}</div>` : '';
                     const meta = (issuer || date) ? `<div class="text-sm text-gray-600 mt-1">${escapeHtml(issuer)}${issuer && date ? ' • ' : ''}${date ? escapeHtml(fmtDate(date)) : ''}</div>` : '';
                     const desc = learned ? `<div class="text-sm text-gray-700 mt-2">${escapeHtml(learned)}</div>` : '';
-                    card.innerHTML = title + meta + desc;
+                    // badge for on-server certificate (green)
+                    let badge = '';
+                    try {
+                        if (it.HAS_CERT || it.has_cert || it.HAS_CERT === 1) {
+                            // use explicit cert_id parameter so endpoint targets CERTIFICATE column
+                            const url = '/db/get-guardian-cert-file.php?cert_id=' + encodeURIComponent(it.ID || it.id);
+                            badge = `<a href="${url}" target="_blank" class="absolute right-3 top-3 inline-flex items-center gap-2 text-green-700 hover:opacity-90" title="View certificate">
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#ECFDF5"/><path d="M9 12.5l1.8 1.8L15 10" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                    </a>`;
+                        }
+                    } catch(e) { badge = ''; }
+                    card.innerHTML = title + meta + desc + badge;
                     listEl.appendChild(card);
+                    // Also add a simple guardian cert link under serverCertLinks
+                    try {
+                        if (it.HAS_CERT || it.has_cert || it.HAS_CERT === 1) {
+                            const gLinks = document.getElementById('guardianCertLinks');
+                                if (gLinks) {
+                                const gid = String(it.ID || it.id || '').trim();
+                                if (/^\d+$/.test(gid)) {
+                                    const a = document.createElement('a');
+                                    a.href = '/db/get-guardian-cert-file.php?cert_id=' + encodeURIComponent(gid);
+                                    a.target = '_blank';
+                                    a.rel = 'noopener';
+                                    a.className = 'text-green-700 underline';
+                                    a.textContent = (it.NAME || it.name || 'Certificate') + ' — View / Download';
+                                    a.setAttribute('download', (it.NAME||'certificate') + '.pdf');
+                                    gLinks.appendChild(a);
+                                }
+                            }
+                        }
+                    } catch(e) { /* non-critical */ }
                 });
+
+                // show serverCertLinks if any guardian cert anchors were appended
+                try {
+                    const sLinks = document.getElementById('serverCertLinks');
+                    const gLinks = document.getElementById('guardianCertLinks');
+                    if (sLinks && gLinks && gLinks.children.length > 0) {
+                        sLinks.style.display = '';
+                    }
+                } catch (e) { /* non-critical */ }
             }).catch(e => {
                 // ignore if newer request started
                 if (reqId !== window.__mvsg_certs_req_id) return;
@@ -543,57 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // initial render of DB-backed certs
         window.__mvsg_renderDBCerts(userId);
 
-        // Show view/download links for server-stored files if present in response
-        try {
-            const fileLinks = document.getElementById('fileLinks');
-            const proofA = document.getElementById('proofFileLink');
-            const medA = document.getElementById('medFileLink');
-            const otherA = document.getElementById('otherFileLink');
-            const files = json.files || {};
-            const lengths = json.file_lengths || {};
-            let shown = false;
-            // Prefer inline base64 payloads returned in `json.files` when available.
-            // Only show anchors with a valid href; force-download data: URLs.
-            let anyShown = false;
-            function setLink(a, dataB64, fallbackUrl, filename) {
-                if (!a) return false;
-                if (dataB64) {
-                    a.href = 'data:application/octet-stream;base64,' + dataB64;
-                    a.setAttribute('download', filename || 'file');
-                    a.style.display = '';
-                    // ensure clicking downloads instead of navigating in some browsers
-                    a.addEventListener('click', function (ev) {
-                        try {
-                            if ((a.href || '').slice(0,5) === 'data:') {
-                                ev.preventDefault();
-                                const link = document.createElement('a');
-                                link.href = a.href;
-                                link.download = a.getAttribute('download') || filename || 'file';
-                                document.body.appendChild(link);
-                                link.click();
-                                document.body.removeChild(link);
-                            }
-                        } catch (e) { /* ignore */ }
-                    });
-                    return true;
-                }
-                if (fallbackUrl && fallbackUrl.length) {
-                    a.href = fallbackUrl;
-                    a.removeAttribute('download');
-                    a.style.display = '';
-                    return true;
-                }
-                a.style.display = 'none';
-                return false;
-            }
-
-            if (setLink(proofA, files.proof, (lengths.proof_len && lengths.proof_len > 0) ? '/db/get_file.php?type=proof' : '', 'proof.pdf')) anyShown = true;
-            if (setLink(medA, files.med, (lengths.med_len && lengths.med_len > 0) ? '/db/get_file.php?type=med' : '', 'medical.pdf')) anyShown = true;
-            if (setLink(otherA, files.other_certs, (lengths.other_len && lengths.other_len > 0) ? '/db/get_file.php?type=other' : '', 'certificates.pdf')) anyShown = true;
-
-            if (fileLinks) fileLinks.style.display = anyShown ? '' : 'none';
-            if (fileLinks) fileLinks.style.display = shown ? '' : 'none';
-        } catch(e) { /* non-critical */ }
+        // (server-file links removed — UI now shows certificates via DB-backed lists only)
 
 
         // fetch job_experience rows (by guardian_id)
@@ -679,11 +661,60 @@ document.addEventListener('DOMContentLoaded', () => {
                     const meta = escapeHtml(j.years_experience || '') + (j.work_year ? ' • ' + escapeHtml(j.work_year) : '');
                     const desc = escapeHtml(j.job_description || '');
                     const env = j.working_environment ? '<div class="text-xs text-gray-500 mt-2">Environment: ' + escapeHtml(j.working_environment) + '</div>' : '';
-                    card.innerHTML = '<div class="font-semibold">' + title + '</div>' +
+                    // If this job has per-entry certificate, show blue check with link
+                    let jobBadge = '';
+                    try {
+                        if (j.HAS_CERT || j.has_cert || j.HAS_CERT === 1) {
+                            // Ensure the id used in the URL is a plain integer to avoid malformed links
+                            const rawId = j.id || j.ID || j.job_id || '';
+                            const idStr = rawId !== null && rawId !== undefined ? String(rawId).trim() : '';
+                            if (/^[A-Za-z0-9_\-]+$/.test(idStr)) {
+                                const url = '/db/get-job-cert-file.php?id=' + encodeURIComponent(idStr);
+                                jobBadge = `<a href="${url}" target="_blank" class="inline-flex items-center gap-2 text-blue-600 ml-2" title="View work experience certificate">
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#EFF6FF"/><path d="M9 12.5l1.8 1.8L15 10" stroke="#1D4ED8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                            </a>`;
+                            } else {
+                                // invalid id value; skip rendering the link
+                                jobBadge = '';
+                                console.debug('Skipping job cert link due to invalid id', rawId);
+                            }
+                        }
+                    } catch(e) { jobBadge = ''; }
+
+                    card.innerHTML = '<div class="font-semibold">' + title + jobBadge + '</div>' +
                                      '<div class="text-sm text-gray-600">' + meta + '</div>' +
                                      '<div class="text-sm text-gray-700 mt-2">' + desc + '</div>' + env;
                     jobContainer.appendChild(card);
+
+                    // add per-job certificate link to serverCertLinks (if present)
+                    try {
+                        if (j.HAS_CERT || j.has_cert || j.HAS_CERT === 1) {
+                            const jc = document.getElementById('jobCertLinks');
+                            if (jc) {
+                                const rawId = j.id || j.ID || j.job_id || '';
+                                const idStr = rawId !== null && rawId !== undefined ? String(rawId).trim() : '';
+                                if (/^[A-Za-z0-9_\-]+$/.test(idStr)) {
+                                    const a = document.createElement('a');
+                                    a.href = '/db/get-job-cert-file.php?id=' + encodeURIComponent(idStr);
+                                    a.target = '_blank';
+                                    a.rel = 'noopener';
+                                    a.className = 'text-blue-600 underline';
+                                    const label = (j.job_title || j.job_title === 0) ? (j.job_title + ' — Certificate') : ('Work Experience ' + idStr + ' — Certificate');
+                                    a.textContent = label + ' — View / Download';
+                                    a.setAttribute('download', 'workexp_' + idStr + '.pdf');
+                                    jc.appendChild(a);
+                                }
+                            }
+                        }
+                    } catch(e) { /* non-critical */ }
                 });
+
+                // After rendering jobs, show serverCertLinks if any job cert anchors were appended
+                try {
+                    const sLinks = document.getElementById('serverCertLinks');
+                    const jLinks = document.getElementById('jobCertLinks');
+                    if (sLinks && jLinks && jLinks.children.length > 0) sLinks.style.display = '';
+                } catch(e) { /* ignore */ }
             }
         }
     })

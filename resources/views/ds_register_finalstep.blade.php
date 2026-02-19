@@ -377,20 +377,21 @@
 
       // Build payload
         const data = {
-        education: localStorage.getItem('edu_level'),
-        job_experiences: localStorage.getItem('job_experiences'),
-        review_certs: localStorage.getItem('review_certs'),
-        // rpi_personal intentionally removed to disable sending temp_debug_rpi_personal.json data
-        school_name: localStorage.getItem('school_name'),
-        selected_work_experience: localStorage.getItem('selected_work_experience'),
-        selected_work_year: JSON.stringify(validYears),
-        admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
-        admin_uploaded_pwd_data: localStorage.getItem('admin_uploaded_pwd_data'), 
-        workplace: localStorage.getItem('workplace'),
-        jobPreferences: localStorage.getItem('jobPreferences'),
-        skills1_selected: localStorage.getItem('skills1_selected'),
-        certificates: localStorage.getItem('certificates') || localStorage.getItem('education_certificates') || '[]'
-      };
+          education: localStorage.getItem('edu_level'),
+          job_experiences: localStorage.getItem('job_experiences'),
+          review_certs: localStorage.getItem('review_certs'),
+          // include rpi_personal so server receives personal fields (but do not recreate debug dump on server)
+          rpi_personal: localStorage.getItem('rpi_personal1'),
+          school_name: localStorage.getItem('school_name'),
+          selected_work_experience: localStorage.getItem('selected_work_experience'),
+          selected_work_year: JSON.stringify(validYears),
+          admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
+          admin_uploaded_pwd_data: localStorage.getItem('admin_uploaded_pwd_data'), 
+          workplace: localStorage.getItem('workplace'),
+          jobPreferences: localStorage.getItem('jobPreferences'),
+          skills1_selected: localStorage.getItem('skills1_selected'),
+          certificates: localStorage.getItem('certificates') || localStorage.getItem('education_certificates') || '[]'
+        };
 
       // replace previous data variable in outer scope by attaching to window for the fetch below
       window.__mvsg_registration_payload = data;

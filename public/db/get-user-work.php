@@ -61,7 +61,8 @@ try {
 
     // fetch JOB_EXPERIENCE rows
     $jobRows = [];
-    $sql2 = "SELECT id, years_experience, job_title, company_name, work_year, job_description, working_environment, created_at
+    $sql2 = "SELECT id, years_experience, job_title, company_name, work_year, job_description, working_environment, created_at,
+             CASE WHEN workexp_certificate IS NOT NULL THEN 1 ELSE 0 END AS HAS_CERT
              FROM job_experience
              WHERE guardian_id = :gid
              ORDER BY created_at DESC";
@@ -77,7 +78,9 @@ try {
             'work_year' => $r['WORK_YEAR'] ?? null,
             'job_description' => $r['JOB_DESCRIPTION'] ?? null,
             'working_environment' => $r['WORKING_ENVIRONMENT'] ?? null,
-            'created_at' => isset($r['CREATED_AT']) ? (string)$r['CREATED_AT'] : null
+            'created_at' => isset($r['CREATED_AT']) ? (string)$r['CREATED_AT'] : null,
+            // include HAS_CERT so the frontend can show file badges/links
+            'has_cert' => isset($r['HAS_CERT']) ? (int)$r['HAS_CERT'] : 0
         ];
     }
     oci_free_statement($stid2);
