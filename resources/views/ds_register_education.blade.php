@@ -1535,14 +1535,20 @@
                         }
 
                         // normalize keys to the shape registration-data.php expects
-                        eduObj.certificates = (eduObj.certificates || []).map(c => ({
-                            certificate_name: c.certificate_name ?? c.name ?? c.title ?? '',
-                            issued_by: c.issued_by ?? c.issuer ?? c.issuedBy ?? '',
-                            date_completed: c.date_completed ?? c.date ?? c.completed ?? '',
-                            training_description: c.training_description ?? c.description ?? c
-                                .what_you_learned ?? ''
-                        })).filter(x => x.certificate_name || x.issued_by || x.date_completed || x
-                            .training_description);
+                        // preserve any uploaded file/base64 fields if present so server receives blobs
+                        eduObj.certificates = (eduObj.certificates || []).map(c => {
+                            const certData = c?.data || c?.file || c?.certificate || c?.certificate_data || (c?.cert && (c.cert.data || c.cert.file)) || '';
+                            return {
+                                certificate_name: c.certificate_name ?? c.name ?? c.title ?? '',
+                                issued_by: c.issued_by ?? c.issuer ?? c.issuedBy ?? '',
+                                date_completed: c.date_completed ?? c.date ?? c.completed ?? '',
+                                training_description: c.training_description ?? c.description ?? c.what_you_learned ?? '',
+                                // include raw file data if present (base64 data URL or raw base64)
+                                certificate: certData || undefined,
+                                // keep original small metadata if present
+                                filename: c.name ?? c.filename ?? c.fileName ?? undefined
+                            };
+                        }).filter(x => x.certificate_name || x.issued_by || x.date_completed || x.training_description || x.certificate);
 
                         // persist the education/profile + canonical certificate array
                         localStorage.setItem('education_profile', JSON.stringify(eduObj));

@@ -395,6 +395,72 @@
 
       // replace previous data variable in outer scope by attaching to window for the fetch below
       window.__mvsg_registration_payload = data;
+
+      // Rehydrate uploaded file base64 data into the payload where possible. This attempts
+      // to recover files saved under various localStorage keys (uploadedCertificates_education,
+      // uploadedWorkExp_file, uploadedResume_file, uploadedProofs_proof, etc.) and attach them
+      // to `certificates` entries or `job_experiences` entries so the server receives base64 blobs.
+      (function rehydrateFilesIntoPayload(payload){
+        try {
+          function parseLS(key){ try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
+
+          const eduCertKeys = ['uploadedCertificates_education','education_certificates','uploadedCertificates','uploadedProofs_proof','uploadedProofs','uploadedProofData','uploadedProofData1','uploadedProofs1'];
+          const workCertKeys = ['uploadedWorkExp_file','uploadedResume_file','uploadedWorkExpFiles','uploadedWorkExp','uploadedResume'];
+
+          function gatherFiles(keys){
+            const out = [];
+            for (const k of keys){
+              const v = parseLS(k);
+              if (!v) continue;
+              if (Array.isArray(v)){
+                for (const it of v){
+                  if (!it) continue;
+                  if (typeof it === 'string') out.push(it);
+                  else if (it.data) out.push(it.data);
+                  else if (it.file) out.push(it.file);
+                  else if (it.certificate_data) out.push(it.certificate_data);
+                  else if (it.certificate) out.push(it.certificate);
+                  else if (it.cert && (it.cert.data||it.cert.file)) out.push(it.cert.data||it.cert.file);
+                }
+              } else if (typeof v === 'object') {
+                if (v.data) out.push(v.data);
+                else if (v.file) out.push(v.file);
+              } else if (typeof v === 'string' && v.indexOf('data:') === 0) {
+                out.push(v);
+              }
+            }
+            return out;
+          }
+
+          const eduFiles = gatherFiles(eduCertKeys);
+          const workFiles = gatherFiles(workCertKeys);
+
+          // Attach edu files into certificates array
+          try {
+            let certsArr = [];
+            try { certsArr = Array.isArray(payload.certificates) ? payload.certificates : JSON.parse(payload.certificates||'[]'); } catch(e){ certsArr = []; }
+            for (let i=0;i<certsArr.length;i++){
+              if ((!certsArr[i].data && !certsArr[i].file && !certsArr[i].certificate) && eduFiles.length){
+                certsArr[i].data = eduFiles.shift();
+              }
+            }
+            payload.certificates = JSON.stringify(certsArr);
+          } catch(e){ console.warn('rehydrate certs failed', e); }
+
+          // Attach work files into job_experiences entries
+          try {
+            let jobs = [];
+            try { jobs = Array.isArray(payload.job_experiences) ? payload.job_experiences : JSON.parse(payload.job_experiences||'[]'); } catch(e){ jobs = []; }
+            for (let j=0;j<jobs.length;j++){
+              if ((!jobs[j].certificate && !jobs[j].certificate_data && !jobs[j].file) && workFiles.length){
+                // Put the raw base64 string or object depending on earlier shape
+                jobs[j].certificate = workFiles.shift();
+              }
+            }
+            payload.job_experiences = JSON.stringify(jobs);
+          } catch(e){ console.warn('rehydrate jobs failed', e); }
+        } catch(e){ console.warn('rehydrateFilesIntoPayload failed', e); }
+      })(window.__mvsg_registration_payload);
     })();
 
     // Debug: log payload size and keys (avoid dumping huge binary in case of large data URLs)

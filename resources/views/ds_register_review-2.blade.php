@@ -3443,7 +3443,10 @@ document.addEventListener("DOMContentLoaded", () => {
         let out = [];
         if (save) {
             const entries = Array.from(workContainer.querySelectorAll('.job-edit-entry'));
-            out = entries.map(node => {
+            // try to preserve any previously stored certificate data for each job entry
+            let prevJobs = [];
+            try { prevJobs = JSON.parse(localStorage.getItem('job_experiences') || localStorage.getItem('work_experiences') || '[]') || []; } catch(e){ prevJobs = []; }
+            out = entries.map((node, idx) => {
                 try {
                     const title = node.querySelector('.job-edit-title')?.value?.trim() || '';
                     const company = node.querySelector('.job-edit-company')?.value?.trim() || '';
@@ -3459,6 +3462,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (!title && !company && !start_year && !desc) return null;
                     const obj = { title, company, description: desc };
                     if (start_year !== undefined) obj.start_year = start_year;
+
+                    // Attempt to capture certificate data from the edit node (various possible selectors)
+                    try {
+                        const hiddenVals = [
+                            node.querySelector('.job_cert_data')?.value,
+                            node.querySelector('.job-edit-cert-data')?.value,
+                            node.querySelector('.job-edit-cert')?.value,
+                            node.querySelector('input[name="job_cert_data"]')?.value
+                        ];
+                        for (const hv of hiddenVals) {
+                            if (hv && typeof hv === 'string' && hv.trim()) {
+                                try { obj.certificate = JSON.parse(hv); break; } catch(e){ obj.certificate = hv; break; }
+                            }
+                        }
+                    } catch(e){}
+
+                    // Fallback: if previous saved job at same index had a certificate, carry it forward
+                    try {
+                        if ((!obj.certificate || obj.certificate === '') && Array.isArray(prevJobs) && prevJobs[idx] && prevJobs[idx].certificate) {
+                            obj.certificate = prevJobs[idx].certificate;
+                        }
+                    } catch(e){}
+
                     return obj;
                 } catch(e){ return null; }
             }).filter(Boolean);

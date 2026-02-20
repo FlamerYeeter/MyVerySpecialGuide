@@ -26,7 +26,8 @@ SELECT ID,
        NAME,
        ISSUED_BY,
        TO_CHAR(DATE_COMPLETED,'YYYY-MM-DD"T"HH24:MI:SS') AS DATE_COMPLETED,
-       CASE WHEN CERTIFICATE IS NOT NULL THEN 1 ELSE 0 END AS HAS_CERT,
+       -- Consider a certificate present only when the LOB length is > 0 to avoid false positives from EMPTY_BLOB()
+       CASE WHEN NVL(dbms_lob.getlength(certificate),0) > 0 THEN 1 ELSE 0 END AS HAS_CERT,
        WHAT_LEARNED,
        TO_CHAR(CREATED_AT,'YYYY-MM-DD"T"HH24:MI:SS') AS CREATED_AT,
        TO_CHAR(UPDATED_AT,'YYYY-MM-DD"T"HH24:MI:SS') AS UPDATED_AT

@@ -623,56 +623,36 @@ if ($allGood) {
             try { if (isset($lob_cert) && is_object($lob_cert)) $lob_cert->free(); } catch (Exception $e) {}
             break;
         }
-        // If we received binary data, use UPDATE with a bound blob to write directly (avoids LOB locator transaction issues)
+        // If we received binary data, obtain the DB LOB locator via SELECT FOR UPDATE and write into it
         if ($cert_blob !== null && is_string($cert_blob) && strlen($cert_blob) > 0) {
             try {
-                $upSql = "UPDATE guardian_certificates SET certificate = :blob WHERE ROWID = :rid";
-                $upSt = oci_parse($conn, $upSql);
-                // Use a LOB descriptor and save the binary into it before executing the UPDATE
-                $lob_cert_desc = oci_new_descriptor($conn, OCI_D_LOB);
-                oci_bind_by_name($upSt, ':blob', $lob_cert_desc, -1, OCI_B_BLOB);
-                oci_bind_by_name($upSt, ':rid', $g_rowid, 256);
-                // save binary into descriptor (this writes into the bound placeholder)
-                try {
-                    if ($lob_cert_desc === false) throw new Exception('Failed to create LOB descriptor');
-                    $lob_cert_desc->save($cert_blob);
-                } catch (Exception $e) {
-                    write_debug_error('temp_debug_certificate_lob_desc_error.json', ['error'=>(string)$e,'rowid'=>$g_rowid,'cert_name'=>$c_name,'time'=>date('c')]);
-                }
-                if (oci_execute($upSt, OCI_NO_AUTO_COMMIT)) {
-                    write_debug_error('temp_debug_certificate_blobs.json', [
-                        'stage'=>'guardian_certificate_blob_written',
-                        'size_bytes'=>strlen($cert_blob),
-                        'certificate_name'=>$c_name,
-                        'rowid'=>$g_rowid,
-                        'time'=>date('c')
-                    ]);
-                    // verify written length using ROWID
-                    try {
-                        $verSqlC = "SELECT id, dbms_lob.getlength(certificate) AS L FROM guardian_certificates WHERE ROWID = :rid";
-                        $vstc = oci_parse($conn, $verSqlC);
-                        oci_bind_by_name($vstc, ':rid', $g_rowid);
-                        if (oci_execute($vstc)) {
-                            $rc = oci_fetch_array($vstc, OCI_ASSOC+OCI_RETURN_NULLS);
-                            $llenc = $rc && isset($rc['L']) ? intval($rc['L']) : 0;
-                            $idc = $rc && isset($rc['ID']) ? $rc['ID'] : null;
-                            write_debug_error('temp_debug_certificate_verify.json', ['db_id'=>$idc,'rowid'=>$g_rowid,'db_length'=>$llenc,'expected_size'=>strlen($cert_blob),'time'=>date('c')]);
-                            if ($llenc === 0) {
-                                $savedc = null;
-                                try { if (!empty($cert_raw)) { $savedc = saveBase64File($cert_raw); } } catch (Exception $e) { $savedc = null; }
-                                write_debug_error('temp_debug_certificate_zero_length.json', ['message'=>'guardian certificate blob length is zero after update','rowid'=>$g_rowid,'db_id'=>$idc,'db_length'=>$llenc,'saved_fallback'=>$savedc,'time'=>date('c')]);
-                                if ($savedc) $fallback_saved_files[] = ['type'=>'guardian_cert','certificate_name'=>$c_name,'file'=>$savedc];
+                $selc = "SELECT certificate FROM guardian_certificates WHERE ROWID = :rid FOR UPDATE";
+                $selcst = oci_parse($conn, $selc);
+                oci_bind_by_name($selcst, ':rid', $g_rowid);
+                if (oci_execute($selcst, OCI_NO_AUTO_COMMIT)) {
+                    if (oci_fetch($selcst)) {
+                        $lob_cert_sel = oci_result($selcst, 'CERTIFICATE');
+                        if ($lob_cert_sel && is_object($lob_cert_sel)) {
+                            try {
+                                if (method_exists($lob_cert_sel, 'write')) $lob_cert_sel->write($cert_blob);
+                                elseif (method_exists($lob_cert_sel, 'writeTemporary')) $lob_cert_sel->writeTemporary($cert_blob, OCI_TEMP_BLOB);
+                                elseif (method_exists($lob_cert_sel, 'saveTemporary')) $lob_cert_sel->saveTemporary($cert_blob, OCI_TEMP_BLOB);
+                                else $lob_cert_sel->write($cert_blob);
+                                write_debug_error('temp_debug_certificate_blobs.json', [
+                                    'stage'=>'guardian_certificate_blob_written',
+                                    'size_bytes'=>strlen($cert_blob),
+                                    'certificate_name'=>$c_name,
+                                    'rowid'=>$g_rowid,
+                                    'time'=>date('c')
+                                ]);
+                            } catch (Exception $e) {
+                                write_debug_error('temp_debug_certificate_blobs_error.json', ['stage'=>'guardian_certificate_blob_write_failed','error'=> (string)$e,'certificate'=>$ce,'time'=>date('c')]);
+                                try { if (!empty($cert_raw)) { $savedc = saveBase64File($cert_raw); if ($savedc) { $fallback_saved_files[] = ['type'=>'guardian_cert','certificate_name'=>$c_name,'file'=>$savedc]; write_debug_error('temp_debug_certificate_fallback_saved.json', ['file'=>$savedc,'time'=>date('c')]); } } } catch (Exception $ee) { write_debug_error('temp_debug_certificate_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
                             }
                         }
-                        oci_free_statement($vstc);
-                    } catch (Exception $e) { write_debug_error('temp_debug_certificate_verify_error.json', ['error'=> (string)$e, 'time'=>date('c')]); }
-                } else {
-                    $e = oci_error($upSt);
-                    write_debug_error('temp_debug_certificate_blobs_error.json', ['stage'=>'guardian_certificate_update_failed','error'=>$e,'certificate'=>$ce,'time'=>date('c')]);
-                    try { if (!empty($cert_raw)) { $savedc = saveBase64File($cert_raw); if ($savedc) { $fallback_saved_files[] = ['type'=>'guardian_cert','certificate_name'=>$c_name,'file'=>$savedc]; write_debug_error('temp_debug_certificate_fallback_saved.json', ['file'=>$savedc,'time'=>date('c')]); } } } catch (Exception $ee) { write_debug_error('temp_debug_certificate_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
+                    }
+                    oci_free_statement($selcst);
                 }
-                oci_free_statement($upSt);
-                try { if (isset($lob_cert_desc) && is_object($lob_cert_desc)) $lob_cert_desc->free(); } catch (Exception $e) {}
             } catch (Exception $e) { write_debug_error('temp_debug_certificate_forupdate_error.json', ['error'=> (string)$e, 'time'=>date('c')]); }
         }
         oci_free_statement($stidc);

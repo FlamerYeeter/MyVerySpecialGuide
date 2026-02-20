@@ -62,7 +62,7 @@ try {
     // fetch JOB_EXPERIENCE rows
     $jobRows = [];
     $sql2 = "SELECT id, years_experience, job_title, company_name, work_year, job_description, working_environment, created_at,
-             CASE WHEN workexp_certificate IS NOT NULL THEN 1 ELSE 0 END AS HAS_CERT
+             CASE WHEN NVL(dbms_lob.getlength(workexp_certificate),0) > 0 THEN 1 ELSE 0 END AS HAS_CERT
              FROM job_experience
              WHERE guardian_id = :gid
              ORDER BY created_at DESC";
