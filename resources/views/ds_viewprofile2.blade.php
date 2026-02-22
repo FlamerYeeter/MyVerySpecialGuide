@@ -113,6 +113,14 @@
                                                             <label class="text-sm font-medium text-gray-700">What did you learn?</label>
                                                             <input type="text" class="cert-desc mt-1 w-full border rounded px-2 py-1" placeholder="e.g. How to clean, serve food">
                                                         </div>
+                                                        <div>
+                                                            <label class="text-sm font-medium text-gray-700">Certificate File</label>
+                                                            <div class="mt-1 flex items-center gap-2">
+                                                                <input type="file" accept=".pdf,image/*" class="cert-file-input" />
+                                                                <span class="cert-file-name text-sm text-gray-600"></span>
+                                                            </div>
+                                                            <input type="hidden" class="cert-file-data" />
+                                                        </div>
                                                     </div>
                                                     <button type="button" class="remove-cert absolute top-3 right-3 text-sm bg-red-500 text-white px-3 py-1 rounded">Remove</button>
                                                 </div>
@@ -842,6 +850,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const issuerInput = node.querySelector('.cert-issuer');
         const dateInput = node.querySelector('.cert-date');
         const descInput = node.querySelector('.cert-desc');
+        const fileInput = node.querySelector('.cert-file-input');
+        const fileNameSpan = node.querySelector('.cert-file-name');
+        const fileDataHidden = node.querySelector('.cert-file-data');
         if (data) {
             nameInput.value = data.NAME || data.certificate_name || data.name || '';
             issuerInput.value = data.ISSUED_BY || data.issued_by || data.issuer || '';
@@ -858,6 +869,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             } catch(e){ dateInput.value = rawDate || ''; }
             descInput.value = data.WHAT_LEARNED || data.what_learned || data.training_description || data.what_you_learned || '';
+        }
+        // show existing server-side file indicator when present
+        if (data && (data.HAS_CERT || data.has_cert || data.HAS_CERT === 1) && (data.ID || data.id)) {
+            const id = data.ID || data.id;
+            const a = document.createElement('a');
+            a.href = '/db/get-guardian-cert-file.php?cert_id=' + encodeURIComponent(id);
+            a.target = '_blank';
+            a.className = 'inline-block text-sm text-green-700 mr-3';
+            a.textContent = 'View existing file';
+            fileNameSpan.parentNode.insertBefore(a, fileNameSpan);
+        }
+
+        // wire file input -> hidden base64 data
+        if (fileInput) {
+            fileInput.addEventListener('change', (ev) => {
+                const f = fileInput.files && fileInput.files[0];
+                if (!f) { fileNameSpan.textContent = ''; fileDataHidden.value = ''; return; }
+                fileNameSpan.textContent = f.name;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // store data URL so server can accept it as-is
+                    fileDataHidden.value = e.target.result || '';
+                };
+                reader.readAsDataURL(f);
+            });
         }
         node.querySelector('.remove-cert').addEventListener('click', () => node.remove());
         return node;
@@ -900,6 +936,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 date_completed: get('cert-date'),
                 training_description: get('cert-desc')
             };
+            // include file if user selected one
+            const fdata = (el.querySelector('.cert-file-data') && el.querySelector('.cert-file-data').value) ? el.querySelector('.cert-file-data').value.trim() : '';
+            if (fdata) obj.certificate = fdata;
             if (!obj.certificate_name && !obj.issued_by && !obj.date_completed && !obj.training_description) return null;
             return obj;
         }).filter(Boolean);
@@ -979,6 +1018,14 @@ document.addEventListener('DOMContentLoaded', () => {
                             <label class="text-sm font-medium text-gray-700">Description</label>
                             <input type="text" class="job-edit-desc mt-1 w-full border rounded px-2 py-1" />
                         </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">Certificate File</label>
+                            <div class="mt-1 flex items-center gap-2">
+                                <input type="file" accept=".pdf,image/*" class="job-edit-file-input" />
+                                <span class="job-edit-file-name text-sm text-gray-600"></span>
+                            </div>
+                            <input type="hidden" class="job-edit-file-data" />
+                        </div>
                     </div>
                 </div>
             </template>
@@ -1018,7 +1065,33 @@ document.addEventListener('DOMContentLoaded', () => {
         node.querySelector('.job-edit-title').value = data.job_title || data.title || '';
         node.querySelector('.job-edit-year').value = data.start_year || data.work_year || data.year || data.years_experience || '';
         node.querySelector('.job-edit-desc').value = data.job_description || data.description || '';
+        // wire remove
         node.querySelector('.remove-job').addEventListener('click', () => node.remove());
+
+        // file input wiring: convert selected file to data URL and store in hidden input
+        const fileInput = node.querySelector('.job-edit-file-input');
+        const fileNameSpan = node.querySelector('.job-edit-file-name');
+        const fileDataHidden = node.querySelector('.job-edit-file-data');
+        if (fileInput) {
+            fileInput.addEventListener('change', (ev) => {
+                const f = fileInput.files && fileInput.files[0];
+                if (!f) { fileNameSpan.textContent = ''; fileDataHidden.value = ''; return; }
+                fileNameSpan.textContent = f.name;
+                const reader = new FileReader();
+                reader.onload = function(e) { fileDataHidden.value = e.target.result || ''; };
+                reader.readAsDataURL(f);
+            });
+        }
+        // if existing server-side cert present, show link
+        if (data && (data.HAS_CERT || data.has_cert || data.HAS_CERT === 1) && (data.ID || data.id)) {
+            const id = data.ID || data.id;
+            const a = document.createElement('a');
+            a.href = '/db/get-job-cert-file.php?id=' + encodeURIComponent(id);
+            a.target = '_blank';
+            a.className = 'inline-block text-sm text-blue-700 mr-3';
+            a.textContent = 'View existing file';
+            fileNameSpan.parentNode.insertBefore(a, fileNameSpan);
+        }
         return node;
     }
 
@@ -1072,9 +1145,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 const title = node.querySelector('.job-edit-title')?.value?.trim() || '';
                 const yearRaw = node.querySelector('.job-edit-year')?.value?.trim() || '';
                 const desc = node.querySelector('.job-edit-desc')?.value?.trim() || '';
+                const certData = node.querySelector('.job-edit-file-data')?.value?.trim() || '';
                 const start_year = (/^\d{4}$/.test(yearRaw) ? yearRaw : yearRaw || '');
                 if (!company && !title && !start_year && !desc) return null;
-                return { company: company, title: title, start_year: start_year, description: desc };
+                const obj = { company: company, title: title, start_year: start_year, description: desc };
+                if (certData) obj.certificate = certData;
+                return obj;
             }).filter(Boolean);
 
             const payload = { job_experiences: out, work_type: sel };

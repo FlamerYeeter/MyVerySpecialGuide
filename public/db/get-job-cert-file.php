@@ -52,27 +52,71 @@ try {
     echo 'Internal server error';
     exit;
 }
-    // Robust MIME detection: prefer finfo but fall back to header signature checks
-    $finfo = new finfo(FILEINFO_MIME_TYPE);
-    $mime = $finfo->buffer($data) ?: 'application/octet-stream';
-    if ($mime === 'application/octet-stream' || empty($mime)) {
-        $sig = substr($data, 0, 8);
-        if (strpos($sig, '%PDF') === 0) {
-            $mime = 'application/pdf';
-        } elseif (substr($sig,0,3) === "\xFF\xD8\xFF") {
-            $mime = 'image/jpeg';
-        } elseif ($sig === "\x89PNG\r\n\x1A\n") {
-            $mime = 'image/png';
-        } elseif (substr($sig,0,4) === 'GIF8') {
-            $mime = 'image/gif';
+    // Ensure we have raw string data (handle OCI-Lob or resource)
+    if (is_object($data) && method_exists($data, 'load')) {
+        $data = $data->load();
+    } elseif (is_resource($data)) {
+        $data = stream_get_contents($data);
+    }
+
+    // If compression is enabled in PHP, disable it for this response to avoid binary corruption
+    if (ini_get('zlib.output_compression')) {
+        ini_set('zlib.output_compression', '0');
+    }
+
+    // If there is accidental leading output (BOM, whitespace, warnings), try to locate
+    // the real file signature and strip everything before it. This fixes many "cannot open PDF" cases.
+    $signatures = [
+        "%PDF" => 'application/pdf',
+        "\xFF\xD8\xFF" => 'image/jpeg',
+        "\x89PNG\r\n\x1A\n" => 'image/png',
+        'GIF8' => 'image/gif',
+    ];
+
+    $foundSigMime = null;
+    foreach ($signatures as $sig => $sigMime) {
+        $pos = strpos($data, $sig);
+        if ($pos !== false) {
+            if ($pos > 0) {
+                $data = substr($data, $pos);
+            }
+            $foundSigMime = $sigMime;
+            break;
+        }
+    }
+
+    // Robust MIME detection: prefer signature detection, then finfo, then fallback
+    if ($foundSigMime) {
+        $mime = $foundSigMime;
+    } else {
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->buffer($data) ?: 'application/octet-stream';
+        if ($mime === 'application/octet-stream' || empty($mime)) {
+            $sig = substr($data, 0, 8);
+            if (strpos($sig, '%PDF') === 0) {
+                $mime = 'application/pdf';
+            } elseif (substr($sig,0,3) === "\xFF\xD8\xFF") {
+                $mime = 'image/jpeg';
+            } elseif ($sig === "\x89PNG\r\n\x1A\n") {
+                $mime = 'image/png';
+            } elseif (substr($sig,0,4) === 'GIF8') {
+                $mime = 'image/gif';
+            }
         }
     }
     $extMap = ['application/pdf'=>'pdf','image/png'=>'png','image/jpeg'=>'jpg','image/gif'=>'gif'];
     $ext = $extMap[$mime] ?? 'pdf';
 $filename = 'workexp_' . $id . '.' . $ext;
-header('Content-Type: ' . $mime);
-header('Content-Length: ' . strlen($data));
-header('Content-Disposition: inline; filename="' . $filename . '"');
-echo $data;
-exit;
-?>
+    // Clear (and disable) output buffering to avoid corrupting binary output
+    if (function_exists('ob_get_level') && ob_get_level()) {
+        while (ob_get_level()) { @ob_end_clean(); }
+    }
+
+    header('Content-Type: ' . $mime);
+    header('Content-Length: ' . strlen($data));
+    header('Content-Disposition: inline; filename="' . $filename . '"');
+    header('Content-Transfer-Encoding: binary');
+    header('Accept-Ranges: bytes');
+
+    echo $data;
+    exit;

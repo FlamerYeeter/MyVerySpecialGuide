@@ -19,6 +19,28 @@ function safe_trim_scalar($v) {
     return '';
 }
 
+// decode data URLs or raw base64 into binary string for LOB writing
+function base64ToBlob($input) {
+    if (empty($input)) return null;
+    // if array, try first element or objects with 'data'/'file'
+    if (is_array($input)) {
+        $first = null;
+        foreach ($input as $it) { $first = $it; break; }
+        $input = $first;
+    }
+    if (!is_string($input)) return null;
+    // if JSON array encoded in string, try decode
+    $maybe = @json_decode($input, true);
+    if (is_string($maybe)) $input = $maybe;
+    if (is_array($maybe)) {
+        // take first item
+        foreach ($maybe as $it) { if (is_string($it)) { $input = $it; break; } if (is_array($it) && !empty($it['data'])) { $input = $it['data']; break; } }
+    }
+    if (($pos = strpos($input, ',')) !== false) $input = substr($input, $pos + 1);
+    $data = base64_decode($input, true);
+    return ($data === false) ? null : $data;
+}
+
 /* ---------- read body robustly ---------- */
 $raw = @file_get_contents('php://input');
 $body = null;
@@ -136,12 +158,13 @@ if (!$workOnly && is_array($certs)) {
     }
     oci_free_statement($del);
 
+    // insert with EMPTY_BLOB so we can write certificate LOB when provided
     $ins = oci_parse($conn, "
         INSERT INTO MVSG.GUARDIAN_CERTIFICATES
-        (GUARDIAN_ID, NAME, ISSUED_BY, DATE_COMPLETED, WHAT_LEARNED, CREATED_AT, UPDATED_AT)
+        (GUARDIAN_ID, NAME, ISSUED_BY, DATE_COMPLETED, WHAT_LEARNED, CREATED_AT, UPDATED_AT, CERTIFICATE)
         VALUES (TO_NUMBER(:gid), :name, :issuer,
                 CASE WHEN :date_raw IS NULL OR TRIM(:date_raw) = '' THEN NULL ELSE TO_DATE(:date_raw,'YYYY-MM-DD') END,
-                :what, SYSTIMESTAMP, SYSTIMESTAMP)
+                :what, SYSTIMESTAMP, SYSTIMESTAMP, EMPTY_BLOB()) RETURNING ROWID INTO :g_rowid
     ");
     if (!$ins) { oci_close($conn); json_err('Prepare failed (certs insert)', oci_error($conn), 500); }
 
@@ -161,6 +184,8 @@ if (!$workOnly && is_array($certs)) {
         oci_bind_by_name($ins, ':issuer', $issuer, -1);
         oci_bind_by_name($ins, ':date_raw', $date, -1);
         oci_bind_by_name($ins, ':what', $what, -1);
+        $g_rowid = null;
+        oci_bind_by_name($ins, ':g_rowid', $g_rowid, 256);
 
         if (!@oci_execute($ins, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($ins) ?: oci_error($conn);
@@ -168,6 +193,33 @@ if (!$workOnly && is_array($certs)) {
             oci_free_statement($ins);
             oci_close($conn);
             json_err('Failed to insert certificate', $e['message'] ?? $e, 500);
+        }
+        // if client provided a certificate as base64/data-url, write into LOB
+        $cert_raw = $c['certificate'] ?? $c['data'] ?? $c['file'] ?? null;
+        $cert_blob = $cert_raw ? base64ToBlob($cert_raw) : null;
+        if ($cert_blob !== null && is_string($cert_blob) && strlen($cert_blob) > 0 && !empty($g_rowid)) {
+            try {
+                $selc = "SELECT certificate FROM guardian_certificates WHERE ROWID = :rid FOR UPDATE";
+                $selcst = oci_parse($conn, $selc);
+                oci_bind_by_name($selcst, ':rid', $g_rowid);
+                if (oci_execute($selcst, OCI_NO_AUTO_COMMIT)) {
+                    if (oci_fetch($selcst)) {
+                        $lob_cert_sel = oci_result($selcst, 'CERTIFICATE');
+                        if ($lob_cert_sel && is_object($lob_cert_sel)) {
+                            try {
+                                if (method_exists($lob_cert_sel, 'write')) $lob_cert_sel->write($cert_blob);
+                                elseif (method_exists($lob_cert_sel, 'writeTemporary')) $lob_cert_sel->writeTemporary($cert_blob, OCI_TEMP_BLOB);
+                                elseif (method_exists($lob_cert_sel, 'saveTemporary')) $lob_cert_sel->saveTemporary($cert_blob, OCI_TEMP_BLOB);
+                                else $lob_cert_sel->write($cert_blob);
+                            } catch (Exception $e) {
+                                // non-fatal: log and continue; blob will be empty
+                                error_log('guardian cert LOB write failed: ' . $e->getMessage());
+                            }
+                        }
+                    }
+                    oci_free_statement($selcst);
+                }
+            } catch (Exception $e) { error_log('guardian cert FOR UPDATE error: ' . $e->getMessage()); }
         }
     }
     oci_free_statement($ins);
@@ -254,10 +306,11 @@ if (is_array($jobs)) {
     }
     oci_free_statement($del);
 
+    // insert job rows with EMPTY_BLOB for workexp_certificate so we can write when provided
     $insSql = "
         INSERT INTO MVSG.JOB_EXPERIENCE
-        (GUARDIAN_ID, COMPANY_NAME, JOB_TITLE, WORK_YEAR, JOB_DESCRIPTION, CREATED_AT, UPDATED_AT)
-        VALUES (TO_NUMBER(:gid), :jcompany, :jtitle, :jwork_year, :jdesc, SYSTIMESTAMP, SYSTIMESTAMP)
+        (GUARDIAN_ID, COMPANY_NAME, JOB_TITLE, WORK_YEAR, JOB_DESCRIPTION, CREATED_AT, UPDATED_AT, WORKEXP_CERTIFICATE)
+        VALUES (TO_NUMBER(:gid), :jcompany, :jtitle, :jwork_year, :jdesc, SYSTIMESTAMP, SYSTIMESTAMP, EMPTY_BLOB()) RETURNING ROWID INTO :job_rowid
     ";
 
     foreach ($jobs as $row) {
@@ -286,6 +339,8 @@ if (is_array($jobs)) {
         // bind WORK_YEAR as string (or null) with length to avoid bind-name/null issues
         oci_bind_by_name($ins, ':jwork_year', $jwork_year, -1);
         oci_bind_by_name($ins, ':jdesc', $desc, -1);
+        $job_rowid = null;
+        oci_bind_by_name($ins, ':job_rowid', $job_rowid, 256);
 
         if (!@oci_execute($ins, OCI_NO_AUTO_COMMIT)) {
             $e = oci_error($ins) ?: oci_error($conn);
@@ -293,6 +348,32 @@ if (is_array($jobs)) {
             oci_free_statement($ins);
             oci_close($conn);
             json_err('Failed to insert job_experience', $e['message'] ?? $e, 500);
+        }
+        // write per-row certificate blob when provided in payload (data URL / base64)
+        $job_cert_raw = $row['certificate'] ?? $row['data'] ?? $row['file'] ?? null;
+        $job_cert_blob = $job_cert_raw ? base64ToBlob($job_cert_raw) : null;
+        if ($job_cert_blob !== null && is_string($job_cert_blob) && strlen($job_cert_blob) > 0 && !empty($job_rowid)) {
+            try {
+                $selj = "SELECT workexp_certificate FROM job_experience WHERE ROWID = :rid FOR UPDATE";
+                $seljst = oci_parse($conn, $selj);
+                oci_bind_by_name($seljst, ':rid', $job_rowid);
+                if (oci_execute($seljst, OCI_NO_AUTO_COMMIT)) {
+                    if (oci_fetch($seljst)) {
+                        $lob_job_sel = oci_result($seljst, 'WORKEXP_CERTIFICATE');
+                        if ($lob_job_sel && is_object($lob_job_sel)) {
+                            try {
+                                if (method_exists($lob_job_sel, 'write')) $lob_job_sel->write($job_cert_blob);
+                                elseif (method_exists($lob_job_sel, 'writeTemporary')) $lob_job_sel->writeTemporary($job_cert_blob, OCI_TEMP_BLOB);
+                                elseif (method_exists($lob_job_sel, 'saveTemporary')) $lob_job_sel->saveTemporary($job_cert_blob, OCI_TEMP_BLOB);
+                                else $lob_job_sel->write($job_cert_blob);
+                            } catch (Exception $e) {
+                                error_log('job cert LOB write failed: ' . $e->getMessage());
+                            }
+                        }
+                    }
+                    oci_free_statement($seljst);
+                }
+            } catch (Exception $e) { error_log('job cert FOR UPDATE error: ' . $e->getMessage()); }
         }
         oci_free_statement($ins);
     }
