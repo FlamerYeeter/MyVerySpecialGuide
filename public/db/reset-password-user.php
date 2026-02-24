@@ -23,7 +23,7 @@ try {
     $resetBaseUrl = !empty($input['reset_url'])
         ? trim($input['reset_url'])
         // default to the public forgot-password page
-        : 'https://empwrpath.com/forgotpassword';
+        : '/forgotpassword';
 
     $subject = "Password Reset Request";
 
