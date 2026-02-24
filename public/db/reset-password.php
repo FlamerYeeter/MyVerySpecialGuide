@@ -23,7 +23,7 @@ try {
     // 3️⃣ Optional dynamic reset URL
     $resetBaseUrl = !empty($input['reset_url'])
         ? trim($input['reset_url'])
-        : 'http://mvsg.arkiease.com/_/r/mvsg/adminhub/reset-password';
+        : 'https://empwrpath.com/_/r/mvsg/adminhub/reset-password';
     $subject = "Password Reset";
 
     // 4️⃣ Generate a secure hash

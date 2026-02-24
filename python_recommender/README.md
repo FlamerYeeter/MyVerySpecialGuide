@@ -33,7 +33,7 @@ The service will be available at `http://127.0.0.1:8001/recommend/{user_id}`.
 
 Environment variables (optional):
 
-- `ORACLE_HOST` (default: mvsg.arkiease.com)
+- `ORACLE_HOST` (default: empwrpath.com)
 - `ORACLE_PORT` (default: 1521)
 - `ORACLE_SERVICE` (default: APXPDB)
 - `ORACLE_USER` (default: MVSG)

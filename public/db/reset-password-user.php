@@ -23,7 +23,7 @@ try {
     $resetBaseUrl = !empty($input['reset_url'])
         ? trim($input['reset_url'])
         // default to the public forgot-password page
-        : 'http://mvsg.arkiease.com/forgotpassword';
+        : 'https://empwrpath.com/forgotpassword';
 
     $subject = "Password Reset Request";
 
