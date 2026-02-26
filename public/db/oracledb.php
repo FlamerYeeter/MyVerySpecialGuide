@@ -2,7 +2,7 @@
 define('DB_USER', 'MVSG');
 define('DB_PASS', 'MICA@PASSWORD123!');
 define('DB_CONN', '(DESCRIPTION =
-    (ADDRESS = (PROTOCOL = TCP)(HOST = empwrpath.com)(PORT = 1521))
+    (ADDRESS = (PROTOCOL = TCP)(HOST = sql.empwrpath.com)(PORT = 1521))
     (CONNECT_DATA = (SERVICE_NAME = APXPDB))
 )');
 
