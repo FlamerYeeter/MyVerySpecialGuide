@@ -79,11 +79,10 @@
 
             <!-- 'My Job Applications' moved to main navbar -->
 
-            <form method="POST" action="{{ route('logout') }}">
-              @csrf
-              <button type="submit"
+            <div class="w-full">
+              <button id="logoutButton" type="button" data-action="{{ route('logout') }}"
                 class="w-full text-left block px-4 py-3 text-base hover:bg-red-50 rounded-b-xl">Logout</button>
-            </form>
+            </div>
           </div>
         </div>
       </div>
@@ -189,6 +188,56 @@
         link.classList.add('bg-blue-700', 'text-white', 'font-bold');
       });
     });
+
+    // Logout handler: JS-only fetch POST (no form fallback) to avoid browser insecure-form interstitial
+    (function() {
+      const logoutButton = document.getElementById('logoutButton');
+      if (!logoutButton) return;
+
+      logoutButton.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const meta = document.querySelector('meta[name="csrf-token"]');
+        const token = meta ? meta.getAttribute('content') : null;
+        const action = logoutButton.dataset.action || '{{ route('logout') }}';
+
+        try {
+          const res = await fetch(action, {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': token,
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json, text/html'
+            },
+            credentials: 'same-origin'
+          });
+
+          if (res.redirected) {
+            window.location.href = res.url;
+            return;
+          }
+
+          if (res.ok) {
+            // prefer server redirect if it returned html, otherwise reload
+            try {
+              const ct = res.headers.get('content-type') || '';
+              if (ct.indexOf('text/html') !== -1) {
+                const text = await res.text();
+                // attempt to find a Location meta refresh or just reload
+                window.location.reload();
+                return;
+              }
+            } catch (_) {}
+            window.location.reload();
+            return;
+          }
+
+          // If fetch failed or returned non-ok, show guidance instead of submitting a form.
+          alert('Logout failed. If you are on an insecure (HTTP) connection the browser may block form submissions. Please try again over HTTPS or contact the site administrator.');
+        } catch (err) {
+          alert('Logout failed due to a network error. Please try again or use a secure connection.');
+        }
+      });
+    })();
 </script>
 
 
