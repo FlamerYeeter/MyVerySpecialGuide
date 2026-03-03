@@ -95,7 +95,7 @@
 
             <!-- Apply Now Button -->
             <div class="flex items-center justify-center sm:justify-end w-full sm:w-auto">
-                <a id="apply-now-btn" href="{{ url('/apply') . '?job_id=' . $job_id }}"
+                <a id="apply-now-btn" href="{{ url('/job-application-1') . '?job_id=' . urlencode($job_id) }}"
                    class="inline-flex items-center gap-3 bg-[#1E40AF] text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-900 transition font-semibold"
                    aria-label="Apply Now">
                     <span>🚀 Apply Now</span>
