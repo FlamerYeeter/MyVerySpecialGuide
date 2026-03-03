@@ -86,12 +86,21 @@
 
             <!-- Job Information -->
             <div class="flex flex-col items-center sm:items-start text-center sm:text-left flex-grow">
-                <h3 id="job-title" class="text-2xl sm:text-3xl font-bold text-black">Pet Care Assistant</h3>
-               <p id="job-location" class="mt-2 flex items-center text-xl text-gray-700 gap-2">
+                <h3 id="job-title" class="text-2xl sm:text-3xl font-bold text-black">Job title not specified</h3>
+               <p id="job-location" class="mt-4 flex items-center text-xl text-gray-700 gap-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
-                            BGC, Taguig City, Metro Manila
+                            Not specified
                         </p>
                         </div>
+
+            <!-- Apply Now Button -->
+            <div class="flex items-center justify-center sm:justify-end w-full sm:w-auto">
+                <a id="apply-now-btn" href="{{ url('/apply') . '?job_id=' . $job_id }}"
+                   class="inline-flex items-center gap-3 bg-[#1E40AF] text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-900 transition font-semibold"
+                   aria-label="Apply Now">
+                    <span>🚀 Apply Now</span>
+                </a>
+            </div>
         </div>
 
         <!-- JOB INFO GRID -->
@@ -101,32 +110,85 @@
             <div class="col-span-2 space-y-6">
                 <div id="box-job-description" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Job Description</h4>
-                    <div id="job-description-content" class="text-gray-700"></div>
+                    <div id="job-description-content" class="text-gray-700">
+                        <p class="text-gray-500 italic">No information provided.</p>
+                    </div>
                 </div>
 
                 <div id="box-why-join" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Why Join Us?</h4>
-                    <div id="why-join-content" class="text-gray-700"></div>
+                    <div id="why-join-content" class="text-gray-700">
+                        <p class="text-gray-500 italic">No information provided.</p>
+                    </div>
                 </div>
 
                 <div id="box-key-resp" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Key Responsibilities</h4>
-                    <div id="key-responsibilities-content" class="text-gray-700"></div>
+                    <div id="key-responsibilities-content" class="text-gray-700">
+                        <p class="text-gray-500 italic">No information provided.</p>
+                    </div>
                 </div>
 
                 <div id="box-looking-for" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Who we are Looking for</h4>
-                    <div id="looking-for-content" class="text-gray-700"></div>
+                    <h4 class="text-xl font-bold text-black mb-2">Who We Are Looking For</h4>
+                    <div id="looking-for-content" class="text-gray-700">
+                        <p class="text-gray-500 italic">No information provided.</p>
+                    </div>
                 </div>
 
                 <div id="box-working-env" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Working Environment</h4>
-                    <div id="working-environment-content" class="text-gray-700"></div>
+                    <div id="working-environment-content" class="text-gray-700">
+                        <p class="text-gray-500 italic">No information provided.</p>
+                    </div>
                 </div>
+
+                <div id="box-accessibility" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
+                    <h4 class="text-xl font-bold text-black mb-2">Accessibility & Support Requirements</h4>
+                        <!-- Section Description -->
+                        <p class="text-sm text-gray-600 mb-4">
+                            This section helps you understand the workplace conditions, communication methods, and available support 
+                            to determine if the job is suitable for your needs.
+                        </p>
+                        <div id="accessibility-content" class="text-gray-700"></div>
+                        <!-- Communication Requirements -->
+                        <div>
+                        <h5 class="font-semibold text-black mb-2">Communication Requirements</h5>
+                        <ul id="communication-list" class="list-disc list-inside space-y-1">
+                            <li class="text-gray-700 italic">No information provided.</li>
+                        </ul>
+                    </div>
+
+                        <!-- Sensory Requirements -->
+                        <div>
+                            <h5 class="font-semibold text-black mb-2">Sensory Requirements</h5>
+                            <ul id="sensory-list" class="list-disc list-inside space-y-1">
+                                <li class="text-gray-700 italic">No information provided.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Cognitive Level Requirements -->
+                        <div>
+                            <h5 class="font-semibold text-black mb-2">Cognitive Level Requirements</h5>
+                            <ul id="cognitive-list" class="list-disc list-inside space-y-1">
+                                <li class="text-gray-700 italic">No information provided.</li>
+                            </ul>
+                        </div>
+
+                        <!-- Accommodation Availability -->
+                        <div>
+                            <h5 class="font-semibold text-black mb-2">Accommodation Availability</h5>
+                            <ul id="accommodation-list" class="list-disc list-inside space-y-1">
+                                <li class="text-gray-700 italic">No information provided.</li>
+                            </ul>
+                        </div>
+                    </div>
 
                 <div id="box-qualifications" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-xl font-bold text-black mb-2">Qualifications</h4>
-                    <div id="qualifications-content" class="text-gray-700"></div>
+                    <div id="qualifications-content" class="text-gray-700">
+                        <p class="text-gray-500 italic">No information provided.</p>
+                    </div>
                 </div>
             </div>
 
@@ -167,14 +229,13 @@
                 <!-- Job Positions -->
                 <div id="box-positions" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-lg  font-bold text-black mb-3">Job Positions</h4>
-                    <p id="job-positions" class="text-left text-gray-800 font-semibold">No Job Position Input</p>
+                    <p id="job-positions" class="text-left text-gray-800 font-semibold">No Job Position Provided</p>
                 </div>
 
                 <!-- Job Program -->
                 <div id="box-program" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-lg  font-bold text-black mb-3">Job Program</h4>
-                    <p class="text-[#88BF02] border border-[#88BF02] px-3 py-1 rounded-md font-semibold inline-block">Love
-                        ’Em Down</p>
+                    <p class="text-[#88BF02] border border-[#88BF02] px-3 py-1 rounded-md font-semibold inline-block">No Job Program</p>
                 </div>
 
                 <div id="box-hiring-manager" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
@@ -186,7 +247,7 @@
 
                         <!-- Name and Title -->
                         <div class="flex flex-col">
-                            <p id="manager-name" class="font-medium text-base text-gray-800">John Carlo Garcia</p>
+                            <p id="manager-name" class="font-medium text-base text-gray-800">Juan Dela Cruz</p>
                             <p id="manager-role" class="text-gray-500 text-xs">Human Resources Manager</p>
                         </div>
                     </div>
@@ -197,19 +258,19 @@
                     <h4 class="text-lg  font-bold text-black mb-3">Contact Details</h4>
                     <p id="contact-address" class="text-sm font-regular text-gray-600 flex items-start gap-4">
                         <i class="ri-map-pin-line text-black text-lg"></i>
-                        Lot 8 Blk W-39E Quezon Avenue, cor Jose Abad Santos St., Quezon City, Metro Manila
+                        Not yet provided
                     </p>
                     <p id="contact-phone" class="mt-2 text-sm font-regular text-gray-600 flex items-start gap-4">
-                        <i class="ri-phone-line text-black text-lg"></i> +63 5587 1234
+                        <i class="ri-phone-line text-black text-lg"></i> Not available
                     </p>
                     <p id="contact-email" class="mt-2 text-sm font-regular text-gray-600 flex items-start gap-4">
-                        <i class="ri-mail-line text-black text-lg"></i> Juan.Carl@shakeys.com
+                        <i class="ri-mail-line text-black text-lg"></i> No email provided
                     </p>
                     <p id="contact-industry" class="mt-2  text-sm font-regular text-gray-600 flex items-start gap-4">
-                        <i class="ri-building-4-line text-black text-lg"></i> Restaurant
+                        <i class="ri-building-4-line text-black text-lg"></i> Not specified
                     </p>
                     <a id="company-website" href="#" target="_blank" class="mt-2  text-blue-500 text-sm flex items-center gap-4 hover:underline">
-                        <i class="ri-link text-black text-lg"></i> <span id="company-website-text">https://www.shakeyspizza.ph/</span>
+                        <i class="ri-link text-black text-lg"></i> <span id="company-website-text">No website available</span>
                     </a>
                     <a id="company-map" href="#" target="_blank" class="mt-2  text-blue-500 text-sm flex items-center gap-4 hover:underline">
                         <i class="ri-map-2-line text-black text-lg"></i> <span id="company-map-text">Google Maps</span>
