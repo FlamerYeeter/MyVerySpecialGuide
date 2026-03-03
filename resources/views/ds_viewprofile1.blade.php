@@ -103,18 +103,15 @@
                             </select>
                         </div>
                         <div class="mt-8">
-                            <label for="r_cddType1" class="block text-lg font-semibold mb-3">Congenital or Developmental Disability <span
+                            <label class="block text-lg font-semibold mb-3">Congenital or Developmental Disability <span
                                     class="text-gray-500">(optional)</span></label>
-                            <select id="r_cddType1" disabled
-                                class="w-full sm:w-80 border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none"
-                                style="margin-left:-6px;">
-                                <option value="" disabled selected>-- Select Type --</option>
-                                <option value="Congenital Heart Defects">Congenital Heart Defects</option>
-                                <option value="Hearing/Vision">Hearing/Vision</option>
-                                <option value="Thyroid issues">Thyroid issues</option>
-                                <option value="Low Muscle Tone (Hypotonia)">Low Muscle Tone (Hypotonia)</option>
-                                <option value="Others">Others</option>
-                            </select>
+                            <div id="r_cddType1_group" class="w-full sm:w-80 border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none" style="margin-left:-6px;">
+                                <label class="flex items-center gap-3 mb-2"><input type="checkbox" name="r_cdd_cb" id="r_cdd_congenital" value="Congenital Heart Defects" disabled><span>Congenital Heart Defects</span></label>
+                                <label class="flex items-center gap-3 mb-2"><input type="checkbox" name="r_cdd_cb" id="r_cdd_hearing" value="Hearing/Vision" disabled><span>Hearing/Vision</span></label>
+                                <label class="flex items-center gap-3 mb-2"><input type="checkbox" name="r_cdd_cb" id="r_cdd_thyroid" value="Thyroid issues" disabled><span>Thyroid issues</span></label>
+                                <label class="flex items-center gap-3 mb-2"><input type="checkbox" name="r_cdd_cb" id="r_cdd_tone" value="Low Muscle Tone (Hypotonia)" disabled><span>Low Muscle Tone (Hypotonia)</span></label>
+                                <label class="flex items-center gap-3"><input type="checkbox" name="r_cdd_cb" id="r_cdd_others" value="Others" disabled><span>Others</span></label>
+                            </div>
                             <input type="text" id="r_cddType1Other" placeholder="Please specify"
                                 class="w-full border border-gray-300 rounded-xl px-5 py-3 mt-2 hidden" />
                         </div>
@@ -500,37 +497,44 @@ document.addEventListener('DOMContentLoaded', () => {
             set('phone', u.CONTACT_NUMBER);
             set('address', u.ADDRESS);
             set('r_dsType1', u.TYPES_OF_DS);
-            const cddVal = u.CDD_TYPE ?? u.cdd_type ?? u.CDDTYPE ?? u.cddType ?? u.CDD ?? u.cdd ?? '';
-            // If the returned value matches one of the known options, use it; otherwise treat as "Others" text
-            const knownCdd = [
-                'Congenital Heart Defects', 'Hearing/Vision', 'Thyroid issues', 'Low Muscle Tone (Hypotonia)'
-            ];
-            if (cddVal && knownCdd.includes(cddVal)) {
-                set('r_cddType1', cddVal);
-                set('r_cddType1Other', '');
-            } else if (cddVal) {
-                set('r_cddType1', 'Others');
-                set('r_cddType1Other', cddVal);
-            } else {
-                set('r_cddType1', '');
-                set('r_cddType1Other', '');
-            }
-
-            // Ensure the Other textbox visibility follows the selected value (visible even in view mode)
+            const cddValRaw = u.CDD_TYPE ?? u.cdd_type ?? u.CDDTYPE ?? u.cddType ?? u.CDD ?? u.cdd ?? '';
+            // support comma-separated lists or single values from server
             try {
-                const _sel = document.getElementById('r_cddType1');
-                const _other = document.getElementById('r_cddType1Other');
-                if (_sel && _other) {
-                    if (_sel.value === 'Others' || _sel.value === 'Other') {
-                        _other.classList.remove('hidden');
-                        // only required when editing
-                        _other.required = false;
+                const knownCdd = [
+                    'Congenital Heart Defects', 'Hearing/Vision', 'Thyroid issues', 'Low Muscle Tone (Hypotonia)'
+                ];
+                const values = (cddValRaw || '').toString().split(',').map(s => s.trim()).filter(Boolean);
+                // clear all checkboxes first
+                const cbName = document.getElementsByName('r_cdd_cb');
+                if (cbName) Array.from(cbName).forEach(cb => cb.checked = false);
+                const otherInput = document.getElementById('r_cddType1Other');
+                let matched = 0;
+                const unmatched = [];
+                values.forEach(v => {
+                    const matchedOption = Array.from(document.getElementsByName('r_cdd_cb')).find(el => (el.value || '').toString().toLowerCase() === v.toString().toLowerCase());
+                    if (matchedOption) {
+                        matchedOption.checked = true;
+                        matched++;
                     } else {
-                        _other.classList.add('hidden');
-                        _other.required = false;
+                        unmatched.push(v);
+                    }
+                });
+                const otherCb = document.getElementById('r_cdd_others');
+                if (unmatched.length > 0) {
+                    if (otherCb) otherCb.checked = true;
+                    if (otherInput) {
+                        otherInput.classList.remove('hidden');
+                        otherInput.value = unmatched.join(', ');
+                    }
+                } else {
+                    if (otherInput) {
+                        if (!otherCb || !otherCb.checked) {
+                            otherInput.classList.add('hidden');
+                            otherInput.value = '';
+                        }
                     }
                 }
-            } catch(e) { /* ignore */ }
+            } catch (e) { console.warn('CDD populate error', e); }
 
             // Guardian
             set('g_first_name', u.GUARDIAN_FIRST_NAME);
@@ -638,7 +642,7 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     // list of fields to toggle (personal + guardian)
     const fieldIds = [
-        "first_name","last_name","date_of_birth","email","phone","address","r_dsType1","r_cddType1","r_cddType1Other",
+        "first_name","last_name","date_of_birth","email","phone","address","r_dsType1","r_cddType1Other",
         "g_first_name","g_last_name","g_email","g_phone","guardian_relationship"
     ];
 
@@ -662,28 +666,44 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.classList.remove('bg-white','text-gray-900');
             }
         });
-
-            // If toggling edit mode, ensure the CDD "Other" input visibility follows the select.
-            // Show the Other textbox whenever the select value is Others; only make it required when editing.
-            const sel = document.getElementById('r_cddType1');
+        // handle CDD checkbox group enable/disable and Other field
+        try {
+            const cbs = document.getElementsByName('r_cdd_cb');
+            if (cbs && cbs.length) {
+                Array.from(cbs).forEach(cb => {
+                    cb.disabled = !editable;
+                });
+                const group = document.getElementById('r_cddType1_group');
+                if (group) {
+                    if (editable) {
+                        group.classList.remove('bg-gray-50','select-none');
+                        group.classList.add('bg-white','text-gray-900');
+                    } else {
+                        group.classList.add('bg-gray-50','select-none');
+                        group.classList.remove('bg-white','text-gray-900');
+                    }
+                }
+            }
             const other = document.getElementById('r_cddType1Other');
-            if (sel && other) {
-                if (sel.value === 'Others' || sel.value === 'Other') {
+            const otherCb = document.getElementById('r_cdd_others');
+            if (other && otherCb) {
+                if (otherCb.checked) {
                     other.classList.remove('hidden');
-                    other.required = !!editable; // required only in edit mode
+                    other.required = !!editable;
                 } else {
                     other.classList.add('hidden');
                     other.required = false;
                 }
             }
+        } catch(e) { /* ignore */ }
     }
 
-    // Show/hide the Other input when editing the CDD select
-    const cddSelect = document.getElementById('r_cddType1');
+    // Show/hide the Other input when the Others checkbox toggles
     const cddOther = document.getElementById('r_cddType1Other');
-    if (cddSelect && cddOther) {
-        cddSelect.addEventListener('change', function() {
-            if (this.value === 'Others') {
+    const cddOtherCb = document.getElementById('r_cdd_others');
+    if (cddOther && cddOtherCb) {
+        cddOtherCb.addEventListener('change', function() {
+            if (this.checked) {
                 cddOther.classList.remove('hidden');
                 cddOther.required = true;
             } else {
@@ -715,19 +735,19 @@ document.addEventListener('DOMContentLoaded', () => {
         fieldIds.forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
-            if (el.tagName === 'SELECT') payload[id] = el.value || '';
-            else payload[id] = el.value || '';
+            payload[id] = el.value || '';
         });
 
-        // If CDD select is set to Others, prefer the text input value when saving
+        // Collect CDD checkbox values (prefer specific Other textbox when Others checked)
         try {
-            const sel = document.getElementById('r_cddType1');
+            const checked = Array.from(document.querySelectorAll('input[name="r_cdd_cb"]:checked')).map(cb => cb.value);
             const other = document.getElementById('r_cddType1Other');
-            if (sel && other && (sel.value === 'Others' || sel.value === 'Other')) {
-                // prefer trimmed other input; fall back to existing select value
-                const v = (other.value || '').toString().trim();
-                if (v) payload['r_cddType1'] = v;
+            // Remove the literal 'Others' marker and append the actual text if provided.
+            let vals = checked.filter(v => String(v).toLowerCase() !== 'others');
+            if (other && other.value && other.value.trim()) {
+                vals.push(other.value.trim());
             }
+            payload['r_cddType1'] = vals.join(', ');
         } catch (e) { /* ignore */ }
 
         try {
