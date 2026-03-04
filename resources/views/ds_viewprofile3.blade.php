@@ -30,14 +30,14 @@
                         JD
                     </div>
                     <div>
-                        <h1 id="profile_fullname" class="text-2xl font-semibold">Juan Dela Cruz</h1>
+                        <h1 id="profile_fullname" class="text-2xl font-semibold">No name provided</h1>
                         <p id="profile_location" class="flex items-center gap-3 text-lg mt-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
-                            <span id="profile_location_text">Taguig City, Metro Manila</span>
+                            <span id="profile_location_text">Location not specified</span>
                         </p>
                         <p class="flex items-center gap-4 text-base mt-2">
                             <img src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" alt="Email Icon" class="w-5 h-5">
-                            <span id="profile_header_email">juancruz@gmail.com</span>
+                            <span id="profile_header_email">Information not specified</span>
                         </p>
                     </div>
                 </div>
@@ -68,8 +68,8 @@
 
                         <!-- Edit Skills Button -->
                         <div class="flex flex-col items-end mt-10 space-y-2">
-                            <p class="text-lg text-gray-600">
-                                Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                            <p class="text-lg text-gray-600 italic">
+                                Pindutin ang <span class="text-blue-600 font-medium italic">"Edit"</span> upang baguhin
                             </p>
                             <button id="rv4_change_skills_btn" type="button"
                                 class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
@@ -102,8 +102,8 @@
 
                         <!-- Edit Job Preference Button -->
                         <div class="flex flex-col items-end mt-10 space-y-2">
-                            <p class="text-lg text-gray-600">
-                                Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                            <p class="text-lg text-gray-600 italic">
+                                Pindutin ang <span class="text-blue-600 font-medium italic">"Edit"</span> upang baguhin
                             </p>
                             <button id="rv5_change_jobprefs_btn" type="button"
                                 class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
@@ -127,14 +127,14 @@
     <h2 class="text-center text-1xl sm:text-2xl font-extrabold text-gray-800">
         What skills do you have or feel confident doing?
     </h2>
-    <p class="text-center text-gray-500 italic mt-1">
+    <p class="text-center text-gray-500 italic mt-1 italic">
         (Anong mga kakayahan ang kaya mong gawin o komportable ka?)
     </p>
 
     <!-- Yellow Note -->
     <div class="bg-yellow-100 border border-yellow-300 rounded-xl p-4 mt-6 text-center shadow-sm">
         <p class="font-semibold text-yellow-900">You can choose more than one option</p>
-        <p class="text-yellow-800 italic text-sm">(Puwede kang pumili ng higit sa isa)</p>
+        <p class="text-yellow-800 italic text-sm italic">(Puwede kang pumili ng higit sa isa)</p>
     </div>
 
     <!-- Skills Cards Grid -->

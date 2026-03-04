@@ -30,14 +30,14 @@
                         JD
                     </div>
                     <div>
-                        <h1 id="profile_fullname" class="text-2xl font-semibold">Juan Dela Cruz</h1>
+                        <h1 id="profile_fullname" class="text-2xl font-semibold">No name provided</h1>
                         <p id="profile_location" class="flex items-center gap-3 text-lg mt-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-7 h-7">
-                            <span id="profile_location_text">Taguig City, Metro Manila</span>
+                            <span id="profile_location_text">Location not specified</span>
                         </p>
                         <p class="flex items-center gap-3 text-lg mt-2">
                             <img src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" class="w-6 h-6">
-                            <span id="profile_header_email">juandelacruz@gmail.com</span>
+                            <span id="profile_header_email">Information not specified</span>
                         </p>
                     </div>
                 </div>
@@ -52,10 +52,12 @@
 
 <!-- Education Level -->
                             <div>
-                                <label class="block text-lg font-semibold mb-3">Education Level:</label>
-
-                                <!-- Display Mode -->
-                                <span id="educationLevel" class="block"></span>
+                                <div class="mb-3">
+                                    <div class="flex items-center gap-4">
+                                        <span class="text-lg font-semibold">Education Level:</span>
+                                        <span id="educationLevel" class="text-gray-800"></span>
+                                    </div>
+                                </div>
 
                                 <!-- Edit Mode -->
                                 <select id="edit_edu_select" class="hidden w-full border rounded px-3 py-2">
@@ -68,14 +70,15 @@
 
 <!-- School Name -->
                             <div class="col-span-2">
-                                <label class="block text-lg font-semibold mb-3">School Name:</label>
-
-                                <!-- Display Mode -->
-                                <span id="schoolName" class="block"></span>
+                                <div class="mb-3">
+                                    <div class="flex items-center gap-4">
+                                        <span class="text-lg font-semibold">School Name:</span>
+                                        <span id="schoolName" class="text-gray-800"></span>
+                                    </div>
+                                </div>
 
                                 <!-- Edit Mode -->
-                                <input type="text" id="edit_school_input"
-                                    class="hidden w-full border rounded px-3 py-2" />
+                                <input type="text" id="edit_school_input" class="hidden w-full border rounded px-3 py-2" />
                             </div>
                         </div>
 
@@ -140,8 +143,8 @@
 
                         <!-- Edit Button -->
                         <div class="flex flex-col items-end mt-10 space-y-2">
-                            <p class="text-lg text-gray-600">
-                                Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                            <p class="text-lg text-gray-600 italic">
+                                Pindutin ang <span class="text-blue-600 font-medium italic">"Edit"</span> upang baguhin
                             </p>
                             <button id="editEducationBtn"
                                 class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
@@ -163,7 +166,8 @@
                                 <div class="mb-4">
                                     <div class="flex items-center gap-4">
                                         <span class="text-lg font-semibold leading-none">Type of Work:</span>
-                                        <div id="review_work_list" class="flex flex-wrap gap-3 text-gray-800"></div>
+                                        <div id="review_work_list" class="flex flex-wrap gap-3 text-gray-800 mb-2">
+                                        </div>
                                     </div>
                                 </div>
 <!-- Job Experiences -->
@@ -186,8 +190,8 @@
 
                         <!-- Edit Button -->
                         <div class="flex flex-col items-end mt-10 space-y-2">
-                            <p class="text-lg text-gray-600">
-                                Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                            <p class="text-lg text-gray-600 italic">
+                                Pindutin ang <span class="text-blue-600 font-medium italic">"Edit"</span> upang baguhin
                             </p>
                             <button id="editWorkBtn"
                                 class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
@@ -206,7 +210,7 @@
                             <div class="col-span-1">
                                 <div class="mb-4">
                                     <div class="flex items-center gap-4">
-                                        <div id="review_workplace_list" class="flex flex-wrap gap-3 text-gray-800"></div>
+                                        <div id="review_workplace_list" class="flex flex-wrap gap-3 text-gray-800 mb-2"></div>
                                     </div>
                                 </div>
                             </div>
@@ -227,8 +231,8 @@
 
                         <!-- Edit Button -->
                         <div class="flex flex-col items-end mt-10 space-y-2">
-                            <p class="text-lg text-gray-600">
-                                Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                            <p class="text-lg text-gray-600 italic">
+                                Pindutin ang <span class="text-blue-600 font-medium italic">"Edit"</span> upang baguhin
                             </p>
                             <button id="editWorkplaceBtn"
                                 class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
@@ -246,7 +250,7 @@
                         </a>
                         <p class="text-base">Click <span class="text-blue-800 font-medium">"Next"</span> to move to the next
                             page</p>
-                        <p class="text-sm text-gray-500">(Pindutin ang <span class="text-blue-800 font-medium">"Next"</span>
+                        <p class="text-sm text-gray-500 italic">(Pindutin ang <span class="text-blue-800 font-medium italic">"Next"</span>
                             upang lumipat sa susunod na pahina)</p>
                     </div>
 

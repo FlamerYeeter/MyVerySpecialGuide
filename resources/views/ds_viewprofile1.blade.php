@@ -30,14 +30,14 @@
                         JD
                     </div>
                     <div>
-                        <h1 id="profile_fullname" class="text-2xl font-semibold">Juan Dela Cruz</h1>
+                        <h1 id="profile_fullname" class="text-2xl font-semibold">No name provided</h1>
                         <p id="profile_location" class="flex items-center gap-3 text-lg mt-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-7 h-7">
-                            <span id="profile_location_text">Taguig City, Metro Manila</span>
+                            <span id="profile_location_text">Location not specified</span>
                         </p>
                         <p class="flex items-center gap-3 text-lg mt-2">
                             <img src="https://img.icons8.com/ios-filled/50/ffffff/new-post.png" class="w-6 h-6">
-                            <span id="profile_header_email">juandelacruz@gmail.com</span>
+                            <span id="profile_header_email">Information not specified</span>
                         </p>
                     </div>
                 </div>
@@ -51,19 +51,19 @@
                         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                             <div>
                                 <label for="first_name" class="block text-lg font-semibold mb-3">First Name <span
-                                        class="text-gray-500">(Unang Pangalan)</span></label>
+                                        class="text-gray-500 italic">(Unang Pangalan)</span></label>
                                 <input id="first_name" type="text" disabled
                                     class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
                             <div>
                                 <label for="last_name" class="block text-lg font-semibold mb-3">Last Name <span
-                                        class="text-gray-500">(Apelyido)</span></label>
+                                        class="text-gray-500 italic">(Apelyido)</span></label>
                                 <input id="last_name" type="text" disabled
                                     class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
                             <div>
                                 <label for="date_of_birth" class="block text-lg font-semibold mb-3">Date of Birth <span
-                                    class="text-gray-500">(Petsa ng Kapanganakan)</span></label>
+                                    class="text-gray-500 italic">(Petsa ng Kapanganakan)</span></label>
                                 <input id="date_of_birth" type="date" disabled
                                     class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
@@ -86,14 +86,14 @@
 
                         <div class="mt-8">
                             <label for="address" class="block text-lg font-semibold mb-3">Address <span
-                                    class="text-gray-500">(Tirahan)</span></label>
+                                    class="text-gray-500 italic">(Tirahan)</span></label>
                             <input id="address" type="text" disabled
                                 class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                         </div>
 
                         <div class="mt-8">
                             <label for="r_dsType1" class="block text-lg font-semibold mb-3">Type of Syndrome <span
-                                    class="text-gray-500">(optional)</span></label>
+                                    class="text-gray-500"></span></label>
                             <select id="r_dsType1" disabled
                                 class="w-full sm:w-80 border rounded-xl px-5 py-4 text-lg select-none">
                                 <option>-- Select Type --</option>
@@ -104,7 +104,7 @@
                         </div>
                         <div class="mt-8">
                             <label class="block text-lg font-semibold mb-3">Congenital or Developmental Disability <span
-                                    class="text-gray-500">(optional)</span></label>
+                                    class="text-gray-500"></span></label>
                             <div id="r_cddType1_group" class="w-full sm:w-80 border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none" style="margin-left:-6px;">
                                 <label class="flex items-center gap-3 mb-2"><input type="checkbox" name="r_cdd_cb" id="r_cdd_congenital" value="Congenital Heart Defects" disabled><span>Congenital Heart Defects</span></label>
                                 <label class="flex items-center gap-3 mb-2"><input type="checkbox" name="r_cdd_cb" id="r_cdd_hearing" value="Hearing/Vision" disabled><span>Hearing/Vision</span></label>
@@ -125,7 +125,7 @@
                         <div class="grid md:grid-cols-2 gap-8">
                             <div>
                                 <label for="g_first_name" class="block text-lg font-semibold mb-2">
-                                    First Name <span class="text-gray-500">(Unang Pangalan)</span>
+                                    First Name <span class="text-gray-500 italic">(Unang Pangalan)</span>
                                 </label>
                                 <input id="g_first_name" type="text" disabled
                                     class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
@@ -133,7 +133,7 @@
 
                             <div>
                                 <label for="g_last_name" class="block text-lg font-semibold mb-2">
-                                    Last Name <span class="text-gray-500">(Apelyido)</span>
+                                    Last Name <span class="text-gray-500 italic">(Apelyido)</span>
                                 </label>
                                 <input id="g_last_name" type="text" disabled
                                     class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
@@ -158,7 +158,7 @@
 <!-- Relation -->
                         <div class="mt-8">
                             <label for="guardian_relationship" class="block text-lg font-semibold mb-2">
-                                Relationship to User <span class="text-gray-500">(Ka-ano-ano mo siya?)</span>
+                                Relationship to User <span class="text-gray-500 italic">(Ka-ano-ano mo siya?)</span>
                             </label>
                             <select id="guardian_relationship" disabled
                                 class="w-full sm:w-80 border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none"
@@ -174,8 +174,8 @@
 
                         <!-- Edit -->
                         <div class="flex flex-col items-end mt-10 space-y-2">
-                            <p class="text-lg text-gray-600">
-                                Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                            <p class="text-lg text-gray-600 italic">
+                                Pindutin ang <span class="text-blue-600 font-medium italic">"Edit"</span> upang baguhin
                             </p>
                             <button id="editProfileBtn"
                                 class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
@@ -218,8 +218,8 @@
                                 </button>
 
                                 <div class="flex flex-col items-end mt-10 space-y-2">
-                                    <p class="text-lg text-gray-600">
-                                        Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                                    <p class="text-lg text-gray-600 italic">
+                                        Pindutin ang <span class="text-blue-600 font-medium italic">"Edit"</span> upang baguhin
                                     </p>
                                     <button id="editAccountBtn"
                                         class="bg-green-500 text-white px-32 py-4 rounded-xl text-xl font-semibold shadow hover:bg-green-600">
@@ -238,7 +238,7 @@
                             <!-- Membership -->
                             <div>
                                 <label class="block text-lg font-semibold mb-2">
-                                    PWD ID <span class="text-gray-500 italic">Uploaded file (if any)</span>
+                                    Valid PWD ID 
                                 </label>
                                 <div id="r_proof"
                                     class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
@@ -255,7 +255,7 @@
                             <!-- Medical Certificate -->
                             <div>
                                 <label class="block text-lg font-semibold mb-2">
-                                    Medical Certificate <span class="text-gray-500 italic">Uploaded file (if any)</span>
+                                   Valid Medical Certificate
                                 </label>
                                 <div id="r_medical"
                                     class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
@@ -271,8 +271,8 @@
                         </div>
 
                         <div class="flex flex-col items-end mt-10 space-y-2">
-                            <p class="text-lg text-gray-600">
-                                Pindutin ang <span class="text-blue-600 font-medium">"Edit"</span> upang baguhin
+                            <p class="text-lg text-gray-600 italic">
+                                Pindutin ang <span class="text-blue-600 font-medium italic">"Edit"</span> upang baguhin
                             </p>
 
                             <!-- edit/save/cancel buttons -->
@@ -301,8 +301,8 @@
                         </a>
                         <p class="text-base">Click <span class="text-blue-800 font-medium">"Next"</span> to move to the
                             next page</p>
-                        <p class="text-sm text-gray-500">(Pindutin ang <span
-                                class="text-blue-800 font-medium">"Next"</span> upang lumipat sa susunod na pahina)</p>
+                        <p class="text-sm text-gray-500 italic">(Pindutin ang <span
+                                class="text-blue-800 font-medium italic">"Next"</span> upang lumipat sa susunod na pahina)</p>
                     </div>
 
         </section>
