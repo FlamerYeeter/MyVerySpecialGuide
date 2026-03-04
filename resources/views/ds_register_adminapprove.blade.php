@@ -613,11 +613,11 @@
   </label>
 
    <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
-    A medical certificate is required to ensure you are ready to work. Please upload it.
+    A medical certificate is required to make sure you're fit and ready to work 😊 Please make sure it was issued within the last 3 months. Thank you!
   </p>
 
    <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-    (Kailangan ang medical certificate upang matiyak na ikaw ay handang magtrabaho. Paki-upload ito.)
+    (Kinakailangan ang isang medical certificate upang matiyak na ikaw ay malusog at handa nang magtrabaho 😊 Pakitiyak na ito ay naibigay sa loob ng nakaraang 3 buwan. Salamat!)
   </p>
 
   <!-- Upload Section -->
@@ -783,6 +783,26 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
                 // naive normalization: keep digits and leading +
                 const normalized = String(phone).replace(/[^\d+]/g, '');
                 el.value = normalized;
+            }
+        }
+
+        // ID / card number -> try filling commonly-named fields
+        const idVal = aiData.id_number || aiData.id_no || aiData.idno || aiData.id || aiData.number || aiData.card_number || aiData.pwd_number || aiData.identity_number || aiData.identification_number;
+        if (idVal) {
+            const tryIds = ['id_number','idno','id_no','pwd_number','pwd_id_number','identification_number','identity_number','card_number','id'];
+            for (const tid of tryIds) {
+                try {
+                    const el = document.getElementById(tid);
+                    if (el) { el.value = String(idVal); }
+                } catch(e){}
+            }
+            // also try common name attributes
+            const tryNames = ['id_number','pwd_id','pwd_id_number','identification_number','idno'];
+            for (const nm of tryNames) {
+                try {
+                    const el2 = document.querySelector(`[name="${nm}"]`);
+                    if (el2) el2.value = String(idVal);
+                } catch(e){}
             }
         }
 

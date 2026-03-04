@@ -136,13 +136,27 @@
 
             let allApps = [];
 
+            // Normalize job-capacity status strings into canonical short values
+            function normalizeStatus(raw) {
+                try {
+                    const s = (raw || '').toString().toLowerCase();
+                    if (!s) return 'pending';
+                    if (s.indexOf('pend') !== -1) return 'pending';
+                    if (s.indexOf('feed') !== -1 || s.indexOf('feedback') !== -1) return 'feedback';
+                    if (s.indexOf('review') !== -1 || s.indexOf('screen') !== -1 || s.indexOf('shortlist') !== -1 || s.indexOf('shortlisted') !== -1) return 'reviewed';
+                    if (s.indexOf('withdraw') !== -1 || s.indexOf('cancel') !== -1) return 'withdrawn';
+                    if (s.indexOf('hire') !== -1 || s.indexOf('placed') !== -1 || s.indexOf('accepted') !== -1) return 'hired';
+                    return s;
+                } catch (e) { return (raw || '').toString(); }
+            }
+
             // Update the stat cards based on current `allApps`
             function updateStats() {
                 try {
                     const apps = allApps || [];
                     const total = apps.length || 0;
-                    const pending = apps.filter(a => { const s = (a.status || '').toString().toLowerCase(); return s.indexOf('pending') !== -1; }).length;
-                    const underReview = apps.filter(a => { const s = (a.status || '').toString().toLowerCase(); return s.indexOf('review') !== -1; }).length;
+                    const pending = apps.filter(a => normalizeStatus(a.status) === 'pending').length;
+                    const underReview = apps.filter(a => normalizeStatus(a.status) === 'reviewed').length;
                     const elTotal = document.getElementById('statTotalCount');
                     const elPending = document.getElementById('statPendingCount');
                     const elReviewed = document.getElementById('statReviewedCount');
@@ -182,10 +196,10 @@
                                 return d ? esc(formatNiceDate(d)) : esc(a.created_at || 'Unknown');
                             })();
 
-                            const statusRaw = (a && a.status) ? String(a.status).toLowerCase() : 'pending';
+                            const statusRaw = normalizeStatus((a && a.status) ? a.status : 'pending');
                             const isPending = statusRaw === 'pending';
-                            const isReview = statusRaw === 'reviewed' || statusRaw.indexOf('review') !== -1;
-                            const isFeedback = statusRaw === 'feedback' || statusRaw.indexOf('feedback') !== -1;
+                            const isReview = statusRaw === 'reviewed';
+                            const isFeedback = statusRaw === 'feedback';
 
                             // Determine which steps are checked/completed based on status
                             const submittedChecked = isPending || isReview || isFeedback;
@@ -263,7 +277,7 @@
                 // Filter by status if selected
                 if (statusFilter) {
                     const sf = statusFilter.toLowerCase();
-                    apps = apps.filter(a => ((a.status || '').toLowerCase()) === sf);
+                    apps = apps.filter(a => normalizeStatus(a.status) === sf);
                 }
 
                 if (!apps || apps.length === 0){
