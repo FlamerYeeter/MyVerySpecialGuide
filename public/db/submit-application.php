@@ -205,9 +205,12 @@ try {
     oci_bind_by_name($stid, ':pwd_blob', $pwdBlob, -1, OCI_B_BLOB);
 
     // execute without auto-commit so we can stream LOBs and then commit
-    if (!@oci_execute($stid, OCI_NO_AUTO_COMMIT)) {
-        $e = oci_error($stid);
-        throw new Exception('Insert failed: ' . ($e['message'] ?? 'unknown'));
+    $ok = oci_execute($stid, OCI_NO_AUTO_COMMIT);
+    if (!$ok) {
+        $e = oci_error($stid) ?: [];
+        $msg = 'Insert failed: ' . ($e['message'] ?? json_encode($e));
+        error_log('[submit-application] ' . $msg . ' SQL=' . substr($insertSql, 0, 1000));
+        throw new Exception($msg);
     }
 
     // write blobs if present
@@ -266,19 +269,19 @@ try {
                 oci_bind_by_name($capSt, 'b_jid', $bj, -1);
                 oci_bind_by_name($capSt, 'b_uid', $bu, -1);
                 oci_bind_by_name($capSt, 'b_role', $rbind, 4000);
-                $ok = @oci_execute($capSt);
+                $ok = oci_execute($capSt);
                 $__jobcap_debug['insert_ok'] = $ok ? true : false;
                 if (!$ok) {
                     $err = oci_error($capSt) ?: [];
                     $__jobcap_debug['insert_error'] = $err;
                     // attempt an update to refresh timestamp/role when unique constraint prevents insert
                     $updSql = "UPDATE MVSG.JOB_CAPACITY SET UPDATED_AT = SYSTIMESTAMP" . ($role_to_use !== null ? ", ROLE = :b_role" : "") . " WHERE JOB_POSTING_ID = TO_NUMBER(:b_jid) AND USER_ID = TO_NUMBER(:b_uid)";
-                    $updSt = @oci_parse($conn, $updSql);
+                    $updSt = oci_parse($conn, $updSql);
                     if ($updSt) {
                         if ($role_to_use !== null) oci_bind_by_name($updSt, 'b_role', $rbind, 4000);
                         oci_bind_by_name($updSt, 'b_jid', $bj, -1);
                         oci_bind_by_name($updSt, 'b_uid', $bu, -1);
-                        $uok = @oci_execute($updSt);
+                        $uok = oci_execute($updSt);
                         $__jobcap_debug['update_ok'] = $uok ? true : false;
                         if (!$uok) $__jobcap_debug['update_error'] = oci_error($updSt) ?: [];
                         @oci_free_statement($updSt);
@@ -295,8 +298,10 @@ try {
 
     // commit
     if (!oci_commit($conn)) {
-        $e = oci_error($conn);
-        throw new Exception('Commit failed: ' . ($e['message'] ?? 'unknown'));
+        $e = oci_error($conn) ?: [];
+        $msg = 'Commit failed: ' . ($e['message'] ?? json_encode($e));
+        error_log('[submit-application] ' . $msg);
+        throw new Exception($msg);
     }
 
     // --- record apply interaction (best-effort, do not break main flow) ----------------
@@ -354,6 +359,7 @@ try {
     if (isset($stid) && $stid) @oci_free_statement($stid);
     if (isset($conn) && $conn) @oci_close($conn);
     $msg = $ex->getMessage();
+    error_log('[submit-application] Exception: ' . $msg);
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => $msg]);
     exit;

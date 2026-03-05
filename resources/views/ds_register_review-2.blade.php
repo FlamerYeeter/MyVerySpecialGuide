@@ -503,9 +503,23 @@
                                 // Try many common key names used across forms
                                 const title = e.title || e.job_title || e.position || e.role || e.job || '';
                                 const company = e.company || e.company_name || e.employer || e.Company || '';
-                                const year = e.work_year || e.start_year || e.job_start_year || e.year || e.startYear || e.job_work_year || '';
                                 const desc = e.description || e.job_description || e.desc || e.notes || '';
-                                return { title:String(title||''), company:String(company||''), year:String(year||''), desc:String(desc||'') };
+                                // prefer explicit start/end month/year; fall back to single year fields
+                                const sm = e.start_month || e.startMonth || e.start_month_raw || '';
+                                const sy = e.start_year || e.startYear || e.year || '';
+                                const em = e.end_month || e.endMonth || '';
+                                const ey = e.end_year || e.endYear || e.end || '';
+                                function fmt(m,y){ if (!y && !m) return ''; const months = ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; const mm = m ? months[parseInt(m)] || m : ''; return (mm ? mm + ' ' : '') + (y || ''); }
+                                let period = '';
+                                if (sm || sy) {
+                                    const s = fmt(sm, sy);
+                                    if (ey && String(ey).toLowerCase() === 'present') period = s + ' — Present';
+                                    else if (em || ey) period = s + (fmt(em, ey) ? ' — ' + fmt(em, ey) : '');
+                                    else period = s;
+                                } else if (e.work_year || e.year) {
+                                    period = String(e.work_year || e.year || '');
+                                }
+                                return { title:String(title||''), company:String(company||''), period:String(period||''), desc:String(desc||'') };
                             }
 
                             function renderExperiences() {
@@ -535,7 +549,7 @@
                                             <div class="flex justify-between items-start gap-4">
                                                 <div>
                                                     <h5 class="text-lg font-semibold text-gray-800">${n.title ? escapeHtml(n.title) : '<span class="text-gray-500 italic">(No job title)</span>'}</h5>
-                                                    <p class="text-sm text-gray-600 mt-1">${n.company ? escapeHtml(n.company) : ''} ${n.year ? '&middot; ' + escapeHtml(n.year) : ''}</p>
+                                                    <p class="text-sm text-gray-600 mt-1">${n.company ? escapeHtml(n.company) : ''} ${n.period ? '&middot; ' + escapeHtml(n.period) : ''}</p>
                                                     <p class="text-sm text-gray-700 mt-3">${n.desc ? escapeHtml(n.desc) : ''}</p>
                                                 </div>
                                             </div>

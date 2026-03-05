@@ -670,7 +670,41 @@ document.addEventListener('DOMContentLoaded', () => {
                     const card = document.createElement('div');
                     card.className = 'mb-3 p-3 border rounded-md bg-white shadow-sm';
                     const title = escapeHtml(j.company_name || '') + (j.job_title ? ' — ' + escapeHtml(j.job_title) : '');
-                    const meta = escapeHtml(j.years_experience || '') + (j.work_year ? ' • ' + escapeHtml(j.work_year) : '');
+                    // Format period: prefer start_date/end_date -> start_month/start_year -> work_year
+                    function fmtMonthYear(m,y){ if (!y && !m) return ''; var mm = m ? ['','Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m)] || m : ''; return (mm ? mm + ' ' : '') + (y || ''); }
+                    function fmtFromDate(dateStr){ if (!dateStr) return ''; try { const d = new Date(dateStr); if (!isNaN(d.getTime())) return d.toLocaleString(undefined, { month: 'short', year: 'numeric' }); } catch(e){} return ''; }
+                    let period = '';
+                    // prefer raw ISO dates if present
+                    if (j.start_date) {
+                        const s = fmtFromDate(j.start_date) || fmtMonthYear(j.start_month, j.start_year);
+                        let e = '';
+                        if (j.end_date) {
+                            e = fmtFromDate(j.end_date) || fmtMonthYear(j.end_month, j.end_year);
+                        } else if (j.end_year && String(j.end_year).toLowerCase() === 'present') {
+                            e = 'Present';
+                        } else if (j.end_year || j.end_month) {
+                            e = fmtMonthYear(j.end_month, j.end_year);
+                        }
+                        period = s + (e ? ' — ' + e : '');
+                    } else if (j.start_year || j.start_month) {
+                        const s = fmtMonthYear(j.start_month, j.start_year);
+                        let e = '';
+                        if (j.end_year && String(j.end_year).toLowerCase() !== 'present') e = fmtMonthYear(j.end_month, j.end_year);
+                        else if (j.end_year && String(j.end_year).toLowerCase() === 'present') e = 'Present';
+                        period = s + (e ? ' — ' + e : '');
+                    } else if (j.work_year) {
+                        period = String(j.work_year);
+                    } else {
+                        period = '';
+                    }
+                    // Hide the 'More than 3 years' label; show other labels only if present
+                    let expLabel = '';
+                    try {
+                        if (j.years_experience && String(j.years_experience).trim().toLowerCase() !== 'more than 3 years') {
+                            expLabel = String(j.years_experience).trim();
+                        }
+                    } catch (e) { expLabel = ''; }
+                    const meta = (expLabel ? escapeHtml(expLabel) : '') + (period ? (expLabel ? ' • ' : '') + escapeHtml(period) : '');
                     const desc = escapeHtml(j.job_description || '');
                     const env = j.working_environment ? '<div class="text-xs text-gray-500 mt-2">Environment: ' + escapeHtml(j.working_environment) + '</div>' : '';
                     // If this job has per-entry certificate, show blue check with link
@@ -1015,8 +1049,48 @@ document.addEventListener('DOMContentLoaded', () => {
                             <input type="text" class="job-edit-title mt-1 w-full border rounded px-2 py-1" />
                         </div>
                         <div>
+                            <label class="text-sm font-medium text-gray-700">Start Month</label>
+                            <select class="job-edit-start-month mt-1 w-full border rounded px-2 py-1">
+                                <option value="">--</option>
+                                <option value="1">Jan</option>
+                                <option value="2">Feb</option>
+                                <option value="3">Mar</option>
+                                <option value="4">Apr</option>
+                                <option value="5">May</option>
+                                <option value="6">Jun</option>
+                                <option value="7">Jul</option>
+                                <option value="8">Aug</option>
+                                <option value="9">Sep</option>
+                                <option value="10">Oct</option>
+                                <option value="11">Nov</option>
+                                <option value="12">Dec</option>
+                            </select>
+                        </div>
+                        <div>
                             <label class="text-sm font-medium text-gray-700">Start Year</label>
-                            <input type="text" class="job-edit-year mt-1 w-full border rounded px-2 py-1" placeholder="YYYY or text" />
+                            <input type="text" maxlength="4" inputmode="numeric" class="job-edit-start-year mt-1 w-full border rounded px-2 py-1" placeholder="YYYY" />
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">End Month</label>
+                            <select class="job-edit-end-month mt-1 w-full border rounded px-2 py-1">
+                                <option value="">--</option>
+                                <option value="1">Jan</option>
+                                <option value="2">Feb</option>
+                                <option value="3">Mar</option>
+                                <option value="4">Apr</option>
+                                <option value="5">May</option>
+                                <option value="6">Jun</option>
+                                <option value="7">Jul</option>
+                                <option value="8">Aug</option>
+                                <option value="9">Sep</option>
+                                <option value="10">Oct</option>
+                                <option value="11">Nov</option>
+                                <option value="12">Dec</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm font-medium text-gray-700">End Year</label>
+                            <input type="text" maxlength="4" inputmode="numeric" class="job-edit-end-year mt-1 w-full border rounded px-2 py-1" placeholder="YYYY or 'Present'" />
                         </div>
                         <div>
                             <label class="text-sm font-medium text-gray-700">Description</label>
@@ -1067,7 +1141,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const node = tpl.content.firstElementChild.cloneNode(true);
         node.querySelector('.job-edit-company').value = data.company_name || data.company || '';
         node.querySelector('.job-edit-title').value = data.job_title || data.title || '';
-        node.querySelector('.job-edit-year').value = data.start_year || data.work_year || data.year || data.years_experience || '';
+        // populate start/end month/year from available sources (prefer start_date/end_date)
+        const startMonthEl = node.querySelector('.job-edit-start-month');
+        const startYearEl = node.querySelector('.job-edit-start-year');
+        const endMonthEl = node.querySelector('.job-edit-end-month');
+        const endYearEl = node.querySelector('.job-edit-end-year');
+        let sMonth = '';
+        let sYear = '';
+        let eMonth = '';
+        let eYear = '';
+        try {
+            if (data.start_date) {
+                const d = new Date(data.start_date);
+                if (!isNaN(d)) { sMonth = String(d.getMonth() + 1); sYear = String(d.getFullYear()); }
+            }
+        } catch (e) {}
+        if (!sYear) {
+            sMonth = (data.start_month || data.startMonth || data.start || '') + '';
+            sYear = (data.start_year || data.startYear || data.year || data.work_year || '') + '';
+        }
+        try {
+            if (data.end_date) {
+                const d2 = new Date(data.end_date);
+                if (!isNaN(d2)) { eMonth = String(d2.getMonth() + 1); eYear = String(d2.getFullYear()); }
+            }
+        } catch (e) {}
+        if (!eYear) {
+            eMonth = (data.end_month || data.endMonth || '') + '';
+            eYear = (data.end_year || data.endYear || '') + '';
+        }
+        if (startMonthEl) startMonthEl.value = (sMonth || '').toString();
+        if (startYearEl) startYearEl.value = (sYear || '').toString();
+        if (endMonthEl) endMonthEl.value = (eMonth || '').toString();
+        if (endYearEl) endYearEl.value = (eYear || '').toString();
         node.querySelector('.job-edit-desc').value = data.job_description || data.description || '';
         // wire remove
         node.querySelector('.remove-job').addEventListener('click', () => node.remove());
@@ -1143,16 +1249,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const sel = editWorkSelect ? String(editWorkSelect.value).trim() : '';
         if (save) {
             // collect entries
-            const entries = Array.from(workContainer.querySelectorAll('.job-edit-entry'));
+                const entries = Array.from(workContainer.querySelectorAll('.job-edit-entry'));
             const out = entries.map(node => {
                 const company = node.querySelector('.job-edit-company')?.value?.trim() || '';
                 const title = node.querySelector('.job-edit-title')?.value?.trim() || '';
-                const yearRaw = node.querySelector('.job-edit-year')?.value?.trim() || '';
+                const start_month = node.querySelector('.job-edit-start-month')?.value?.trim() || '';
+                const start_year = node.querySelector('.job-edit-start-year')?.value?.trim() || '';
+                const end_month = node.querySelector('.job-edit-end-month')?.value?.trim() || '';
+                const end_year = node.querySelector('.job-edit-end-year')?.value?.trim() || '';
                 const desc = node.querySelector('.job-edit-desc')?.value?.trim() || '';
                 const certData = node.querySelector('.job-edit-file-data')?.value?.trim() || '';
-                const start_year = (/^\d{4}$/.test(yearRaw) ? yearRaw : yearRaw || '');
                 if (!company && !title && !start_year && !desc) return null;
-                const obj = { company: company, title: title, start_year: start_year, description: desc };
+                const obj = { company: company, title: title, start_month: start_month, start_year: start_year, end_month: end_month, end_year: end_year, description: desc };
                 if (certData) obj.certificate = certData;
                 return obj;
             }).filter(Boolean);
@@ -1191,7 +1299,17 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const card = document.createElement('div');
                                     card.className = 'mb-3 p-3 border rounded-md bg-white shadow-sm';
                                     const title = (it.company || '') + (it.title ? ' — ' + it.title : '');
-                                    const meta = (it.start_year || '');
+                                    // format period
+                                    const monthNames = ['', 'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+                                    let meta = '';
+                                    if (it.start_year) {
+                                        if (it.start_month && monthNames[parseInt(it.start_month)]) meta += monthNames[parseInt(it.start_month)] + ' ' + it.start_year;
+                                        else meta += it.start_year;
+                                    }
+                                    if (it.end_year) {
+                                        const end = (it.end_month && monthNames[parseInt(it.end_month)]) ? (monthNames[parseInt(it.end_month)] + ' ' + it.end_year) : it.end_year;
+                                        meta += (meta ? ' — ' : '') + end;
+                                    }
                                     const desc = (it.description || '');
                                     card.innerHTML = '<div class="font-semibold">' + escapeHtml(title) + '</div>' +
                                                     '<div class="text-sm text-gray-600">' + escapeHtml(meta) + '</div>' +

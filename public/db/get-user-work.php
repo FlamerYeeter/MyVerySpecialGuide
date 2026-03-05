@@ -61,7 +61,10 @@ try {
 
     // fetch JOB_EXPERIENCE rows
     $jobRows = [];
-    $sql2 = "SELECT id, years_experience, job_title, company_name, work_year, job_description, working_environment, created_at,
+    $sql2 = "SELECT id, years_experience, job_title, company_name, job_description, working_environment,
+             TO_CHAR(start_date,'YYYY-MM-DD') AS START_DATE,
+             TO_CHAR(end_date,'YYYY-MM-DD') AS END_DATE,
+             created_at,
              CASE WHEN NVL(dbms_lob.getlength(workexp_certificate),0) > 0 THEN 1 ELSE 0 END AS HAS_CERT
              FROM job_experience
              WHERE guardian_id = :gid
@@ -70,14 +73,39 @@ try {
     oci_bind_by_name($stid2, ':gid', $guardian_id);
     oci_execute($stid2);
     while ($r = oci_fetch_array($stid2, OCI_ASSOC + OCI_RETURN_LOBS + OCI_RETURN_NULLS)) {
+        // Normalize START_DATE/END_DATE (YYYY-MM-DD) into month/year fields for frontend compatibility
+        $start_date_raw = $r['START_DATE'] ?? null;
+        $end_date_raw = $r['END_DATE'] ?? null;
+        $smonth = null; $syear = null; $emonth = null; $eyear = null;
+        if (!empty($start_date_raw)) {
+            $ts = strtotime($start_date_raw);
+            if ($ts !== false) {
+                $smonth = intval(date('n', $ts));
+                $syear = intval(date('Y', $ts));
+            }
+        }
+        if (!empty($end_date_raw)) {
+            $ts2 = strtotime($end_date_raw);
+            if ($ts2 !== false) {
+                $emonth = intval(date('n', $ts2));
+                $eyear = intval(date('Y', $ts2));
+            }
+        }
+
         $jobRows[] = [
             'id' => $r['ID'] ?? null,
             'years_experience' => $r['YEARS_EXPERIENCE'] ?? null,
             'job_title' => $r['JOB_TITLE'] ?? null,
             'company_name' => $r['COMPANY_NAME'] ?? null,
-            'work_year' => $r['WORK_YEAR'] ?? null,
+            'work_year' => null,
             'job_description' => $r['JOB_DESCRIPTION'] ?? null,
             'working_environment' => $r['WORKING_ENVIRONMENT'] ?? null,
+            'start_month' => $smonth,
+            'start_year' => $syear,
+            'end_month' => $emonth,
+            'end_year' => $eyear,
+            'start_date' => $start_date_raw,
+            'end_date' => $end_date_raw,
             'created_at' => isset($r['CREATED_AT']) ? (string)$r['CREATED_AT'] : null,
             // include HAS_CERT so the frontend can show file badges/links
             'has_cert' => isset($r['HAS_CERT']) ? (int)$r['HAS_CERT'] : 0

@@ -456,14 +456,54 @@
                                     placeholder="e.g., McDonald's or University of Makati"/>
                             </div>
 
-                            <!-- Work Year -->
+                            <!-- Work Period: Start (month/year) and End (month/year) -->
                             <div class="flex flex-col">
-                                <label for="job_work_year"
-                                    class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Work Year</label>
-                                <!-- Make this editable per-job so each experience can record its own start year. -->
-                                <input id="job_work_year" name="job_work_year" type="text" maxlength="4" inputmode="numeric"
-                                    placeholder="e.g. 2004"
-                                    class="job_work_year w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200" />
+                                <label class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Work Period</label>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <div class="text-[11px] text-gray-600 mb-1">Start</div>
+                                        <div class="flex gap-2">
+                                            <select class="job_start_month w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" title="Start month">
+                                                <option value="">Month</option>
+                                                <option value="1">Jan</option>
+                                                <option value="2">Feb</option>
+                                                <option value="3">Mar</option>
+                                                <option value="4">Apr</option>
+                                                <option value="5">May</option>
+                                                <option value="6">Jun</option>
+                                                <option value="7">Jul</option>
+                                                <option value="8">Aug</option>
+                                                <option value="9">Sep</option>
+                                                <option value="10">Oct</option>
+                                                <option value="11">Nov</option>
+                                                <option value="12">Dec</option>
+                                            </select>
+                                            <input type="text" maxlength="4" inputmode="numeric" placeholder="Year" class="job_start_year w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" />
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="text-[11px] text-gray-600 mb-1">End</div>
+                                        <div class="flex gap-2">
+                                            <select class="job_end_month w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" title="End month">
+                                                <option value="">Month</option>
+                                                <option value="1">Jan</option>
+                                                <option value="2">Feb</option>
+                                                <option value="3">Mar</option>
+                                                <option value="4">Apr</option>
+                                                <option value="5">May</option>
+                                                <option value="6">Jun</option>
+                                                <option value="7">Jul</option>
+                                                <option value="8">Aug</option>
+                                                <option value="9">Sep</option>
+                                                <option value="10">Oct</option>
+                                                <option value="11">Nov</option>
+                                                <option value="12">Dec</option>
+                                            </select>
+                                            <input type="text" maxlength="4" inputmode="numeric" placeholder="Year or Present" class="job_end_year w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" />
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-[11px] text-gray-500 mt-1">Enter month and year for start and end (end can be "Present").</p>
                             </div>
 
                             <!-- Job Description  -->
@@ -839,20 +879,87 @@
                                 if (!noneSelected) localStorage.removeItem("selected_work_year");
                             }
 
+                            // Additional validation: ensure per-entry month/year ranges are valid
+                            const jobItemsAll = Array.from(document.querySelectorAll('#job_experiences_container .job_exp_item'));
+                            const today = new Date();
+                            for (const item of jobItemsAll) {
+                                const jt = item.querySelector('.job_title')?.value?.trim() || '';
+                                const cn = item.querySelector('.company_name')?.value?.trim() || '';
+                                const jd = item.querySelector('.job_description')?.value?.trim() || '';
+                                const sm = item.querySelector('.job_start_month')?.value?.trim() || '';
+                                const sy = item.querySelector('.job_start_year')?.value?.trim() || '';
+                                const em = item.querySelector('.job_end_month')?.value?.trim() || '';
+                                const ey = item.querySelector('.job_end_year')?.value?.trim() || '';
+                                const hasAny = jt || cn || jd || sm || sy || em || ey;
+                                if (!hasAny) continue; // skip empty rows
+
+                                // if any part of the period is provided, require start month+year and end month+year (or 'Present')
+                                if (sm || sy || em || ey) {
+                                    // start must have month and 4-digit year
+                                    if (!/^[1-9]$|^1[0-2]$/.test(String(sm)) || !/^\d{4}$/.test(String(sy))) {
+                                        if (errorEl) errorEl.textContent = 'Please provide a valid start month and 4-digit start year for each experience.';
+                                        try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
+                                        return;
+                                    }
+                                    // end may be 'Present' (case-insensitive) or month+4-digit year
+                                    const eyRaw = String(ey || '').trim();
+                                    const endIsPresent = /^present$/i.test(eyRaw) || eyRaw === '' && em === '';
+                                    if (!endIsPresent) {
+                                        if (!/^[1-9]$|^1[0-2]$/.test(String(em)) || !/^\d{4}$/.test(String(eyRaw))) {
+                                            if (errorEl) errorEl.textContent = 'Please provide a valid end month and 4-digit end year (or "Present").';
+                                            try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
+                                            return;
+                                        }
+                                    }
+
+                                    // compare dates
+                                    try {
+                                        const sDate = new Date(Number(sy), Number(sm) - 1, 1);
+                                        const eDate = endIsPresent ? today : new Date(Number(eyRaw), Number(em) - 1, 1);
+                                        if (isNaN(sDate.getTime()) || isNaN(eDate.getTime())) {
+                                            if (errorEl) errorEl.textContent = 'Invalid dates entered for work experience.';
+                                            try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
+                                            return;
+                                        }
+                                        if (sDate > eDate) {
+                                            if (errorEl) errorEl.textContent = 'Start date must be before or equal to end date for each experience.';
+                                            try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
+                                            return;
+                                        }
+                                        // do not allow end date in the future (unless 'Present')
+                                        if (!endIsPresent && eDate > today) {
+                                            if (errorEl) errorEl.textContent = 'End date cannot be in the future. Use "Present" if still working.';
+                                            try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
+                                            return;
+                                        }
+                                    } catch (e) {
+                                        if (errorEl) errorEl.textContent = 'Invalid date range for a work experience.';
+                                        try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
+                                        return;
+                                    }
+                                }
+                            }
+
                             // collect job experiences (only include entries with data)
                             const jobExperiences = [];
                             document.querySelectorAll('#job_experiences_container .job_exp_item').forEach(item => {
                                 const jobTitle = item.querySelector('.job_title')?.value?.trim() || '';
                                 const companyName = item.querySelector('.company_name')?.value?.trim() || '';
-                                const workYear = item.querySelector('.job_work_year')?.value?.trim() || '';
+                                const start_month = item.querySelector('.job_start_month')?.value?.trim() || '';
+                                const start_year = item.querySelector('.job_start_year')?.value?.trim() || '';
+                                const end_month = item.querySelector('.job_end_month')?.value?.trim() || '';
+                                const end_year = item.querySelector('.job_end_year')?.value?.trim() || '';
                                 const jobDescription = item.querySelector('.job_description')?.value?.trim() || '';
                                 let certObj = null;
                                 try { const raw = item.querySelector('.job_cert_data')?.value || ''; if (raw) certObj = JSON.parse(raw); } catch(e) { certObj = null; }
-                                if (jobTitle || companyName || workYear || jobDescription || certObj) {
+                                if (jobTitle || companyName || start_month || start_year || end_month || end_year || jobDescription || certObj) {
                                     jobExperiences.push({
                                         title: jobTitle,
                                         company: companyName,
-                                        year: workYear,
+                                        start_month: start_month || undefined,
+                                        start_year: start_year || undefined,
+                                        end_month: end_month || undefined,
+                                        end_year: end_year || undefined,
                                         description: jobDescription,
                                         certificate: certObj || undefined
                                     });
@@ -958,9 +1065,20 @@
                 // top-level typed year or duration cards. The typed `#work_start_year` is independent and
                 // will be saved as a section-level field, but it should not overwrite per-job fields here.
                 try {
-                    if (item && item.start_year && /^\d{4}$/.test(String(item.start_year))) {
-                        const wyInput = node.querySelector('.job_work_year');
-                        if (wyInput) wyInput.value = String(item.start_year);
+                    // populate per-entry start/end month/year when available
+                    if (item) {
+                        if (item.start_month) {
+                            const sm = node.querySelector('.job_start_month'); if (sm) sm.value = String(item.start_month);
+                        }
+                        if (item.start_year) {
+                            const sy = node.querySelector('.job_start_year'); if (sy) sy.value = String(item.start_year);
+                        }
+                        if (item.end_month) {
+                            const em = node.querySelector('.job_end_month'); if (em) em.value = String(item.end_month);
+                        }
+                        if (item.end_year) {
+                            const ey = node.querySelector('.job_end_year'); if (ey) ey.value = String(item.end_year);
+                        }
                     }
                 } catch (e) { /* ignore */ }
                 // remove handler
@@ -968,9 +1086,10 @@
                     node.remove();
                     syncHiddenFromUI();
                 });
-                // update hidden when inputs change
-                node.querySelectorAll('input').forEach(inp => {
+                // update hidden when inputs/selects change
+                node.querySelectorAll('input, select, textarea').forEach(inp => {
                     inp.addEventListener('input', debounce(syncHiddenFromUI, 150));
+                    inp.addEventListener('change', debounce(syncHiddenFromUI, 150));
                 });
                 // per-entry certificate upload handling
                 try {
@@ -1062,16 +1181,22 @@
                     const title = block.querySelector('.job_title')?.value?.trim() || '';
                     const description = block.querySelector('.job_description')?.value?.trim() || '';
                     const company = block.querySelector('.company_name')?.value?.trim() || '';
-                    const start_year = block.querySelector('.job_work_year')?.value?.trim() || '';
+                    const start_month = block.querySelector('.job_start_month')?.value?.trim() || '';
+                    const start_year = block.querySelector('.job_start_year')?.value?.trim() || '';
+                    const end_month = block.querySelector('.job_end_month')?.value?.trim() || '';
+                    const end_year = block.querySelector('.job_end_year')?.value?.trim() || '';
                     // include certificate data if present
                     let certObj = null;
                     try { const raw = block.querySelector('.job_cert_data')?.value || ''; if (raw) certObj = JSON.parse(raw); } catch(e) { certObj = null; }
                     // only include if any field present or certificate present
-                    if (title || description || company || start_year || certObj) arr.push({
+                    if (title || description || company || start_year || start_month || end_year || end_month || certObj) arr.push({
                         title,
                         description,
                         company,
+                        start_month: start_month || undefined,
                         start_year: start_year || undefined,
+                        end_month: end_month || undefined,
+                        end_year: end_year || undefined,
                         certificate: certObj || undefined
                     });
                 });

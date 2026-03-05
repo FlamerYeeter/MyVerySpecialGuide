@@ -5,6 +5,7 @@ require_once 'oracledb.php';
 $proof = null;
 $certs = [];
 $lastError = null;
+$lastErrorDetailed = null;
 function generateNumericId() {
     $micro = str_replace('.', '', (string)microtime(true));
     $rand = random_int(1000, 9999);
@@ -345,16 +346,18 @@ $ug_rowid = null;
 oci_bind_by_name($stid1, ':ug_rowid', $ug_rowid, 256);
 
 // EXECUTE
-if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
+    if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
     $e = oci_error($stid1);
     $lastError = $e;
     $allGood = false;
-    write_debug_error('temp_debug_registration_sql_error_user_guardian.json', [
+    $dbg = [
         'stage' => 'user_guardian_insert',
         'error' => $e,
         'payload_summary' => array_keys(is_array($data)?$data:[]),
         'time' => date('c')
-    ]);
+    ];
+    write_debug_error('temp_debug_registration_sql_error_user_guardian.json', $dbg);
+    $lastErrorDetailed = $dbg;
 }
 // After successful execute, obtain LOB locators using SELECT ... FOR UPDATE and write med/pwd blobs
 if ($allGood) {
@@ -405,38 +408,118 @@ if ($allGood) {
         // Accept multiple possible field names and normalize year
         $job_title   = $work['title'] ?? $work['job_title'] ?? $work['position'] ?? null;
         $company     = $work['company'] ?? $work['company_name'] ?? $work['employer'] ?? null;
-        $raw_year    = $work['start_year'] ?? $work['year'] ?? $work['work_year'] ?? null;
+        $raw_year    = $work['years_experience'] ?? $work['yearsExperience'] ?? $work['start_year'] ?? $work['year'] ?? $work['work_year'] ?? null;
         $description = $work['description'] ?? $work['job_description'] ?? $work['desc'] ?? null;
 
-        // Normalize year to a 4-digit string when possible, otherwise NULL
-        $work_year = null;
-        if ($raw_year !== null && $raw_year !== '') {
-            if (is_numeric($raw_year)) {
-                $work_year = (string) intval($raw_year);
-            } else {
-                if (preg_match('/(\d{4})/', (string)$raw_year, $m)) {
-                    $work_year = $m[1];
-                } else {
-                    // leave as null to avoid inserting invalid data
-                    $work_year = null;
-                }
+        // Determine DB column `years_experience` which must match the CHECK constraint values.
+        $allowed = [
+            'Less than 1 year',
+            '1-2 years',
+            'More than 3 years',
+            'No experience'
+        ];
+        $years_experience = null;
+        // If client provided an allowed label, accept it (case-insensitive match)
+        if (!empty($raw_year) && is_string($raw_year)) {
+            foreach ($allowed as $lbl) {
+                if (strcasecmp(trim($raw_year), $lbl) === 0) { $years_experience = $lbl; break; }
             }
         }
 
-        // Insert row with EMPTY_BLOB() and RETURN the ROWID only; we'll SELECT FOR UPDATE to get LOB locator
-        $sql2 = "INSERT INTO job_experience (
-                    guardian_id, job_title, company_name, work_year, job_description, workexp_certificate
-                ) VALUES (
-                    :v1,:v2,:v3,:v4,:v5, EMPTY_BLOB()
-                ) RETURNING ROWID INTO :job_rowid";
+        // If raw_year is numeric (e.g., number of years), map to allowed buckets
+        if ($years_experience === null && $raw_year !== null) {
+            if (is_numeric($raw_year)) {
+                $n = intval($raw_year);
+                if ($n <= 0) $years_experience = 'Less than 1 year';
+                elseif ($n <= 2) $years_experience = '1-2 years';
+                else $years_experience = 'More than 3 years';
+            }
+        }
+
+        // If still unknown, try to infer from start_date/end_date range (approximate)
+        if ($years_experience === null && isset($start_date) && $start_date !== null) {
+            $sd_ts = strtotime($start_date);
+            $ed_ts = ($end_date !== null) ? strtotime($end_date) : time();
+            if ($sd_ts !== false && $ed_ts !== false && $ed_ts > $sd_ts) {
+                $months = floor(($ed_ts - $sd_ts) / (30 * 24 * 3600));
+                if ($months < 12) $years_experience = 'Less than 1 year';
+                elseif ($months < 36) $years_experience = '1-2 years';
+                else $years_experience = 'More than 3 years';
+            }
+        }
+
+        // Build INSERT adaptively: the DB actually uses YEARS_EXPERIENCE, START_DATE and END_DATE
+        // Compute canonical start/end date strings (YYYY-MM-DD) if incoming month/year present
+        $start_month = null; $start_year = null; $end_month = null; $end_year = null;
+        if (!empty($work['start_month'])) $start_month = preg_replace('/\D/', '', (string)$work['start_month']);
+        if (!empty($work['start_year'])) $start_year = preg_replace('/\D/', '', (string)$work['start_year']);
+        if (!empty($work['end_month'])) $end_month = preg_replace('/\D/', '', (string)$work['end_month']);
+        if (!empty($work['end_year'])) $end_year = trim((string)($work['end_year'] ?? ''));
+
+        // Normalize to YYYY-MM-DD (use first day of month). Treat 'Present' or empty end as NULL.
+        $start_date = null; $end_date = null;
+        if ($start_year !== null && $start_year !== '') {
+            $sm = ($start_month && intval($start_month) >= 1 && intval($start_month) <= 12) ? sprintf('%02d', intval($start_month)) : '01';
+            $start_date = $start_year . '-' . $sm . '-01';
+        }
+        if ($end_year !== null && $end_year !== '' && !preg_match('/^present$/i', $end_year)) {
+            $em = ($end_month && intval($end_month) >= 1 && intval($end_month) <= 12) ? sprintf('%02d', intval($end_month)) : '01';
+            $end_date = $end_year . '-' . $em . '-01';
+        }
+
+        // Detect presence of START_DATE/END_DATE columns to avoid ORA-00904
+        $optionalCols = ['START_DATE','END_DATE'];
+        $have = [];
+        foreach ($optionalCols as $oc) {
+            $q = oci_parse($conn, "SELECT COUNT(*) AS CNT FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'JOB_EXPERIENCE' AND COLUMN_NAME = :col");
+            $uc = strtoupper($oc);
+            oci_bind_by_name($q, ':col', $uc);
+            if (oci_execute($q)) {
+                if (oci_fetch($q)) {
+                    $cnt = oci_result($q, 'CNT');
+                    if ($cnt > 0) $have[] = $uc;
+                }
+            }
+            oci_free_statement($q);
+        }
+
+        // Build columns and placeholders (use YEARS_EXPERIENCE per DB)
+        $cols = ['guardian_id','job_title','company_name','years_experience','job_description'];
+        $placeholders = [':guardian_id' => $user_guardian_id,
+                 ':job_title' => $job_title,
+                 ':company_name' => $company,
+                 ':years_experience' => $years_experience,
+                 ':job_description' => $description];
+
+        if (in_array('START_DATE', $have)) { $cols[] = 'start_date'; $placeholders[':start_date'] = $start_date; }
+        if (in_array('END_DATE', $have))   { $cols[] = 'end_date';   $placeholders[':end_date']   = $end_date; }
+
+        // Always include certificate column (we'll write via SELECT FOR UPDATE if binary present)
+        $cols[] = 'workexp_certificate';
+
+        $vals = [];
+        foreach ($cols as $c) {
+            if ($c === 'workexp_certificate') {
+                $vals[] = 'EMPTY_BLOB()';
+            } elseif ($c === 'start_date' || $c === 'end_date') {
+                // Use safe TO_DATE conversion to avoid ORA-01841 errors
+                $vals[] = "CASE WHEN :$c IS NULL OR TRIM(:$c) = '' THEN NULL ELSE TO_DATE(:$c,'YYYY-MM-DD') END";
+            } else {
+                $vals[] = ':' . $c;
+            }
+        }
+
+        $sql2 = "INSERT INTO job_experience (" . implode(',', $cols) . ") VALUES (" . implode(',', $vals) . ") RETURNING ROWID INTO :job_rowid";
         $stid2 = oci_parse($conn, $sql2);
 
-        // bind normalized variables (not array keys directly)
-        oci_bind_by_name($stid2, ':v1', $user_guardian_id);
-        oci_bind_by_name($stid2, ':v2', $job_title);
-        oci_bind_by_name($stid2, ':v3', $company);
-        oci_bind_by_name($stid2, ':v4', $work_year);
-        oci_bind_by_name($stid2, ':v5', $description);
+        // bind values into concrete variables (OCI needs references)
+        $bindVars = [];
+        foreach ($placeholders as $ph => $val) {
+            $name = ltrim($ph, ':');
+            // ensure a dedicated variable slot to bind by reference
+            $bindVars[$name] = $val;
+            oci_bind_by_name($stid2, $ph, $bindVars[$name]);
+        }
 
         // Extract possible base64 certificate from job entry (keep raw for fallback)
         $job_cert_raw = null;
@@ -454,12 +537,17 @@ if ($allGood) {
             $e = oci_error($stid2);
             $lastError = $e;
             $allGood = false;
-            write_debug_error('temp_debug_registration_sql_error_job_experience.json', [
+            // include SQL and bound values to aid diagnosis
+            $dbgPayload = [
                 'stage'=>'job_experience_insert',
                 'error'=>$e,
                 'work_item'=>$work,
+                'sql' => $sql2,
+                'binds' => isset($bindVars) ? $bindVars : null,
                 'time'=>date('c')
-            ]);
+            ];
+            write_debug_error('temp_debug_registration_sql_error_job_experience.json', $dbgPayload);
+            $lastErrorDetailed = $dbgPayload;
             oci_free_statement($stid2);
             try { if (isset($lob_job_cert) && is_object($lob_job_cert)) $lob_job_cert->free(); } catch (Exception $ee) {}
             break;
@@ -717,7 +805,7 @@ if ($allGood) {
         $ce = oci_error($conn) ?: oci_error();
         write_debug_error('temp_debug_registration_commit_error.json', ['error'=>$ce, 'time'=>date('c')]);
         http_response_code(500);
-        echo json_encode(['success'=>false,'error'=>'Commit failed','debug'=>$ce]);
+        echo json_encode(['success'=>false,'error'=>'Commit failed','debug'=>$ce,'debug_detailed'=>$lastErrorDetailed]);
     } else {
         http_response_code(200);
         echo json_encode([
@@ -734,7 +822,7 @@ if ($allGood) {
     if (isset($lastError) && is_array($lastError) && !empty($lastError['message'])) {
         $msg = $lastError['message'];
     }
-    echo json_encode(['success' => false, 'error' => $msg, 'debug' => $lastError]);
+    echo json_encode(['success' => false, 'error' => $msg, 'debug' => $lastError, 'debug_detailed' => $lastErrorDetailed]);
 }
 
 // ——— CLEANUP ———

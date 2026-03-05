@@ -307,23 +307,64 @@ if (is_array($jobs)) {
     oci_free_statement($del);
 
     // insert job rows with EMPTY_BLOB for workexp_certificate so we can write when provided
+    // Use START_DATE / END_DATE DATE columns (compute from start_month/start_year if provided)
     $insSql = "
         INSERT INTO MVSG.JOB_EXPERIENCE
-        (GUARDIAN_ID, COMPANY_NAME, JOB_TITLE, WORK_YEAR, JOB_DESCRIPTION, CREATED_AT, UPDATED_AT, WORKEXP_CERTIFICATE)
-        VALUES (TO_NUMBER(:gid), :jcompany, :jtitle, :jwork_year, :jdesc, SYSTIMESTAMP, SYSTIMESTAMP, EMPTY_BLOB()) RETURNING ROWID INTO :job_rowid
+        (GUARDIAN_ID, COMPANY_NAME, JOB_TITLE, YEARS_EXPERIENCE, JOB_DESCRIPTION, START_DATE, END_DATE, CREATED_AT, UPDATED_AT, WORKEXP_CERTIFICATE)
+            VALUES (TO_NUMBER(:gid), :jcompany, :jtitle, :jwork_year, :jdesc,
+                CASE WHEN :jstart_date IS NULL OR TRIM(:jstart_date) = '' THEN NULL ELSE TO_DATE(:jstart_date,'YYYY-MM-DD') END,
+                CASE WHEN :jend_date IS NULL OR TRIM(:jend_date) = '' THEN NULL ELSE TO_DATE(:jend_date,'YYYY-MM-DD') END,
+                SYSTIMESTAMP, SYSTIMESTAMP, EMPTY_BLOB()) RETURNING ROWID INTO :job_rowid
     ";
 
     foreach ($jobs as $row) {
         $company = trim($row['company'] ?? $row['company_name'] ?? '');
         $title   = trim($row['title'] ?? $row['job_title'] ?? '');
         $yearRaw = trim($row['start_year'] ?? $row['work_year'] ?? '');
+        $start_month_raw = trim((string)($row['start_month'] ?? ''));
+        $start_year_raw = trim((string)($row['start_year'] ?? ''));
+        $end_month_raw = trim((string)($row['end_month'] ?? ''));
+        $end_year_raw = trim((string)($row['end_year'] ?? ''));
         $desc    = trim($row['description'] ?? $row['job_description'] ?? '');
 
-        // normalize year -> string or null
+        // Determine DB-safe `YEARS_EXPERIENCE` string that satisfies the table CHECK constraint
         $jwork_year = null;
-        if ($yearRaw !== '' && preg_match('/^\d{4}$/', $yearRaw)) {
-            $jwork_year = (string)(int)$yearRaw;
+        $allowed_labels = [
+            'Less than 1 year',
+            '1-2 years',
+            'More than 3 years',
+            'No experience'
+        ];
+        // If client provided one of the allowed labels, accept it (case-insensitive)
+        if ($yearRaw !== '') {
+            foreach ($allowed_labels as $lbl) {
+                if (is_string($yearRaw) && strcasecmp(trim($yearRaw), $lbl) === 0) { $jwork_year = $lbl; break; }
+            }
         }
+        // If raw value is numeric (e.g., number of years), map to buckets
+        if ($jwork_year === null && $yearRaw !== '' && is_numeric($yearRaw)) {
+            $n = intval($yearRaw);
+            if ($n <= 0) $jwork_year = 'Less than 1 year';
+            elseif ($n <= 2) $jwork_year = '1-2 years';
+            else $jwork_year = 'More than 3 years';
+        }
+        // If still unknown, try to infer from provided start/end month/year values
+        if ($jwork_year === null) {
+            $sd = null; $ed = null;
+            if (!empty($jstart_date)) $sd = strtotime($jstart_date);
+            if (!empty($jend_date)) $ed = strtotime($jend_date);
+            if ($sd !== false && $sd !== null) {
+                if ($ed === false || $ed === null) $ed = time();
+                if ($ed !== false && $ed > $sd) {
+                    $months = floor(($ed - $sd) / (30 * 24 * 3600));
+                    if ($months < 12) $jwork_year = 'Less than 1 year';
+                    elseif ($months < 36) $jwork_year = '1-2 years';
+                    else $jwork_year = 'More than 3 years';
+                }
+            }
+        }
+        // As a last resort, set 'No experience' when nothing else applies
+        if ($jwork_year === null) $jwork_year = 'No experience';
 
         // prepare per-row (safe) and bind unique names
         $ins = oci_parse($conn, $insSql);
@@ -339,6 +380,19 @@ if (is_array($jobs)) {
         // bind WORK_YEAR as string (or null) with length to avoid bind-name/null issues
         oci_bind_by_name($ins, ':jwork_year', $jwork_year, -1);
         oci_bind_by_name($ins, ':jdesc', $desc, -1);
+            // compute canonical start/end DATE strings (YYYY-MM-DD) from provided month/year or year-only
+            $jstart_date = null;
+            $jend_date = null;
+            if ($start_year_raw !== '') {
+                $sm = (preg_match('/^\d{1,2}$/', $start_month_raw) && intval($start_month_raw) >= 1 && intval($start_month_raw) <= 12) ? sprintf('%02d', intval($start_month_raw)) : '01';
+                if (preg_match('/^\d{4}$/', $start_year_raw)) $jstart_date = $start_year_raw . '-' . $sm . '-01';
+            }
+            if ($end_year_raw !== '' && !preg_match('/^present$/i', $end_year_raw)) {
+                $em = (preg_match('/^\d{1,2}$/', $end_month_raw) && intval($end_month_raw) >= 1 && intval($end_month_raw) <= 12) ? sprintf('%02d', intval($end_month_raw)) : '01';
+                if (preg_match('/^\d{4}$/', $end_year_raw)) $jend_date = $end_year_raw . '-' . $em . '-01';
+            }
+            oci_bind_by_name($ins, ':jstart_date', $jstart_date, -1);
+            oci_bind_by_name($ins, ':jend_date', $jend_date, -1);
         $job_rowid = null;
         oci_bind_by_name($ins, ':job_rowid', $job_rowid, 256);
 
