@@ -175,13 +175,70 @@
 
     </div>
 
-    <!-- Address -->
+    <!-- Address (split into components for review) -->
     <div>
-        <label for="address" class="font-semibold text-gray-800 text-sm sm:text-base">Address</label>
+        <label class="font-semibold text-gray-800 text-sm sm:text-base">Address</label>
         <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
-        <input id="address" type="text" disabled
-            class="mt-2 w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+        <div class="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <input id="address_number" type="text" disabled placeholder="No./Blk/Lot"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            <input id="address_street" type="text" disabled placeholder="Street"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            <input id="address_barangay" type="text" disabled placeholder="Barangay"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+            <input id="address_city" type="text" disabled placeholder="City / Municipality"
+                class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-50 text-gray-800 shadow-sm select-none" />
+        </div>
+        <input id="address" type="hidden" />
     </div>
+
+    <script>
+    // Split combined address into components for review display
+    (function(){
+        function splitAddress(addr){
+            if(!addr) return ['','','',''];
+            // If commas present, use them (legacy stored values)
+            if(addr.indexOf(',') !== -1){
+                const parts = addr.split(',').map(s=>s.trim()).filter(Boolean);
+                const out = ['', '', '', ''];
+                if(parts.length===1) { out[3]=parts[0]; }
+                else if(parts.length===2) { out[2]=parts[0]; out[3]=parts[1]; }
+                else if(parts.length===3) { out[1]=parts[0]; out[2]=parts[1]; out[3]=parts[2]; }
+                else { out[0]=parts[0]; out[1]=parts[1]; out[2]=parts[2]; out[3]=parts.slice(3).join(', '); }
+                return out;
+            }
+            // Heuristic for comma-less addresses: split by words
+            const words = addr.split(/\s+/).filter(Boolean);
+            if(words.length<=1) return ['','','', addr];
+            if(words.length<=4){
+                // map sequentially
+                const padded = words.concat(Array(4-words.length).fill(''));
+                return [padded[0], padded[1], padded[2], padded[3]];
+            }
+            // >4 words: assume first token = number, last token(s) = city
+            const first = words[0];
+            let city = words[words.length-1];
+            if(words[words.length-1].toLowerCase()==='city' && words.length>=2){
+                city = words[words.length-2] + ' ' + words[words.length-1];
+            }
+            const middle = words.slice(1, words.length - (city.split(' ').length));
+            if(middle.length<=1) return [first, middle.join(' '),'', city];
+            if(middle.length===2) return [first, middle[0], middle[1], city];
+            return [first, middle.slice(0, middle.length-1).join(' '), middle.slice(-1)[0], city];
+        }
+        document.addEventListener('DOMContentLoaded', function(){
+            try{
+                const combined = document.getElementById('address');
+                const val = combined && combined.value ? combined.value : '';
+                const [num, street, barangay, city] = splitAddress(val);
+                const eln = document.getElementById('address_number'); if(eln) eln.value = num;
+                const els = document.getElementById('address_street'); if(els) els.value = street;
+                const elb = document.getElementById('address_barangay'); if(elb) elb.value = barangay;
+                const elc = document.getElementById('address_city'); if(elc) elc.value = city;
+            }catch(e){console.warn('split address failed', e);} 
+        });
+    })();
+    </script>
 
     <!-- DS Type -->
     <div>

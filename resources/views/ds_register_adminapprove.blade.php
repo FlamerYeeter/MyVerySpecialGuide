@@ -217,16 +217,118 @@
                     </div>
                 </div>
 
-                <!-- Address -->
+                <!-- Address (split into components: Number, Street, Barangay, City) -->
                 <div class="mt-6">
-                    <label for="address" class="font-semibold text-gray-800 text-sm sm:text-base">
+                    <label class="font-semibold text-gray-800 text-sm sm:text-base">
                         Address <span>⭐</span>
                     </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan</p>
-                    <input id="address" type="text" placeholder="Complete Address"
-                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan (No./Blk/Lot, Street, Barangay, City)</p>
+                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-3">
+                        <input id="address_number" type="text" placeholder="No./Blk/Lot"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                        <input id="address_street" type="text" placeholder="Street"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                        <input id="address_barangay" type="text" placeholder="Barangay"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                        <input id="address_city" type="text" placeholder="City / Municipality"
+                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                    </div>
+                    <input id="address" name="address" type="hidden" />
                 </div>
             </div>
+
+                            <script>
+                            (function(){
+                                function combineAddressFields(){
+                                    try{
+                                        const parts = [];
+                                        const n = document.getElementById('address_number');
+                                        const s = document.getElementById('address_street');
+                                        const b = document.getElementById('address_barangay');
+                                        const c = document.getElementById('address_city');
+                                        if(n && n.value.trim()) parts.push(n.value.trim());
+                                        if(s && s.value.trim()) parts.push(s.value.trim());
+                                        if(b && b.value.trim()) parts.push(b.value.trim());
+                                        if(c && c.value.trim()) parts.push(c.value.trim());
+                                        const combined = parts.join(' ');
+                                        const hidden = document.getElementById('address');
+                                        if(hidden) hidden.value = combined;
+                                        return combined;
+                                    }catch(e){ console.warn('combineAddressFields error', e); return ''; }
+                                }
+
+                                function splitAddressToFields(addr){
+                                    try{
+                                        if(!addr) return;
+                                        const n = document.getElementById('address_number');
+                                        const s = document.getElementById('address_street');
+                                        const b = document.getElementById('address_barangay');
+                                        const c = document.getElementById('address_city');
+
+                                        // If the stored address uses commas, prefer that splitting (legacy DB values)
+                                        if(addr.indexOf(',') !== -1){
+                                            const parts = addr.split(',').map(s=>s.trim()).filter(Boolean);
+                                            if(parts.length===1){ if(c) c.value = parts[0]; }
+                                            else if(parts.length===2){ if(b) b.value = parts[0]; if(c) c.value = parts[1]; }
+                                            else if(parts.length===3){ if(s) s.value = parts[0]; if(b) b.value = parts[1]; if(c) c.value = parts[2]; }
+                                            else { if(n) n.value = parts[0]; if(s) s.value = parts[1]; if(b) b.value = parts[2]; if(c) c.value = parts.slice(3).join(', '); }
+                                            return;
+                                        }
+
+                                        // Heuristic for comma-less addresses: split into words and assign
+                                        const words = addr.split(/\s+/).filter(Boolean);
+                                        if(words.length<=1){ if(c) c.value = addr; return; }
+                                        if(words.length<=4){
+                                            // Map sequentially: number, street, barangay, city (fill what exists)
+                                            if(n) n.value = words[0]||'';
+                                            if(s) s.value = words[1]||'';
+                                            if(b) b.value = words[2]||'';
+                                            if(c) c.value = words[3]||'';
+                                            return;
+                                        }
+                                        // >4 words: assume first token is number, last token(s) are city
+                                        if(n) n.value = words[0];
+                                        if(c) {
+                                            const last = words[words.length-1];
+                                            // include last 1-2 words for city if common suffix present
+                                            if(words[words.length-1].toLowerCase()==='city' && words.length>=2){
+                                                c.value = words[words.length-2] + ' ' + words[words.length-1];
+                                            } else {
+                                                c.value = last;
+                                            }
+                                        }
+                                        // middle words -> street/barangay
+                                        const middle = words.slice(1, words.length - 1);
+                                        if(middle.length<=1){ if(s) s.value = middle.join(' '); }
+                                        else if(middle.length===2){ if(s) s.value = middle[0]; if(b) b.value = middle[1]; }
+                                        else { if(s) s.value = middle.slice(0, middle.length-1).join(' '); if(b) b.value = middle.slice(-1)[0]; }
+                                    }catch(e){ console.warn('splitAddressToFields error', e); }
+                                }
+
+                                document.addEventListener('DOMContentLoaded', function(){
+                                    try{
+                                        // populate components if hidden combined address exists
+                                        const hidden = document.getElementById('address');
+                                        if(hidden && hidden.value) splitAddressToFields(hidden.value);
+
+                                        // update hidden whenever any component changes
+                                        ['address_number','address_street','address_barangay','address_city'].forEach(id=>{
+                                            const el = document.getElementById(id);
+                                            if(!el) return;
+                                            el.addEventListener('input', combineAddressFields);
+                                        });
+
+                                        // ensure combined is set before form submit
+                                        const form = document.getElementById('registrationForm');
+                                        if(form){
+                                            form.addEventListener('submit', function(ev){
+                                                combineAddressFields();
+                                            });
+                                        }
+                                    }catch(e){console.warn('address init failed', e);} 
+                                });
+                            })();
+                            </script>
 
 
         <!-- Container -->
