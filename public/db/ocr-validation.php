@@ -226,29 +226,44 @@ foreach ($images as $img) {
 // 7. BUILD PROMPT
 // ================================
 
+// Common useful fields we want when autofilling forms
+$common = [
+    "first_name"   => "Given / First name",
+    "last_name"    => "Family / Last name",
+    "name"         => "Full name (if first/last not separable)",
+    "date_of_birth"=> "YYYY-MM-DD",
+    "address"      => "Full mailing/address text",
+    "phone"        => "Phone or mobile number",
+    "email"        => "Email address",
+];
+
 if ($ocrtype === 'pwd_id') {
-    $fields = [
-        "type_of_disability"    => "Physical Disability"
-    ];
+    // PWD ID: prefer name, dob, address, id number, disability
+    $fields = array_merge($common, [
+        "id_number" => "ID / card number",
+        "type_of_disability" => "Type of disability (if present)"
+    ]);
 } elseif ($ocrtype === 'medical_certificate') {
-    $fields = [
-        "date"                  => "YYYY-MM-DD"
-    ];
-}  elseif ($ocrtype === 'membership_proof') {
-    $fields = [
-        "is_membership"         => "true or false"
-    ];
-}  elseif ($ocrtype === 'certificate_proof') {
-    $fields = [
-        "cert_name"             => "Name of the Certificate",
-        "issued_by"             => "Issuing Organization",
-        "date_completed"        => "YYYY-MM-DD"
-    ];
-}
-else {
-    $fields = [
-        "summary" => "short summary of document content",
-    ];
+    // Medical certificate: patient name/date, optionally dob and doctor
+    $fields = array_merge($common, [
+        "date" => "Exam/issue date (YYYY-MM-DD)",
+        "doctor" => "Doctor or physician name",
+        "diagnosis" => "Diagnosis/notes"
+    ]);
+} elseif ($ocrtype === 'membership_proof') {
+    $fields = array_merge($common, [
+        "is_membership" => "true or false",
+        "member_name" => "Member name on the proof (if any)",
+        "membership_id" => "Membership number (if any)"
+    ]);
+} elseif ($ocrtype === 'certificate_proof') {
+    $fields = array_merge($common, [
+        "cert_name" => "Name of the Certificate",
+        "issued_by" => "Issuing Organization",
+        "date_completed" => "YYYY-MM-DD"
+    ]);
+} else {
+    $fields = array_merge($common, ["summary" => "short summary of document content"]);
 }
 
 $prompt = buildOcrPrompt($fields, $cleanImages, $ocrtype);

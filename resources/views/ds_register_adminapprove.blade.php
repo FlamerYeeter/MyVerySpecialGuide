@@ -852,8 +852,24 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
     try {
         if (!aiData || typeof aiData !== 'object') return;
 
-        // Name -> first / last
-        if (aiData.name) {
+        // Name -> first / last (accept either `name` or separate `first_name`/`last_name`)
+        if (aiData.first_name || aiData.last_name) {
+            const firstEl = document.getElementById('first_name');
+            const lastEl = document.getElementById('last_name');
+            if (firstEl && aiData.first_name) firstEl.value = String(aiData.first_name).trim();
+            if (lastEl && aiData.last_name) lastEl.value = String(aiData.last_name).trim();
+            // if full name is provided too, only fill missing pieces
+            if ((firstEl && !firstEl.value) || (lastEl && !lastEl.value)) {
+                if (aiData.name) {
+                    const full = String(aiData.name).trim();
+                    const parts = full.split(/\s+/);
+                    if (parts.length) {
+                        if (firstEl && !firstEl.value) firstEl.value = parts[0] || '';
+                        if (lastEl && !lastEl.value) lastEl.value = parts.slice(1).join(' ') || '';
+                    }
+                }
+            }
+        } else if (aiData.name) {
             const full = String(aiData.name).trim();
             const parts = full.split(/\s+/);
             if (parts.length) {
@@ -888,6 +904,13 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         }
 
+        // Email
+        const email = aiData.email || aiData.e_mail || aiData.mail;
+        if (email) {
+            const e = document.getElementById('email') || document.querySelector('[name="email"]');
+            if (e) e.value = String(email).trim();
+        }
+
         // ID / card number -> try filling commonly-named fields
         const idVal = aiData.id_number || aiData.id_no || aiData.idno || aiData.id || aiData.number || aiData.card_number || aiData.pwd_number || aiData.identity_number || aiData.identification_number;
         if (idVal) {
@@ -908,10 +931,29 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         }
 
-        // Address
+        // Address → try to fill common address inputs (address, street, barangay, city)
         if (aiData.address) {
-            const el = document.getElementById('address');
-            if (el) el.value = String(aiData.address || '');
+            const raw = String(aiData.address).trim();
+            // primary full address field
+            const fullEl = document.getElementById('address') || document.querySelector('[name="address"]');
+            if (fullEl) fullEl.value = raw;
+
+            // try splitting by commas to populate smaller fields
+            const parts = raw.split(/,|\n/).map(s => s.trim()).filter(Boolean);
+            if (parts.length) {
+                // heuristics: last part often city/province, first part house/street
+                const street = parts[0] || '';
+                const city = parts.length > 1 ? parts[parts.length - 1] : '';
+                const barangay = parts.length > 2 ? parts[parts.length - 2] : '';
+
+                const streetEl = document.getElementById('street') || document.getElementById('address_street') || document.querySelector('[name="street"]') || null;
+                const barangayEl = document.getElementById('barangay') || document.querySelector('[name="barangay"]') || null;
+                const cityEl = document.getElementById('city') || document.getElementById('municipality') || document.querySelector('[name="city"]') || null;
+
+                if (streetEl && streetEl.value === '') streetEl.value = street;
+                if (barangayEl && barangayEl.value === '') barangayEl.value = barangay;
+                if (cityEl && cityEl.value === '') cityEl.value = city;
+            }
         }
 
         // Disability -> intelligent mapping:
