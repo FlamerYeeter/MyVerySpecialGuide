@@ -1117,13 +1117,71 @@
                             if (f.size > 5*1024*1024) { alert('File too large'); this.value=''; return; }
                             try {
                                 const r = new FileReader();
-                                r.onload = function(evt) {
+                                r.onload = async function(evt) {
                                     try {
                                         const data = evt.target.result;
                                         const obj = { name: f.name, type: ext, data };
                                         if (hiddenCert) hiddenCert.value = JSON.stringify(obj);
                                         renderCertFromData(obj);
                                         syncHiddenFromUI();
+
+                                        // Attempt OCR autofill: POST to server OCR endpoint and map fields
+                                        try {
+                                            if (!display) return;
+                                            // show temporary status
+                                            const statusEl = document.createElement('div');
+                                            statusEl.className = 'mt-2 text-sm text-gray-500 ocr-status';
+                                            statusEl.textContent = 'Scanning document…';
+                                            display.appendChild(statusEl);
+
+                                            const resp = await fetch('/db/ocr-validation.php', {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({ type: 'certificate_proof', ocr_data: data })
+                                            });
+                                            const json = await resp.json();
+                                            if (json && json.status && json.data && json.data.ai_data) {
+                                                const ai = json.data.ai_data || {};
+                                                // Map OCR fields into job entry fields
+                                                const title = ai.cert_name || ai.name || ai.title || '';
+                                                const issuer = ai.issued_by || ai.issued_by_org || ai.issuer || ai.company || '';
+                                                const dateCompleted = ai.date_completed || ai.date || ai.issued_date || '';
+                                                const descParts = [];
+                                                if (ai.first_name || ai.last_name) descParts.push('Name: ' + [ai.first_name, ai.last_name].filter(Boolean).join(' '));
+                                                if (ai.diagnosis) descParts.push(ai.diagnosis);
+                                                if (ai.type_of_disability) descParts.push(ai.type_of_disability);
+                                                if (ai.summary) descParts.push(ai.summary);
+                                                const desc = descParts.join('; ');
+
+                                                try {
+                                                    const jt = node.querySelector('.job_title');
+                                                    const cn = node.querySelector('.company_name');
+                                                    const jd = node.querySelector('.job_description');
+                                                    const em = node.querySelector('.job_end_month');
+                                                    const ey = node.querySelector('.job_end_year');
+                                                    if (title && jt && !jt.value) jt.value = title;
+                                                    if (issuer && cn && !cn.value) cn.value = issuer;
+                                                    if (desc && jd && !jd.value) jd.value = (jd.value ? jd.value + '\n' + desc : desc);
+
+                                                    // parse YYYY-MM-DD or YYYY-MM
+                                                    if (dateCompleted && ey) {
+                                                        const m = String(dateCompleted).match(/^(\d{4})(?:-?(\d{2}))?(?:-?(\d{2}))?/);
+                                                        if (m) {
+                                                            const y = m[1];
+                                                            const mon = m[2] ? String(Number(m[2])) : '';
+                                                            ey.value = y;
+                                                            if (em && mon) em.value = mon;
+                                                        }
+                                                    }
+                                                    syncHiddenFromUI();
+                                                } catch (e) { console.warn('apply ocr mapping failed', e); }
+                                            }
+                                        } catch (e) {
+                                            console.warn('OCR request failed', e);
+                                        } finally {
+                                            try { const s = display.querySelector('.ocr-status'); if (s) s.remove(); } catch(e){}
+                                        }
+
                                     } catch (e) { console.warn(e); }
                                 };
                                 r.readAsDataURL(f);
