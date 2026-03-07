@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create an Account</title>
+    <title>Applicant Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -25,24 +25,24 @@
     </style>
 </head>
 
-<body class="bg-white flex justify-center items-center min-h-screen p-4 sm:p-6 relative overflow-auto">
+<body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
 
     <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
-        class="fixed left-2 sm:left-6 lg:left-10 top-1/3 w-20 sm:w-28 md:w-32 opacity-90 animate-float-slow z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-10 top-1/3 w-20 sm:w-28 md:w-32 opacity-90 animate-float-slow z-0">
     <img src="image/obj7.png" alt="Triangle Mascot"
-        class="fixed left-2 sm:left-6 lg:left-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-28 opacity-90 animate-float-medium z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-28 opacity-90 animate-float-medium z-0">
     <img src="image/obj3.png" alt="Blue Mascot"
-        class="fixed right-2 sm:right-6 lg:right-10 top-1/4 w-20 sm:w-28 md:w-32 opacity-90 animate-float-fast z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-10 top-1/4 w-20 sm:w-28 md:w-32 opacity-90 animate-float-fast z-0">
     <img src="image/obj8.png" alt="Twin Mascot"
-        class="fixed right-2 sm:right-6 lg:right-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-32 opacity-90 animate-float-medium z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-32 opacity-90 animate-float-medium z-0">
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-5 sm:px-6 py-2.5 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
             onclick="(history.length>1 ? history.back() : window.location.href='{{ route('register') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
-            class="w-5 h-5 sm:w-6 sm:h-6">
+            class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         Back
@@ -53,78 +53,106 @@
         class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
         <!-- Header -->
-        <div class="text-center mt-2">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">Create an
-                Account</h1>
-            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-24 sm:w-28 md:w-36 mb-6">
-            <h2
-                class="text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold flex flex-wrap justify-center items-center gap-2 sm:gap-3 text-center">
-                Let's Get Started!
-                <button type="button" class="text-2xl sm:text-3xl hover:scale-110 transition-transform tts-btn" data-tts-en="Let's get started!" data-tts-tl="Magsimula tayo!">🔊</button>
+        <div class="text-center mt-4">
+            <h1 class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">Registration</h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
+            <h2 class="relative flex flex-wrap items-center justify-center gap-3 text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold">
+                <span class="block mx-auto max-w-[82%] sm:max-w-none md:max-w-[85%] text-center md:pr-12">Let’s get your registration started!</span>
+                <button type="button" aria-label="Play audio: Let’s get your registration started"
+                    class="ml-2 md:ml-3 text-sm sm:text-2xl bg-[#1E40AF] text-white p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2"
+                    data-tts-en="Let’s get your registration started!" data-tts-tl="Simulan na natin ang iyong pagregister!">
+                    🔊
+                </button>
             </h2>
-            <p class="mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
-                (Magsimula tayo!)
+            <p class="mt-2 sm:mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+                (Simulan na natin ang iyong pagregister!)
             </p>
         </div>
 
-        <!-- Info Section -->
-        <div
-            class="relative mt-10 max-w-3xl mx-auto bg-blue-50 p-5 sm:p-6 md:p-8 rounded-2xl border border-blue-300 shadow-md overflow-hidden">
-            <div class="flex items-start gap-4 sm:gap-6">
-                <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Account Icon"
-                    class="w-12 h-12 sm:w-14 sm:h-14 mt-1 flex-shrink-0">
-                <div class="flex-1">
-                    <p class="text-lg sm:text-xl text-gray-800 font-semibold leading-relaxed pr-14 sm:pr-20">
-                        Don’t worry! We’ll help you set up your account easily and guide you along the way.
-                    </p>
-                    <p class="text-gray-700 italic text-base sm:text-lg mt-2 pr-14 sm:pr-20">
-                        (Huwag mag-alala! Tutulungan ka naming mag-set up ng iyong account nang madali.)
-                    </p>
-                </div>
-            </div>
+<!-- Info Section -->
+<div
+    class="relative mt-10 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 md:p-8 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md overflow-hidden">
 
-            <!-- Floating Audio Button (position adjusted to avoid overlap) -->
-            <button
-                class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                data-tts-en="Don't worry! We'll help you set up your account easily and guide you along the way." data-tts-tl="Huwag mag-alala! Tutulungan ka naming mag-set up ng iyong account nang madali.">
-                🔊
-            </button>
-        </div>
+    <div class="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6">
 
-        <!-- Instruction Section -->
-        <div class="mt-10 sm:mt-12 max-w-3xl mx-auto space-y-6 sm:space-y-8">
+        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Account Icon"
+            class="w-10 h-10 sm:w-14 sm:h-14 flex-shrink-0">
 
-            <!-- English Instructions -->
-            <div
-                class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start">
-                    <div class="text-center sm:text-left flex-1">
-                        <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-3">Instructions</h3>
+        <div class="flex-1">
+            <p class="text-base sm:text-lg text-gray-700 font-semibold leading-relaxed">
+                Don’t worry! We will help you complete your registration easily and guide you every step of the way.
+            </p>
 
-                        <ul class="list-disc list-inside text-gray-700 text-base sm:text-lg space-y-1">
-                            <li>You can go back and change your answers.</li>
-                            <li>Take your time — there’s no rush.</li>
-                            <li>We will help you every step of the way.</li>
-                            <li>Press the audio button anytime to hear instructions.</li>
-                        </ul>
+            <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+                (Wag mag-alala! Tutulungan ka naming tapusin ang iyong pagregister nang madali at gagabayan ka sa bawat hakbang.)
+            </p>
 
-                        <p class="text-gray-700 italic text-base sm:text-lg mt-3">
-                            (Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali.
-                            Tutulungan ka namin sa bawat hakbang.)
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Floating Audio Button -->
-                <button
-                    class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 tts-btn"
-                    data-tts-en="You can go back and change your answers. Take your time — there's no rush. We will help you every step of the way. Press the audio button anytime to hear instructions."
-                    data-tts-tl="Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali. Tutulungan ka namin sa bawat hakbang.">
+            <!--  Audio Button -->
+            <div class="mt-3 flex justify-end">
+                <button type="button" aria-label="Play audio: Info message"
+                    class="bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                    data-tts-en="Don’t worry! We will help you complete your registration easily and guide you every step of the way."
+                    data-tts-tl="Huwag mag-alala! Tutulungan ka naming tapusin ang iyong pagregister nang madali at gagabayan ka sa bawat hakbang.">
                     🔊
                 </button>
             </div>
-        </div>
 
+        </div>
+    </div>
+</div>
+
+
+<!-- Instruction Section -->
+<div class="mt-10 sm:mt-12 max-w-4xl mx-auto space-y-6 sm:space-y-8">
+
+    <div
+        class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
+
+        <div class="text-center sm:text-left">
+
+            <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-4">
+                Instructions
+                <span class="block sm:inline text-lg italic">(Panuto)</span>
+            </h3>
+
+            <ul class="list-disc list-inside text-gray-800 text-base sm:text-lg space-y-2 text-left sm:text-left mx-auto sm:mx-0 max-w-xl">
+                <li>You can go back and change your answers.</li>
+                <li>Take your time, there is no rush.</li>
+                <li>We will help you every step of the way.</li>
+                <li>Press the audio button anytime to hear instructions.</li>
+            </ul>
+
+            <p class="text-gray-600 italic text-base sm:text-lg mt-4 text-center sm:text-left">
+                (Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali.
+                Tutulungan ka namin sa bawat hakbang.)
+            </p>
+
+            <div class="mt-5 text-center sm:text-left">
+                <p class="font-bold text-base sm:text-lg text-red-600">
+                    Reminder:
+                    <span class="block sm:inline">
+                        Do not forget to review or check your answers before moving to the next page.
+                    </span>
+                </p>
+
+                <p class="mt-2 text-red-600 italic text-sm sm:text-base">
+                    (Paalala: Huwag kalimutang i-check ang iyong mga sagot bago pumunta sa susunod na pahina.)
+                </p>
+
+                <!-- Audio Button -->
+                <div class="-mt-3 sm:-mt-2 flex justify-end">
+                    <button type="button" aria-label="Play audio: Instructions and reminder"
+                        class="bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 tts-btn"
+                        data-tts-en="Instructions: You can go back and change your answers. Take your time there is no rush. We will help you every step of the way. Press the audio button anytime to hear instructions.\nReminder: Do not forget to review or check your answers before moving to the next page."
+                        data-tts-tl="Panuto: Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali. Tutulungan ka namin sa bawat hakbang.\nPaalala: Huwag kalimutang i-check ang iyong mga sagot bago pumunta sa susunod na pahina.">
+                        🔊
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+                   
         <!-- Next Button -->
         <div class="flex flex-col items-center mt-10 sm:mt-14 space-y-4">
             <button

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Create an Account</title>
+    <title>Applicant Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
     /* Floating animations */
@@ -31,22 +31,22 @@
     </style>
 </head>
 
-<body class="bg-white flex justify-center items-center min-h-screen p-4 sm:p-6 relative overflow-auto">
+<body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
 
-    <!-- Floating Mascots (z-index lower) -->
+    <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
-        class="fixed left-1 sm:left-4 md:left-10 top-1/3 w-16 sm:w-24 md:w-32 opacity-90 animate-float-slow z-0">
+        class="hidden sm:block fixed left-1 sm:left-4 md:left-10 top-1/3 w-16 sm:w-24 md:w-32 opacity-90 animate-float-slow z-0">
     <img src="image/obj7.png" alt="Triangle Mascot"
-        class="fixed left-1 sm:left-4 md:left-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-20 md:w-28 opacity-90 animate-float-medium z-0">
+        class="hidden sm:block fixed left-1 sm:left-4 md:left-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-20 md:w-28 opacity-90 animate-float-medium z-0">
     <img src="image/obj3.png" alt="Blue Mascot"
-        class="fixed right-1 sm:right-4 md:right-10 top-1/4 w-16 sm:w-24 md:w-32 opacity-90 animate-float-fast z-0">
+        class="hidden sm:block fixed right-1 sm:right-4 md:right-10 top-1/4 w-16 sm:w-24 md:w-32 opacity-90 animate-float-fast z-0">
     <img src="image/obj8.png" alt="Twin Mascot"
-        class="fixed right-1 sm:right-4 md:right-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-24 md:w-36 opacity-90 animate-float-medium z-0">
+        class="hidden sm:block fixed right-1 sm:right-4 md:right-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-24 md:w-36 opacity-90 animate-float-medium z-0">
 
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
         onclick="window.location.href='{{ route('user.role') }}'">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
@@ -61,187 +61,160 @@
 
         <!-- Header -->
         <div class="text-center mt-4">
-            <h1 class="text-4xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">
-                Create an Account
+            <h1 class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">
+                Registration
             </h1>
-            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-28 sm:w-36 mb-6">
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
 
-            <h2
-                class="text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-3 flex-wrap">
-                Let's create your account step by step
-                <button class="text-2xl sm:text-3xl hover:scale-110 transition-transform tts-btn" data-tts-en="Let's create your account step by step" data-tts-tl="Simulan natin ang paglikha ng iyong account sa pagsunod sa bawat hakbang">🔊</button>
+            <h2 class="relative flex flex-wrap items-center justify-center gap-3 text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold">
+                <span class="block mx-auto max-w-[82%] sm:max-w-none md:max-w-[85%] text-center md:pr-12">Step-by-step guide to complete your registration</span>
+                <button aria-label="Read instructions"
+                    class="ml-2 md:ml-3 text-sm sm:text-2xl bg-[#1E40AF] text-white p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2"
+                    data-tts-en="Step-by-step guide to complete your registration."
+                    data-tts-tl="Narito ang lahat ng hakbang para sa iyong registration.">🔊</button>
             </h2>
-            <p class="mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
-                (Simulan natin ang paglikha ng iyong account sa pagsunod sa bawat hakbang)
+            <p class="mt-2 sm:mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+                (Narito ang lahat ng hakbang para sa iyong registration.)
             </p>
-        </div>
-
-        <!-- Info Section -->
-        <div
-            class="mt-8 sm:mt-10 max-w-3xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border border-blue-300 shadow-md relative">
-            <div class="flex flex-col sm:flex-row items-start gap-4 sm:gap-6 pr-16">
-                <span class="text-[#846506] text-4xl sm:text-5xl mt-1 flex-shrink-0">💡</span>
-                <div class="flex-1 text-left">
-                    <p class="text-lg sm:text-xl text-gray-800 font-semibold leading-relaxed">
-                        We will create your account so we can find jobs that are perfect for you!
-                    </p>
-                    <p class="text-gray-700 italic text-base sm:text-lg mt-1">
-                        (Tayo ay gagawa ng iyong account upang makahanap ng mga trabahong para sa iyo!)
-                    </p>
-                </div>
-            </div>
-
-            <!-- Audio Button -->
-            <button type="button"
-                class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                data-tts-en="We will create your account so we can find jobs that are perfect for you!" data-tts-tl="Tayo ay gagawa ng iyong account upang makahanap ng mga trabahong para sa iyo!">
-                🔊
-            </button>
         </div>
 
         <!-- Steps Section -->
         <div class="mt-10 sm:mt-12 max-w-4xl mx-auto space-y-8">
 
-            <!-- Section Header -->
-            <div
-                class="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4 mb-4 sm:mb-8 text-center sm:text-left">
-                <img src="image/targeticon.png" alt="Target Icon" class="w-10 sm:w-12 mx-auto sm:mx-0">
-                <h3
-                    class="text-xl sm:text-2xl text-blue-600 font-bold flex items-center gap-2 flex-wrap justify-center sm:justify-start">
-                    Here's what we'll do:
-                    <span class="text-gray-700 italic text-base sm:text-lg block sm:inline">
-                        (Pagkakasunod-sunod ng paggawa ng account)
-                    </span>
-                    <button type="button" class="text-2xl sm:text-3xl hover:scale-110 transition-transform tts-btn"
-                    data-tts-en="Here's what we'll do:" data-tts-tl="Pagkakasunod-sunod ng paggawa ng account">
-                   🔊
-                  </button>
-                </h3>
-            </div>
 
             <!-- Step Items -->
             <div class="space-y-6">
 
                 <!-- Step 1 -->
                 <div
-                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition relative">
+                    class="bg-white rounded-3xl p-4 sm:p-5 md:p-6 border-2 sm:border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow sm:shadow-lg hover:shadow-xl transition relative">
                     <img src="image/1icon.png" alt="Step 1" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-                    <div class="flex-1 text-center sm:text-left pr-16">
-                        <p class="font-bold text-lg sm:text-xl text-gray-900 leading-relaxed">
-                            Enter the required personal information.
+                    <div class="flex-1 text-center sm:text-left pr-6 sm:pr-16">
+                        <p class="font-bold text-base sm:text-lg text-gray-700 leading-relaxed">
+                            Provide your required personal information.
                         </p>
-                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Ilagay ang personal na impormasyon na kailangan.)
+                        <p class="mt-2 text-gray-700 italic text-sm sm:text-base">
+                            (Ibigay ang mga kinakailangang personal na impormasyon.)
                         </p>
                     </div>
 
                     <!-- Audio Button -->
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Enter the required information, then wait for admin approval." data-tts-tl="Ilagay ang impormasyon na kailangan, at hintayin ang kumpirmasyon ng admin bago magpatuloy.">
+                        class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        data-tts-en="Provide your required personal information.." data-tts-tl="Ibigay ang mga kinakailangang personal na impormasyon.">
                         🔊
                     </button>
                 </div>
 
                 <!-- Step 2 -->
                 <div
-                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition relative">
+                    class="bg-white rounded-3xl p-4 sm:p-5 md:p-6 border-2 sm:border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow sm:shadow-lg hover:shadow-xl transition relative">
                     <img src="image/2icon.png" alt="Step 2" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-                    <div class="flex-1 text-center sm:text-left pr-16">
-                        <p class="font-bold text-lg sm:text-xl text-gray-900">
-                            Set up your profile, tell us about your education and work experience.
+                    <div class="flex-1 text-center sm:text-left pr-6 sm:pr-16">
+                        <p class="font-bold text-base sm:text-lg text-gray-700">
+                            Set up your profile by telling us about your education and work experience.
                         </p>
-                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Ayusin ang iyong profile, ibahagi ang iyong pinag-aralan at karanasan sa trabaho.)
+                        <p class="mt-2 text-gray-700 italic text-sm sm:text-base">
+                            (I-set up ang iyong profile sa pamamagitan ng pagbibigay ng impormasyon tungkol sa iyong edukasyon at karanasan sa trabaho.)
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Set up your profile, tell us about your education and work experience." data-tts-tl="Ayusin ang iyong profile, ibahagi ang iyong pinag-aralan at karanasan sa trabaho.">
+                        class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        data-tts-en="Set up your profile by telling us about your education and work experience." 
+                        data-tts-tl="I-set up ang iyong profile sa pamamagitan ng pagbibigay ng impormasyon tungkol sa iyong edukasyon at karanasan sa trabaho.">
                         🔊
                     </button>
                 </div>
 
                 <!-- Step 3 -->
                 <div
-                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition relative">
+                    class="bg-white rounded-3xl p-4 sm:p-5 md:p-6 border-2 sm:border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow sm:shadow-lg hover:shadow-xl transition relative">
                     <img src="image/3icon.png" alt="Step 3" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-                    <div class="flex-1 text-center sm:text-left pr-16">
-                        <p class="font-bold text-lg sm:text-xl text-gray-900">
-                            Choose the work environment you prefer.
+                    <div class="flex-1 text-center sm:text-left pr-6 sm:pr-16">
+                        <p class="font-bold text-base sm:text-lg text-gray-700">
+                            Choose the work environment that you are most comfortable with.
                         </p>
-                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Piliin ang uri ng lugar ng trabaho na gusto mo.)
+                        <p class="mt-2 text-gray-700 italic text-sm sm:text-base">
+                            (Piliin ang work environment kung saan ka pinakakomportable.)
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Choose the work environment you prefer." data-tts-tl="Piliin ang uri ng lugar ng trabaho na gusto mo.">
+                        class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        data-tts-en="Choose the work environment that you are most comfortable with." 
+                        data-tts-tl="Piliin ang work environment kung saan ka pinakakomportable.">
                         🔊
                     </button>
                 </div>
 
                 <!-- Step 4 -->
                 <div
-                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition relative">
+                    class="bg-white rounded-3xl p-4 sm:p-5 md:p-6 border-2 sm:border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow sm:shadow-lg hover:shadow-xl transition relative">
                     <img src="image/4icon.png" alt="Step 4" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-                    <div class="flex-1 text-center sm:text-left pr-16">
-                        <p class="font-bold text-lg sm:text-xl text-gray-900">
-                            Choose your skills.
+                    <div class="flex-1 text-center sm:text-left pr-6 sm:pr-16">
+                        <p class="font-bold text-base sm:text-lg text-gray-700">
+                            Choose the skills that best describe you.
                         </p>
-                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Pumili ng mga kakayahan na meron ka.)
+                        <p class="mt-2 text-gray-700 italic text-sm sm:text-base">
+                            (Piliin ang mga kasanayan na pinakaangkop na naglalarawan sa iyo.)
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Choose your skills." data-tts-tl="Pumili ng mga kakayahan na meron ka.">
+                        class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        data-tts-en="Choose the skills that best describe you." 
+                        data-tts-tl="Piliin ang mga kasanayan na pinakaangkop na naglalarawan sa iyo.">
                         🔊
                     </button>
                 </div>
 
                 <!-- Step 5 -->
                 <div
-                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition relative">
+                    class="bg-white rounded-3xl p-4 sm:p-5 md:p-6 border-2 sm:border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow sm:shadow-lg hover:shadow-xl transition relative">
                     <img src="image/5icon.png" alt="Step 5" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-                    <div class="flex-1 text-center sm:text-left pr-16">
-                        <p class="font-bold text-lg sm:text-xl text-gray-900">
-                            Select the jobs you prefer.
+                    <div class="flex-1 text-center sm:text-left pr-6 sm:pr-16">
+                        <p class="font-bold text-base sm:text-lg text-gray-700">
+                            Choose the jobs you prefer to do, then finish your registration.
                         </p>
-                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (Piliin ang mga uri ng trabaho na gusto mo.)
+                        <p class="mt-2 text-gray-700 italic text-sm sm:text-base">
+                            (Piliin ang mga trabahong nais mong gawin, tapos tapusin ang iyong pagregister.)
                         </p>
                     </div>
                     <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Select the jobs you prefer." data-tts-tl="Piliin ang mga uri ng trabaho na gusto mo.">
+                        class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        data-tts-en="Choose the jobs you prefer to do, then finish your registration." 
+                        data-tts-tl="Piliin ang mga trabahong nais mong gawin, tapos tapusin ang iyong pagregister.">
                         🔊
                     </button>
                 </div>
 
-                <!-- Step 6 -->
-                <div
-                    class="bg-white rounded-3xl p-5 sm:p-6 border-4 border-blue-300 flex flex-col sm:flex-row items-center sm:items-start gap-5 shadow-lg hover:shadow-xl transition relative">
-                    <img src="image/6icon.png" alt="Step 6" class="w-12 h-12 sm:w-14 sm:h-14 flex-shrink-0">
-                    <div class="flex-1 text-center sm:text-left pr-16">
-                        <p class="font-bold text-lg sm:text-xl text-gray-900">
-                            Review your answers and finish.
-                        </p>
-                        <p class="mt-2 text-gray-700 italic text-base sm:text-lg">
-                            (I-review ang impormasyong iyong inilagay at tapusin.)
-                        </p>
-                    </div>
-                    <button type="button"
-                        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Review your answers and finish." data-tts-tl="I-review ang impormasyong iyong inilagay at tapusin.">
-                        🔊
-                    </button>
+                
+        <!-- Info Section -->
+        <div
+            class="mt-8 sm:mt-10 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-6 sm:pr-16">
+                <span class="text-[#846506] text-3xl sm:text-5xl mt-1 flex-shrink-0">💡</span>
+                <div class="flex-1 text-center sm:text-left">
+                    <p class="text-base sm:text-lg text-blue-600 font-bold leading-relaxed">
+                        Start your registration so we can recommend jobs that are perfect for you!
+                    </p>
+                    <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+                        (Simulan ang iyong pagpaparehistro para ma-rekomenda namin ang mga trabahong swak para sa iyo!)
+                    </p>
                 </div>
+            </div>
+
+            <!-- Audio Button -->
+            <button type="button"
+                class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                data-tts-en="Start your registration so we can recommend jobs that are perfect for you!" 
+                data-tts-tl="Simulan ang iyong pagpaparehistro para ma-rekomenda namin ang mga trabahong swak para sa iyo!">
+                🔊
+            </button>
+        </div>
 
                 <!-- Next Button -->
-                <div class="flex flex-col items-center mt-14 sm:mt-16">
+                <div class="flex flex-col items-center mt-14 sm:mt-16 w-full px-4 sm:px-0">
                     <button
-                        class="bg-[#2E2EFF] text-white text-2xl sm:text-3xl font-bold px-20 sm:px-28 md:px-32 py-4 sm:py-5 rounded-3xl shadow-lg hover:bg-blue-700 active:scale-95 transition"
+                        class="w-full sm:w-auto bg-[#2E2EFF] text-white text-2xl sm:text-3xl font-bold px-8 sm:px-20 md:px-32 py-3 sm:py-4 rounded-3xl shadow-lg hover:bg-blue-700 active:scale-95 transition"
                         onclick="window.location.href='{{ route('register2') }}'">
                         Next →
                     </button>
