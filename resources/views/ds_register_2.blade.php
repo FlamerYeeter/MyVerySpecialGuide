@@ -171,22 +171,42 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const buttons = document.querySelectorAll('.tts-btn');
-            // prefer a single high-quality voice for both English and Filipino but separate per language
             const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
             const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
             let preferredEnglishVoice = null;
             let preferredTagalogVoice = null;
             let currentBtn = null;
             let availableVoices = [];
+            let audioFallback = null;
 
             function populateVoices() {
-                availableVoices = window.speechSynthesis.getVoices() || [];
+                availableVoices = (window.speechSynthesis && window.speechSynthesis.getVoices()) || [];
                 preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName)
                     || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
                     || null;
                 preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName)
                     || availableVoices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name))
                     || null;
+            }
+
+            function waitForVoices(timeout = 1200) {
+                return new Promise((resolve) => {
+                    populateVoices();
+                    if (availableVoices.length) return resolve(true);
+                    const start = Date.now();
+                    const iv = setInterval(() => {
+                        populateVoices();
+                        if (availableVoices.length || Date.now() - start > timeout) {
+                            clearInterval(iv);
+                            resolve(availableVoices.length > 0);
+                        }
+                    }, 120);
+                });
+            }
+
+            function pickBest(list) {
+                const preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                return (preferred.length ? preferred[0] : list[0]) || null;
             }
 
             function chooseVoiceForLang(langCode) {
@@ -196,141 +216,86 @@
                 if (candidates.length) return pickBest(candidates);
                 candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
                 if (candidates.length) return pickBest(candidates);
-                return availableVoices[0];
-            }
-
-            function pickBest(list) {
-                let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
-                if (preferred.length) return preferred[0];
-                return list[0];
+                return availableVoices[0] || null;
             }
 
             function stopSpeaking() {
-                if (window.speechSynthesis) {
-                    window.speechSynthesis.cancel();
+                try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { }
+                if (audioFallback) { audioFallback.pause(); audioFallback.currentTime = 0; audioFallback = null; }
+                if (currentBtn) { currentBtn.classList.remove('speaking'); currentBtn.removeAttribute('aria-pressed'); currentBtn = null; }
+            }
+
+            function playAudioFallback(btn, src) {
+                if (!src) return false;
+                stopSpeaking();
+                audioFallback = new Audio(src);
+                audioFallback.crossOrigin = 'anonymous';
+                btn.classList.add('speaking');
+                btn.setAttribute('aria-pressed', 'true');
+                currentBtn = btn;
+                audioFallback.onended = function () { stopSpeaking(); };
+                audioFallback.onerror = function () { stopSpeaking(); };
+                audioFallback.play().catch(() => { stopSpeaking(); });
+                return true;
+            }
+
+            function speakWithSynthesis(btn, textEn, textTl) {
+                if (!window.speechSynthesis) return false;
+                const seq = [];
+                if (textEn) {
+                    const uEn = new SpeechSynthesisUtterance(textEn);
+                    uEn.lang = 'en-US';
+                    const v = preferredEnglishVoice || chooseVoiceForLang('en');
+                    if (v) uEn.voice = v;
+                    uEn.rate = 1; uEn.pitch = 1;
+                    seq.push(uEn);
                 }
-                if (currentBtn) {
-                    currentBtn.classList.remove('speaking');
-                    currentBtn.removeAttribute('aria-pressed');
-                    currentBtn = null;
+                if (textTl) {
+                    const uTl = new SpeechSynthesisUtterance(textTl);
+                    uTl.lang = 'tl-PH';
+                    const v2 = preferredTagalogVoice || chooseVoiceForLang('tl');
+                    if (v2) uTl.voice = v2;
+                    uTl.rate = 1; uTl.pitch = 1;
+                    seq.push(uTl);
                 }
+                if (!seq.length) return false;
+                stopSpeaking();
+                seq[0].onstart = function () { btn.classList.add('speaking'); btn.setAttribute('aria-pressed', 'true'); currentBtn = btn; };
+                for (let i = 0; i < seq.length; i++) {
+                    const ut = seq[i];
+                    ut.onerror = function () { stopSpeaking(); };
+                    if (i < seq.length - 1) ut.onend = function () { window.speechSynthesis.speak(seq[i + 1]); };
+                    else ut.onend = function () { stopSpeaking(); };
+                }
+                try { window.speechSynthesis.speak(seq[0]); return true; } catch (e) { return false; }
             }
 
             buttons.forEach(function (btn) {
-                // make keyboard accessible
-                btn.setAttribute('role', 'button');
-                btn.setAttribute('tabindex', '0');
-
-                btn.addEventListener('click', function () {
+                btn.setAttribute('role', 'button'); btn.setAttribute('tabindex', '0');
+                btn.addEventListener('click', async function () {
                     const textEn = (btn.getAttribute('data-tts-en') || '').trim();
                     const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
-                    // nothing to speak
-                    if (!textEn && !textTl) return;
-
-                    // If same button clicked while speaking, stop
-                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
-                        stopSpeaking();
-                        return;
-                    }
-
-                    // Stop any existing speech then speak new text(s)
+                    const fallbackSrc = btn.getAttribute('data-tts-src');
+                    if (!textEn && !textTl && !fallbackSrc) return;
+                    if (currentBtn === btn && (window.speechSynthesis && window.speechSynthesis.speaking)) { stopSpeaking(); return; }
                     stopSpeaking();
-
-                    // Small timeout to ensure previous utterance canceled
-                    setTimeout(function () {
-                        if (!window.speechSynthesis) return;
-
-                        // Helper to pick voice for a given language (or selected by user)
-                        function voiceFor(langHint) {
-                            if (langHint) {
-                                const hint = (langHint || '').toLowerCase();
-                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
-                                    if (preferredTagalogVoice) return preferredTagalogVoice;
-                                    return chooseVoiceForLang('tl');
-                                }
-                                if (hint.startsWith('en')) {
-                                    if (preferredEnglishVoice) return preferredEnglishVoice;
-                                    return chooseVoiceForLang('en');
-                                }
-                            }
-                            return preferredEnglishVoice || chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
+                    try {
+                        const synthesisAvailable = !!window.speechSynthesis;
+                        if (synthesisAvailable) {
+                            const voicesReady = await waitForVoices(1500);
+                            if (voicesReady) { const ok = speakWithSynthesis(btn, textEn, textTl); if (ok) return; }
                         }
-
-                        // Build utterances sequence: English first (if any), then Tagalog
-                        const seq = [];
-                        if (textEn) {
-                            const uEn = new SpeechSynthesisUtterance(textEn);
-                            uEn.lang = 'en-US';
-                            const v = voiceFor('en');
-                            if (v) uEn.voice = v;
-                            seq.push(uEn);
-                        }
-                        if (textTl) {
-                            const uTl = new SpeechSynthesisUtterance(textTl);
-                            uTl.lang = 'tl-PH';
-                            const v2 = voiceFor('tl');
-                            if (v2) uTl.voice = v2;
-                            seq.push(uTl);
-                        }
-
-                        if (!seq.length) return;
-
-                        // Attach lifecycle handlers to the sequence
-                        seq[0].onstart = function () {
-                            btn.classList.add('speaking');
-                            btn.setAttribute('aria-pressed', 'true');
-                            currentBtn = btn;
-                        };
-
-                        // chain subsequent utterances
-                        for (let i = 0; i < seq.length; i++) {
-                            const ut = seq[i];
-                            ut.onerror = function () {
-                                if (btn) btn.classList.remove('speaking');
-                                if (btn) btn.removeAttribute('aria-pressed');
-                                currentBtn = null;
-                            };
-                            if (i < seq.length - 1) {
-                                ut.onend = function () {
-                                    // speak next
-                                    window.speechSynthesis.speak(seq[i + 1]);
-                                };
-                            } else {
-                                ut.onend = function () {
-                                    if (btn) btn.classList.remove('speaking');
-                                    if (btn) btn.removeAttribute('aria-pressed');
-                                    currentBtn = null;
-                                };
-                            }
-                        }
-
-                        // start sequence
-                        window.speechSynthesis.speak(seq[0]);
-                    }, 50);
+                    } catch (e) { }
+                    if (fallbackSrc) { if (playAudioFallback(btn, fallbackSrc)) return; }
+                    try { speakWithSynthesis(btn, textEn, textTl); } catch (e) { stopSpeaking(); }
                 });
-
-                // also allow Enter/Space to trigger
-                btn.addEventListener('keydown', function (ev) {
-                    if (ev.key === 'Enter' || ev.key === ' ') {
-                        ev.preventDefault();
-                        btn.click();
-                    }
-                });
+                btn.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); btn.click(); } });
             });
 
-            // Stop speech when navigating away or reloading
-            window.addEventListener('beforeunload', function () {
-                if (window.speechSynthesis) window.speechSynthesis.cancel();
-            });
-            // populate voices now or when they change
-            if (window.speechSynthesis) {
-                populateVoices();
-                window.speechSynthesis.onvoiceschanged = function () {
-                    populateVoices();
-                };
-            }
-
-            // No preview UI: when voices are populated we attempt to use the preferred Microsoft AvaMultilingual voice
+            function warmVoicesOnce() { if (!window.speechSynthesis) return; populateVoices(); window.speechSynthesis.getVoices(); window.removeEventListener('pointerdown', warmVoicesOnce); window.removeEventListener('touchstart', warmVoicesOnce); }
+            window.addEventListener('pointerdown', warmVoicesOnce, { once: true }); window.addEventListener('touchstart', warmVoicesOnce, { once: true });
+            window.addEventListener('beforeunload', function () { stopSpeaking(); });
+            if (window.speechSynthesis) { populateVoices(); window.speechSynthesis.onvoiceschanged = populateVoices; }
         });
     </script>
 
