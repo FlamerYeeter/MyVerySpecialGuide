@@ -309,10 +309,39 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 // 9. FINAL RESULT
 // ================================
 
+// Detect presence of 'fit to work' or semantically similar phrases in the response
+$containsFit = false;
+try {
+    // Normalize the AI text and parsed fields into one searchable string
+    $searchText = strtolower($aiText . " \n " . json_encode($parsed));
+
+    // Common phrases indicating fitness to work
+    $patterns = [
+        '/fit to work/',
+        '/fit for work/',
+        '/fit to return to work/',
+        '/fit to resume work/',
+        '/medically fit/',
+        '/fit for duty/',
+        '/cleared to work/',
+        '/cleared to return to work/',
+        '/able to work/',
+        '/fit\s+to\s+work/'
+    ];
+
+    foreach ($patterns as $p) {
+        if (preg_match($p, $searchText)) { $containsFit = true; break; }
+    }
+} catch (Exception $e) {
+    $containsFit = false;
+}
+
 $result = [
     "ocrtype"  => $ocrtype,
     "ai_data"  => $parsed,
     "images"   => array_map('basename', $cleanImages),
+    // Additional validation flags
+    "contains_fit_to_work" => $containsFit,
 ];
 
 cleanup(array_merge([$tmpFile], $images, $cleanImages));

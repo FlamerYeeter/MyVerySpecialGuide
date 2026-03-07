@@ -1448,6 +1448,23 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             errorBox = { textContent: '' };
                         }
 
+                        // Check server-side flag for 'Fit to Work' presence
+                        const containsFit = Boolean(result.data && result.data.contains_fit_to_work);
+
+                        if (!containsFit) {
+                            // Remove loading indicator
+                            const loading = document.getElementById(`ocr-loading-${inputId}`);
+                            if (loading) loading.remove();
+
+                            // show explicit error message and reject this upload
+                            if (errorBox) errorBox.textContent = "Medical certificate does not indicate 'Fit to Work' (or equivalent). Upload rejected.";
+                            try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                            try { resetDisplay(); } catch(e){}
+                            alert('The uploaded medical certificate does not state that the person is fit to work. Please upload a valid medical certificate that explicitly indicates fitness to work.');
+                            isProcessing = false;
+                            return;
+                        }
+
                         // autofill where possible
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
@@ -1461,12 +1478,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
                         } else {
                             // Enforce strict 3-month rule: do not accept expired medical certificates.
-                            // `validateMedicalCertificateDate` already sets `errorBox.textContent` with a message.
                             if (errorBox && errorBox.textContent) {
-                                // keep the OCR error visible in the UI; don't prompt the user to accept.
                                 console.warn('Rejected medical certificate date (older than 3 months):', aiData.date);
                             }
-                            // Optionally notify user once via alert to explain why the file was rejected.
                             alert(`Detected medical date ${aiData.date || '?'} is older than 3 months and cannot be accepted. Please upload a valid medical certificate within 3 months.`);
                         }
                     } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
