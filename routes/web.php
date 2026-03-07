@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RecommenderDebugController;
+use App\Http\Controllers\TtsController;
 // Oracle registration server-backed endpoints will be added below (draft/submit handlers)
 use App\Http\Controllers\SavedJobController;
 use App\Http\Controllers\JobApplicationController;
@@ -14,6 +15,8 @@ Route::get('/', function () {
     return view('home');
 })->name('home');
 
+// Server-side TTS generation endpoint (POST). Returns JSON { url: '/storage/tts/xxx.mp3' }
+Route::post('/tts/generate', [TtsController::class, 'generate'])->name('tts.generate');
 Route::get('/finalstep', function () {
     return view('ds_register_finalstep');
 })->name('ds_register_finalstep');

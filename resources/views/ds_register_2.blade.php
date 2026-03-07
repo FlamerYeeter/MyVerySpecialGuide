@@ -279,14 +279,28 @@
                     if (!textEn && !textTl && !fallbackSrc) return;
                     if (currentBtn === btn && (window.speechSynthesis && window.speechSynthesis.speaking)) { stopSpeaking(); return; }
                     stopSpeaking();
-                    try {
-                        const synthesisAvailable = !!window.speechSynthesis;
-                        if (synthesisAvailable) {
-                            const voicesReady = await waitForVoices(1500);
-                            if (voicesReady) { const ok = speakWithSynthesis(btn, textEn, textTl); if (ok) return; }
-                        }
-                    } catch (e) { }
+                    let voicesReady = false;
+                    try { voicesReady = await waitForVoices(1500); } catch (e) { }
+                    const wantServerForEn = !!textEn && !preferredEnglishVoice;
+                    const wantServerForTl = !!textTl && !preferredTagalogVoice;
+                    if (voicesReady && ((textEn && preferredEnglishVoice) || (textTl && preferredTagalogVoice))) {
+                        try { const ok = speakWithSynthesis(btn, textEn, textTl); if (ok) return; } catch (e) { }
+                    }
                     if (fallbackSrc) { if (playAudioFallback(btn, fallbackSrc)) return; }
+                    if (wantServerForEn || wantServerForTl) {
+                        try {
+                            const cacheKey = encodeURIComponent((textEn || textTl).slice(0,100));
+                            window._ttsCache = window._ttsCache || new Map();
+                            if (window._ttsCache.has(cacheKey)) { const url = window._ttsCache.get(cacheKey); if (playAudioFallback(btn, url)) return; }
+                            const payload = { text: (textEn || textTl), lang: (textTl ? 'tl-PH' : 'en-US'), voice: (textTl ? 'fil-PH-BlessicaNeural' : 'en-US-AvaMultilingualNeural') };
+                            const resp = await fetch('{{ route('tts.generate') }}', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '' },
+                                body: JSON.stringify(payload)
+                            });
+                            if (resp.ok) { const j = await resp.json(); if (j.url) { window._ttsCache.set(cacheKey, j.url); if (playAudioFallback(btn, j.url)) return; } }
+                        } catch (e) { }
+                    }
                     try { speakWithSynthesis(btn, textEn, textTl); } catch (e) { stopSpeaking(); }
                 });
                 btn.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); btn.click(); } });
