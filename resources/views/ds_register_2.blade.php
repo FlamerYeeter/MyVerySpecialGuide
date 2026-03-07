@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Applicant Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -295,10 +296,16 @@
                             const payload = { text: (textEn || textTl), lang: (textTl ? 'tl-PH' : 'en-US'), voice: (textTl ? 'fil-PH-BlessicaNeural' : 'en-US-AvaMultilingualNeural') };
                             const resp = await fetch('{{ route('tts.generate') }}', {
                                 method: 'POST',
+                                credentials: 'same-origin',
                                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '' },
                                 body: JSON.stringify(payload)
                             });
-                            if (resp.ok) { const j = await resp.json(); if (j.url) { window._ttsCache.set(cacheKey, j.url); if (playAudioFallback(btn, j.url)) return; } }
+                            if (resp.ok) {
+                                const j = await resp.json();
+                                if (j.url) { window._ttsCache.set(cacheKey, j.url); if (playAudioFallback(btn, j.url)) return; }
+                            } else {
+                                console.warn('TTS server fallback failed', resp.status, resp.statusText);
+                            }
                         } catch (e) { }
                     }
                     try { speakWithSynthesis(btn, textEn, textTl); } catch (e) { stopSpeaking(); }

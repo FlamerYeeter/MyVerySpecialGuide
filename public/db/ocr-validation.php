@@ -309,29 +309,59 @@ if (json_last_error() !== JSON_ERROR_NONE) {
 // 9. FINAL RESULT
 // ================================
 
-// Detect presence of 'fit to work' or semantically similar phrases in the response
+// Detect presence of 'fit to work' or semantically similar phrases in the response.
+// Improvements: case-insensitive matching, negative phrase checks, and recursive search
+// through parsed fields to make detection more robust.
 $containsFit = false;
 try {
-    // Normalize the AI text and parsed fields into one searchable string
-    $searchText = strtolower($aiText . " \n " . json_encode($parsed));
+    // Build a searchable string combining AI text and parsed values
+    $searchParts = [$aiText];
+    $flattenValues = function($v) use (&$flattenValues) {
+        $out = [];
+        if (is_array($v)) {
+            foreach ($v as $it) $out = array_merge($out, $flattenValues($it));
+        } elseif (is_object($v)) {
+            foreach (get_object_vars($v) as $it) $out = array_merge($out, $flattenValues($it));
+        } else {
+            $out[] = (string)$v;
+        }
+        return $out;
+    };
+    $searchParts = array_merge($searchParts, $flattenValues($parsed));
+    $searchText = strtolower(implode(" \n ", $searchParts));
 
-    // Common phrases indicating fitness to work
-    $patterns = [
-        '/fit to work/',
-        '/fit for work/',
-        '/fit to return to work/',
-        '/fit to resume work/',
-        '/medically fit/',
-        '/fit for duty/',
-        '/cleared to work/',
-        '/cleared to return to work/',
-        '/able to work/',
-        '/fit\s+to\s+work/'
+    // Negative indicators — if present, treat as NOT fit
+    $negativePatterns = [
+        '/not fit/i', '/unfit/i', '/not cleared/i', '/not fit to work/i', '/not fit for work/i', '/unsuitable/i', '/not able to work/i'
+    ];
+    foreach ($negativePatterns as $np) {
+        if (preg_match($np, $searchText)) {
+            $containsFit = false;
+            goto SKIP_POSITIVE_CHECKS;
+        }
+    }
+
+    // Positive indicators (case-insensitive and flexible)
+    $positivePatterns = [
+        '/fit to work/i',
+        '/fit for work/i',
+        '/fit to return to work/i',
+        '/fit to resume work/i',
+        '/medically fit/i',
+        '/fit for duty/i',
+        '/cleared to work/i',
+        '/cleared to return to work/i',
+        '/able to work/i',
+        '/\bfit\b.*\bwork\b/i',
+        '/\bwork\b.*\bfit\b/i',
     ];
 
-    foreach ($patterns as $p) {
-        if (preg_match($p, $searchText)) { $containsFit = true; break; }
+    foreach ($positivePatterns as $pp) {
+        if (preg_match($pp, $searchText)) { $containsFit = true; break; }
     }
+
+    SKIP_POSITIVE_CHECKS: ;
+
 } catch (Exception $e) {
     $containsFit = false;
 }

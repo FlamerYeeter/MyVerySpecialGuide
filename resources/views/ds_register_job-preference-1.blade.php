@@ -496,6 +496,19 @@
     </form>
     </div>
 
+    <!-- Review / Skip modal -->
+    <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-2xl shadow-lg p-6 w-11/12 max-w-md mx-4">
+            <h3 class="text-lg font-bold mb-2 text-blue-700">Review before continuing</h3>
+            <p class="text-sm text-gray-700 mb-4">You can review your information on the next page (recommended), or skip the review and go directly to the final step.</p>
+            <div class="flex justify-end gap-3">
+                <button id="reviewModalCancel" class="px-4 py-2 rounded-md bg-gray-200">Cancel</button>
+                <button id="reviewModalReview" class="px-4 py-2 rounded-md bg-[#2E2EFF] text-white">Review information</button>
+                <button id="reviewModalSkip" class="px-4 py-2 rounded-md bg-green-600 text-white">Skip and go to final step</button>
+            </div>
+        </div>
+    </div>
+
     <script src="{{ asset('js/register.js') }}"></script>
     <script>
         // Validate selection count on Next click (must be between 3 and 5)
@@ -536,10 +549,47 @@
                     const form = document.querySelector('form');
                     if (form) { form.submit(); return; }
 
-                    window.location.href = '{{ route('registerreview1') }}';
+                    // Show modal to allow review or skip to final step
+                    const reviewModal = document.getElementById('reviewModal');
+                    if (reviewModal) {
+                        reviewModal.classList.remove('hidden');
+                        // focus first actionable button for keyboard users
+                        const reviewBtn = reviewModal.querySelector('#reviewModalReview');
+                        if (reviewBtn) reviewBtn.focus();
+                    } else {
+                        window.location.href = '{{ route('registerreview1') }}';
+                    }
                 } catch (e) {
                     console.error('jobpref1Next click handler error', e);
                 }
+            });
+        })();
+    </script>
+
+    <script>
+        // Modal button handlers for review/skip
+        (function(){
+            const modal = document.getElementById('reviewModal');
+            if (!modal) return;
+            const btnReview = document.getElementById('reviewModalReview');
+            const btnSkip = document.getElementById('reviewModalSkip');
+            const btnCancel = document.getElementById('reviewModalCancel');
+
+            function closeModal() { modal.classList.add('hidden'); }
+
+            if (btnCancel) btnCancel.addEventListener('click', function(){ closeModal(); });
+            if (btnReview) btnReview.addEventListener('click', function(){
+                closeModal();
+                window.location.href = '{{ route('registerreview1') }}';
+            });
+            if (btnSkip) btnSkip.addEventListener('click', function(){
+                closeModal();
+                window.location.href = '{{ route('registerfinalstep') }}';
+            });
+
+            // close on Escape
+            window.addEventListener('keydown', function (ev) {
+                if (ev.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
             });
         })();
     </script>
