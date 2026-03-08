@@ -41,7 +41,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-            onclick="(history.length>1 ? history.back() : window.location.href='{{ route('register') }}')">
+            onclick="(history.length>1 ? history.back() : window.location.href='{{ route('register') }}')" >
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -74,94 +74,111 @@
 <div
     class="relative mt-10 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 md:p-8 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md overflow-hidden">
 
-    <div class="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-4 sm:gap-6">
+  <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 sm:gap-6">
 
-        <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Account Icon"
-            class="w-10 h-10 sm:w-14 sm:h-14 flex-shrink-0">
-
-        <div class="flex-1">
-            <p class="text-base sm:text-lg text-gray-700 font-semibold leading-relaxed">
-                Don’t worry! We will help you complete your registration easily and guide you every step of the way.
-            </p>
-
-            <p class="text-gray-700 italic text-sm sm:text-base mt-2">
-                (Wag mag-alala! Tutulungan ka naming tapusin ang iyong pagregister nang madali at gagabayan ka sa bawat hakbang.)
-            </p>
-
-            <!--  Audio Button -->
-            <div class="mt-3 flex justify-end">
-                <button type="button" aria-label="Play audio: Info message"
-                    class="bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                    data-tts-en="Don’t worry! We will help you complete your registration easily and guide you every step of the way."
-                    data-tts-tl="Huwag mag-alala! Tutulungan ka naming tapusin ang iyong pagregister nang madali at gagabayan ka sa bawat hakbang.">
-                    🔊
-                </button>
-            </div>
-
-        </div>
+    <!-- Icon -->
+    <div class="flex-shrink-0 flex items-center justify-center w-full sm:w-auto">
+      <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="Account Icon"
+           class="w-10 h-10 sm:w-14 sm:h-14">
     </div>
+
+    <!-- Text -->
+    <div class="flex-1 text-center sm:text-left">
+      <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
+        Don’t worry! We will help you complete your registration easily and guide you every step of the way.
+      </p>
+
+      <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+        (Wag mag-alala! Tutulungan ka naming tapusin ang iyong pagregister nang madali at gagabayan ka sa bawat hakbang.)
+      </p>
+    </div>
+
+    <!-- Desktop Audio Button -->
+    <div class="hidden sm:flex flex-shrink-0 items-start ml-4">
+      <button type="button" aria-label="Play audio for info section"
+              class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg sm:text-xl p-3 rounded-full shadow-lg 
+                     transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+              data-tts-en="We value your trust and are committed to protecting your data in compliance with the Data Privacy Act of 2012 (RA 10173)."
+              data-tts-tl="Pinahahalagahan namin ang iyong tiwala at pinoprotektahan namin ang iyong impormasyon alinsunod sa Data Privacy Act of 2012.">
+        🔊
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile Audio Button -->
+  <div class="sm:hidden mt-4 flex justify-center">
+    <button type="button" aria-label="Play audio for info section"
+            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
+                   transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+            data-tts-en="We value your trust and are committed to protecting your data in compliance with the Data Privacy Act of 2012 (RA 10173)."
+            data-tts-tl="Pinahahalagahan namin ang iyong tiwala at pinoprotektahan namin ang iyong impormasyon alinsunod sa Data Privacy Act of 2012.">
+      🔊
+    </button>
+  </div>
+
 </div>
 
 
 <!-- Instruction Section -->
 <div class="mt-10 sm:mt-12 max-w-4xl mx-auto space-y-6 sm:space-y-8">
 
-    <div
-        class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
+  <div
+      class="relative bg-white rounded-3xl p-5 sm:p-6 md:p-8 border-4 border-blue-300 shadow-lg hover:shadow-xl transition">
 
-        <div class="text-center sm:text-left">
+      <div class="text-center sm:text-left">
 
-            <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-4">
-                Instructions
-                <span class="block sm:inline text-lg italic">(Panuto)</span>
-            </h3>
+          <h3 class="text-xl sm:text-2xl text-blue-600 font-bold mb-4">
+              Instructions
+              <span class="block sm:inline text-xl italic">(Panuto)</span>
+          </h3>
 
-            <ul class="list-disc list-inside text-gray-800 text-base sm:text-lg space-y-2 text-left sm:text-left mx-auto sm:mx-0 max-w-xl">
-                <li>You can go back and change your answers.</li>
-                <li>Take your time, there is no rush.</li>
-                <li>We will help you every step of the way.</li>
-                <li>Press the audio button anytime to hear instructions.</li>
-            </ul>
+          <ul class="list-disc list-inside text-gray-800 text-base sm:text-lg space-y-2 text-left sm:text-left mx-auto sm:mx-0 max-w-xl">
+              <li>You can go back and change your answers.</li>
+              <li>Take your time, there is no rush.</li>
+              <li>We will help you every step of the way.</li>
+              <li>Press the audio button anytime to hear instructions.</li>
+          </ul>
 
-            <p class="text-gray-600 italic text-base sm:text-lg mt-4 text-center sm:text-left">
-                (Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali.
-                Tutulungan ka namin sa bawat hakbang.)
-            </p>
+          <p class="text-gray-600 italic text-base sm:text-lg mt-4 text-center sm:text-left">
+              (Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali.
+              Tutulungan ka namin sa bawat hakbang.)
+          </p>
 
-            <div class="mt-5 text-center sm:text-left">
-                <p class="font-bold text-base sm:text-lg text-red-600">
-                    Reminder:
-                    <span class="block sm:inline">
-                        Do not forget to review or check your answers before moving to the next page.
-                    </span>
-                </p>
+          <div class="mt-5">
+              <p class="font-bold text-base sm:text-lg text-red-600">
+                  Reminder:
+                  <span class="block sm:inline">
+                      Do not forget to review or check your answers before moving to the next page.
+                  </span>
+              </p>
 
-                <p class="mt-2 text-red-600 italic text-sm sm:text-base">
-                    (Paalala: Huwag kalimutang i-check ang iyong mga sagot bago pumunta sa susunod na pahina.)
-                </p>
+              <p class="mt-2 text-red-600 italic text-sm sm:text-base">
+                  (Paalala: Huwag kalimutang i-check ang iyong mga sagot bago pumunta sa susunod na pahina.)
+              </p>
 
-                <!-- Audio Button -->
-                <div class="-mt-3 sm:-mt-2 flex justify-end">
-                    <button type="button" aria-label="Play audio: Instructions and reminder"
-                        class="bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 tts-btn"
-                        data-tts-en="Instructions: You can go back and change your answers. Take your time there is no rush. We will help you every step of the way. Press the audio button anytime to hear instructions.\nReminder: Do not forget to review or check your answers before moving to the next page."
-                        data-tts-tl="Panuto: Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali. Tutulungan ka namin sa bawat hakbang.\nPaalala: Huwag kalimutang i-check ang iyong mga sagot bago pumunta sa susunod na pahina.">
-                        🔊
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
+              <!-- Audio Button -->
+              <div class="mt-4 flex justify-center sm:justify-end">
+                  <button type="button" aria-label="Play audio: Instructions and reminder"
+                      class="bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 tts-btn"
+                      data-tts-en="Instructions: You can go back and change your answers. Take your time there is no rush. We will help you every step of the way. Press the audio button anytime to hear instructions.\nReminder: Do not forget to review or check your answers before moving to the next page."
+                      data-tts-tl="Panuto: Maaari kang bumalik at baguhin ang iyong mga sagot. Maglaan ng oras, huwag magmadali. Tutulungan ka namin sa bawat hakbang.\nPaalala: Huwag kalimutang i-check ang iyong mga sagot bago pumunta sa susunod na pahina.">
+                      🔊
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
 
                    
         <!-- Next Button -->
-        <div class="flex flex-col items-center mt-10 sm:mt-14 space-y-4">
+        <div class="flex flex-col items-center mt-14 sm:mt-16 w-full px-4 sm:px-0">
             <button
-                class="bg-[#2E2EFF] text-white text-2xl sm:text-3xl font-bold px-20 sm:px-28 md:px-32 py-4 sm:py-5 rounded-3xl shadow-lg hover:bg-blue-600 active:scale-95 transition"
+                class="w-full sm:w-auto bg-[#2E2EFF] text-white text-2xl sm:text-3xl font-bold px-8 sm:px-20 md:px-32 py-3 sm:py-4 rounded-3xl shadow-lg hover:bg-blue-700 active:scale-95 transition"
                 onclick="window.location.href='{{ route('dataprivacy') }}'">
                 Next →
             </button>
-            <p class="text-gray-700 text-sm sm:text-base md:text-lg text-center leading-relaxed px-4 sm:px-0">
+            <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-4 text-center leading-relaxed px-4 sm:px-0">
                 Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue<br class="hidden sm:block">
                 <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
             </p>
