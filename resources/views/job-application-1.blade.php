@@ -31,20 +31,9 @@
     @endphp
 
     @php
-      // SHIM to silence IDE "Unknown function" warnings for oci_* if the extension isn't in its path.
-      // Logic below is still safely guarded by extension_loaded('oci8').
-      if (!function_exists('oci_parse')) {
-        function oci_parse($conn, $sql) { return null; }
-        function oci_bind_by_name($stid, $bv, &$var, $maxlen = -1, $type = 0) { return true; }
-        function oci_execute($stid, $mode = 0) { return true; }
-        function oci_fetch_assoc($stid) { return []; } 
-        function oci_free_statement($stid) { return true; }
-        function oci_close($conn) { return true; }
-      }
-
       // Try to fetch the single job server-side (so the page can render immediately)
       $job = null;
-      if (!empty($job_id) && extension_loaded('oci8')) {
+      if (!empty($job_id)) {
         try {
           $oraclePath = base_path('public/db/oracledb.php');
           if (file_exists($oraclePath)) {
@@ -57,7 +46,7 @@
               oci_bind_by_name($stid, ':job_id', $job_id);
               oci_execute($stid);
               $row = oci_fetch_assoc($stid);
-              if (is_array($row)) {
+              if ($row) {
                 // skills
                 $skills = [];
                 $pSql = "SELECT VALUE, TYPE FROM JOB_PROFILE WHERE JOB_POSTING_ID = :job_id AND VALUE IS NOT NULL AND TYPE IN ('skills','job-position','role')";
@@ -77,7 +66,7 @@
                 oci_bind_by_name($imgSt, ':job_id', $job_id);
                 @oci_execute($imgSt);
                 $imgRow = @oci_fetch_assoc($imgSt);
-                if ($imgRow !== false && isset($imgRow['COMPANY_IMAGE']) && $imgRow['COMPANY_IMAGE'] !== null) {
+                if ($imgRow && $imgRow['COMPANY_IMAGE'] !== null) {
                   $blob = $imgRow['COMPANY_IMAGE'];
                   $imageContent = $blob->load();
                   $logoSrc = "data:image/png;base64," . base64_encode($imageContent);
@@ -87,14 +76,14 @@
                 @oci_free_statement($imgSt);
 
                 $job = [
-                  'id' => is_array($row) ? ($row['ID'] ?? '') : '',
-                  'company_name' => is_array($row) ? ($row['COMPANY_NAME'] ?? '') : '',
-                  'job_role' => is_array($row) ? ($row['JOB_ROLE'] ?? '') : '',
-                  'description' => is_array($row) ? ($row['JOB_DESCRIPTION'] ?? '') : '',
-                  'address' => is_array($row) ? ($row['ADDRESS'] ?? '') : '',
-                  'job_type' => is_array($row) ? ($row['JOB_TYPE'] ?? '') : '',
+                  'id' => $row['ID'],
+                  'company_name' => $row['COMPANY_NAME'] ?? '',
+                  'job_role' => $row['JOB_ROLE'] ?? '',
+                  'description' => $row['JOB_DESCRIPTION'] ?? '',
+                  'address' => $row['ADDRESS'] ?? '',
+                  'job_type' => $row['JOB_TYPE'] ?? '',
                   'skills' => $skills,
-                  'openings' => is_array($row) ? ($row['EMPLOYEE_CAPACITY'] ?? 10) : 10,
+                  'openings' => $row['EMPLOYEE_CAPACITY'] ?? 10,
                   'applied' => 0,
                   'logo' => $logoSrc
                 ];
@@ -834,9 +823,13 @@
           const container = document.getElementById('requiredFilesSlots');
           if (!container) return;
           container.innerHTML = '';
-          // Show all 3 required slots within the big box area
+          // Show a slot for each checked requirement; if uploaded, show file name
           defs.forEach(def => {
+            const chk = document.getElementById(def.checkboxId);
             const entry = stored[def.key];
+            // If there's no stored entry and the checkbox isn't checked, skip rendering
+            if (!entry && (!chk || !chk.checked)) return;
+
             const { wrap, nameEl, viewBtn, removeBtn } = createSlot(def);
 
             if (entry && entry.name) {
@@ -844,8 +837,7 @@
               viewBtn.disabled = false;
               removeBtn.disabled = false;
             } else {
-              nameEl.textContent = 'No file uploaded yet (Select below)';
-              nameEl.classList.add('italic', 'text-gray-400');
+              nameEl.textContent = 'No file selected';
               viewBtn.disabled = true;
               removeBtn.disabled = true;
             }
@@ -867,12 +859,16 @@
         }
 
         // NEW: update inner prompt visibility (hide prompt when any uploaded slot exists)
-        // NEW: update inner prompt visibility (hide prompt only when all 3 files are present)
         function updateBigUploadContentVisibility() {
+          // Hide the big upload prompt when any document checkbox is checked,
+          // otherwise show the prompt.
           const content = document.getElementById('bigUploadContent');
           if (!content) return;
-          const allFilled = defs.every(d => stored[d.key] && stored[d.key].name);
-          if (allFilled) content.classList.add('hidden');
+          const anyChecked = defs.some(d => {
+            const chk = document.getElementById(d.checkboxId);
+            return chk && chk.checked;
+          });
+          if (anyChecked) content.classList.add('hidden');
           else content.classList.remove('hidden');
         }
 
@@ -882,13 +878,35 @@
             const files = Array.from(e.target.files || []).slice(0, 3);
             if (!files.length) return;
 
-            // Sequential assignment (Medical -> Resume -> PWD ID)
-            const availableKeys = defs.map(d => d.key);
+            // Get checked definitions in order
+            const checkedDefs = defs.filter(d => {
+              const chk = document.getElementById(d.checkboxId);
+              return chk && chk.checked;
+            });
+
+            if (checkedDefs.length === 0) {
+              e.target.value = '';
+              return;
+            }
+
+            // Mark already-occupied keys so we don't overwrite them synchronously
+            const occupied = new Set();
+            defs.forEach(d => { if (stored[d.key] && stored[d.key].name) occupied.add(d.key); });
+
+            // Assign files to available checked slots in order, reserving keys synchronously
             let fileIndex = 0;
-            for (let i = 0; i < availableKeys.length && fileIndex < files.length; i++) {
-              const key = availableKeys[i];
-              if (stored[key] && stored[key].name) continue; // skip occupied slots
-              assignFileToKey(key, files[fileIndex]);
+            for (let i = 0; i < checkedDefs.length && fileIndex < files.length; i++) {
+              const def = checkedDefs[i];
+              if (occupied.has(def.key)) continue;
+              // reserve and assign
+              occupied.add(def.key);
+              assignFileToKey(def.key, files[fileIndex]);
+              fileIndex++;
+            }
+
+            // Any remaining files go to pending queue (kept for later assignment)
+            while (fileIndex < files.length && pendingFiles.length < 3) {
+              pendingFiles.push(files[fileIndex]);
               fileIndex++;
             }
 
@@ -1259,19 +1277,21 @@
           // Prefer the uploader's in-memory state if available (more reliable than reading raw localStorage)
           const persisted = (typeof window.getRequiredUploads === 'function') ? window.getRequiredUploads() : null;
 
-          // Required documents: now checked directly without checkboxes
           docDefs.forEach(d => {
-            let has = false;
-            try {
-              if (persisted && persisted[d.key]) {
-                has = true;
-              } else {
-                const data = localStorage.getItem(LS_PREFIX + d.key + '_data');
-                if (data) has = true;
-              }
-            } catch (e) { /* ignore storage errors */ }
+            const chk = document.getElementById(d.checkboxId);
+            if (chk && chk.checked) {
+              let has = false;
+              try {
+                if (persisted && persisted[d.key]) {
+                  has = true;
+                } else {
+                  const data = localStorage.getItem(LS_PREFIX + d.key + '_data');
+                  if (data) has = true;
+                }
+              } catch (e) { /* ignore storage errors */ }
 
-            if (!has) missing.push('Upload ' + d.label);
+              if (!has) missing.push('Upload ' + d.label);
+            }
           });
 
           return missing;

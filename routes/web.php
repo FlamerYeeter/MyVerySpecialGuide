@@ -1,53 +1,15 @@
 <?php
-namespace App\Http\Controllers {
-    if (!class_exists(RecommendationController::class, false)) {
-        class RecommendationController { 
-            public function oracleRecommendations() {} 
-            public function oracleJobPostings() {} 
-            public function userRecommendations() {} 
-            public function generateAll() {} 
-        }
-    }
-    if (!class_exists(RecommenderDebugController::class, false)) {
-        class RecommenderDebugController { public function debug() {} }
-    }
-}
 
-namespace {
-    use Illuminate\Support\Facades\Route;
-    use App\Http\Controllers\TtsController;
-    use App\Http\Controllers\SavedJobController;
-    use App\Http\Controllers\JobApplicationController;
-    use Illuminate\Http\Request;
-    use Illuminate\Support\Facades\Auth;
-    use Illuminate\Support\Facades\Http;
-    use App\Models\User;
-    use App\Http\Controllers\RecommendationController;
-    use App\Http\Controllers\RecommenderDebugController;
-    use App\Http\Controllers\GuardianJobController;
-    use App\Http\Controllers\GuardianReviewController;
-    use App\Http\Controllers\OracleAuthController;
-    use App\Services\JobCsvParser;
-    use App\Services\FirestoreAdminService;
-    use App\Http\Controllers\AdminAssignmentController;
-    use App\Http\Controllers\AdminApprovalController;
-    use App\Http\Middleware\EnsureUserIsAdmin;
-    use Illuminate\Http\JsonResponse;
-    use Throwable;
-    use Exception;
-
-    if (!function_exists('oci_parse')) {
-        if (!defined('OCI_ASSOC')) define('OCI_ASSOC', 1);
-        if (!defined('OCI_RETURN_NULLS')) define('OCI_RETURN_NULLS', 2);
-        function oci_parse($conn, $sql) { return null; }
-        function oci_bind_by_name($stid, $bv, &$var, $maxlenSize = -1, $type = 0) { return true; }
-        function oci_execute($stid, $mode = 0) { return true; }
-        function oci_fetch_array($stid, $mode = 0) { return null; }
-        function oci_fetch_assoc($stid) { return null; }
-        function oci_free_statement($stid) { return true; }
-        function oci_close($conn) { return true; }
-    }
-
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RecommenderDebugController;
+use App\Http\Controllers\TtsController;
+// Oracle registration server-backed endpoints will be added below (draft/submit handlers)
+use App\Http\Controllers\SavedJobController;
+use App\Http\Controllers\JobApplicationController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use App\Models\User;
 
 Route::get('/', function () {
     return view('home');
@@ -85,7 +47,7 @@ Route::get('/navigationbuttons', function () {
 })->name('navigationbuttons');
 
 // Endpoint for client-side logs (lightweight, accepts JSON {level, message, meta})
-Route::post('/client-log', function (Request $req) {
+Route::post('/client-log', function (\Illuminate\Http\Request $req) {
     $data = $req->json()->all();
     $level = $data['level'] ?? 'info';
     $message = $data['message'] ?? '<no message>'; 
@@ -97,7 +59,7 @@ Route::post('/client-log', function (Request $req) {
             case 'error': logger()->error($message, $meta); break;
             default: logger()->info($message, $meta); break;
         }
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
             return view('home');
     }
 
@@ -105,17 +67,17 @@ Route::post('/client-log', function (Request $req) {
     return response()->json(['ok' => true]);
 });
 // Quick debug route to call the Oracle-backed recommender (no login required).
-Route::get('/debug/oracle-recs', [RecommendationController::class, 'oracleRecommendations']);
+Route::get('/debug/oracle-recs', [\App\Http\Controllers\RecommendationController::class, 'oracleRecommendations']);
 // Debug route to list job postings directly from Oracle (bounded)
-Route::get('/debug/job-postings', [RecommendationController::class, 'oracleJobPostings']);
+Route::get('/debug/job-postings', [\App\Http\Controllers\RecommendationController::class, 'oracleJobPostings']);
 
 // Navigation targets used by navigation-buttons view
-Route::get('/why-this-job-1', function (Request $request) {
+Route::get('/why-this-job-1', function (\Illuminate\Http\Request $request) {
     // Require authenticated Laravel session; do not accept uid overrides.
-    if (!Auth::check()) {
+    if (!\Illuminate\Support\Facades\Auth::check()) {
         return redirect()->route('login');
     }
-    $laravelId = (string)Auth::id();
+    $laravelId = (string)\Illuminate\Support\Facades\Auth::id();
     // keep the old $uid usage for view/debugging (local numeric id)
     $uid = $laravelId;
     $safeUid = preg_replace('/[^A-Za-z0-9_\-]/', '_', $laravelId ?: 'anonymous');
@@ -190,12 +152,12 @@ Route::get('/why-this-job-1', function (Request $request) {
         // Prefer a firebase_uid persisted on the local user record; fall back to session
         $fsUid = null;
         try {
-            $user = Auth::user();
+            $user = \Illuminate\Support\Facades\Auth::user();
             if ($user && !empty($user->firebase_uid)) {
                 $fsUid = (string)$user->firebase_uid;
                 logger()->info('why-this-job: using firebase_uid from user model', ['hint' => substr($fsUid, 0, 6) . '...']);
             }
-        } catch (Throwable $__e) {
+        } catch (\Throwable $__e) {
             // ignore
         }
 
@@ -207,12 +169,12 @@ Route::get('/why-this-job-1', function (Request $request) {
         }
 
         if ($fsUid) {
-            $fs = app(GuardianJobController::class)->fetchUserProfileFromFirestore($fsUid);
+            $fs = app(\App\Http\Controllers\GuardianJobController::class)->fetchUserProfileFromFirestore($fsUid);
             if (is_array($fs)) $fsProfile = $fs;
         } else {
             logger()->info('why-this-job: no firebase_uid available; skipping Firestore profile fetch', ['laravel_id' => $laravelId]);
         }
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->warning('why-this-job: Firestore profile fetch failed: ' . $e->getMessage());
         $fsProfile = null;
     }
@@ -224,11 +186,11 @@ Route::get('/why-this-job-1', function (Request $request) {
         } else {
             logger()->info('why-this-job: no Firestore profile found for uid', ['uid' => $uid]);
         }
-    } catch (Throwable $__e) {}
+    } catch (\Throwable $__e) {}
 
     $jobs = [];
     try {
-        $parser = new JobCsvParser();
+        $parser = new \App\Services\JobCsvParser();
         // a small list of common skill tokens to surface when the reco doesn't include explicit skills
         $COMMON_SKILLS = ['communication','teamwork','organization','cleaning','customer service','problem solving','excel','microsoft','management','leadership','sales','cooking','following instructions','working with others','organization','revit','data','analysis','programming','teaching','caregiving'];
 
@@ -270,13 +232,13 @@ Route::get('/why-this-job-1', function (Request $request) {
                             $decoded = json_decode($skillsNode['skills_page1'], true);
                             if (is_array($decoded)) $s = array_merge($s, $decoded);
                         }
-                    } catch (Throwable $__e) {}
+                    } catch (\Throwable $__e) {}
                     try {
                         if (!empty($skillsNode['skills_page2']) && is_string($skillsNode['skills_page2'])) {
                             $decoded = json_decode($skillsNode['skills_page2'], true);
                             if (is_array($decoded)) $s = array_merge($s, $decoded);
                         }
-                    } catch (Throwable $__e) {}
+                    } catch (\Throwable $__e) {}
 
                     // If the skills node itself is a simple list like ['skill1','skill2'] normalize that too
                     $isIndexedList = array_values($skillsNode) === $skillsNode;
@@ -294,8 +256,8 @@ Route::get('/why-this-job-1', function (Request $request) {
                 // Also accept top-level skills_page1 / skills_page2 fields (some profiles store them at root)
                 if (empty($matchingSkills) && (!empty($fsProfile['skills_page1']) || !empty($fsProfile['skills_page2']))) {
                     $s = [];
-                    try { if (!empty($fsProfile['skills_page1']) && is_string($fsProfile['skills_page1'])) $s = array_merge($s, json_decode($fsProfile['skills_page1'], true) ?: []); } catch (Throwable $__e) {}
-                    try { if (!empty($fsProfile['skills_page2']) && is_string($fsProfile['skills_page2'])) $s = array_merge($s, json_decode($fsProfile['skills_page2'], true) ?: []); } catch (Throwable $__e) {}
+                    try { if (!empty($fsProfile['skills_page1']) && is_string($fsProfile['skills_page1'])) $s = array_merge($s, json_decode($fsProfile['skills_page1'], true) ?: []); } catch (\Throwable $__e) {}
+                    try { if (!empty($fsProfile['skills_page2']) && is_string($fsProfile['skills_page2'])) $s = array_merge($s, json_decode($fsProfile['skills_page2'], true) ?: []); } catch (\Throwable $__e) {}
                     if (!empty($s) && is_array($s)) $matchingSkills = $s;
                 }
 
@@ -356,7 +318,7 @@ Route::get('/why-this-job-1', function (Request $request) {
                 'approval' => $approvals[$jobId] ?? null,
             ];
         }
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->warning('why-this-job route assembly failed: ' . $e->getMessage());
     }
 
@@ -365,10 +327,10 @@ Route::get('/why-this-job-1', function (Request $request) {
 
 // Route to show a single job's "Why this job" details (auth-protected)
 Route::get('/why-this-job-2', function (Request $request) {
-    if (!Auth::check()) {
+    if (!\Illuminate\Support\Facades\Auth::check()) {
         return redirect()->route('login');
     }
-    $laravelId = (string)Auth::id();
+    $laravelId = (string)\Illuminate\Support\Facades\Auth::id();
     $uid = $laravelId;
 
     $jobId = $request->query('job_id') ?? $request->query('id') ?? null;
@@ -423,7 +385,7 @@ Route::get('/why-this-job-2', function (Request $request) {
 
         // Fallback: if not found in per-user reco, use JobCsvParser to locate by id
         if (!$jobForView && $jobId) {
-            $parser = new JobCsvParser();
+            $parser = new \App\Services\JobCsvParser();
             $assoc = $parser->findJobById($jobId);
             if (is_array($assoc) && !empty($assoc)) {
                 // try to extract skills tokens if present
@@ -443,7 +405,7 @@ Route::get('/why-this-job-2', function (Request $request) {
                 ];
             }
         }
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->warning('why-this-job-2: failed to assemble job view: ' . $e->getMessage());
     }
 
@@ -453,11 +415,11 @@ Route::get('/why-this-job-2', function (Request $request) {
         // attempt to resolve firebase uid for profile lookup
         $fsUid = null;
         try {
-            $user = Auth::user();
+            $user = \Illuminate\Support\Facades\Auth::user();
             if ($user && !empty($user->firebase_uid)) {
                 $fsUid = (string)$user->firebase_uid;
             }
-        } catch (Throwable $__e) {}
+        } catch (\Throwable $__e) {}
         if (!$fsUid) {
             $sess = session('firebase_uid', null);
             if ($sess) $fsUid = (string)$sess;
@@ -466,7 +428,7 @@ Route::get('/why-this-job-2', function (Request $request) {
         $profileSkills = [];
         if ($fsUid) {
             try {
-                $fs = app(GuardianJobController::class)->fetchUserProfileFromFirestore($fsUid);
+                $fs = app(\App\Http\Controllers\GuardianJobController::class)->fetchUserProfileFromFirestore($fsUid);
                 if (is_array($fs)) {
                     // extract skills similarly to why-this-job-1 logic
                     if (!empty($fs['matching_skills']) && is_array($fs['matching_skills'])) {
@@ -475,8 +437,8 @@ Route::get('/why-this-job-2', function (Request $request) {
                     if (empty($profileSkills) && !empty($fs['skills']) && is_array($fs['skills'])) {
                         $snode = $fs['skills'];
                         $s = [];
-                        try { if (!empty($snode['skills_page1']) && is_string($snode['skills_page1'])) $s = array_merge($s, json_decode($snode['skills_page1'], true) ?: []); } catch(Throwable $__e) {}
-                        try { if (!empty($snode['skills_page2']) && is_string($snode['skills_page2'])) $s = array_merge($s, json_decode($snode['skills_page2'], true) ?: []); } catch(Throwable $__e) {}
+                        try { if (!empty($snode['skills_page1']) && is_string($snode['skills_page1'])) $s = array_merge($s, json_decode($snode['skills_page1'], true) ?: []); } catch(\Throwable $__e) {}
+                        try { if (!empty($snode['skills_page2']) && is_string($snode['skills_page2'])) $s = array_merge($s, json_decode($snode['skills_page2'], true) ?: []); } catch(\Throwable $__e) {}
                         $isIndexed = array_values($snode) === $snode;
                         if ($isIndexed) {
                             foreach ($snode as $v) if (is_scalar($v)) $s[] = (string)$v;
@@ -485,12 +447,12 @@ Route::get('/why-this-job-2', function (Request $request) {
                     }
                     if (empty($profileSkills) && (!empty($fs['skills_page1']) || !empty($fs['skills_page2']))) {
                         $s = [];
-                        try { if (!empty($fs['skills_page1']) && is_string($fs['skills_page1'])) $s = array_merge($s, json_decode($fs['skills_page1'], true) ?: []); } catch(Throwable $__e) {}
-                        try { if (!empty($fs['skills_page2']) && is_string($fs['skills_page2'])) $s = array_merge($s, json_decode($fs['skills_page2'], true) ?: []); } catch(Throwable $__e) {}
+                        try { if (!empty($fs['skills_page1']) && is_string($fs['skills_page1'])) $s = array_merge($s, json_decode($fs['skills_page1'], true) ?: []); } catch(\Throwable $__e) {}
+                        try { if (!empty($fs['skills_page2']) && is_string($fs['skills_page2'])) $s = array_merge($s, json_decode($fs['skills_page2'], true) ?: []); } catch(\Throwable $__e) {}
                         if (!empty($s)) $profileSkills = $s;
                     }
                 }
-            } catch (Throwable $__e) {
+            } catch (\Throwable $__e) {
                 logger()->debug('why-this-job-2: profile fetch failed: ' . $__e->getMessage());
             }
         }
@@ -545,7 +507,7 @@ Route::get('/why-this-job-2', function (Request $request) {
         }
 
         if (is_array($jobForView)) $jobForView['why_sentence'] = $whySentence;
-    } catch (Throwable $__e) {
+    } catch (\Throwable $__e) {
         logger()->debug('why-this-job-2: why sentence assembly failed: ' . $__e->getMessage());
     }
 
@@ -580,6 +542,8 @@ Route::get('/guardian-review', function () {
 })->name('guardian.review');
 
 // Application review API endpoints (shared user/guardian module)
+use App\Http\Controllers\GuardianReviewController;
+use App\Http\Controllers\GuardianJobController;
 Route::get('/api/applications', [GuardianReviewController::class, 'list'])->name('api.applications.list')->middleware('auth');
 Route::post('/api/applications/{docId}/approve', [GuardianReviewController::class, 'approve'])->name('api.applications.approve')->middleware('auth');
 Route::post('/api/applications/{docId}/flag', [GuardianReviewController::class, 'flag'])->name('api.applications.flag')->middleware('auth');
@@ -609,7 +573,7 @@ Route::post('/logout', function (Request $request) {
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->warning('Logout route error: ' . $e->getMessage());
     }
     return redirect()->route('home');
@@ -658,17 +622,17 @@ Route::post('/login', function (Request $request) {
                                 logger()->info('Login: authenticated via Oracle USER_GUARDIAN', ['email' => $email]);
                                 // Emergency behavior: always land on navigation-buttons after Oracle auth
                                 return redirect()->route('navigation_buttons');
-                            } catch (Throwable $__e) {
+                            } catch (\Throwable $__e) {
                                 logger()->warning('Oracle login: failed to create/login local user: ' . $__e->getMessage());
                             }
                         }
                     }
-                } catch (Throwable $__e) {
+                } catch (\Throwable $__e) {
                     logger()->warning('Oracle lookup failed: ' . $__e->getMessage());
                 }
             }
         }
-    } catch (Throwable $__e) {
+    } catch (\Throwable $__e) {
         logger()->warning('Oracle auth integration failed: ' . $__e->getMessage());
     }
     // optional redirect (full URL) to return to after successful login
@@ -690,7 +654,7 @@ Route::post('/login', function (Request $request) {
                         $isVerified = true;
                     }
                 }
-            } catch (Throwable $__e) {
+            } catch (\Throwable $__e) {
                 $isVerified = false;
             }
 
@@ -716,29 +680,29 @@ Route::post('/login', function (Request $request) {
                 if ($user && !empty($user->role) && $user->role === 'admin') {
                     return redirect()->route('admin.approval');
                 }
-            } catch (Throwable $__e) {
+            } catch (\Throwable $__e) {
                 // ignore and fall back to job matches
             }
 
             return redirect()->route('navigation_buttons');
         }
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         // If Auth is not configured, just redirect for now (placeholder)
         // Log the exception to laravel log
         logger()->error('Login error: ' . $e->getMessage());
     }
     // First try Oracle-backed auth (if configured) before falling back to Firebase.
     try {
-        $oracleController = app(OracleAuthController::class);
+        $oracleController = app(\App\Http\Controllers\OracleAuthController::class);
         $oracleResp = $oracleController->loginGuardian($request);
-        if ($oracleResp instanceof JsonResponse) {
+        if ($oracleResp instanceof \Illuminate\Http\JsonResponse) {
             $odata = $oracleResp->getData(true);
             if (!empty($odata['ok'])) { 
                 logger()->info('Login: Oracle guardian login succeeded', ['email' => $credentials['email'] ?? null]); 
                 return redirect()->route('job.matches'); 
             } 
         }
-    } catch (Throwable $__e) {
+    } catch (\Throwable $__e) {
         // Log and continue to Firebase/local fallbacks
         logger()->warning('Oracle login attempt failed: ' . $__e->getMessage());
     }
@@ -785,21 +749,21 @@ Route::post('/login', function (Request $request) {
                             }
                             // Check Firestore admin assignments and grant local admin flags if present
                             try {
-                                $fsAdmin = app(FirestoreAdminService::class);
-                                if (!empty($firebaseUid) && app(FirestoreAdminService::class)->isAdmin($firebaseUid)) {
+                                $fsAdmin = app(\App\Services\FirestoreAdminService::class);
+                                if (!empty($firebaseUid) && $fsAdmin->isAdmin($firebaseUid)) {
                                     // Simplified: only set the role locally. Approval flags not required.
                                     $user->role = 'admin';
                                     $user->save();
                                     logger()->info('Login: granted admin role from Firestore assignment', ['user_id' => $user->id, 'uid_hint' => substr($firebaseUid, 0, 6) . '...']);
                                 }
-                            } catch (Throwable $__fs_e) {
+                            } catch (\Throwable $__fs_e) {
                                 logger()->warning('Login: Firestore admin check failed: ' . $__fs_e->getMessage());
                             }
-                        } catch (Throwable $__save_e) {
+                        } catch (\Throwable $__save_e) {
                             logger()->warning('Login: failed to persist firebase_uid to user record: ' . $__save_e->getMessage());
                         }
                     }
-                } catch (Throwable $__e) {
+                } catch (\Throwable $__e) {
                     // ignore session write failures
                 }
                 $request->session()->regenerate();
@@ -815,7 +779,7 @@ Route::post('/login', function (Request $request) {
                             $isVerified = true;
                         }
                     }
-                } catch (Throwable $__e) {
+                } catch (\Throwable $__e) {
                     $isVerified = false;
                 }
 
@@ -840,7 +804,7 @@ Route::post('/login', function (Request $request) {
                     if ($user && !empty($user->role) && $user->role === 'admin') {
                         return redirect()->route('admin.approval');
                     }
-                } catch (Throwable $__e) {
+                } catch (\Throwable $__e) {
                     // ignore and fall back to job matches
                 }
 
@@ -848,7 +812,7 @@ Route::post('/login', function (Request $request) {
             } else {
                 logger()->warning('Firebase login failed: ' . $resp->body());
             }
-        } catch (Throwable $__e) {
+        } catch (\Throwable $__e) {
             logger()->warning('Firebase login attempt failed: ' . $__e->getMessage());
         }
     }
@@ -871,7 +835,7 @@ Route::post('/login', function (Request $request) {
             $request->session()->regenerate();
             logger()->warning('Emergency local fallback login used for ' . $email);
             return redirect()->route('navigation_buttons');
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             logger()->warning('Emergency local fallback failed: ' . $e->getMessage());
         }
     }
@@ -902,7 +866,7 @@ Route::get('/debug/reco-cache', function (Request $request) {
                 $u = Auth::user();
                 if (!empty($u->firebase_uid)) $resolvedUid = (string)$u->firebase_uid;
             }
-        } catch (Throwable $__e) {}
+        } catch (\Throwable $__e) {}
 
         // fallback to session-stored firebase uid
         if (!$resolvedUid) {
@@ -958,7 +922,7 @@ Route::get('/debug/reco-cache', function (Request $request) {
             'size' => $size,
             'first_job_ids' => $firstIds,
         ]);
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
     }
 })->name('debug.reco_cache');
@@ -968,19 +932,19 @@ Route::get('/debug/reco-preview', function (Request $request) {
     try {
         // Restrict access: allow local environment, otherwise require admin
         if (!app()->environment('local')) {
-            if (!Auth::check()) {
+            if (!\Illuminate\Support\Facades\Auth::check()) {
                 return response()->json(['ok' => false, 'error' => 'unauthorized - sign in required'], 403);
             }
-            $u = Auth::user();
+            $u = \Illuminate\Support\Facades\Auth::user();
             $isAdmin = false;
             try {
                 if (!empty($u->role) && $u->role === 'admin') $isAdmin = true;
                 else {
                     // try Firestore admin assignment as fallback
-                    $fsAdmin = app(FirestoreAdminService::class);
+                    $fsAdmin = app(\App\Services\FirestoreAdminService::class);
                     if (!empty($u->firebase_uid) && $fsAdmin->isAdmin($u->firebase_uid)) $isAdmin = true;
                 }
-            } catch (Throwable $__e) {
+            } catch (\Throwable $__e) {
                 // ignore and treat as non-admin
             }
             if (!$isAdmin) return response()->json(['ok' => false, 'error' => 'forbidden - admin only'], 403);
@@ -993,11 +957,11 @@ Route::get('/debug/reco-preview', function (Request $request) {
             $resolvedUid = (string)$provided;
         } else {
             try {
-                if (Auth::check()) {
-                    $u = Auth::user();
+                if (\Illuminate\Support\Facades\Auth::check()) {
+                    $u = \Illuminate\Support\Facades\Auth::user();
                     if (!empty($u->firebase_uid)) $resolvedUid = (string)$u->firebase_uid;
                 }
-            } catch (Throwable $__e) {}
+            } catch (\Throwable $__e) {}
             if (!$resolvedUid) {
                 $sess = session('firebase_uid', null);
                 if ($sess) $resolvedUid = (string)$sess;
@@ -1013,7 +977,7 @@ Route::get('/debug/reco-preview', function (Request $request) {
         $raw = @file_get_contents($cachePath);
         $decoded = $raw ? json_decode($raw, true) : null;
         return response()->json(['ok' => true, 'resolved_uid' => $resolvedUid, 'safe_uid' => $safeUid, 'cache_path' => $cachePath, 'data' => $decoded]);
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
     }
 })->name('debug.reco_preview');
@@ -1037,7 +1001,7 @@ use App\Http\Controllers\AdminRegistrationController;
 Route::post('/admin/register/submit', [AdminRegistrationController::class, 'submit'])->name('admin.register.submit');
 
 // Admin area routes (protected). Use the middleware class directly to avoid Kernel edits.
-Route::middleware(['auth', EnsureUserIsAdmin::class])->prefix('admin')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\EnsureUserIsAdmin::class])->prefix('admin')->group(function () {
     Route::get('/approval', function () { return view('admin.admin-approval'); })->name('admin.approval');
     Route::get('/newadmin', function () { return view('admin.admin-approval-newadmin'); })->name('admin.newadmin');
     Route::get('/company', function () { return view('admin.admin-approval-company'); })->name('admin.company');
@@ -1045,24 +1009,24 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->prefix('admin')->group(fu
     Route::get('/jobpostings', function () { return view('admin.admin-approval-jobpostings'); })->name('admin.jobpostings');
     Route::get('/adminview', function () { return view('admin.admin-approval-adminview'); })->name('admin.adminview');
     // Admin assignment management (Firestore-backed)
-    Route::get('/admins', [AdminAssignmentController::class, 'index'])->name('admin.admins');
-    Route::post('/admins', [AdminAssignmentController::class, 'store'])->name('admin.admins.store');
-    Route::delete('/admins/{uid}', [AdminAssignmentController::class, 'destroy'])->name('admin.admins.destroy');
+    Route::get('/admins', [\App\Http\Controllers\AdminAssignmentController::class, 'index'])->name('admin.admins');
+    Route::post('/admins', [\App\Http\Controllers\AdminAssignmentController::class, 'store'])->name('admin.admins.store');
+    Route::delete('/admins/{uid}', [\App\Http\Controllers\AdminAssignmentController::class, 'destroy'])->name('admin.admins.destroy');
     // Approvals API
-    Route::get('/api/pending-approvals', [AdminApprovalController::class, 'pending'])->name('admin.api.pending');
-    Route::post('/api/approve/{id}', [AdminApprovalController::class, 'approve'])->name('admin.api.approve');
-    Route::post('/api/reject/{id}', [AdminApprovalController::class, 'reject'])->name('admin.api.reject');
+    Route::get('/api/pending-approvals', [\App\Http\Controllers\AdminApprovalController::class, 'pending'])->name('admin.api.pending');
+    Route::post('/api/approve/{id}', [\App\Http\Controllers\AdminApprovalController::class, 'approve'])->name('admin.api.approve');
+    Route::post('/api/reject/{id}', [\App\Http\Controllers\AdminApprovalController::class, 'reject'])->name('admin.api.reject');
 
     // Server-side admin user review: fetch Firestore user doc and render the review page
     // Usage: /admin/user-review/{uid}
     Route::get('/user-review/{uid}', function (Request $request, $uid) {
         try {
             // Use GuardianJobController helper to fetch and convert Firestore document
-            $controller = app(GuardianJobController::class);
+            $controller = app(\App\Http\Controllers\GuardianJobController::class);
             $profile = $controller->fetchUserProfileFromFirestore($uid);
             // Pass the profile array to the review view; the blade will expose it to the client
             return view('ds_register_review-2', ['serverProfile' => $profile, 'serverProfileUid' => $uid]);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             logger()->warning('admin.user-review route failed: ' . $e->getMessage());
             return redirect()->route('admin.approval')->with('error', 'Failed to fetch user profile');
         }
@@ -1073,10 +1037,10 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->prefix('admin')->group(fu
     // intended for production use. Remove or protect this route in production.
     Route::get('/test-user-review/{uid}', function (Request $request, $uid) {
         try {
-            $controller = app(GuardianJobController::class);
+            $controller = app(\App\Http\Controllers\GuardianJobController::class);
             $profile = $controller->fetchUserProfileFromFirestore($uid);
             return view('ds_register_review-2', ['serverProfile' => $profile, 'serverProfileUid' => $uid]);
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
             logger()->warning('admin.test-user-review route failed: ' . $e->getMessage());
             return response('failed to fetch profile', 500);
         }
@@ -1133,7 +1097,7 @@ Route::get('/job-application-2', function () {
     return view('job-application-2');
 })->name('job.application.2');
 
-// JobCsvParser already imported at top
+use App\Services\JobCsvParser;
 
 Route::get('/job-application-review1', function () {
     $job = null;
@@ -1151,7 +1115,7 @@ Route::get('/job-application-review1', function () {
                 'job_description' => $assoc['job_description'] ?? ($assoc['description'] ?? ($assoc['job description'] ?? '')),
             ];
         }
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->error('job-application-review1 route: parser exception: ' . $e->getMessage());
     }
     // If parser returned no assoc, previously we showed a debug page automatically.
@@ -1216,11 +1180,11 @@ Route::get('/job-matches', function () {
     // load the per-user recommendation cache `storage/app/reco_user_<safeUid>.json`.
     $resolvedUid = null;
     try {
-        if (Auth::check()) {
-            $u = Auth::user();
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $u = \Illuminate\Support\Facades\Auth::user();
             if (!empty($u->firebase_uid)) $resolvedUid = (string)$u->firebase_uid;
         }
-    } catch (Throwable $__e) {
+    } catch (\Throwable $__e) {
         // ignore
     }
 
@@ -1262,6 +1226,7 @@ Route::post('/api/guardian/jobs/{jobId}/approve', [GuardianJobController::class,
 Route::post('/api/guardian/jobs/{jobId}/flag', [GuardianJobController::class, 'flag'])->name('api.guardian.jobs.flag');
 
 // Recommendations API: hybrid generator endpoint
+use App\Http\Controllers\RecommendationController;
 Route::post('/api/recommendations/user', [RecommendationController::class, 'userRecommendations']);
 Route::post('/api/recommendations/all', [RecommendationController::class, 'generateAll']);
 
@@ -1293,7 +1258,7 @@ Route::get('/registerfinalstep', function () {
     return view('ds_register_finalstep');
 })->name('registerfinalstep');
 
-Route::post('/register/draft', function (Request $request) {
+Route::post('/register/draft', function (\Illuminate\Http\Request $request) {
     try {
         $payload = $request->json()->all() ?: $request->all();
         if (!is_array($payload)) $payload = (array)$payload;
@@ -1309,14 +1274,14 @@ Route::post('/register/draft', function (Request $request) {
         }
         session(['register_draft' => $draft]);
         return response()->json(['ok' => true, 'draft_keys' => array_keys($draft)]);
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->warning('register.draft failed: ' . $e->getMessage());
         return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
     }
 });
 
 // Server-backed registration draft endpoints (store per-step data in session)
-Route::post('/register/draft', function (Request $request) {
+Route::post('/register/draft', function (\Illuminate\Http\Request $request) {
     try {
         $payload = $request->json()->all() ?: $request->all();
         if (!is_array($payload)) $payload = (array)$payload;
@@ -1332,23 +1297,23 @@ Route::post('/register/draft', function (Request $request) {
         }
         session(['register_draft' => $draft]);
         return response()->json(['ok' => true, 'draft_keys' => array_keys($draft)]);
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->warning('register.draft failed: ' . $e->getMessage());
         return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
     }
 });
 
-Route::get('/register/draft', function (Request $request) {
+Route::get('/register/draft', function (\Illuminate\Http\Request $request) {
     try {
         $draft = session('register_draft', []);
         return response()->json(['ok' => true, 'draft' => $draft]);
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
     }
 });
 
 // Final submit: aggregate session draft and request payload, then call OracleAuthController::registerGuardian
-Route::post('/register/submit', function (Request $request) {
+Route::post('/register/submit', function (\Illuminate\Http\Request $request) {
     try {
         $draft = session('register_draft', []);
         $payload = $request->json()->all() ?: $request->all();
@@ -1371,25 +1336,25 @@ Route::post('/register/submit', function (Request $request) {
             $data['password'] = bin2hex(random_bytes(8));
         }
 
-        $internalReq = new Request();
+        $internalReq = new \Illuminate\Http\Request();
         $internalReq->replace($data);
-        $controller = app(OracleAuthController::class);
+        $controller = app(\App\Http\Controllers\OracleAuthController::class);
         $resp = $controller->registerGuardian($internalReq);
 
-        if ($resp instanceof JsonResponse) {
+        if ($resp instanceof \Illuminate\Http\JsonResponse) {
             $j = $resp->getData(true);
             if (!empty($j['ok'])) {
                 session()->forget('register_draft');
-                try { session()->regenerate(); } catch (Throwable $__e) {}
+                try { session()->regenerate(); } catch (\Throwable $__e) {}
                 return response()->json(['ok' => true, 'uid' => $j['uid'] ?? null, 'id' => $j['id'] ?? null]);
             }
             return response()->json($j, $resp->getStatusCode());
         }
 
         session()->forget('register_draft');
-        try { session()->regenerate(); } catch (Throwable $__e) {}
+        try { session()->regenerate(); } catch (\Throwable $__e) {}
         return response()->json(['ok' => true]);
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->error('register.submit exception: ' . $e->getMessage());
         return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
     }
@@ -1398,6 +1363,7 @@ Route::post('/register/submit', function (Request $request) {
 
 
 // Oracle-backed auth endpoints (login only).
+use App\Http\Controllers\OracleAuthController;
 // Note: registration via Oracle is handled exclusively through the
 // server-backed /register/submit endpoint which aggregates session draft
 // data and delegates to OracleAuthController::registerGuardian.
@@ -1444,7 +1410,7 @@ Route::get('/api/server-profile', function (Request $request) {
             return response()->json(['ok' => false, 'error' => 'profile_not_available'], 404);
         }
         return response()->json(['ok' => true, 'profile' => $draft]);
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->warning('api.server-profile failed: ' . $e->getMessage());
         return response()->json(['ok' => false, 'error' => $e->getMessage()], 500);
     }
@@ -1561,7 +1527,7 @@ Route::post('/__oracle-test-login', function (Request $request) {
             $match = strval($password) === strval($stored);
         }
         return response()->json(['ok' => true, 'found' => true, 'match' => $match, 'email' => ($row['EMAIL'] ?? null)]);
-    } catch (Throwable $e) {
+    } catch (\Throwable $e) {
         logger()->warning('oracle-test-login failed: ' . $e->getMessage());
         return response()->json(['ok' => false, 'error' => 'exception', 'message' => $e->getMessage()], 500);
     }
@@ -1578,4 +1544,3 @@ Route::get('/viewprofile2', function () {
 Route::get('/viewprofile3', function () {
     return view('ds_viewprofile3');
 })->name('viewprofile3');
-}
