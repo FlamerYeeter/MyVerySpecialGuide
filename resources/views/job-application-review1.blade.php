@@ -306,7 +306,10 @@
                     });
                 } catch (e) {}
                 // redirect or update UI as needed
-                if (json.redirect) window.location.href = json.redirect;
+                    // show confirmation modal asking whether to apply to another job
+                    showPostSubmitModal();
+                    // if server provided a redirect, keep it as a fallback
+                    if (json.redirect) window.__postSubmitFallbackRedirect = json.redirect;
             } else {
                 throw new Error((json && json.error) ? json.error : 'Submission failed');
             }
@@ -677,4 +680,67 @@ document.addEventListener('DOMContentLoaded', function () {
 
     </section>
     </div>
+    <!-- Post-submit choice modal -->
+    <div id="postSubmitModal" class="hidden fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 relative">
+            <button id="postSubmitModalClose" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900">✕</button>
+            <h3 class="text-2xl font-bold text-gray-900 mb-3">Application Submitted</h3>
+            <p class="text-gray-700 mb-6">Do you want to apply for another job?</p>
+            <div class="flex justify-end gap-3">
+                <button id="postSubmitNo" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">No — View my applications</button>
+                <button id="postSubmitYes" class="bg-[#1E40AF] text-white px-4 py-2 rounded-lg hover:bg-blue-900">Yes — Show job matches</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // Show the post-submit modal and wire actions
+    function showPostSubmitModal() {
+        const modal = document.getElementById('postSubmitModal');
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        // focus the primary action for keyboard users
+        setTimeout(() => {
+            const yes = document.getElementById('postSubmitYes');
+            if (yes) yes.focus();
+        }, 10);
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('postSubmitModal');
+        const btnYes = document.getElementById('postSubmitYes');
+        const btnNo = document.getElementById('postSubmitNo');
+        const btnClose = document.getElementById('postSubmitModalClose');
+        if (!modal) return;
+
+        btnYes?.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.location.href = '/job-matches';
+        });
+
+        btnNo?.addEventListener('click', function (e) {
+            e.preventDefault();
+            window.location.href = '/my-job-applications';
+        });
+
+        btnClose?.addEventListener('click', function (e) {
+            e.preventDefault();
+            modal.classList.add('hidden');
+            // if server provided a fallback redirect, use it
+            if (window.__postSubmitFallbackRedirect) window.location.href = window.__postSubmitFallbackRedirect;
+        });
+
+        // close when clicking backdrop
+        modal.addEventListener('click', function (ev) {
+            if (ev.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // close on Escape
+        document.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Escape' && !modal.classList.contains('hidden')) modal.classList.add('hidden');
+        });
+    });
+    </script>
 @endsection
