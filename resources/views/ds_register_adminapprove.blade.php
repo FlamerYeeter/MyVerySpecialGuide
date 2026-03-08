@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin Approval</title>
+    <title>Applicant Registration: Personal Information</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
     /* Floating animations */
@@ -49,27 +49,37 @@
       color: #1e40af;
       font-weight: 500;
     }
-    </style>
+        </style>
+        <style>
+        @media (max-width: 640px) {
+            input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select, textarea {
+                padding: 0.75rem !important;
+                font-size: 16px !important;
+            }
+            .ocr-loading-text { font-size: 15px !important; }
+            .tts-btn { padding: 0.6rem !important; }
+        }
+        </style>
 </head>
 
-<body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
+<body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
 
-    <!-- Floating Mascots (hidden on very small screens to avoid clutter) -->
+    <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
-        class="hidden sm:block fixed left-6 top-1/3 w-28 lg:w-36 opacity-90 animate-float-slow z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-10 top-1/3 w-20 sm:w-28 md:w-32 opacity-90 animate-float-slow z-0">
     <img src="image/obj7.png" alt="Triangle Mascot"
-        class="fixed left-1 sm:left-4 md:left-8 bottom-16 sm:bottom-20 md:bottom-28 w-14 sm:w-20 md:w-28 opacity-90 animate-float-medium z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-28 opacity-90 animate-float-medium z-0">
     <img src="image/obj3.png" alt="Blue Mascot"
-        class="hidden sm:block fixed right-6 top-1/4 w-28 lg:w-36 opacity-90 animate-float-fast z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-10 top-1/4 w-20 sm:w-28 md:w-32 opacity-90 animate-float-fast z-0">
     <img src="image/obj8.png" alt="Twin Mascot"
-        class="hidden sm:block fixed right-6 bottom-24 w-28 lg:w-36 opacity-90 animate-float-medium z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-32 opacity-90 animate-float-medium z-0">
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
         onclick="(history.length>1 ? history.back() : window.location.href='{{ route('dataprivacy') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
-            class="w-6 h-6">
+            class="w-6 h-6" >
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         Back
@@ -77,47 +87,29 @@
 
     <!-- Main Container -->
     <div
-        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
         <!-- Header -->
-        <div class="text-center mt-6">
-            <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">Create an
-                Account</h1>
-            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-24 sm:w-32 md:w-36 mb-6">
+        <div class="text-center mt-4">
+            <h1 class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">Registration</h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-24 sm:w-32 md:w-36 mb-2">
 
-            <!-- Instruction Box -->
-            <div class="bg-white rounded-3xl p-5 sm:p-7 md:p-8 border-4 border-blue-300 shadow-lg text-left">
-             <!--    <h2 class="text-lg sm:text-xl md:text-2xl text-blue-600 font-bold flex flex-wrap items-center gap-x-3">
-                    For Admin Approval
-                    <span class="text-gray-600 italic text-sm sm:text-base">(Pahintulot sa Admin)</span> 
-                    <button type="button" class="text-xl hover:scale-110 transition-transform tts-btn"
-                        data-tts-en="For Admin Approval. Please type your information inside the box. The fields marked with a star must be filled in and attach a valid proof of membership."
-                        data-tts-tl="Pahintulot sa Admin. Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may bituin ay dapat sagutan at mag-upload ng patunay na miyembro."
-                        aria-label="Play audio for admin instruction">🔊</button>
-                </h2> -->
-                <p class="text-gray-800 text-sm sm:text-base mt-2">
-                    Please type your information inside the box. The text with a ⭐ star must be filled in.
-                </p>
-                <p class="text-gray-600 italic text-sm sm:text-base mt-4 border-b-2 border-blue-400 pb-2">
-                    (Isulat ang iyong impormasyon sa loob ng kahon. Ang mga text na may ⭐ bituin ay dapat sagutan.)
-                </p>
-            </div>
-        </div>
-
-        <!-- Overall Information Note -->
+        <!-- Information Note -->
         <div
-            class="relative bg-[#EEF4FF] border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
+            class="mt-2 sm:mt-2 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
 
-            <!-- Audio Button -->
-            <button type="button" aria-label="Play audio for information note"
-                class="absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white
-                text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-                data-tts-en="Please fill out all the required information below accurately. The details you provide help our administrators verify your account, confirm your eligibility, and ensure proper communication during the approval process."
-                data-tts-tl="Mangyaring punan nang tama ang lahat ng kinakailangang impormasyon sa ibaba. Ang mga detalyeng iyong ibibigay ay makatutulong sa aming mga tagapangasiwa upang beripikahin ang iyong account, kumpirmahin ang iyong pagiging karapat-dapat, at tiyakin ang maayos na komunikasyon sa proseso ng pag-apruba.">
-                🔊
-            </button>
+              <!-- Desktop Audio Button -->
+                <button type="button" aria-label="Play audio for info section"
+                    class="hidden sm:block absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+                         text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+                            focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a ⭐ must be filled in. Thank you!"
+                            data-tts-tl="Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
+                            ang mga field na may ⭐ ay kinakailangang sagutan. Salamat!">
+                            🔊
+                </button>
 
-            <div class="flex items-start gap-3 pr-20"> <!-- Added right padding here -->
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-4 sm:pr-16"> 
                 <!-- Info Icon -->
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
                     fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -126,116 +118,319 @@
                 </svg>
 
                 <!-- Text Content -->
-                <div class="flex-1">
-                    <p class="font-semibold text-sm sm:text-base leading-relaxed text-blue-800">
-                     Please fill out all the required information below completely and accurately.
-                     The details you provide will help us create your account, confirm your identity, 
-                     and ensure we can contact you if we need additional information. Providing correct information 
-                     will help you finish your registration smoothly and avoid delays.
+                <div class="flex-1 text-center sm:text-left">
+                    <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
+                     Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a ⭐ must be filled in. Thank you!
                     </p>
-                    <p class="italic text-gray-600 text-xs sm:text-sm mt-2 leading-relaxed">
-                        (Pakisagutan nang kumpleto at tama ang impormasyon sa ibaba. Kailangan namin ito para magawa ang iyong
-                         account, makilala ka, at makontak ka kung kailangan pa namin ng ibang detalye. Ang tamang impormasyon 
-                         ay makakatulong para maging mabilis at maayos ang inyong registration at maiwasan ang anumang delay.)
+                    <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+                        (Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
+                        ang mga field na may ⭐ ay kinakailangang sagutan. Salamat!)
                     </p>
+                
+                 <!-- Mobile Audio Button -->
+                    <div class="mt-3 flex justify-center sm:hidden">
+                        <button type="button" aria-label="Play audio for info section"
+                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
+                            transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a ⭐ must be filled in. Thank you!"
+                            data-tts-tl="Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
+                            ang mga field na may ⭐ ay kinakailangang sagutan. Salamat!">
+                            🔊
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
 
 
-        <!-- Form -->
-        <form id="registrationForm" class="mt-10 space-y-10 text-left">
-            <!-- Personal Information -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3
-                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Personal Information
-                </h3>
+                <!-- Form -->
+                <form id="registrationForm" class="mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-4xl px-4 sm:px-0">
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- First Name -->
-                    <div>
-                        <label for="first_name"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            First Name <span>⭐</span>
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
-                        <input id="first_name" type="text" placeholder="First Name"
-                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+<!-- Personal Information -->
+<div class="bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+
+    <!-- Section Title -->
+    <div class="mb-4">
+        <h3 class="text-xl sm:text-2xl font-bold text-blue-600">
+            Personal Information
+        </h3>
+    </div>
+
+    <!-- English Instruction -->
+    <p class="text-gray-700 font-semibold text-lg mb-2">
+        Please upload your PWD ID to help auto-fill some of your information and for verification.<span>⭐</span>
+    </p>
+
+    <!-- Tagalog Instruction -->
+    <p class="text-gray-700 italic text-md flex items-center gap-2">
+        (Mag upload ng iyong PWD ID upang makatulong sa automatic na paglagay ng iyong impormasyon at para sa verification.)
+        <button type="button"
+            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-2 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+            data-tts-en="Please upload your PWD ID to help auto-fill some of your information and for verification."
+            data-tts-tl="Mag upload ng iyong PWD ID upang makatulong sa automatic na paglagay ng iyong impormasyon at para sa verification.">
+            🔊
+        </button>
+    </p>
+
+
+            <!-- PWD ID Upload Card -->
+            <div class="mt-4 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 mb-8">
+
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                    <!-- Upload Info -->
+                        <div class="flex-1 text-center sm:text-left">
+                    <p class="text-gray-700 text-lg sm:text-base mb-1">
+                            Upload an image or PDF of the front and back of your PWD ID.
+                        </p>
+
+                        <p class="text-gray-700 italic text-sm sm:text-base mb-1">
+                            (Mag-upload ng larawan o PDF ng harap at likod ng iyong PWD ID.)
+                        </p>
+
+                        <p class="text-gray-600 text-sm sm:text-base">
+                            Accepted: <b>.jpg .jpeg .png .pdf</b> • Max size: <b>5MB</b>
+                        </p>
+
+                        <div id="pwdidDisplay" class="mt-2"></div>
+
                     </div>
 
-                    <!-- Last Name -->
-                    <div>
-                        <label for="last_name"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Last Name <span>⭐</span>
+                    <!-- Upload Button -->
+                    <div class="flex-shrink-0 flex flex-col items-center sm:items-end gap-2">
+
+                        <label
+                            for="pwdidFile"
+                            class="block w-full text-center sm:inline-flex sm:w-auto justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-5 py-3 rounded-lg transition shadow-md">
+                            📁 Choose File / Pumili ng File
                         </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
-                        <input id="last_name" type="text" placeholder="Last Name"
-                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+
+                        <input id="pwdidFile" name="pwd_id" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden"/>
+
+                        <div class="upload-error text-sm text-red-600"></div>
+
                     </div>
 
-                    <!-- Age -->
+                </div>
+
+            </div>
+
+                <!-- Personal Fields -->
+                <div class="space-y-6">
+
+                    <!-- Name Fields -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+
+                        <div>
+                            <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                                First Name <span>⭐</span>
+                            </label>
+                            <p class="text-gray-600 italic text-xs">Unang Pangalan</p>
+                            <input id="first_name" type="text" placeholder="First Name"
+                                class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                                Middle Name
+                            </label>
+                            <p class="text-gray-600 italic text-xs">Gitnang Pangalan (Opsyonal)</p>
+                            <input id="middle_name" type="text" placeholder="Middle Name"
+                                class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                                Last Name <span>⭐</span>
+                            </label>
+                            <p class="text-gray-600 italic text-xs">Apelyido</p>
+                            <input id="last_name" type="text" placeholder="Last Name"
+                                class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+                        </div>
+
+                    </div>
+
+                 <!-- Birth & Contact Fields -->
+                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+
+                    <!-- Date of Birth -->
                     <div>
-                        <label for="birthdate"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">
                             Date of Birth <span>⭐</span>
                         </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Petsa ng Kapanganakan</p>
-                        <input id="birthdate" type="date" placeholder="Select your birthdate"
-                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                        <p class="text-gray-600 italic text-xs">Petsa ng Kapanganakan</p>
+                        <input id="birthdate" type="date"
+                            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
                     </div>
-                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                     <!-- Email -->
                     <div>
-                        <label for="email"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Email <span>⭐</span>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                            Email Address <span>⭐</span>
                         </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
+                        <p class="text-gray-600 italic text-xs">Email</p>
                         <input id="email" type="email" placeholder="Email"
-                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
-                            <div id="emailError" class="text-red-600 text-sm mt-1"></div>
+                            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+                        <div id="emailError" class="text-red-600 text-sm mt-1"></div>
                     </div>
 
-                    <!-- Contact Number -->
+                    <!-- Cellphone Number -->
                     <div>
-                        <label for="phone"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Contact Number <span>⭐</span>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                            Cellphone Number <span>⭐</span>
                         </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
-                        <input   id="phone" 
-                                type="tel" 
-                                placeholder="+63 9XX XXX XXXX"
-                                pattern="^\+63\s?9\d{2}\s?\d{3}\s?\d{4}$"
-                                title="Please enter a valid Philippine number (e.g. +63 912 345 6789)"
-                                class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                        <p class="text-gray-600 italic text-xs">Numero ng Cellphone</p>
+                        <input id="phone"
+                            type="tel"
+                            placeholder="+63 9XX XXX XXXX"
+                            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
                     </div>
+
                 </div>
 
-                <!-- Address (split into components: Number, Street, Barangay, City) -->
-                <div class="mt-6">
+                <!-- Address -->
+                <div>
+
                     <label class="font-semibold text-gray-800 text-sm sm:text-base">
-                        Address <span>⭐</span>
+                       Home Address <span>⭐</span>
                     </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Tirahan (No./Blk/Lot, Street, Barangay, City)</p>
-                    <div class="mt-2 grid grid-cols-1 sm:grid-cols-4 gap-3">
+
+                    <p class="text-gray-600 italic text-xs">
+                        Tirahan (No./Blk/Lot, Street, Barangay, City)
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+
                         <input id="address_number" type="text" placeholder="No./Blk/Lot"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
                         <input id="address_street" type="text" placeholder="Street"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
                         <input id="address_barangay" type="text" placeholder="Barangay"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
                         <input id="address_city" type="text" placeholder="City / Municipality"
-                            class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
                     </div>
-                    <input id="address" name="address" type="hidden" />
+                        <input id="address" name="address" type="hidden"/>
+                    
+            <!-- Type of Down Syndrome Section -->
+            <div id="type_of_down_syndrome_container" class="mt-8 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 shadow-sm">
+
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-lg" for="down_syndrome_type">
+                            What is your Karyotype Result? <span>⭐</span>
+                        </label>
+                        <p class="mt-2 text-gray-700 text-md">
+                            Please select your karyotype result if you already have medical records or information from your doctor.
+                        </p>
+                        <p class="mt-1 text-gray-600 italic text-sm">
+                            (Piliin ang iyong karyotype result kung mayroon ka nang medical records o impormasyon mula sa iyong doktor.)
+                        </p>
+                    </div>
+
+                    <!-- TTS Audio Button -->
+                    <button type="button"
+                        class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-2 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                        data-tts-en="Please select your karyotype result if you already have medical records or information from your doctor."
+                        data-tts-tl="Piliin ang iyong karyotype result kung mayroon ka nang medical records o impormasyon mula sa iyong doktor.">
+                        🔊
+                    </button>
+                </div>
+
+                <!-- Options: Radio Buttons -->
+                <div class="flex flex-col sm:flex-row sm:gap-6 gap-4" id="down_syndrome_type">
+
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" id="down_syndrome_Pure" name="down_syndrome_type" value="Pure Trisomy" class="accent-blue-600"/>
+                        <span class="text-gray-700">Pure Trisomy</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" id="down_syndrome_>Mosaic" name="down_syndrome_type" value=">Mosaic Trisomy" class="accent-blue-600"/>
+                        <span class="text-gray-700">Mosaic Trisomy</span>
+                    </label>
+
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" id="down_syndrome_Translocation" name="down_syndrome_type" value="Translocation Trisomy" class="accent-blue-600"/>
+                        <span class="text-gray-700">Translocation Trisomy 21</span>
+                   </label>
                 </div>
             </div>
+
+            <!-- Medical Certificate Info Section -->
+            <div class="mt-6 text-left flex flex-col gap-2">
+
+                <!-- Title  -->
+                <div class="flex justify-between items-center">
+                    <p class="font-semibold text-gray-800 text-sm sm:text-lg">
+                        Please upload your Medical Certificate <span>⭐</span>
+                    </p>
+                    <!-- TTS Audio Button -->
+                    <button type="button"
+                        class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-2 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                        data-tts-en="Please upload your Medical Certificate issued within the last 3 months to show you’re fit and ready to work."
+                        data-tts-tl="I-upload ang medical certificate na inisyu sa loob ng nakaraang 3 buwan para ipakita na ikaw ay malusog at handa nang magtrabaho.">
+                        🔊
+                    </button>
+                </div>
+
+                <p class="mt-2 text-gray-700 text-md">
+                    Please upload a medical certificate issued within the last <strong>3 months</strong> to show you’re fit and ready to work.
+                </p>
+
+                <p class="mt-1 text-gray-600 italic text-sm">
+                    (I-upload ang medical certificate na inisyu sa loob ng nakaraang <strong>3 buwan</strong> para ipakita na ikaw ay malusog at handa nang magtrabaho.)
+                </p>
+
+            </div>
+                        <!-- Medical Certificate Upload Card -->
+                        <div id="medical_certificate_container" class="mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 shadow-sm">
+
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                                <!-- Info Section inside Card -->
+                                <div class="flex-1 text-center sm:text-left">
+                                    <p class="text-gray-700 text-lg sm:text-base mb-1">
+                                        Upload an image or PDF of your Medical Certificate.
+                                    </p>
+                                    <p class="text-gray-700 italic text-sm sm:text-base mb-1">
+                                        (Mag-upload ng larawan o PDF ng iyong Medical Certificate.)
+                                    </p>
+                                    <p class="text-gray-600 text-sm sm:text-base">
+                                        Accepted: <b>.jpg .jpeg .png .pdf</b> • Max size: <b>5MB</b>
+                                    </p>
+
+                                    <!-- File Info Display -->
+                                    <div id="medDisplay" class="mt-2"></div>
+                                </div>
+
+                    <!-- Upload Button Section -->
+                    <div class="flex-shrink-0 flex flex-col items-center sm:items-end gap-2">
+
+                        <label
+                            for="medFile"
+                            class="block w-full text-center sm:inline-flex sm:w-auto justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-5 py-3 rounded-lg transition shadow-md"
+                        >
+                            📁 Choose File / Pumili ng File
+                        </label>
+
+                        <input id="medFile" name="medical_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden"/>
+
+                        <!-- Upload error / validation -->
+                        <div class="upload-error text-sm text-red-600"></div>
+
+                    </div>
+                </div>
+            </div>
+
+                </div>
+            </div>
+        </div>
 
                             <script>
                             (function(){
@@ -331,44 +526,11 @@
                             </script>
 
 
-        <!-- Container -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col gap-8 mt-5">
-
-            <!-- Type of Down Syndrome Section -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <!-- Text -->
-                <div class="flex-1">
-                    <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                        Type of Down Syndrome 
-                        <span class="text-red-500 text-sm">(required)</span>
-                    </h3>
-
-                    <p class="text-black-600 text-xs sm:text-sm leading-snug mt-1">
-                        Please select the type of Down syndrome if you already have medical records or information from a doctor.
-                    </p>
-
-                    <p class="text-gray-600 italic text-xs sm:text-sm leading-snug mt-4"> 
-                        (Mangyaring piliin ang uri ng Down syndrome kung mayroon ka nang medical records o impormasyon mula sa doktor.)
-                    </p> 
-                </div>
-
-                <!-- Dropdown -->
-                <div class="w-full sm:w-60 sm:mt-[50px]">
-                    <select id="dsType" name="dsType" required
-                        class="w-full border border-gray-300 rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="" disabled selected>-- Select Type --</option>
-                        <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
-                        <option value="Mosaic Down Syndrome">Mosaic Down Syndrome</option>
-                        <option value="Translocation Down Syndrome">Translocation Down Syndrome</option>
-                    </select>
-                </div>
-            </div>
-
-        <!-- Type of Congenital or Developmental Disability Section -->
+        {{-- <!-- Type of Congenital or Developmental Disability Section -->
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
 
             <!-- Text -->
-            <div class="flex-1">
+            <div class="flex-1 text-center sm:text-left">
                 <h3 class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
                     Congenital or Developmental Disability
                     <span class="text-red-500 text-sm">(required)</span>
@@ -428,89 +590,220 @@
                 // ensure hidden sync on manual other input change too
                 if (otherInput) otherInput.addEventListener('input', updateHidden);
             })();
-        </script>
+        </script> --}}
 
-        </div>
 
-            <!-- Guardian Information -->
-            <div class="bg-white rounded-2xl shadow-md p-5 sm:p-6 border border-gray-200">
-                <h3
-                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Guardian Information
+            <!-- Parents / Guardian & Spouse Information Card -->
+            <div class="mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-200">
+
+                <h2 class="text-xl font-bold text-blue-600 mb-6">
+                    Parents / Guardian Information
+                </h2>
+
+                <!-- ================= Parents / Guardian ================= -->
+                <h3 class="text-lg font-semibold text-blue-700 mb-4">
+                    Parent / Guardian 
                 </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Guardian First Name -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <!-- Last Name -->
                     <div>
-                        <label for="guardian_first"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            First Name <span>⭐</span>
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Unang Pangalan</p>
-                        <input id="guardian_first" type="text" placeholder="First Name"
-                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Last Name ⭐</label>
+                        <p class="text-gray-600 italic text-xs">Apelyido</p>
+                        <input type="text" placeholder="Last Name"
+                            class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
-                    <!-- Guardian Last Name -->
+                    <!-- First Name -->
                     <div>
-                        <label for="guardian_last"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Last Name <span>⭐</span>
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Apelyido</p>
-                        <input id="guardian_last" type="text" placeholder="Last Name"
-                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">First Name ⭐</label>
+                        <p class="text-gray-600 italic text-xs">Unang Pangalan</p>
+                        <input type="text" placeholder="First Name"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
+
+                    <!-- Middle Name -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Middle Name</label>
+                        <p class="text-gray-600 italic text-xs"> Gitnang Pangalan (Opsyonal)</p>
+                        <input type="text" placeholder="Middle Name"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Birthdate -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Birthdate ⭐</label>
+                        <p class="text-gray-600 italic text-xs">Petsa ng Kapanganakan</p>
+                        <input type="date"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Relationship -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to Applicant ⭐</label>
+                        <p class="text-gray-600 italic text-xs">Relasyon sa Applicant</p>
+                        <select
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
+                            <option value="" disabled selected>Select Relationship</option>
+                            <option>Father</option>
+                            <option>Mother</option>
+                            <option>Guardian</option>
+                            <option>Relative</option>
+                        </select>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Email ⭐</label>
+                        <p class="text-gray-600 italic text-xs">Email</p>
+                        <input type="email" placeholder="Email"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Home Phone -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Home Phone No.</label>
+                        <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Bahay</p>
+                        <input type="tel" placeholder="Home Phone"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Cellphone -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Cellphone No. ⭐</label>
+                        <p class="text-gray-600 italic text-xs">Numero ng Cellphone</p>
+                        <input type="tel" placeholder="+63 9XX XXX XXXX"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Work Phone -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Work Phone No.</label>
+                        <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Bahay</p>
+                        <input type="tel" placeholder="Work Phone"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                    <!-- Guardian Email -->
-                    <div>
-                        <label for="guardian_email"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Email <span>⭐</span>
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Email</p>
-                        <input id="guardian_email" type="email" placeholder="Email"
-                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
-                        <div id="guardianEmailError" class="text-red-600 text-sm mt-1"></div>
-                    </div>
-
-                    <!-- Guardian Contact -->
-                    <div>
-                        <label for="guardian_phone"
-                            class="font-semibold text-gray-800 flex items-center gap-1 text-sm sm:text-base">
-                            Contact Number <span>⭐</span>
-                        </label>
-                        <p class="text-gray-600 italic text-xs sm:text-sm">Numero ng Telepono</p>
-                        <input id="guardian_phone" type="tel" placeholder="+63 9XX XXX XXXX"
-                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none" />
-                    </div>
-                </div>
-
-                <!-- Relationship -->
+                <!-- Work Address -->
                 <div class="mt-6">
-                    <label for="guardian_relationship" class="font-semibold text-gray-800 text-sm sm:text-base">
-                        Relationship to Account Holder <span>⭐</span>
-                    </label>
-                    <p class="text-gray-600 italic text-xs sm:text-sm">Relasyon sa May-ari ng Account</p>
-                    <select id="guardian_relationship"
-                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
-                        <option value="" disabled selected>Select Relationship</option>
-                        <option value="parent">Parent</option>
-                        <option value="guardian">Guardian</option>
-                        <option value="sibling">Sibling</option>
-                        <option value="relative">Relative</option>
-                        <option value="other">Other</option>
-                    </select>
+                    <label class="font-semibold text-gray-800 text-sm sm:text-base">Work Address</label>
+                    <p class="text-gray-600 italic text-xs">Adress ng Trabaho</p>
+                    <input type="text" placeholder="Work Address"
+                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                 </div>
+
+                <!-- Divider -->
+                <div class="border-t my-8"></div>
+
+                <!-- ================= Spouse ================= -->
+                <h3 class="text-lg font-semibold text-blue-700 mb-4">
+                    Spouse Information
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                    <!-- Last Name -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Last Name</label>
+                        <p class="text-gray-600 italic text-xs">Apelyido</p>
+                        <input type="text" placeholder="Last Name"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- First Name -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">First Name</label>
+                        <p class="text-gray-600 italic text-xs">Unang Pangalan</p>
+                        <input type="text" placeholder="First Name"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Middle Name -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Middle Name</label>
+                        <p class="text-gray-600 italic text-xs"> Gitnang Pangalan (Opsyonal)</p>
+                        <input type="text" placeholder="Middle Name"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Birthdate -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Birthdate</label>
+                        <p class="text-gray-600 italic text-xs">Petsa ng Kapanganakan</p>
+                        <input type="date"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Relationship -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to Applicant</label>
+                        <p class="text-gray-600 italic text-xs">Relasyon sa Applicant</p>
+                        <select
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
+                            <option value="" disabled selected>Select Relationship</option>
+                            <option>Father</option>
+                            <option>Mother</option>
+                            <option>Guardian</option>
+                            <option>Relative</option>
+                        </select>
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Email</label>
+                        <p class="text-gray-600 italic text-xs">Email</p>
+                        <input type="email" placeholder="Email"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Cellphone -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Cellphone No.</label>
+                        <p class="text-gray-600 italic text-xs">Numero ng Cellphone</p>
+                        <input type="tel" placeholder="+63 9XX XXX XXXX"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Home Phone -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Home Phone No.</label>
+                        <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Bahay</p>
+                        <input type="tel"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                    <!-- Work Phone -->
+                    <div>
+                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Work Phone No.</label>
+                        <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Trabaho</p>
+                        <input type="tel"
+                            class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                    </div>
+
+                </div>
+
+                <!-- Work Address -->
+                <div class="mt-6">
+                    <label class="font-semibold text-gray-800 text-sm sm:text-base">Work Address</label>
+                    <p class="text-gray-600 italic text-xs">Adress ng Trabaho</p>
+                    <input type="text" placeholder="Work Address"
+                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                </div>
+
             </div>
 
             <!-- Account Details -->
-            <div class="bg-white rounded-2xl shadow-lg p-5 sm:p-6 border border-gray-200">
-                <h3
-                    class="text-base sm:text-lg md:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2">
-                    Account Details</h3>
+             <div class="bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+
+                <!-- Section Title -->
+                <div class="mb-4">
+                    <h3 class="text-xl sm:text-2xl font-bold text-blue-600">
+                       Account Details
+                    </h3>
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Username -->
@@ -519,7 +812,7 @@
                             <span>⭐</span></label>
                         <input id="username" name="username" type="text" placeholder="Enter your username"
                             class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
-                        <p class="text-gray-500 text-xs mt-1">(example: @juancruz)</p>
+                        <p class="text-gray-500 italic text-sm mt-1">(example: @juancruz)</p>
                     </div>
 
                     <!-- Create Password -->
@@ -620,7 +913,7 @@
 
   <!-- Upload Section -->
   <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-  <div class="flex-1">
+    <div class="flex-1 text-center sm:text-left">
     <p class="font-medium text-gray-800 text-sm sm:text-base">
       <span id="proofLabel" class="flex items-center gap-2">
         <span>Upload Proof (Image or PDF)</span> 
@@ -650,108 +943,7 @@
 </div>
 --}}
 
-<!-- PWD ID -->
-<div class="mt-8 text-left px-2 sm:px-4">
-  <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-    Please upload your PWD ID.
-    <button 
-      type="button" 
-      class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-      data-tts-en="Please upload your PWD ID."
-      data-tts-tl="Paki-upload ang iyong PWD ID."
-    >🔊</button>
-  </label>
 
-   <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
-   Please upload your PWD ID. This is required for verification.
-  </p>
-
-   <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-    (Paki-upload ang iyong PWD ID. Kailangan ito para sa beripikasyon.)
-  </p>
-
-  <!-- Upload Section -->
-  <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-  <div class="flex-1">
-    <p class="font-medium text-gray-800 text-sm sm:text-base">
-      <span id="pwdidLabel" class="flex items-center gap-2">
-        <span>Upload File (Image or PDF)</span> 
-      </span>
-    </p>
-    <p id="pwdidHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-      (Mag-upload ng larawan o PDF ng iyong PWD ID.)<br /><br />
-      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
-    </p>
-
-    <!-- File Info Display -->
-    <div id="pwdidDisplay"></div>
-  </div>
-
-  <!-- Upload button + input wrapped so validation message is appended below the button -->
-  <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
-    <label
-      for="pwdidFile"
-      class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
-    >
-      📁 Choose File / Pumili ng File
-    </label>
-    <input id="pwdidFile" name="pwd_id" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
-    <!-- validation will be appended here (under the button) -->
-    <div class="upload-error w-full text-sm text-right"></div>
-  </div>
-</div>
-
-
-<!-- Medical Certificate -->
-<div class="mt-8 text-left px-2 sm:px-4">
-  <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-    Please upload your Medical Certificate.
-    <button 
-      type="button" 
-      class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-      data-tts-en="Please upload your medical certificate."
-      data-tts-tl="Paki-upload ang iyong medical certificate."
-    >🔊</button>
-  </label>
-
-   <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
-    A medical certificate is required to make sure you're fit and ready to work 😊 Please make sure it was issued within the last 3 months. Thank you!
-  </p>
-
-   <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-    (Kinakailangan ang isang medical certificate upang matiyak na ikaw ay malusog at handa nang magtrabaho 😊 Pakitiyak na ito ay naibigay sa loob ng nakaraang 3 buwan. Salamat!)
-  </p>
-
-  <!-- Upload Section -->
-  <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-  <div class="flex-1">
-    <p class="font-medium text-gray-800 text-sm sm:text-base">
-      <span id="medLabel" class="flex items-center gap-2">
-        <span>Upload File (Image or PDF)</span> 
-      </span>
-    </p>
-    <p id="medHint" class="text-gray-600 italic text-xs sm:text-sm mt-1">
-      (Mag-upload ng larawan o PDF ng iyong medical certificate.)<br /><br />
-      Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />
-    </p>
-
-    <!-- File Info Display -->
-    <div id="medDisplay"></div>
-  </div>
-
-  <!-- Upload button + input wrapped so validation message is appended below the button -->
-  <div class="flex-shrink-0 flex flex-col items-center sm:items-end space-y-2">
-    <label
-      for="medFile"
-      class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition"
-    >
-      📁 Choose File / Pumili ng File
-    </label>
-    <input id="medFile" name="medical_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
-    <!-- validation will be appended here (under the button) -->
-    <div class="upload-error w-full text-sm text-right"></div>
-  </div>
-</div>
 
 <script>
 function validateMedicalCertificateDate(dateString, errorContainer) {
@@ -1597,15 +1789,15 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 </script>
             
             <!-- Submit Button -->
-            <div class="flex flex-col items-center mt-6">
+            <div class="flex flex-col items-center mt-12 sm:mt-16 w-full px-4 sm:px-0">
                 <button 
                 id="createAccountBtn" 
-                type="button" class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
+                type="button" class="w-full sm:w-auto bg-[#2E2EFF] text-white text-lg sm:text-2xl font-semibold px-6 sm:px-16 md:px-28 py-3 sm:py-4 rounded-2xl shadow-lg hover:bg-blue-600 transition disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-300">
                     Next →
                 </button>
-                <p class="text-gray-600 text-sm mt-3 text-center">
-                    Click <span class="text-[#1E40AF] font-medium">“Next”</span> to continue<br>
-                    <span class="italic text-gray-600">(Pindutin upang magpatuloy sa susunod na hakbang)</span>
+                <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-4 text-center leading-relaxed px-4 sm:px-0">
+                    Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue <br class="hidden sm:block">
+                    <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
                 </p>
             </div>
 
