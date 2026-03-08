@@ -656,22 +656,66 @@
               const data = localStorage.getItem(LS_PREFIX + def.key + '_data');
               const type = localStorage.getItem(LS_PREFIX + def.key + '_type');
               if (name && data) {
-                stored[def.key] = { name: name, url: data, type: type || guessTypeFromFilename(name) };
+                // keep potential original name in rawName when available
+                stored[def.key] = { name: name, url: data, type: type || guessTypeFromFilename(name), rawName: name };
               }
             } catch (e) { /* ignore */ }
           });
         }
 
+        function getLastNameForFilename() {
+          // try form input first
+          try {
+            const el = document.querySelector('input[name="lastName"]');
+            if (el && el.value && String(el.value).trim() !== '') return String(el.value).trim().replace(/\s+/g, '_');
+          } catch (e) {}
+          // fallback: try stored step1 payloads in session/local storage
+          try {
+            const raw = sessionStorage.getItem('jobApplication_step1') || localStorage.getItem('jobApplication_step1');
+            if (raw) {
+              const obj = JSON.parse(raw);
+              if (obj) {
+                return (obj.lastName || obj.last_name || obj.LAST_NAME || obj.lastname || obj.surname || '') .toString().trim().replace(/\s+/g, '_');
+              }
+            }
+          } catch (e) {}
+          return '';
+        }
+
+        const FNAME_PREFIX = { medical: 'MEDCERT', resume: 'RESUME', pwd: 'PWD_ID' };
+
+        function formatSavedFilename(key, originalName) {
+          const prefix = FNAME_PREFIX[key] || key.toUpperCase();
+          const last = getLastNameForFilename();
+          // extract extension from originalName
+          let ext = '';
+          try {
+            const m = (originalName || '').split('.');
+            if (m.length > 1) ext = m.pop();
+          } catch (e) { ext = ''; }
+          const base = prefix + (last ? '_' + last : '');
+          return ext ? (base + '.' + ext) : base;
+        }
+
         function persistEntry(key) {
           try {
             if (stored[key] && stored[key].url) {
+              // preserve rawName for reference, compute saved display name
+              const original = stored[key].rawName || stored[key].name || '';
+              const savedName = formatSavedFilename(key, original);
+              stored[key].name = savedName;
+              console.log('persistEntry saving', key, savedName);
               localStorage.setItem(LS_PREFIX + key + '_name', stored[key].name);
               localStorage.setItem(LS_PREFIX + key + '_data', stored[key].url);
               localStorage.setItem(LS_PREFIX + key + '_type', stored[key].type || '');
+              // also persist raw name separately so we can reformat later if needed
+              try { localStorage.setItem(LS_PREFIX + key + '_rawname', original); } catch (e) {}
             } else {
+              console.log('persistEntry clearing', key);
               localStorage.removeItem(LS_PREFIX + key + '_name');
               localStorage.removeItem(LS_PREFIX + key + '_data');
               localStorage.removeItem(LS_PREFIX + key + '_type');
+              try { localStorage.removeItem(LS_PREFIX + key + '_rawname'); } catch (e) {}
             }
           } catch (e) { console.warn('persistEntry failed', e); }
         }
@@ -783,10 +827,12 @@
             inp.className = 'hidden';
             inp.addEventListener('change', (ev) => {
               const f = ev.target.files[0];
+              console.log('getOrCreateInput change for', key, f && f.name);
               if (!f) return;
               const reader = new FileReader();
               reader.onload = (r) => {
-                stored[key] = { name: f.name, url: r.target.result, type: f.type || guessTypeFromFilename(f.name), rawFile: f };
+                stored[key] = { name: f.name, rawName: f.name, url: r.target.result, type: f.type || guessTypeFromFilename(f.name), rawFile: f };
+                console.log('getOrCreateInput: read complete for', key);
                 persistEntry(key);
                 renderSlots();
                 updateBigUploadContentVisibility();
@@ -800,9 +846,11 @@
         }
 
         function assignFileToKey(key, file) {
+          console.log('assignFileToKey', key, file && file.name);
           const reader = new FileReader();
           reader.onload = (e) => {
-            stored[key] = { name: file.name, url: e.target.result, type: file.type || guessTypeFromFilename(file.name), rawFile: file };
+            stored[key] = { name: file.name, rawName: file.name, url: e.target.result, type: file.type || guessTypeFromFilename(file.name), rawFile: file };
+            console.log('assignFileToKey: read complete for', key);
             persistEntry(key);
             renderSlots();
             updateBigUploadContentVisibility();
@@ -879,14 +927,15 @@
             if (!files.length) return;
 
             // Get checked definitions in order
-            const checkedDefs = defs.filter(d => {
+            let checkedDefs = defs.filter(d => {
               const chk = document.getElementById(d.checkboxId);
               return chk && chk.checked;
             });
 
+            // If no specific checkboxes are checked, fall back to assigning files
+            // to the first available required slots in order.
             if (checkedDefs.length === 0) {
-              e.target.value = '';
-              return;
+              checkedDefs = defs.slice();
             }
 
             // Mark already-occupied keys so we don't overwrite them synchronously
@@ -911,6 +960,7 @@
             }
 
             e.target.value = '';
+            console.log('bigInput: assigned', {assignedCount: fileIndex, pending: pendingFiles.length});
             renderSlots();
             updateBigUploadContentVisibility();
           });
