@@ -289,7 +289,7 @@
         </div>
 
         <p class="text-gray-700 font-bold text-lg mb-6">
-          Kindly upload the required documents: PWD ID, Medical Certificate, and Resume in PDF, DOC, DOCX, JPG, PNG.
+          Kindly upload the required documents: Medical Certificate, PWD ID, and Resume in PDF, DOC, DOCX, JPG, PNG.
 
         </p>
 
@@ -317,7 +317,7 @@
 
         <!-- SINGLE UPLOAD BOX -->
         <div id="bigUploadBox" class="border-2 border-dashed border-[#1E40AF] rounded-2xl p-8 text-center 
-                                                    bg-[#F0F9FF] hover:bg-blue-50 transition">
+                                                      bg-[#F0F9FF] hover:bg-blue-50 transition">
 
           <div id="bigUploadContent" class="cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#1E40AF] mx-auto mb-4" fill="none"
@@ -421,26 +421,26 @@
         const expDiv = document.createElement('div');
         expDiv.className = 'p-6 bg-[#F0F9FF] rounded-2xl border border-[#1E40AF] shadow-sm space-y-3 relative';
         expDiv.innerHTML = `
-                                          <button type="button" class="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold" onclick="this.parentElement.remove()">Remove</button>
-                                          <div><label class="font-semibold text-lg">Job Title</label>
-                                            <input type="text" class="w-full border rounded-lg px-4 py-2 text-lg" placeholder="e.g. Sales Associate">
-                                          </div>
-                                          <div><label class="font-semibold text-lg">Company Name</label>
-                                            <input type="text" class="w-full border rounded-lg px-4 py-2 text-lg" placeholder="e.g. ABC Corp">
-                                          </div>
-                                          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div><label class="font-semibold text-lg">Start Date</label>
-                                              <input type="date" class="w-full border rounded-lg px-4 py-2 text-lg">
+                                            <button type="button" class="absolute top-3 right-3 bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm font-semibold" onclick="this.parentElement.remove()">Remove</button>
+                                            <div><label class="font-semibold text-lg">Job Title</label>
+                                              <input type="text" class="w-full border rounded-lg px-4 py-2 text-lg" placeholder="e.g. Sales Associate">
                                             </div>
-                                            <div><label class="font-semibold text-lg">End Date</label>
-                                              <input type="date" class="w-full border rounded-lg px-4 py-2 text-lg">
+                                            <div><label class="font-semibold text-lg">Company Name</label>
+                                              <input type="text" class="w-full border rounded-lg px-4 py-2 text-lg" placeholder="e.g. ABC Corp">
                                             </div>
-                                          </div>
-                                          <div>
-                                            <label class="font-semibold text-lg">Job Description</label>
-                                            <textarea class="w-full border rounded-lg px-4 py-2 text-lg resize-y min-h-[80px]" placeholder="Describe your tasks and responsibilities"></textarea>
-                                          </div>
-                                        `;
+                                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                              <div><label class="font-semibold text-lg">Start Date</label>
+                                                <input type="date" class="w-full border rounded-lg px-4 py-2 text-lg">
+                                              </div>
+                                              <div><label class="font-semibold text-lg">End Date</label>
+                                                <input type="date" class="w-full border rounded-lg px-4 py-2 text-lg">
+                                              </div>
+                                            </div>
+                                            <div>
+                                              <label class="font-semibold text-lg">Job Description</label>
+                                              <textarea class="w-full border rounded-lg px-4 py-2 text-lg resize-y min-h-[80px]" placeholder="Describe your tasks and responsibilities"></textarea>
+                                            </div>
+                                          `;
         experienceList.appendChild(expDiv);
       }
       // ==================== UNIVERSAL FILE UPLOADER ====================
@@ -669,17 +669,17 @@
           try {
             const el = document.querySelector('input[name="lastName"]');
             if (el && el.value && String(el.value).trim() !== '') return String(el.value).trim().replace(/\s+/g, '_');
-          } catch (e) {}
+          } catch (e) { }
           // fallback: try stored step1 payloads in session/local storage
           try {
             const raw = sessionStorage.getItem('jobApplication_step1') || localStorage.getItem('jobApplication_step1');
             if (raw) {
               const obj = JSON.parse(raw);
               if (obj) {
-                return (obj.lastName || obj.last_name || obj.LAST_NAME || obj.lastname || obj.surname || '') .toString().trim().replace(/\s+/g, '_');
+                return (obj.lastName || obj.last_name || obj.LAST_NAME || obj.lastname || obj.surname || '').toString().trim().replace(/\s+/g, '_');
               }
             }
-          } catch (e) {}
+          } catch (e) { }
           return '';
         }
 
@@ -722,13 +722,13 @@
               localStorage.setItem(LS_PREFIX + key + '_data', stored[key].url);
               localStorage.setItem(LS_PREFIX + key + '_type', stored[key].type || '');
               // also persist raw name separately so we can reformat later if needed
-              try { localStorage.setItem(LS_PREFIX + key + '_rawname', original); } catch (e) {}
+              try { localStorage.setItem(LS_PREFIX + key + '_rawname', original); } catch (e) { }
             } else {
               console.log('persistEntry clearing', key);
               localStorage.removeItem(LS_PREFIX + key + '_name');
               localStorage.removeItem(LS_PREFIX + key + '_data');
               localStorage.removeItem(LS_PREFIX + key + '_type');
-              try { localStorage.removeItem(LS_PREFIX + key + '_rawname'); } catch (e) {}
+              try { localStorage.removeItem(LS_PREFIX + key + '_rawname'); } catch (e) { }
             }
           } catch (e) { console.warn('persistEntry failed', e); }
         }
@@ -973,7 +973,7 @@
             }
 
             e.target.value = '';
-            console.log('bigInput: assigned', {assignedCount: fileIndex, pending: pendingFiles.length});
+            console.log('bigInput: assigned', { assignedCount: fileIndex, pending: pendingFiles.length });
             renderSlots();
             updateBigUploadContentVisibility();
           });
