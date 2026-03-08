@@ -16,7 +16,7 @@
 
     @php
         // guard Vite manifest so missing build doesn't throw a 500
-$manifestPath = public_path('build/manifest.json');
+        $manifestPath = public_path('build/manifest.json');
     @endphp
 
     @if (file_exists($manifestPath))
@@ -24,7 +24,7 @@ $manifestPath = public_path('build/manifest.json');
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else
         {{-- Manifest missing — fallback to static assets to avoid server error.
-             Run `npm install && npm run build` later to restore Vite-managed assets. --}}
+        Run `npm install && npm run build` later to restore Vite-managed assets. --}}
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
         <script src="{{ asset('js/app.js') }}" defer></script>
     @endif
@@ -34,87 +34,92 @@ $manifestPath = public_path('build/manifest.json');
     <!-- Navigation -->
     <nav class="w-full bg-white/80 backdrop-blur-md shadow-md">
         <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-12 py-4">
-         <div class="flex items-center justify-between gap-4">
-            <!-- Logo (links to home) -->
-            <a href="{{ route('home') }}" class="flex items-center space-x-3 shrink-0">
-                <img src="image/logo.png" alt="EmpowerPath Logo"
-                    class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain">
-                <span class="text-lg sm:text-xl md:text-2xl font-bold text-blue-700">EmpowerPath</span>
-            </a>
+            <div class="flex items-center justify-between gap-4">
+                <!-- Logo (links to home) -->
+                <a href="{{ route('home') }}" class="flex items-center space-x-3 shrink-0">
+                    <img src="image/logo.png" alt="EmpowerPath Logo"
+                        class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain">
+                    <span class="text-lg sm:text-xl md:text-2xl font-bold text-blue-700">EmpowerPath</span>
+                </a>
 
-            <!-- Nav Links -->
-            <div class="hidden lg:flex items-center gap-6 ml-auto">
-                <a href="{{ route('home') }}"
-                    class="{{ request()->routeIs('home') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
-                <a href="{{ route('about.us') }}"
-                    class="{{ request()->routeIs('about.us') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">About EmpowerPath</a>
-                <a href="{{ route('about.ds') }}"
-                    class="{{ request()->routeIs('about.ds') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">About Down Syndrome</a>
-                <a href="{{ route('about.dsapi') }}" 
-                    class="{{ request()->routeIs('about.dsapi') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">Down Syndrome Association</a>
-                <!-- Sign Up Button -->
-               <a href="{{ route('register') }}"
-                    class="inline-block border-2 border-[#2563EB] text-[#2563EB]
+                <!-- Nav Links -->
+                <div class="hidden lg:flex items-center gap-6 ml-auto">
+                    <a href="{{ route('home') }}"
+                        class="{{ request()->routeIs('home') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
+                    <a href="{{ route('about.us') }}"
+                        class="{{ request()->routeIs('about.us') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">About
+                        EmpowerPath</a>
+                    <a href="{{ route('about.ds') }}"
+                        class="{{ request()->routeIs('about.ds') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">About
+                        Down Syndrome</a>
+                    <a href="{{ route('about.dsapi') }}"
+                        class="{{ request()->routeIs('about.dsapi') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">Down
+                        Syndrome Association</a>
+                    <!-- Sign Up Button -->
+                    <a href="{{ route('register') }}" class="inline-block border-2 border-[#2563EB] text-[#2563EB]
                            px-8 py-3 rounded-xl text-base font-semibold
                            hover:bg-[#2563EB]/20 hover:border-[#1D4ED8]
                            transition-all duration-200 transform hover:scale-105">
-                          Sign Up
-                </a>
-            </div>
+                        Sign Up
+                    </a>
+                </div>
 
-            <div class="flex items-center space-x-4">
-                @auth
-                    <div class="hidden md:block relative">
-                        <button id="desktopProfileBtn" type="button"
-                            onclick="document.getElementById('desktopProfileMenu').classList.toggle('hidden')"
-                            class="flex items-center gap-2 border px-3 py-1 rounded-full">
-                            <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}" alt="avatar"
-                                class="w-6 h-6 rounded-full">
-                            <span class="text-sm">{{ Auth::user()->name ?? 'Profile' }}</span>
-                        </button>
-                        <div id="desktopProfileMenu"
-                            class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
-                            <a href="{{ route('user.role') }}"
-                                class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                            <form method="POST" action="{{ route('logout') }}" class="px-2">
-                                @csrf
-                                <button type="submit"
-                                    class="w-full text-left text-sm text-red-600 px-2 py-2 hover:bg-gray-100 rounded">Sign
-                                    Out</button>
-                            </form>
+                <div class="flex items-center space-x-4">
+                    @auth
+                        <div class="hidden md:block relative">
+                            <button id="desktopProfileBtn" type="button"
+                                onclick="document.getElementById('desktopProfileMenu').classList.toggle('hidden')"
+                                class="flex items-center gap-2 border px-3 py-1 rounded-full">
+                                <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}" alt="avatar"
+                                    class="w-6 h-6 rounded-full">
+                                <span class="text-sm">{{ Auth::user()->name ?? 'Profile' }}</span>
+                            </button>
+                            <div id="desktopProfileMenu"
+                                class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
+                                <a href="{{ route('user.role') }}"
+                                    class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                                <form method="POST" action="{{ route('logout') }}" class="px-2">
+                                    @csrf
+                                    <button type="submit"
+                                        class="w-full text-left text-sm text-red-600 px-2 py-2 hover:bg-gray-100 rounded">Sign
+                                        Out</button>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                @endauth
+                    @endauth
 
-                <!-- Responsive Menu Button -->
-                <button id="menu-toggle" class="lg:hidden text-gray-700 hover:text-blue-600 focus:outline-none">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                </button>
+                    <!-- Responsive Menu Button -->
+                    <button id="menu-toggle" class="lg:hidden text-gray-700 hover:text-blue-600 focus:outline-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
 
         <!-- Responsive Dropdown Menu -->
         <div id="mobile-menu" class="hidden lg:hidden mt-4 rounded-xl bg-white shadow-md px-4 py-4 space-y-3">
             <a href="{{ route('home') }}"
                 class="block {{ request()->routeIs('home') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">Home</a>
             <a href="{{ route('about.us') }}"
-                class="block {{ request()->routeIs('about.us') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">About EmpowerPath</a>
+                class="block {{ request()->routeIs('about.us') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">About
+                EmpowerPath</a>
             <a href="{{ route('about.ds') }}"
-                class="block {{ request()->routeIs('about.ds') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">About Down Syndrome</a>
-            <a href="{{ route('about.dsapi') }}" class="block {{ request()->routeIs('about.dsapi') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">Down Syndrome
+                class="block {{ request()->routeIs('about.ds') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">About
+                Down Syndrome</a>
+            <a href="{{ route('about.dsapi') }}"
+                class="block {{ request()->routeIs('about.dsapi') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">Down
+                Syndrome
                 Association</a>
             <!-- Sign Up Button -->
-            <a href="{{ route('register') }}"
-                    class="inline-block border-2 border-[#2563EB] text-[#2563EB]
+            <a href="{{ route('register') }}" class="inline-block border-2 border-[#2563EB] text-[#2563EB]
                            px-8 py-3 rounded-xl text-base font-semibold
                            hover:bg-[#2563EB]/20 hover:border-[#1D4ED8]
                            transition-all duration-200 transform hover:scale-105">
-                          Sign Up
-                </a>
+                Sign Up
+            </a>
             @auth
                 <a href="{{ route('user.role') }}"
                     class="block text-gray-700 hover:text-blue-600 font-medium text-base">Profile</a>
@@ -133,15 +138,13 @@ $manifestPath = public_path('build/manifest.json');
 
     <!-- Footer -->
     <footer class="bg-white border-t mt-12">
-        <div
-            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10
             grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8
             text-center md:text-left">
 
             <!-- Logo -->
             <div class="flex flex-col items-center md:items-start space-y-3">
-                <img src="{{ asset('image/orglogo.jpg') }}" alt="Logo"
-                    class="h-28 w-28 object-contain mx-auto md:mx-0">
+                <img src="{{ asset('image/orglogo.jpg') }}" alt="Logo" class="h-28 w-28 object-contain mx-auto md:mx-0">
             </div>
 
             <!-- Address -->
@@ -173,15 +176,14 @@ $manifestPath = public_path('build/manifest.json');
             </div>
 
             <!-- Go Up Button -->
-            <div class="flex justify-center md:justify-start mt-6 md:mt-0">
-                <button id="goUpBtn"
-                    class="flex items-center gap-2 bg-blue-600 text-white font-semibold 
-                       px-6 sm:px-10 py-2 sm:py-4 text-base sm:text-lg rounded-xl shadow-md 
+            <div class="flex justify-center md:justify-start mt-4 md:mt-0">
+                <button id="goUpBtn" class="flex items-center gap-2 bg-blue-600 text-white font-semibold 
+                       px-4 sm:px-6 py-2 sm:py-4 text-base sm:text-lg rounded-xl shadow-md 
                        hover:bg-blue-700 active:scale-95 transition-all">
-                       <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor" stroke-width="3">
-                       <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-                       </svg>
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+                    </svg>
                     Go Up
                 </button>
             </div>

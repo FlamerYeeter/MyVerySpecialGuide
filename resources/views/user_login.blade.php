@@ -13,12 +13,12 @@
 
   <!-- Back Button -->
   <div class="absolute top-6 left-6">
-    <a href="{{ route('user.role') }}"
+    <a href="{{ route('home') }}"
       class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-8 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
-            class="w-6 h-6">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
+        class="w-6 h-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
       Back
     </a>
   </div>
@@ -34,15 +34,16 @@
       <input type="hidden" name="redirect" value="/navigation-buttons" />
       <div id="loginError" class="text-red-600 text-sm"></div>
       @if($errors->any())
-      <div class="text-red-600 text-sm">{{ $errors->first() }}</div>
+        <div class="text-red-600 text-sm">{{ $errors->first() }}</div>
       @endif
-      <input name="email" type="text" placeholder="Email"
-        value="{{ old('email') }}"
+      <input name="email" type="text" placeholder="Email" value="{{ old('email') }}"
         class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" />
       <div class="relative">
         <input id="password" name="password" type="password" placeholder="Password"
           class="w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400 pr-10" />
-        <button type="button" class="toggle-password absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-sm text-gray-600 px-3 py-1 rounded" data-target="password" aria-pressed="false">Show</button>
+        <button type="button"
+          class="toggle-password absolute right-2 top-1/2 transform -translate-y-1/2 bg-transparent text-sm text-gray-600 px-3 py-1 rounded"
+          data-target="password" aria-pressed="false">Show</button>
       </div>
       <button type="submit"
         class="w-full bg-[#2E2EFF] hover:bg-blue-600 text-white font-semibold py-3 rounded-md transition-all duration-300">
@@ -51,8 +52,9 @@
     </form>
 
     <!-- Forgot Password -->
-      <div class="mt-4">
-      <a id="forgotPasswordLink" href="{{ route('forgotpassword') }}" class="text-sm text-gray-700 hover:underline font-medium">
+    <div class="mt-4">
+      <a id="forgotPasswordLink" href="{{ route('forgotpassword') }}"
+        class="text-sm text-gray-700 hover:underline font-medium">
         Forgot your password?
       </a>
     </div>
@@ -77,116 +79,117 @@
 </body>
 
 <script>
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
 
-  const email = document.querySelector('input[name="email"]').value.trim();
-  const password = document.querySelector('input[name="password"]').value;
-  const errorDiv = document.getElementById('loginError');
-  const loadingModal = document.getElementById('loadingModal');
-
-  errorDiv.textContent = ''; // clear errors
-  // ensure modal text is correct for login
-  const loadingText = loadingModal.querySelector('p');
-  if (loadingText) loadingText.textContent = 'Logging in, please wait...';
-  loadingModal.classList.remove('hidden'); // show loading
-
-  try {
-    const res = await fetch('/db/login.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-
-    const data = await res.json();
- console.log(data);
-    if (data.success) {
-      localStorage.setItem('session_id', data.session_id);
-      localStorage.setItem('user_id', data.user.id);
-      localStorage.setItem('user_email', data.user.email);
-
-      // ✅ simulate loading delay for nice UX
-      setTimeout(() => {
-        loadingModal.classList.add('hidden');
-        window.location.href = '/navigationbuttons';
-      }, 1000);
-    } else {
-      loadingModal.classList.add('hidden');
-      errorDiv.textContent = data.message || 'Login failed.';
-    }
-  } catch (err) {
-    loadingModal.classList.add('hidden');
-    errorDiv.textContent = 'Server error.';
-  }
-});
-
-// Forgot password: send reset link using reset-password-user.php
-(function(){
-  const forgot = document.getElementById('forgotPasswordLink');
-  if (!forgot) return;
-  forgot.addEventListener('click', async function(ev){
-    ev.preventDefault();
-    const email = (document.querySelector('input[name="email"]')?.value || '').trim();
+    const email = document.querySelector('input[name="email"]').value.trim();
+    const password = document.querySelector('input[name="password"]').value;
     const errorDiv = document.getElementById('loginError');
     const loadingModal = document.getElementById('loadingModal');
-    errorDiv.textContent = '';
 
-    if (!email) {
-      errorDiv.textContent = 'Please enter your email above to receive a reset link.';
-      const input = document.querySelector('input[name="email"]'); if (input) input.focus();
-      return;
-    }
+    errorDiv.textContent = ''; // clear errors
+    // ensure modal text is correct for login
+    const loadingText = loadingModal.querySelector('p');
+    if (loadingText) loadingText.textContent = 'Logging in, please wait...';
+    loadingModal.classList.remove('hidden'); // show loading
 
-      try {
-      // set modal text for password-reset flow
-      const loadingText = loadingModal.querySelector('p');
-      if (loadingText) loadingText.textContent = 'Sending password reset link...';
-      loadingModal.classList.remove('hidden');
-      // include debug flag when running on localhost so developer can receive link without SMTP
-      const isLocalhost = ['localhost','127.0.0.1','::1'].includes(window.location.hostname);
-      const body = { email };
-      if (isLocalhost) body.debug = 1;
-
-      const res = await fetch('/db/reset-password-user.php', {
+    try {
+      const res = await fetch('/db/login.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body)
+        body: JSON.stringify({ email, password })
       });
+
       const data = await res.json();
-      loadingModal.classList.add('hidden');
-      if (data && data.status === 'success') {
-        errorDiv.style.color = 'green';
-        errorDiv.textContent = 'A reset link has been sent to your email. Please check your inbox.';
+      console.log(data);
+      if (data.success) {
+        localStorage.setItem('session_id', data.session_id);
+        localStorage.setItem('user_id', data.user.id);
+        localStorage.setItem('user_email', data.user.email);
+
+        // ✅ simulate loading delay for nice UX
+        setTimeout(() => {
+          loadingModal.classList.add('hidden');
+          window.location.href = '/navigationbuttons';
+        }, 1000);
       } else {
-        errorDiv.style.color = 'red';
-        errorDiv.textContent = (data && data.message) ? data.message : 'Failed to send reset link.';
+        loadingModal.classList.add('hidden');
+        errorDiv.textContent = data.message || 'Login failed.';
       }
     } catch (err) {
       loadingModal.classList.add('hidden');
-      errorDiv.style.color = 'red';
-      errorDiv.textContent = 'Server error while sending reset link.';
+      errorDiv.textContent = 'Server error.';
     }
   });
-})();
 
-// Show / Hide password toggle (textual Show/Hide, matching forgot-password view)
-document.querySelectorAll('.toggle-password').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const targetId = btn.getAttribute('data-target');
-    const input = document.getElementById(targetId);
-    if (!input) return;
-    if (input.type === 'password') {
-      input.type = 'text';
-      btn.textContent = 'Hide';
-      btn.setAttribute('aria-pressed', 'true');
-    } else {
-      input.type = 'password';
-      btn.textContent = 'Show';
-      btn.setAttribute('aria-pressed', 'false');
-    }
+  // Forgot password: send reset link using reset-password-user.php
+  (function () {
+    const forgot = document.getElementById('forgotPasswordLink');
+    if (!forgot) return;
+    forgot.addEventListener('click', async function (ev) {
+      ev.preventDefault();
+      const email = (document.querySelector('input[name="email"]')?.value || '').trim();
+      const errorDiv = document.getElementById('loginError');
+      const loadingModal = document.getElementById('loadingModal');
+      errorDiv.textContent = '';
+
+      if (!email) {
+        errorDiv.textContent = 'Please enter your email above to receive a reset link.';
+        const input = document.querySelector('input[name="email"]'); if (input) input.focus();
+        return;
+      }
+
+      try {
+        // set modal text for password-reset flow
+        const loadingText = loadingModal.querySelector('p');
+        if (loadingText) loadingText.textContent = 'Sending password reset link...';
+        loadingModal.classList.remove('hidden');
+        // include debug flag when running on localhost so developer can receive link without SMTP
+        const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(window.location.hostname);
+        const body = { email };
+        if (isLocalhost) body.debug = 1;
+
+        const res = await fetch('/db/reset-password-user.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        loadingModal.classList.add('hidden');
+        if (data && data.status === 'success') {
+          errorDiv.style.color = 'green';
+          errorDiv.textContent = 'A reset link has been sent to your email. Please check your inbox.';
+        } else {
+          errorDiv.style.color = 'red';
+          errorDiv.textContent = (data && data.message) ? data.message : 'Failed to send reset link.';
+        }
+      } catch (err) {
+        loadingModal.classList.add('hidden');
+        errorDiv.style.color = 'red';
+        errorDiv.textContent = 'Server error while sending reset link.';
+      }
+    });
+  })();
+
+  // Show / Hide password toggle (textual Show/Hide, matching forgot-password view)
+  document.querySelectorAll('.toggle-password').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetId = btn.getAttribute('data-target');
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = 'Hide';
+        btn.setAttribute('aria-pressed', 'true');
+      } else {
+        input.type = 'password';
+        btn.textContent = 'Show';
+        btn.setAttribute('aria-pressed', 'false');
+      }
+    });
   });
-});
 </script>
+
 </html>
 
 
@@ -287,5 +290,3 @@ document.querySelectorAll('.toggle-password').forEach(btn => {
         });
     })();
 </script> -->
-
-

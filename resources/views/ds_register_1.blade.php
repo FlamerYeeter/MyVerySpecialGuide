@@ -8,27 +8,44 @@
     <title>Applicant Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-    /* Floating animations */
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-    .animate-float-slow { animation: float 5s ease-in-out infinite; }
-    .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
-    .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
+        /* Floating animations */
+        @keyframes float {
 
-    .skills-card.selected {
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .animate-float-slow {
+            animation: float 5s ease-in-out infinite;
+        }
+
+        .animate-float-medium {
+            animation: float 3.5s ease-in-out infinite;
+        }
+
+        .animate-float-fast {
+            animation: float 2.5s ease-in-out infinite;
+        }
+
+        .skills-card.selected {
             border: 3px solid #2563eb;
             box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
             transform: translateY(-4px);
             background-color: #eff6ff;
-    }
-    /* TTS speaking state for audio buttons */
-    .tts-btn.speaking {
-        background-color: #2563eb !important;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
-        transform: scale(1.03);
-    }
+        }
+
+        /* TTS speaking state for audio buttons */
+        .tts-btn.speaking {
+            background-color: #2563eb !important;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+            transform: scale(1.03);
+        }
     </style>
 </head>
 
@@ -48,7 +65,7 @@
     <!-- Back Button -->
     <button
         class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="window.location.href='{{ route('user.role') }}'">
+        onclick="window.location.href='{{ route('login') }}'">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -67,14 +84,17 @@
             </h1>
             <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
 
-            <h2 class="relative flex flex-wrap items-center justify-center gap-3 text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold">
-                <span class="block mx-auto max-w-[82%] sm:max-w-none md:max-w-[85%] text-center md:pr-12">Step-by-step guide to complete your registration</span>
+            <h2
+                class="relative flex flex-wrap items-center justify-center gap-3 text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold">
+                <span class="block mx-auto max-w-[82%] sm:max-w-none md:max-w-[85%] text-center md:pr-12">Step-by-step
+                    guide to complete your registration</span>
                 <button aria-label="Read instructions"
                     class="ml-2 md:ml-3 text-sm sm:text-2xl bg-[#1E40AF] text-white p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2"
                     data-tts-en="Step-by-step guide to complete your registration."
                     data-tts-tl="Narito ang lahat ng hakbang para sa iyong registration.">🔊</button>
             </h2>
-            <p class="mt-2 sm:mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+            <p
+                class="mt-2 sm:mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
                 (Narito ang lahat ng hakbang para sa iyong registration.)
             </p>
         </div>
@@ -102,7 +122,8 @@
                     <!-- Audio Button -->
                     <button type="button"
                         class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Provide your required personal information.." data-tts-tl="Ibigay ang mga kinakailangang personal na impormasyon.">
+                        data-tts-en="Provide your required personal information.."
+                        data-tts-tl="Ibigay ang mga kinakailangang personal na impormasyon.">
                         🔊
                     </button>
                 </div>
@@ -116,12 +137,13 @@
                             Set up your profile by telling us about your education and work experience.
                         </p>
                         <p class="mt-2 text-gray-700 italic text-sm sm:text-base">
-                            (I-set up ang iyong profile sa pamamagitan ng pagbibigay ng impormasyon tungkol sa iyong edukasyon at karanasan sa trabaho.)
+                            (I-set up ang iyong profile sa pamamagitan ng pagbibigay ng impormasyon tungkol sa iyong
+                            edukasyon at karanasan sa trabaho.)
                         </p>
                     </div>
                     <button type="button"
                         class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Set up your profile by telling us about your education and work experience." 
+                        data-tts-en="Set up your profile by telling us about your education and work experience."
                         data-tts-tl="I-set up ang iyong profile sa pamamagitan ng pagbibigay ng impormasyon tungkol sa iyong edukasyon at karanasan sa trabaho.">
                         🔊
                     </button>
@@ -141,7 +163,7 @@
                     </div>
                     <button type="button"
                         class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Choose the work environment that you are most comfortable with." 
+                        data-tts-en="Choose the work environment that you are most comfortable with."
                         data-tts-tl="Piliin ang work environment kung saan ka pinakakomportable.">
                         🔊
                     </button>
@@ -161,7 +183,7 @@
                     </div>
                     <button type="button"
                         class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Choose the skills that best describe you." 
+                        data-tts-en="Choose the skills that best describe you."
                         data-tts-tl="Piliin ang mga kasanayan na pinakaangkop na naglalarawan sa iyo.">
                         🔊
                     </button>
@@ -181,36 +203,37 @@
                     </div>
                     <button type="button"
                         class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                        data-tts-en="Choose the jobs you prefer to do, then finish your registration." 
+                        data-tts-en="Choose the jobs you prefer to do, then finish your registration."
                         data-tts-tl="Piliin ang mga trabahong nais mong gawin, tapos tapusin ang iyong pagregister.">
                         🔊
                     </button>
                 </div>
 
-                
-        <!-- Info Section -->
-        <div
-            class="mt-8 sm:mt-10 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
-            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-6 sm:pr-16">
-                <span class="text-[#846506] text-3xl sm:text-5xl mt-1 flex-shrink-0">💡</span>
-                <div class="flex-1 text-center sm:text-left">
-                    <p class="text-base sm:text-lg text-blue-600 font-bold leading-relaxed">
-                        Start your registration so we can recommend jobs that are perfect for you!
-                    </p>
-                    <p class="text-gray-700 italic text-sm sm:text-base mt-2">
-                        (Simulan ang iyong pagpaparehistro para ma-rekomenda namin ang mga trabahong swak para sa iyo!)
-                    </p>
-                </div>
-            </div>
 
-            <!-- Audio Button -->
-            <button type="button"
-                class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                data-tts-en="Start your registration so we can recommend jobs that are perfect for you!" 
-                data-tts-tl="Simulan ang iyong pagpaparehistro para ma-rekomenda namin ang mga trabahong swak para sa iyo!">
-                🔊
-            </button>
-        </div>
+                <!-- Info Section -->
+                <div
+                    class="mt-8 sm:mt-10 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-6 sm:pr-16">
+                        <span class="text-[#846506] text-3xl sm:text-5xl mt-1 flex-shrink-0">💡</span>
+                        <div class="flex-1 text-center sm:text-left">
+                            <p class="text-base sm:text-lg text-blue-600 font-bold leading-relaxed">
+                                Start your registration so we can recommend jobs that are perfect for you!
+                            </p>
+                            <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+                                (Simulan ang iyong pagpaparehistro para ma-rekomenda namin ang mga trabahong swak para
+                                sa iyo!)
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Audio Button -->
+                    <button type="button"
+                        class="absolute top-3 sm:top-4 right-3 sm:right-4 bg-[#1E40AF] text-white text-lg sm:text-xl p-2 sm:p-3 rounded-full shadow-sm sm:shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
+                        data-tts-en="Start your registration so we can recommend jobs that are perfect for you!"
+                        data-tts-tl="Simulan ang iyong pagpaparehistro para ma-rekomenda namin ang mga trabahong swak para sa iyo!">
+                        🔊
+                    </button>
+                </div>
 
                 <!-- Next Button -->
                 <div class="flex flex-col items-center mt-14 sm:mt-16 w-full px-4 sm:px-0">
@@ -228,235 +251,236 @@
                     </p>
                 </div>
 
-    <!-- TTS: Web Speech API handler -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const buttons = document.querySelectorAll('.tts-btn');
-            const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
-            const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
-            let preferredEnglishVoice = null;
-            let preferredTagalogVoice = null;
-            let currentBtn = null;
-            let availableVoices = [];
-            let audioFallback = null; // HTMLAudioElement when used as fallback
+                <!-- TTS: Web Speech API handler -->
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        const buttons = document.querySelectorAll('.tts-btn');
+                        const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+                        const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
+                        let preferredEnglishVoice = null;
+                        let preferredTagalogVoice = null;
+                        let currentBtn = null;
+                        let availableVoices = [];
+                        let audioFallback = null; // HTMLAudioElement when used as fallback
 
-            function populateVoices() {
-                availableVoices = (window.speechSynthesis && window.speechSynthesis.getVoices()) || [];
-                preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName)
-                    || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
-                    || null;
-                preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName)
-                    || availableVoices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name))
-                    || null;
-            }
-
-            // Wait for voices with a small timeout; resolves when voices available or timeout
-            function waitForVoices(timeout = 1200) {
-                return new Promise((resolve) => {
-                    populateVoices();
-                    if (availableVoices.length) return resolve(true);
-                    const start = Date.now();
-                    const iv = setInterval(() => {
-                        populateVoices();
-                        if (availableVoices.length || Date.now() - start > timeout) {
-                            clearInterval(iv);
-                            resolve(availableVoices.length > 0);
+                        function populateVoices() {
+                            availableVoices = (window.speechSynthesis && window.speechSynthesis.getVoices()) || [];
+                            preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName)
+                                || availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name))
+                                || null;
+                            preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName)
+                                || availableVoices.find(v => /blessica|fil-?ph|filipino|tagalog/i.test(v.name))
+                                || null;
                         }
-                    }, 120);
-                });
-            }
 
-            function pickBest(list) {
-                const preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
-                return (preferred.length ? preferred[0] : list[0]) || null;
-            }
-
-            function chooseVoiceForLang(langCode) {
-                if (!availableVoices.length) return null;
-                langCode = (langCode || '').toLowerCase();
-                let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
-                if (candidates.length) return pickBest(candidates);
-                candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
-                if (candidates.length) return pickBest(candidates);
-                return availableVoices[0] || null;
-            }
-
-            function stopSpeaking() {
-                try {
-                    if (window.speechSynthesis) window.speechSynthesis.cancel();
-                } catch (e) { }
-                if (audioFallback) {
-                    audioFallback.pause();
-                    audioFallback.currentTime = 0;
-                    audioFallback = null;
-                }
-                if (currentBtn) {
-                    currentBtn.classList.remove('speaking');
-                    currentBtn.removeAttribute('aria-pressed');
-                    currentBtn = null;
-                }
-            }
-
-            function playAudioFallback(btn, src) {
-                if (!src) return false;
-                stopSpeaking();
-                audioFallback = new Audio(src);
-                audioFallback.crossOrigin = 'anonymous';
-                btn.classList.add('speaking');
-                btn.setAttribute('aria-pressed', 'true');
-                currentBtn = btn;
-                audioFallback.onended = function () { stopSpeaking(); };
-                audioFallback.onerror = function () { stopSpeaking(); };
-                audioFallback.play().catch(() => {
-                    stopSpeaking();
-                });
-                return true;
-            }
-
-            function speakWithSynthesis(btn, textEn, textTl) {
-                if (!window.speechSynthesis) return false;
-                const seq = [];
-                if (textEn) {
-                    const uEn = new SpeechSynthesisUtterance(textEn);
-                    uEn.lang = 'en-US';
-                    const v = preferredEnglishVoice || chooseVoiceForLang('en');
-                    if (v) uEn.voice = v;
-                    uEn.rate = 1;
-                    uEn.pitch = 1;
-                    seq.push(uEn);
-                }
-                if (textTl) {
-                    const uTl = new SpeechSynthesisUtterance(textTl);
-                    uTl.lang = 'tl-PH';
-                    const v2 = preferredTagalogVoice || chooseVoiceForLang('tl');
-                    if (v2) uTl.voice = v2;
-                    uTl.rate = 1;
-                    uTl.pitch = 1;
-                    seq.push(uTl);
-                }
-                if (!seq.length) return false;
-
-                stopSpeaking();
-
-                seq[0].onstart = function () {
-                    btn.classList.add('speaking');
-                    btn.setAttribute('aria-pressed', 'true');
-                    currentBtn = btn;
-                };
-
-                for (let i = 0; i < seq.length; i++) {
-                    const ut = seq[i];
-                    ut.onerror = function () { stopSpeaking(); };
-                    if (i < seq.length - 1) ut.onend = function () { window.speechSynthesis.speak(seq[i + 1]); };
-                    else ut.onend = function () { stopSpeaking(); };
-                }
-
-                try {
-                    window.speechSynthesis.speak(seq[0]);
-                    return true;
-                } catch (e) {
-                    return false;
-                }
-            }
-
-            // Attach to buttons
-            buttons.forEach(function (btn) {
-                btn.setAttribute('role', 'button');
-                btn.setAttribute('tabindex', '0');
-
-                btn.addEventListener('click', async function () {
-                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
-                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
-                    const fallbackSrc = btn.getAttribute('data-tts-src');
-                    if (!textEn && !textTl && !fallbackSrc) return;
-
-                    if (currentBtn === btn && (window.speechSynthesis && window.speechSynthesis.speaking)) { stopSpeaking(); return; }
-                    stopSpeaking();
-
-                    // Ensure voices are loaded
-                    let voicesReady = false;
-                    try { voicesReady = await waitForVoices(1500); } catch (e) { }
-
-                    // Decide: if we have preferred cloud-quality voices available, use client synthesis; otherwise request server audio
-                    const wantServerForEn = !!textEn && !preferredEnglishVoice;
-                    const wantServerForTl = !!textTl && !preferredTagalogVoice;
-
-                    // If voices are available and preferred voices exist for the requested languages, use speechSynthesis
-                    if (voicesReady && ((textEn && preferredEnglishVoice) || (textTl && preferredTagalogVoice))) {
-                        try {
-                            const ok = speakWithSynthesis(btn, textEn, textTl);
-                            if (ok) return;
-                        } catch (e) { }
-                    }
-
-                    // If button has explicit fallback audio attribute, play it
-                    if (fallbackSrc) { if (playAudioFallback(btn, fallbackSrc)) return; }
-
-                    // If preferred voices are missing for requested language(s), request server-generated audio (stronger guarantee)
-                    if (wantServerForEn || wantServerForTl) {
-                        try {
-                            const cacheKey = encodeURIComponent((textEn || textTl).slice(0,100));
-                            window._ttsCache = window._ttsCache || new Map();
-                            if (window._ttsCache.has(cacheKey)) {
-                                const url = window._ttsCache.get(cacheKey);
-                                if (playAudioFallback(btn, url)) return;
-                            }
-                            const payload = { text: (textEn || textTl), lang: (textTl ? 'tl-PH' : 'en-US'), voice: (textTl ? 'fil-PH-BlessicaNeural' : 'en-US-AvaMultilingualNeural') };
-                            const resp = await fetch('{{ route('tts.generate') }}', {
-                                method: 'POST',
-                                credentials: 'same-origin',
-                                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '' },
-                                body: JSON.stringify(payload)
+                        // Wait for voices with a small timeout; resolves when voices available or timeout
+                        function waitForVoices(timeout = 1200) {
+                            return new Promise((resolve) => {
+                                populateVoices();
+                                if (availableVoices.length) return resolve(true);
+                                const start = Date.now();
+                                const iv = setInterval(() => {
+                                    populateVoices();
+                                    if (availableVoices.length || Date.now() - start > timeout) {
+                                        clearInterval(iv);
+                                        resolve(availableVoices.length > 0);
+                                    }
+                                }, 120);
                             });
-                            if (resp.ok) {
-                                const j = await resp.json();
-                                if (j.url) {
-                                    window._ttsCache.set(cacheKey, j.url);
-                                    if (playAudioFallback(btn, j.url)) return;
-                                }
-                            } else {
-                                (async function(){
-                                    let bodyText = '';
-                                    try { bodyText = await resp.text(); } catch(e) { bodyText = '<unreadable>'; }
-                                    try { console.warn('TTS server fallback failed', resp.status, resp.statusText, JSON.parse(bodyText)); }
-                                    catch (e) { console.warn('TTS server fallback failed', resp.status, resp.statusText, bodyText); }
-                                })();
+                        }
+
+                        function pickBest(list) {
+                            const preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+                            return (preferred.length ? preferred[0] : list[0]) || null;
+                        }
+
+                        function chooseVoiceForLang(langCode) {
+                            if (!availableVoices.length) return null;
+                            langCode = (langCode || '').toLowerCase();
+                            let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                            if (candidates.length) return pickBest(candidates);
+                            candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                            if (candidates.length) return pickBest(candidates);
+                            return availableVoices[0] || null;
+                        }
+
+                        function stopSpeaking() {
+                            try {
+                                if (window.speechSynthesis) window.speechSynthesis.cancel();
+                            } catch (e) { }
+                            if (audioFallback) {
+                                audioFallback.pause();
+                                audioFallback.currentTime = 0;
+                                audioFallback = null;
                             }
-                        } catch (e) { }
-                    }
+                            if (currentBtn) {
+                                currentBtn.classList.remove('speaking');
+                                currentBtn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            }
+                        }
 
-                    // Last resort: try client synthesis even if preferred voices absent
-                    try { speakWithSynthesis(btn, textEn, textTl); } catch (e) { stopSpeaking(); }
-                });
+                        function playAudioFallback(btn, src) {
+                            if (!src) return false;
+                            stopSpeaking();
+                            audioFallback = new Audio(src);
+                            audioFallback.crossOrigin = 'anonymous';
+                            btn.classList.add('speaking');
+                            btn.setAttribute('aria-pressed', 'true');
+                            currentBtn = btn;
+                            audioFallback.onended = function () { stopSpeaking(); };
+                            audioFallback.onerror = function () { stopSpeaking(); };
+                            audioFallback.play().catch(() => {
+                                stopSpeaking();
+                            });
+                            return true;
+                        }
 
-                btn.addEventListener('keydown', function (ev) {
-                    if (ev.key === 'Enter' || ev.key === ' ') {
-                        ev.preventDefault();
-                        btn.click();
-                    }
-                });
-            });
+                        function speakWithSynthesis(btn, textEn, textTl) {
+                            if (!window.speechSynthesis) return false;
+                            const seq = [];
+                            if (textEn) {
+                                const uEn = new SpeechSynthesisUtterance(textEn);
+                                uEn.lang = 'en-US';
+                                const v = preferredEnglishVoice || chooseVoiceForLang('en');
+                                if (v) uEn.voice = v;
+                                uEn.rate = 1;
+                                uEn.pitch = 1;
+                                seq.push(uEn);
+                            }
+                            if (textTl) {
+                                const uTl = new SpeechSynthesisUtterance(textTl);
+                                uTl.lang = 'tl-PH';
+                                const v2 = preferredTagalogVoice || chooseVoiceForLang('tl');
+                                if (v2) uTl.voice = v2;
+                                uTl.rate = 1;
+                                uTl.pitch = 1;
+                                seq.push(uTl);
+                            }
+                            if (!seq.length) return false;
 
-            // Warm-up voices on first user gesture (helps on some devices/browsers)
-            function warmVoicesOnce() {
-                if (!window.speechSynthesis) return;
-                populateVoices();
-                // Calling getVoices() on user gesture often unlocks platform voices
-                window.speechSynthesis.getVoices();
-                window.removeEventListener('pointerdown', warmVoicesOnce);
-                window.removeEventListener('touchstart', warmVoicesOnce);
-            }
-            window.addEventListener('pointerdown', warmVoicesOnce, { once: true });
-            window.addEventListener('touchstart', warmVoicesOnce, { once: true });
+                            stopSpeaking();
 
-            // cleanup
-            window.addEventListener('beforeunload', function () { stopSpeaking(); });
-            if (window.speechSynthesis) {
-                populateVoices();
-                window.speechSynthesis.onvoiceschanged = populateVoices;
-            }
-        });
-    </script>
+                            seq[0].onstart = function () {
+                                btn.classList.add('speaking');
+                                btn.setAttribute('aria-pressed', 'true');
+                                currentBtn = btn;
+                            };
+
+                            for (let i = 0; i < seq.length; i++) {
+                                const ut = seq[i];
+                                ut.onerror = function () { stopSpeaking(); };
+                                if (i < seq.length - 1) ut.onend = function () { window.speechSynthesis.speak(seq[i + 1]); };
+                                else ut.onend = function () { stopSpeaking(); };
+                            }
+
+                            try {
+                                window.speechSynthesis.speak(seq[0]);
+                                return true;
+                            } catch (e) {
+                                return false;
+                            }
+                        }
+
+                        // Attach to buttons
+                        buttons.forEach(function (btn) {
+                            btn.setAttribute('role', 'button');
+                            btn.setAttribute('tabindex', '0');
+
+                            btn.addEventListener('click', async function () {
+                                const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                                const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                                const fallbackSrc = btn.getAttribute('data-tts-src');
+                                if (!textEn && !textTl && !fallbackSrc) return;
+
+                                if (currentBtn === btn && (window.speechSynthesis && window.speechSynthesis.speaking)) { stopSpeaking(); return; }
+                                stopSpeaking();
+
+                                // Ensure voices are loaded
+                                let voicesReady = false;
+                                try { voicesReady = await waitForVoices(1500); } catch (e) { }
+
+                                // Decide: if we have preferred cloud-quality voices available, use client synthesis; otherwise request server audio
+                                const wantServerForEn = !!textEn && !preferredEnglishVoice;
+                                const wantServerForTl = !!textTl && !preferredTagalogVoice;
+
+                                // If voices are available and preferred voices exist for the requested languages, use speechSynthesis
+                                if (voicesReady && ((textEn && preferredEnglishVoice) || (textTl && preferredTagalogVoice))) {
+                                    try {
+                                        const ok = speakWithSynthesis(btn, textEn, textTl);
+                                        if (ok) return;
+                                    } catch (e) { }
+                                }
+
+                                // If button has explicit fallback audio attribute, play it
+                                if (fallbackSrc) { if (playAudioFallback(btn, fallbackSrc)) return; }
+
+                                // If preferred voices are missing for requested language(s), request server-generated audio (stronger guarantee)
+                                if (wantServerForEn || wantServerForTl) {
+                                    try {
+                                        const cacheKey = encodeURIComponent((textEn || textTl).slice(0, 100));
+                                        window._ttsCache = window._ttsCache || new Map();
+                                        if (window._ttsCache.has(cacheKey)) {
+                                            const url = window._ttsCache.get(cacheKey);
+                                            if (playAudioFallback(btn, url)) return;
+                                        }
+                                        const payload = { text: (textEn || textTl), lang: (textTl ? 'tl-PH' : 'en-US'), voice: (textTl ? 'fil-PH-BlessicaNeural' : 'en-US-AvaMultilingualNeural') };
+                                        const resp = await fetch('{{ route('tts.generate') }}', {
+                                            method: 'POST',
+                                            credentials: 'same-origin',
+                                            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]') ? document.querySelector('meta[name="csrf-token"]').getAttribute('content') : '' },
+                                            body: JSON.stringify(payload)
+                                        });
+                                        if (resp.ok) {
+                                            const j = await resp.json();
+                                            if (j.url) {
+                                                window._ttsCache.set(cacheKey, j.url);
+                                                if (playAudioFallback(btn, j.url)) return;
+                                            }
+                                        } else {
+                                            (async function () {
+                                                let bodyText = '';
+                                                try { bodyText = await resp.text(); } catch (e) { bodyText = '<unreadable>'; }
+                                                try { console.warn('TTS server fallback failed', resp.status, resp.statusText, JSON.parse(bodyText)); }
+                                                catch (e) { console.warn('TTS server fallback failed', resp.status, resp.statusText, bodyText); }
+                                            })();
+                                        }
+                                    } catch (e) { }
+                                }
+
+                                // Last resort: try client synthesis even if preferred voices absent
+                                try { speakWithSynthesis(btn, textEn, textTl); } catch (e) { stopSpeaking(); }
+                            });
+
+                            btn.addEventListener('keydown', function (ev) {
+                                if (ev.key === 'Enter' || ev.key === ' ') {
+                                    ev.preventDefault();
+                                    btn.click();
+                                }
+                            });
+                        });
+
+                        // Warm-up voices on first user gesture (helps on some devices/browsers)
+                        function warmVoicesOnce() {
+                            if (!window.speechSynthesis) return;
+                            populateVoices();
+                            // Calling getVoices() on user gesture often unlocks platform voices
+                            window.speechSynthesis.getVoices();
+                            window.removeEventListener('pointerdown', warmVoicesOnce);
+                            window.removeEventListener('touchstart', warmVoicesOnce);
+                        }
+                        window.addEventListener('pointerdown', warmVoicesOnce, { once: true });
+                        window.addEventListener('touchstart', warmVoicesOnce, { once: true });
+
+                        // cleanup
+                        window.addEventListener('beforeunload', function () { stopSpeaking(); });
+                        if (window.speechSynthesis) {
+                            populateVoices();
+                            window.speechSynthesis.onvoiceschanged = populateVoices;
+                        }
+                    });
+                </script>
 
 </body>
+
 </html>
