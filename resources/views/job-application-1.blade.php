@@ -655,9 +655,10 @@
               const name = localStorage.getItem(LS_PREFIX + def.key + '_name');
               const data = localStorage.getItem(LS_PREFIX + def.key + '_data');
               const type = localStorage.getItem(LS_PREFIX + def.key + '_type');
+              const rawname = localStorage.getItem(LS_PREFIX + def.key + '_rawname');
               if (name && data) {
-                // keep potential original name in rawName when available
-                stored[def.key] = { name: name, url: data, type: type || guessTypeFromFilename(name), rawName: name };
+                // restore persisted entry; prefer rawname if available
+                stored[def.key] = { name: name, url: data, type: type || guessTypeFromFilename(name), rawName: rawname || name };
               }
             } catch (e) { /* ignore */ }
           });
@@ -684,16 +685,28 @@
 
         const FNAME_PREFIX = { medical: 'MEDCERT', resume: 'RESUME', pwd: 'PWD_ID' };
 
+        function sanitizeBaseName(s) {
+          if (!s) return '';
+          return String(s)
+            .replace(/\.[^.]+$/, '') // strip extension
+            .replace(/[^A-Za-z0-9\-_.]+/g, '_') // replace unsafe chars
+            .replace(/_+/g, '_')
+            .replace(/^_+|_+$/g, '')
+            .substring(0, 120);
+        }
+
         function formatSavedFilename(key, originalName) {
-          const prefix = FNAME_PREFIX[key] || key.toUpperCase();
           const last = getLastNameForFilename();
-          // extract extension from originalName
+          // determine extension
           let ext = '';
           try {
             const m = (originalName || '').split('.');
             if (m.length > 1) ext = m.pop();
           } catch (e) { ext = ''; }
-          const base = prefix + (last ? '_' + last : '');
+
+          // use original filename base if available, else fallback to prefix
+          const origBase = sanitizeBaseName(originalName) || FNAME_PREFIX[key] || key.toUpperCase();
+          const base = last ? (origBase + '_' + last) : origBase;
           return ext ? (base + '.' + ext) : base;
         }
 
