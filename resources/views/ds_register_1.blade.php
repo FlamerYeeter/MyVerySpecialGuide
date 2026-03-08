@@ -415,7 +415,12 @@
                                     if (playAudioFallback(btn, j.url)) return;
                                 }
                             } else {
-                                console.warn('TTS server fallback failed', resp.status, resp.statusText);
+                                (async function(){
+                                    let bodyText = '';
+                                    try { bodyText = await resp.text(); } catch(e) { bodyText = '<unreadable>'; }
+                                    try { console.warn('TTS server fallback failed', resp.status, resp.statusText, JSON.parse(bodyText)); }
+                                    catch (e) { console.warn('TTS server fallback failed', resp.status, resp.statusText, bodyText); }
+                                })();
                             }
                         } catch (e) { }
                     }
