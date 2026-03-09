@@ -34,32 +34,79 @@
       height: 40px;
       animation: spin 1s linear infinite;
     }
-    .ocr-loading-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 16px;
-      background-color: #f0f4ff;
-      border: 1px solid #2E2EFF;
-      border-radius: 8px;
-      margin-top: 12px;
-    }
+        .ocr-loading-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background-color: #f0f4ff;
+            border: 1px solid #2E2EFF;
+            border-radius: 8px;
+            margin-top: 12px;
+            width: 100%;
+            box-sizing: border-box;
+        }
     .ocr-loading-text {
       font-size: 14px;
       color: #1e40af;
       font-weight: 500;
     }
-        </style>
-        <style>
+        /* Layout & Typography improvements */
+        .main-container h1 { font-size: clamp(1.6rem, 3.6vw, 2.8rem); line-height: 1.05; }
+        .main-container h2, .main-container h3 { font-size: clamp(1.05rem, 2.2vw, 1.4rem); }
+        .main-container .text-gray-600.italic { font-size: 0.92rem; }
+        .main-container .bg-white.rounded-2xl { padding: 1.25rem; }
+        .main-container .upload-error { font-size: 0.92rem; }
+        /* Make TTS buttons consistent */
+        .tts-btn { padding: 0.55rem 0.6rem; border-radius: 9999px; }
+        /* Improve spacing inside form groups */
+        .main-container .grid > div { display:block; }
+
+        /* Responsive adjustments */
         @media (max-width: 640px) {
-            input[type="text"], input[type="email"], input[type="tel"], input[type="date"], select, textarea {
-                padding: 0.75rem !important;
-                font-size: 16px !important;
+                body { font-size: 15px; }
+                .main-container { padding: 0.6rem; }
+                .main-container h1 { text-align: center; margin-bottom: 0.5rem; }
+                .main-container h3 { text-align: center; }
+                /* make labels and helper text slightly larger for readability */
+                .main-container label, .main-container p, .main-container .text-gray-600 { font-size: 15px; }
+                /* Ensure TTS buttons are touch-friendly */
+                .tts-btn { padding: 0.6rem; font-size: 1.05rem; }
+                /* Ensure inputs stretch and maintain balanced padding */
+                .main-container input[type="text"],
+                .main-container input[type="email"],
+                .main-container input[type="tel"],
+                .main-container input[type="date"],
+                .main-container select,
+                .main-container textarea { font-size: 15px; padding: 0.6rem 0.75rem; }
+        }
+        /* Section card consistency */
+        .main-container .section-card {
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 0.75rem;
+            min-height: 360px;
+            padding: 1.25rem; /* ensure consistent inner spacing */
+        }
+        /* Slightly smaller on medium screens */
+        @media (max-width: 1024px) {
+            .main-container .section-card { min-height: 320px; }
+        }
+        /* On small screens make section cards match the instruction blue card size */
+        @media (max-width: 640px) {
+            .main-container .section-card { min-height: 300px; padding: 0.9rem; }
+            /* make section cards visually wider on small screens to use more horizontal space; keep info-card at original size */
+            .main-container .section-card {
+                width: calc(100% + 2rem);
+                max-width: none;
+                margin-left: -1rem;
+                margin-right: -1rem;
             }
-            .ocr-loading-text { font-size: 15px !important; }
-            .tts-btn { padding: 0.6rem !important; }
         }
         </style>
+
 </head>
 
 <body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
@@ -87,16 +134,16 @@
 
     <!-- Main Container -->
     <div
-        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200"">
 
         <!-- Header -->
         <div class="text-center mt-4">
             <h1 class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">Registration</h1>
-            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-24 sm:w-32 md:w-36 mb-2">
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
 
         <!-- Information Note -->
         <div
-            class="mt-2 sm:mt-2 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
+            class="info-card mt-2 sm:mt-2 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
 
               <!-- Desktop Audio Button -->
                 <button type="button" aria-label="Play audio for info section"
@@ -132,9 +179,9 @@
                         <button type="button" aria-label="Play audio for info section"
                             class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
                             transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-                            data-tts-en="Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a ⭐ must be filled in. Thank you!"
+                            data-tts-en="Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a star must be filled in. Thank you!"
                             data-tts-tl="Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
-                            ang mga field na may ⭐ ay kinakailangang sagutan. Salamat!">
+                            ang mga field na may star ay kinakailangang sagutan. Salamat!">
                             🔊
                     </button>
                 </div>
@@ -145,10 +192,10 @@
 
 
                 <!-- Form -->
-                <form id="registrationForm" class="mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-4xl px-4 sm:px-0">
+                <form id="registrationForm" class="main-container mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-6xl px-4 sm:px-0">
 
 <!-- Personal Information -->
-<div class="bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+<div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
 
     <!-- Section Title -->
     <div class="mb-4">
@@ -175,13 +222,13 @@
 
 
             <!-- PWD ID Upload Card -->
-            <div class="mt-4 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 mb-8">
+            <div class="mt-4 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 mb-8 pwdid-card">
 
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
 
                     <!-- Upload Info -->
-                        <div class="flex-1 text-center sm:text-left">
-                    <p class="text-gray-700 text-lg sm:text-base mb-1">
+                    <div class="flex-1 text-center sm:text-left">
+                        <p class="text-gray-700 text-lg sm:text-base mb-1">
                             Upload an image or PDF of the front and back of your PWD ID.
                         </p>
 
@@ -194,21 +241,28 @@
                         </p>
 
                         <div id="pwdidDisplay" class="mt-2"></div>
-
                     </div>
 
-                    <!-- Upload Button -->
-                    <div class="flex-shrink-0 flex flex-col items-center sm:items-end gap-2">
+                    <!-- Upload Buttons: Front & Back -->
+                    <div class="flex-shrink-0 flex flex-col items-center sm:items-end gap-3">
 
-                        <label
-                            for="pwdidFile"
-                            class="block w-full text-center sm:inline-flex sm:w-auto justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-5 py-3 rounded-lg transition shadow-md">
-                            📁 Choose File / Pumili ng File
-                        </label>
+                        <div class="w-full sm:w-auto text-center sm:text-right">
+                            <label for="pwdidFileFront" class="inline-flex items-center justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-4 py-2 rounded-lg transition shadow-md cursor-pointer">
+                                📁 Upload Front of ID 
+                            </label>
+                            <input id="pwdidFileFront" name="pwd_id_front" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
+                            <div id="pwdidDisplayFront" class="upload-info text-sm text-gray-700 mt-2 justify-center sm:justify-end"></div>
+                        </div>
 
-                        <input id="pwdidFile" name="pwd_id" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden"/>
+                        <div class="w-full sm:w-auto text-center sm:text-right">
+                            <label for="pwdidFileBack" class="inline-flex items-center justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-4 py-2 rounded-lg transition shadow-md cursor-pointer">
+                                📁 Upload Back of ID
+                            </label>
+                            <input id="pwdidFileBack" name="pwd_id_back" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
+                            <div id="pwdidDisplayBack" class="upload-info text-sm text-gray-700 mt-2 justify-center sm:justify-end"></div>
+                        </div>
 
-                        <div class="upload-error text-sm text-red-600"></div>
+                        <div class="upload-error text-sm text-red-600 w-full text-center sm:text-right"></div>
 
                     </div>
 
@@ -223,29 +277,29 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
 
                         <div>
-                            <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                            <label class="font-semibold flex items-center gap-1">
+                                Last Name <span>⭐</span>
+                            </label>
+                            <p class="text-gray-500 italic flex text-sm mt-1">Apelyido</p>
+                            <input id="last_name" type="text" placeholder="Last Name"
+                                class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+                        </div>
+
+                        <div>
+                            <label class="font-semibold flex items-center gap-1">
                                 First Name <span>⭐</span>
                             </label>
-                            <p class="text-gray-600 italic text-xs">Unang Pangalan</p>
+                            <p class="text-gray-500 italic flex text-sm mt-1">Unang Pangalan</p>
                             <input id="first_name" type="text" placeholder="First Name"
                                 class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
                         </div>
 
                         <div>
-                            <label class="font-semibold text-gray-800 text-sm sm:text-base">
-                                Middle Name
+                            <label class="font-semibold flex items-center gap-1">
+                                Middle Name 
                             </label>
-                            <p class="text-gray-600 italic text-xs">Gitnang Pangalan (Opsyonal)</p>
+                            <p class="text-gray-500 italic flex text-sm mt-1">Gitnang Pangalan (Opsyonal)</p>
                             <input id="middle_name" type="text" placeholder="Middle Name"
-                                class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
-                        </div>
-
-                        <div>
-                            <label class="font-semibold text-gray-800 text-sm sm:text-base">
-                                Last Name <span>⭐</span>
-                            </label>
-                            <p class="text-gray-600 italic text-xs">Apelyido</p>
-                            <input id="last_name" type="text" placeholder="Last Name"
                                 class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
                         </div>
 
@@ -256,20 +310,20 @@
 
                     <!-- Date of Birth -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                        <label class="font-semibold flex items-center gap-1">
                             Date of Birth <span>⭐</span>
                         </label>
-                        <p class="text-gray-600 italic text-xs">Petsa ng Kapanganakan</p>
+                        <p class="text-gray-500 italic flex text-sm mt-1">Petsa ng Kapanganakan</p>
                         <input id="birthdate" type="date"
                             class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
                     </div>
 
                     <!-- Email -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                        <label class="font-semibold flex items-center gap-1">
                             Email Address <span>⭐</span>
                         </label>
-                        <p class="text-gray-600 italic text-xs">Email</p>
+                        <p class="text-gray-500 italic flex text-sm mt-1">Email Address</p>
                         <input id="email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
                         <div id="emailError" class="text-red-600 text-sm mt-1"></div>
@@ -277,10 +331,10 @@
 
                     <!-- Cellphone Number -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                        <label class="font-semibold flex items-center gap-1">
                             Cellphone Number <span>⭐</span>
                         </label>
-                        <p class="text-gray-600 italic text-xs">Numero ng Cellphone</p>
+                        <p class="text-gray-500 italic flex text-sm mt-1">Numero ng Cellphone</p>
                         <input id="phone"
                             type="tel"
                             placeholder="+63 9XX XXX XXXX"
@@ -292,11 +346,11 @@
                 <!-- Address -->
                 <div>
 
-                    <label class="font-semibold text-gray-800 text-sm sm:text-base">
+                    <label class="font-semibold flex items-center gap-1">
                        Home Address <span>⭐</span>
                     </label>
 
-                    <p class="text-gray-600 italic text-xs">
+                    <p class="text-gray-500 italic flex text-sm mt-1">
                         Tirahan (No./Blk/Lot, Street, Barangay, City)
                     </p>
 
@@ -594,7 +648,7 @@
 
 
             <!-- Parents / Guardian & Spouse Information Card -->
-            <div class="mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-200">
+            <div class="section-card mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-200">
 
                 <h2 class="text-xl font-bold text-blue-600 mb-6">
                     Parents / Guardian Information
@@ -609,40 +663,40 @@
 
                     <!-- Last Name -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Last Name ⭐</label>
-                        <p class="text-gray-600 italic text-xs">Apelyido</p>
+                        <label class="font-semibold flex items-center gap-1">Last Name ⭐</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Apelyido</p>
                         <input id="guardian_last" type="text" placeholder="Last Name"
                             class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- First Name -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">First Name ⭐</label>
-                        <p class="text-gray-600 italic text-xs">Unang Pangalan</p>
+                        <label class="font-semibold flex items-center gap-1">First Name ⭐</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Unang Pangalan</p>
                         <input id="guardian_first" type="text" placeholder="First Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Middle Name -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Middle Name</label>
-                        <p class="text-gray-600 italic text-xs"> Gitnang Pangalan (Opsyonal)</p>
+                        <label class="font-semibold flex items-center gap-1">Middle Name</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1"> Gitnang Pangalan (Opsyonal)</p>
                         <input id="guardian_middle" type="text" placeholder="Middle Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Birthdate -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Birthdate ⭐</label>
-                        <p class="text-gray-600 italic text-xs">Petsa ng Kapanganakan</p>
+                        <label class="font-semibold flex items-center gap-1">Birthdate ⭐</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Petsa ng Kapanganakan</p>
                         <input id="guardian_birthdate" type="date"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Relationship -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to Applicant ⭐</label>
-                        <p class="text-gray-600 italic text-xs">Relasyon sa Applicant</p>
+                        <label class="font-semibold flex items-center gap-1">Relationship to Applicant ⭐</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Relasyon sa Applicant</p>
                         <select id="guardian_relationship"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
                             <option value="" disabled selected>Select Relationship</option>
@@ -655,32 +709,32 @@
 
                     <!-- Email -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Email ⭐</label>
-                        <p class="text-gray-600 italic text-xs">Email</p>
+                        <label class="font-semibold flex items-center gap-1">Email ⭐</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Email</p>
                         <input id="guardian_email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Home Phone -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Home Phone No.</label>
-                        <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Bahay</p>
+                        <label class="font-semibold flex items-center gap-1">Home Phone No.</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Telepono sa Bahay</p>
                         <input id="guardian_home_phone" type="tel" placeholder="Home Phone"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Cellphone -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Cellphone No. ⭐</label>
-                        <p class="text-gray-600 italic text-xs">Numero ng Cellphone</p>
+                        <label class="font-semibold flex items-center gap-1">Cellphone No. ⭐</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Cellphone</p>
                         <input id="guardian_phone" type="tel" placeholder="+63 9XX XXX XXXX"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Work Phone -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Work Phone No.</label>
-                        <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Bahay</p>
+                        <label class="font-semibold flex items-center gap-1">Work Phone No.</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Telepono sa Trabaho</p>
                         <input type="tel" placeholder="Work Phone"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
@@ -689,8 +743,8 @@
 
                 <!-- Work Address -->
                 <div class="mt-6">
-                    <label class="font-semibold text-gray-800 text-sm sm:text-base">Work Address</label>
-                    <p class="text-gray-600 italic text-xs">Adress ng Trabaho</p>
+                    <label class="font-semibold flex items-center gap-1">Work Address</label>
+                    <p class="text-gray-500 flex italic text-sm mt-1">Adress ng Trabaho</p>
                     <input type="text" placeholder="Work Address"
                         class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                 </div>
@@ -700,47 +754,47 @@
 
                 <!-- ================= Spouse ================= -->
                 <h3 class="text-lg font-semibold text-blue-700 mb-4">
-                    Spouse Information
+                   Parent / Guardian Spouse Information
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <!-- Last Name -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Last Name</label>
-                        <p class="text-gray-600 italic text-xs">Apelyido</p>
+                        <label class="font-semibold flex items-center gap-1">Last Name</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Apelyido</p>
                         <input type="text" placeholder="Last Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- First Name -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">First Name</label>
-                        <p class="text-gray-600 italic text-xs">Unang Pangalan</p>
+                        <label class="font-semibold flex items-center gap-1">First Name</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Unang Pangalan</p>
                         <input type="text" placeholder="First Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Middle Name -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Middle Name</label>
-                        <p class="text-gray-600 italic text-xs"> Gitnang Pangalan (Opsyonal)</p>
+                        <label class="font-semibold flex items-center gap-1">Middle Name</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1"> Gitnang Pangalan (Opsyonal)</p>
                         <input type="text" placeholder="Middle Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Birthdate -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Birthdate</label>
-                        <p class="text-gray-600 italic text-xs">Petsa ng Kapanganakan</p>
+                        <label class="font-semibold flex items-center gap-1">Birthdate</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Petsa ng Kapanganakan</p>
                         <input type="date"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Relationship -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to Applicant</label>
-                        <p class="text-gray-600 italic text-xs">Relasyon sa Applicant</p>
+                        <label class="font-semibold flex items-center gap-1">Relationship to Applicant</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Relasyon sa Applicant</p>
                         <select
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
                             <option value="" disabled selected>Select Relationship</option>
@@ -753,32 +807,32 @@
 
                     <!-- Email -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Email</label>
-                        <p class="text-gray-600 italic text-xs">Email</p>
+                        <label class="font-semibold flex items-center gap-1">Email</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Email</p>
                         <input type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Cellphone -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Cellphone No.</label>
-                        <p class="text-gray-600 italic text-xs">Numero ng Cellphone</p>
+                        <label class="font-semibold flex items-center gap-1">Cellphone No.</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Cellphone</p>
                         <input type="tel" placeholder="+63 9XX XXX XXXX"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Home Phone -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Home Phone No.</label>
-                        <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Bahay</p>
+                        <label class="font-semibold flex items-center gap-1">Home Phone No.</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Telepono sa Bahay</p>
                         <input type="tel"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
                     <!-- Work Phone -->
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-base">Work Phone No.</label>
-                        <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Trabaho</p>
+                        <label class="font-semibold flex items-center gap-1">Work Phone No.</label>
+                        <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Telepono sa Trabaho</p>
                         <input type="tel"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
@@ -787,8 +841,8 @@
 
                 <!-- Work Address -->
                 <div class="mt-6">
-                    <label class="font-semibold text-gray-800 text-sm sm:text-base">Work Address</label>
-                    <p class="text-gray-600 italic text-xs">Adress ng Trabaho</p>
+                    <label class="font-semibold flex items-center gap-1">Work Address</label>
+                    <p class="text-gray-500 flex italic text-sm mt-1">Adress ng Trabaho</p>
                     <input type="text" placeholder="Work Address"
                         class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                 </div>
@@ -796,7 +850,7 @@
             </div>
 
             <!-- Account Details -->
-             <div class="bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+             <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
 
                 <!-- Section Title -->
                 <div class="mb-4">
@@ -812,7 +866,7 @@
                             <span>⭐</span></label>
                         <input id="username" name="username" type="text" placeholder="Enter your username"
                             class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
-                        <p class="text-gray-500 italic text-sm mt-1">(example: @juancruz)</p>
+                        <p class="text-gray-500 flex italic text-sm mt-1">(example: @juancruz)</p>
                     </div>
 
                     <!-- Create Password -->
@@ -829,7 +883,7 @@
                             <p id="passwordMessage" class="mt-1 text-sm text-red-500 italic hidden">
                                 Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
                             </p>
-                            <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-2">
+                            <label class="flex gap-2 text-sm text-gray-700 cursor-pointer mt-2">
                                 <input id="showCreatePassword" type="checkbox" class="h-4 w-4" />
                                 <span>Show password</span>
                             </label>
@@ -840,15 +894,15 @@
 
                 <!-- Password Rules -->
                 <div
-                    class="grid grid-cols-1 md:grid-cols-2 bg-blue-50 border border-blue-300 rounded-xl p-6 mt-6 text-sm gap-6 shadow-inner">
+                    class="grid grid-cols-1 md:grid-cols-2 bg-blue-50 border-2 border-blue-200 rounded-xl p-6 mt-6 text-sm gap-6 shadow-inner">
                     <!-- English -->
                     <div>
                         <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">English <button
-                                type="button"
-                                class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
-                                title="Play audio" aria-label="Play audio for password rules (English)"
-                                data-tts-en="Password must have: One uppercase letter, one lowercase letter, one number, and at least eight characters. Example: Lovedog12."
-                                >🔊</button>
+                            type="button"
+                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-2 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                            title="Play audio" aria-label="Play audio for password rules (English)"
+                            data-tts-en="Password must have: One uppercase letter, one lowercase letter, one number, and at least eight characters. Example: Lovedog12."
+                            >🔊</button>
                         </p>
                         <p class="mb-2">Password must have:</p>
                         <ul class="list-disc list-inside space-y-1 text-gray-700">
@@ -861,12 +915,12 @@
                     </div>
 
                     <!-- Tagalog -->
-                    <div>
+                        <div>
                         <p class="font-semibold text-blue-700 mb-2 flex items-center gap-2">Tagalog <button
-                                type="button"
-                                class="text-gray-600 text-lg hover:scale-110 transition-transform tts-btn"
-                                title="Play audio" aria-label="Play audio for password rules (Tagalog)"
-                                data-tts-tl="Ang password ay dapat mayroong: isang malaking letra, isang maliit na letra, isang numero, at hindi bababa sa 8 karakter na halo ng letra at numero. Halimbawa: Lovedog12.">🔊</button>
+                            type="button"
+                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-2 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                            title="Play audio" aria-label="Play audio for password rules (Tagalog)"
+                            data-tts-tl="Ang password ay dapat mayroong: isang malaking letra, isang maliit na letra, isang numero, at hindi bababa sa 8 karakter na halo ng letra at numero. Halimbawa: Lovedog12.">🔊</button>
                         </p>
                         <p class="mb-2">Ang password ay dapat mayroong:</p>
                         <ul class="list-disc list-inside space-y-1 text-gray-700">
@@ -886,7 +940,7 @@
                     <input id="confirmPassword" name="confirmPassword" type="password"
                         placeholder="Re-enter your password"
                         class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
-                    <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer mt-2">
+                    <label class="flex gap-2 text-sm text-gray-700 cursor-pointer mt-2">
                         <input id="showConfirmPassword" type="checkbox" class="h-4 w-4" />
                         <span>Show password</span>
                     </label>
@@ -971,7 +1025,8 @@ function validateMedicalCertificateDate(dateString, errorContainer) {
 
 document.addEventListener('DOMContentLoaded', () => {
     setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
-    setupUpload('pwdidFile', 'pwdidDisplay', 'pwdidLabel', 'pwdidHint');
+    setupUpload('pwdidFileFront', 'pwdidDisplayFront');
+    setupUpload('pwdidFileBack', 'pwdidDisplayBack');
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
     try {
         const createToggle = document.getElementById('showCreatePassword');
@@ -1014,6 +1069,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     } catch(e) { console.warn('password hint init failed', e); }
 });
+
+// NOTE: Preview handling for uploads is centralized in `setupUpload()` above.
+// The legacy/createUploadCard logic has been removed to avoid duplicate previews.
 
 // Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
 window.formatDateWords = function(raw) {
@@ -1259,11 +1317,11 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
         // determine storage keys for this input (used both on change and on init)
         let nameKey, dataKey, typeKey;
-        if (inputId === 'proofFile') {
+        if (String(inputId).toLowerCase().includes('proo')) {
             nameKey = 'admin_uploaded_proof_name';
             dataKey = 'admin_uploaded_proof_data';
             typeKey = 'admin_uploaded_proof_type';
-        } else if (inputId === 'pwdidFile') {
+        } else if (String(inputId).toLowerCase().includes('pwdid') || String(inputId).toLowerCase().includes('pwdidfile')) {
             nameKey = 'admin_uploaded_pwd_name';
             dataKey = 'admin_uploaded_pwd_data';
             typeKey = 'admin_uploaded_pwd_type';
@@ -1274,45 +1332,49 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         }
 
         // If storage already contains a previously-uploaded file, render its preview on init
+        // NOTE: we intentionally skip auto-restoring previews for PWD ID and Medical Certificate
+        // inputs so a page refresh won't show previously-uploaded previews for those sensitive fields.
         try {
-            const storedName = localStorage.getItem(nameKey);
-            const storedData = localStorage.getItem(dataKey);
-            const storedType = localStorage.getItem(typeKey);
-            if (storedName && storedData) {
-                const ext = (storedName.split('.').pop() || '').toLowerCase();
-                const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️'
-                                     : ext === 'pdf' ? '📄'
-                                     : '📁';
+            if (!/pwdidfile|\bpwdid\b|medfile/i.test(String(inputId))) {
+                const storedName = localStorage.getItem(nameKey);
+                const storedData = localStorage.getItem(dataKey);
+                const storedType = localStorage.getItem(typeKey);
+                if (storedName && storedData) {
+                    const ext = (storedName.split('.').pop() || '').toLowerCase();
+                    const icon = ['jpg', 'jpeg', 'png'].includes(ext) ? '🖼️'
+                                         : ext === 'pdf' ? '📄'
+                                         : '📁';
 
-                // show display block
-                display.innerHTML = `
-                    <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
-                        <div class="flex items-center gap-2">
-                            <span class="text-2xl">${icon}</span>
-                            <span class="text-sm text-gray-700 truncate max-w-[200px]">${storedName}</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
-                            <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
-                        </div>
-                    </div>
-                `;
+                                            // show display block (responsive markup)
+                                        display.innerHTML = `
+                                                <div class="w-full bg-white border border-gray-200 rounded-lg px-3 py-3 shadow-sm mt-3">
+                                                    <div class="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-3">
+                                                        <div class="flex items-center gap-3">
+                                                            <div class="thumb">${['jpg','jpeg','png'].includes(ext) ? `<img src="${storedData}" alt="${storedName}" class="max-w-[110px] max-h-[88px] rounded-md object-cover">` : `<div class="pdf-icon inline-flex items-center justify-center w-[80px] h-[64px] bg-[#eff6ff] text-[#1e40af] font-bold rounded-md">PDF</div>`}</div>
+                                                            <div class="filename text-sm text-gray-700 break-words max-w-full">${storedName}</div>
+                                                        </div>
+                                                        <div class="flex gap-2 mt-2 sm:mt-0">
+                                                            <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+                                                            <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                        `;
 
-                // view uses storedData (data URL) as the source
-                const viewBtn = display.querySelector('.viewBtn');
-                const removeBtn = display.querySelector('.removeBtn');
-                if (viewBtn) viewBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(storedData, ext); });
-                if (removeBtn) removeBtn.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    resetDisplay();
-                    try { fileInput.value = ''; } catch(e){}
-                    localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey);
-                    // also run legacy cleanup
-                    try { cleanupUploadedFileByName(storedName); } catch(e){}
-                });
+                    const viewBtn = display.querySelector('.viewBtn');
+                    const removeBtn = display.querySelector('.removeBtn');
+                    if (viewBtn) viewBtn.addEventListener('click', (e) => { e.preventDefault(); openModal(storedData, ext); });
+                    if (removeBtn) removeBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        resetDisplay();
+                        try { fileInput.value = ''; } catch(e){}
+                        localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey);
+                        try { cleanupUploadedFileByName(storedName); } catch(e){}
+                    });
 
-                if (labelEl) { labelEl.textContent = 'File Uploaded:'; }
-                if (hintEl) { hintEl.style.display = 'none'; }
+                    if (labelEl) { labelEl.textContent = 'File Uploaded:'; }
+                    if (hintEl) { hintEl.style.display = 'none'; }
+                }
             }
         } catch(e){}
 
@@ -1424,31 +1486,29 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         : ext === 'pdf' ? '📄'
                         : '📁';
 
-                display.innerHTML = `
-                    <div class="flex items-center justify-between gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
-                        <div class="flex items-center gap-2">
-                            <span class="text-2xl">${icon}</span>
-                            <span class="text-sm text-gray-700 truncate max-w-[200px]">${file.name}</span>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">
-                                View / Tingnan
-                            </button>
-                            <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">
-                                Remove / Alisin
-                            </button>
-                        </div>
-                    </div>
-                `;
+                                display.innerHTML = `
+                                        <div class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
+                                            <div class="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-3">
+                                                <div class="flex items-center gap-2">
+                                                    <span class="text-2xl">${icon}</span>
+                                                    <span class="text-sm text-gray-700 break-words max-w-[240px]">${file.name}</span>
+                                                </div>
+                                                <div class="flex gap-2 mt-2 sm:mt-0">
+                                                    <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+                                                    <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                `;
 
                 // Determine storage keys & OCR type
                 let nameKey, dataKey, typeKey, ocrtype;
-                if (inputId === 'proofFile') {
+                if (String(inputId).toLowerCase().includes('proo')) {
                     nameKey = 'admin_uploaded_proof_name';
                     dataKey = 'admin_uploaded_proof_data';
                     typeKey = 'admin_uploaded_proof_type';
                     ocrtype = 'membership_proof';
-                } else if (inputId === 'pwdidFile') {
+                } else if (String(inputId).toLowerCase().includes('pwdid') || String(inputId).toLowerCase().includes('pwdidfile')) {
                     nameKey = 'admin_uploaded_pwd_name';
                     dataKey = 'admin_uploaded_pwd_data';
                     typeKey = 'admin_uploaded_pwd_type';
