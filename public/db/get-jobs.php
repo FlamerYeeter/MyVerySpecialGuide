@@ -80,6 +80,57 @@ if (!$conn) {
     exit;
 }
 
+// --- Normalization + synonym mapping helpers (improves accessibility matching)
+function normalize_token($s) {
+  if ($s === null) return '';
+  $s = mb_strtolower(trim((string)$s));
+  // remove punctuation except slashes and ampersands which sometimes carry meaning
+  $s = preg_replace('/[\p{P}&&[^\/\&]]+/u', ' ', $s);
+  $s = preg_replace('/\s+/u', ' ', $s);
+  return trim($s);
+}
+
+function map_synonym($val, $synonyms) {
+  if ($val === null) return null;
+  foreach ($synonyms as $canon => $variants) {
+    foreach ($variants as $v) {
+      if ($v === '') continue;
+      if (mb_strpos($val, $v) !== false) return $canon;
+    }
+  }
+  return $val;
+}
+
+// small synonyms map (expand as needed)
+$SYNONYMS = [
+  'no heavy lifting' => ['no heavy lifting','no heavy lifting / no pharmacy tasks','no lifting','no heavy lifting / no pharmacy tasks'],
+  'simple instructions' => ['simple instructions','clear instructions','simple instruction','simple step by step'],
+  'verbal communication required' => ['verbal communication required','communication skills','communication required'],
+  'task repetition' => ['task repetition','repetitive tasks','task repetition required']
+];
+
+// Fetch and normalize user profile tokens for the requesting guardian (used for PHP-side matching)
+$user_profile_tokens = [];
+if (!empty($user_id)) {
+  $upSql = 'SELECT TYPE, VALUE FROM MVSG.USER_PROFILE WHERE GUARDIAN_ID = :uid AND VALUE IS NOT NULL';
+  $upSt = oci_parse($conn, $upSql);
+  oci_bind_by_name($upSt, ':uid', $user_id, -1);
+  if (@oci_execute($upSt)) {
+    while ($up = oci_fetch_assoc($upSt)) {
+      $v = normalize_token($up['VALUE'] ?? '');
+      if ($v === '') continue;
+      // map synonyms and keep canonical token
+      $mapped = map_synonym($v, $SYNONYMS);
+      $user_profile_tokens[] = $mapped;
+      // also keep original normalized form to increase recall
+      $user_profile_tokens[] = $v;
+    }
+  }
+  @oci_free_statement($upSt);
+  // unique
+  $user_profile_tokens = array_values(array_unique($user_profile_tokens));
+}
+
 // SQL: content matches for the provided guardian (if any) + global collab counts (all saved/applications)
 $sql = "
 WITH
@@ -134,6 +185,31 @@ WITH
     GROUP BY jp.JOB_POSTING_ID
   ),
 
+  -- Match user profile values against JOB_POSTINGS accessibility/support columns
+  content_posting_access AS (
+    -- partial/fuzzy matches between user profile values and job accessibility columns
+    -- weight each accessibility match by 2 to increase its influence
+    SELECT jp.ID AS job_id,
+           SUM(
+             (CASE WHEN jp.COMP_REQ IS NOT NULL AND (
+                      INSTR(LOWER(up.VALUE), LOWER(jp.COMP_REQ)) > 0 OR INSTR(LOWER(jp.COMP_REQ), LOWER(up.VALUE)) > 0
+                   ) THEN 2 ELSE 0 END)
+           + (CASE WHEN jp.SENSOR_REQ IS NOT NULL AND (
+                      INSTR(LOWER(up.VALUE), LOWER(jp.SENSOR_REQ)) > 0 OR INSTR(LOWER(jp.SENSOR_REQ), LOWER(up.VALUE)) > 0
+                   ) THEN 2 ELSE 0 END)
+           + (CASE WHEN jp.COG_LVL_REQ IS NOT NULL AND (
+                      INSTR(LOWER(up.VALUE), LOWER(jp.COG_LVL_REQ)) > 0 OR INSTR(LOWER(jp.COG_LVL_REQ), LOWER(up.VALUE)) > 0
+                   ) THEN 2 ELSE 0 END)
+           + (CASE WHEN jp.ACCOM_AVAIL IS NOT NULL AND (
+                      INSTR(LOWER(up.VALUE), LOWER(jp.ACCOM_AVAIL)) > 0 OR INSTR(LOWER(jp.ACCOM_AVAIL), LOWER(up.VALUE)) > 0
+                   ) THEN 2 ELSE 0 END)
+           ) AS MATCH_COUNT
+    FROM MVSG.JOB_POSTINGS jp
+    JOIN MVSG.USER_PROFILE up ON up.GUARDIAN_ID = :user_id
+    WHERE :user_id IS NOT NULL
+    GROUP BY jp.ID
+  ),
+
   content_match AS (
     SELECT job_id, SUM(MATCH_COUNT) AS MATCH_COUNT
     FROM (
@@ -142,6 +218,8 @@ WITH
       SELECT * FROM content_cert
       UNION ALL
       SELECT * FROM content_exp
+      UNION ALL
+      SELECT * FROM content_posting_access
     )
     GROUP BY job_id
   ),
@@ -243,7 +321,7 @@ while ($row = oci_fetch_assoc($stid)) {
       FROM MVSG.JOB_PROFILE
       WHERE JOB_POSTING_ID = :job_id
         AND VALUE IS NOT NULL
-        AND LOWER(TYPE) IN ('skills','job-position','role','workplace','workplace_preference','work_environment','job_positions','job_preference')
+        AND LOWER(TYPE) IN ('skills','job-position','role','workplace','workplace_preference','work_environment','job_positions','job_preference','comp_req','sensor_req','cog_lvl_req','accom_avail')
     ";
     $pstid = oci_parse($conn, $profileSql);
     oci_bind_by_name($pstid, ':job_id', $jobId, -1);
@@ -251,12 +329,21 @@ while ($row = oci_fetch_assoc($stid)) {
 
     $skills = []; $jobTypes = [];
     $workplaces = [];
+    $compReqs = []; $sensorReqs = []; $cogLvlReqs = []; $accomAvail = [];
     while ($p = oci_fetch_assoc($pstid)) {
         $type = strtolower($p['TYPE'] ?? '');
-        if (strpos($type, 'role') !== false || $type === 'job-position') $jobTypes[] = $p['VALUE'];
-        elseif ($type === 'skills') $skills[] = $p['VALUE'];
+      if (strpos($type, 'role') !== false || $type === 'job-position') $jobTypes[] = $p['VALUE'];
+      elseif ($type === 'skills') $skills[] = $p['VALUE'];
       elseif (strpos($type, 'work') !== false || strpos($type, 'workplace') !== false || strpos($type, 'job_preference') !== false || strpos($type,'job_positions') !== false) {
         $workplaces[] = $p['VALUE'];
+      } elseif ($type === 'comp_req') {
+        $compReqs[] = $p['VALUE'];
+      } elseif ($type === 'sensor_req') {
+        $sensorReqs[] = $p['VALUE'];
+      } elseif ($type === 'cog_lvl_req') {
+        $cogLvlReqs[] = $p['VALUE'];
+      } elseif ($type === 'accom_avail') {
+        $accomAvail[] = $p['VALUE'];
       }
     }
     oci_free_statement($pstid);
@@ -283,6 +370,38 @@ while ($row = oci_fetch_assoc($stid)) {
     $collabCount     = isset($row['COLLAB_COUNT'])     ? intval($row['COLLAB_COUNT']) : 0;
     $debugMaxCo      = isset($row['DEBUG_MAX_CO'])     ? intval($row['DEBUG_MAX_CO']) : 0;
 
+    // --- PHP-side accessibility matching (normalization + synonyms) for additional recall
+    $access_matches_php = 0;
+    $job_access_fields = [];
+    if (!empty($row['COMP_REQ'])) $job_access_fields[] = $row['COMP_REQ'];
+    if (!empty($row['SENSOR_REQ'])) $job_access_fields[] = $row['SENSOR_REQ'];
+    if (!empty($row['COG_LVL_REQ'])) $job_access_fields[] = $row['COG_LVL_REQ'];
+    if (!empty($row['ACCOM_AVAIL'])) $job_access_fields[] = $row['ACCOM_AVAIL'];
+    // normalize job tokens
+    $job_tokens = [];
+    foreach ($job_access_fields as $jf) {
+      $t = normalize_token($jf);
+      if ($t === '') continue;
+      // also map synonyms on job side
+      $job_tokens[] = map_synonym($t, $SYNONYMS);
+      $job_tokens[] = $t;
+    }
+    $job_tokens = array_values(array_unique($job_tokens));
+
+    if (!empty($user_profile_tokens) && !empty($job_tokens)) {
+      foreach ($user_profile_tokens as $ut) {
+        if ($ut === '') continue;
+        foreach ($job_tokens as $jt) {
+          // partial match both directions
+          if (mb_stripos($ut, $jt) !== false || mb_stripos($jt, $ut) !== false) {
+            // weight each accessibility match as 2 (to align with SQL-side design)
+            $access_matches_php += 2;
+          }
+        }
+      }
+    }
+
+
     // Fetch number of applicants (applications) for this job
     $appSql = "SELECT COUNT(DISTINCT GUARDIAN_ID) AS APPLIED_COUNT FROM MVSG.APPLICATIONS WHERE JOB_POSTING_ID = :job_id";
     $appSt = oci_parse($conn, $appSql);
@@ -296,7 +415,9 @@ while ($row = oci_fetch_assoc($stid)) {
     @oci_free_statement($appSt);
 
     // Blend: 70% content, 30% collaborative
-    $computedScore = round((0.7 * $contentScoreRaw + 0.3 * $collabScoreRaw) * 100, 2);
+    // Compute a small accessibility score from PHP-side matches and blend it into final score
+    $accessScoreRaw = min(1.0, $access_matches_php / 4.0); // 4 weighted points -> full
+    $computedScore = round((0.65 * $contentScoreRaw + 0.25 * $accessScoreRaw + 0.1 * $collabScoreRaw) * 100, 2);
     // ensure numeric non-null values by explicit casts/fallbacks
     $contentScoreRaw = isset($row['CONTENT_SCORE_RAW']) ? floatval($row['CONTENT_SCORE_RAW']) : 0.0;
     $collabScoreRaw  = isset($row['COLLAB_SCORE_RAW'])  ? floatval($row['COLLAB_SCORE_RAW'])  : 0.0;
@@ -315,6 +436,10 @@ while ($row = oci_fetch_assoc($stid)) {
         'job_profile_workplace' => $row['JOB_PROFILE_WORKPLACE'] ?? null,
         'work_environment'      => !empty($workplaces) ? implode(', ', $workplaces) : ($row['JOB_PROFILE_WORKPLACE'] ?? ($row['WORKING_ENVIRONMENT'] ?? null)),
         'skills'                => $skills,
+      'comp_req'              => !empty($compReqs) ? implode(', ', $compReqs) : ($row['COMP_REQ'] ?? null),
+      'sensor_req'            => !empty($sensorReqs) ? implode(', ', $sensorReqs) : ($row['SENSOR_REQ'] ?? null),
+      'cog_lvl_req'           => !empty($cogLvlReqs) ? implode(', ', $cogLvlReqs) : ($row['COG_LVL_REQ'] ?? null),
+      'accom_avail'           => !empty($accomAvail) ? implode(', ', $accomAvail) : ($row['ACCOM_AVAIL'] ?? null),
       'openings'              => $row['EMPLOYEE_CAPACITY'] ?? null,
       'apply_before'          => isset($row['APPLY_BEFORE']) ? $row['APPLY_BEFORE'] : null,
         'logo'                  => $logoSrc,
@@ -322,6 +447,8 @@ while ($row = oci_fetch_assoc($stid)) {
         'content_score'         => round($contentScoreRaw * 100, 2),
         'collab_score'          => round(min(1.0, $collabScoreRaw) * 100, 2),
         'computed_score'        => $computedScore,
+        'access_matches'        => $access_matches_php,
+        'access_score_raw'      => round($accessScoreRaw, 3),
         // debug fields (guaranteed numeric)
         'debug_content_matches' => $contentMatches,
         'debug_collab_count'    => $collabCount,

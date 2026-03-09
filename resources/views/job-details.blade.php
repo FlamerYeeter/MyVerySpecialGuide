@@ -442,6 +442,11 @@
                     applied: payload.applied ?? payload.applied_count ?? 0,
                     skills: asArray(payload.skills ?? payload.required_skills ?? payload.SKILLS ?? payload.REQUIRED_SKILLS ?? []),
                     job_positions: asArray(payload.job_positions ?? payload.positions ?? payload.JOB_POSITIONS ?? payload.POSITIONS ?? []),
+                    // Accessibility & support
+                    comp_req: asArray(payload.comp_req ?? payload.COMP_REQ ?? payload.COMP_REQS ?? []),
+                    sensor_req: asArray(payload.sensor_req ?? payload.SENSOR_REQ ?? []),
+                    cog_lvl_req: asArray(payload.cog_lvl_req ?? payload.COG_LVL_REQ ?? []),
+                    accom_avail: asArray(payload.accom_avail ?? payload.ACCOM_AVAIL ?? payload.ACCOMMODATION_AVAIL ?? []),
                     company: payload.company ?? {
                         id: payload.company_id ?? payload.COMPANY_ID ?? null,
                         name: payload.company_name_official ?? payload.COMPANY_OFFICIAL_NAME ?? payload.company_name ?? payload.COMPANY_NAME ?? payload.company_name_from_job ?? ''
@@ -487,6 +492,24 @@
                 setHtml('looking-for-content', j.who_we_are_looking_for);
                 setHtml('working-environment-content', j.working_environment);
                 setHtml('qualifications-content', j.qualifications);
+
+                // Accessibility lists helper
+                function populateList(id, values) {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    if (!values || values.length === 0) {
+                        el.innerHTML = '<li class="text-gray-700 italic">No information provided.</li>';
+                        return;
+                    }
+                    // ensure array of strings
+                    const arr = Array.isArray(values) ? values : [values];
+                    el.innerHTML = arr.map(x => '<li>' + String(x) + '</li>').join('\n');
+                }
+
+                populateList('communication-list', j.comp_req);
+                populateList('sensory-list', j.sensor_req);
+                populateList('cognitive-list', j.cog_lvl_req);
+                populateList('accommodation-list', j.accom_avail);
 
                 // Counts & progress
                 const openings = parseInt(j.openings) || 0;

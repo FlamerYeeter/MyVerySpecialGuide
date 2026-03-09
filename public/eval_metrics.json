@@ -1,14 +1,14 @@
 {
     "generated_by": "get-jobs.php",
-    "user_id": "176426880764812252",
+    "user_id": "177154557202519479",
     "counts": {
-        "tp": 5,
+        "tp": 4,
         "tn": 0,
         "fp": 0,
-        "fn": 4
+        "fn": 5
     },
-    "accuracy": 0.555556,
+    "accuracy": 0.444444,
     "precision": 1,
-    "recall": 0.555556,
-    "f1": 0.714286
+    "recall": 0.444444,
+    "f1": 0.615385
 }
