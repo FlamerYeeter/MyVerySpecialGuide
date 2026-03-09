@@ -1242,27 +1242,10 @@ setupEditSection("editAccountBtn", "accountSection");
                         }
                     }
 
-                    // Save to localStorage
+                    // Draft saving moved to adminapprove page; skip persisting here
                     try {
-                        // persist draft including birthdate
-                        localStorage.setItem('rpi_personal1', JSON.stringify(draft));
-                        try {
-                            const verified = JSON.parse(localStorage.getItem('rpi_personal1'));
-                            console.info('[review] saveDraftAndEdit wrote rpi_personal1 and verified', verified);
-                        } catch (verErr) {
-                            console.info('[review] saveDraftAndEdit wrote rpi_personal1 (could not parse on readback)', localStorage.getItem('rpi_personal1'));
-                        }
-                        // Also ensure current review view shows the birthdate value
-                        try {
-                            const bd = draft && draft.personal && draft.personal.birthdate ? draft.personal.birthdate : null;
-                            if (bd) {
-                                const bdEl = document.getElementById('birthdate');
-                                if (bdEl && (typeof bdEl.value !== 'undefined')) bdEl.value = bd;
-                            }
-                        } catch(e){}
-                    } catch (e) {
-                        console.warn('saveDraftAndEdit: failed to set localStorage', e);
-                    }
+                        console.info('[review] draft save skipped here; adminapprove will save rpi_personal1');
+                    } catch(e){}
 } catch (e) {
                     console.warn('saveDraftAndEdit build draft failed', e);
                 }

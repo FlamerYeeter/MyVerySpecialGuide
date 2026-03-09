@@ -1,0 +1,12 @@
+{
+    "allGood": true,
+    "lastError": null,
+    "timestamp": "2026-03-09T17:53:29+01:00",
+    "fallback_saved_files": [],
+    "expected_debug_files": {
+        "temp_debug_med_blob_written.json": false,
+        "temp_debug_pwd_blob_written.json": false,
+        "temp_debug_job_certificate_blobs.json": false,
+        "temp_debug_certificate_blobs.json": false
+    }
+}

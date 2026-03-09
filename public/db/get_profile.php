@@ -41,11 +41,18 @@ if (!$conn) {
     exit;
 }
 
-$sql = "SELECT id, first_name, last_name, email, contact_number, TO_CHAR(date_of_birth,'YYYY-MM-DD') AS DATE_OF_BIRTH, address,
-           types_of_ds, cdd_type,
-           guardian_first_name, guardian_last_name, guardian_email,
-           guardian_contact_number, username, relationship_to_user,
-           PWD_ID, med_certificates, certificates, school, education
+$sql = "SELECT id,
+               first_name, last_name, middle_name, email, contact_number, TO_CHAR(date_of_birth,'YYYY-MM-DD') AS DATE_OF_BIRTH, address,
+               types_of_ds, cdd_type,
+               guardian_first_name, guardian_middle_name, guardian_last_name, guardian_email,
+               TO_CHAR(guardian_birthdate,'YYYY-MM-DD') AS GUARDIAN_BIRTHDATE,
+               guardian_contact_number, guardian_cell_number, guardian_home_number, guardian_work_number, guardian_work_address,
+               username, relationship_to_user,
+               PWD_ID, med_certificates, certificates, proof_of_membership,
+               school, education,
+               spouse_first_name, spouse_middle_name, spouse_last_name, spouse_email,
+               spouse_cell_number, spouse_home_number, spouse_work_number, spouse_work_address, TO_CHAR(spouse_birthdate,'YYYY-MM-DD') AS SPOUSE_BIRTHDATE, spouse_relationship_to_user,
+               job_preference, approval_status, prog_status, expert_id, age
     FROM user_guardian
     WHERE id = :id";
 $stid = oci_parse($conn, $sql);
@@ -68,6 +75,7 @@ $file_lengths = [
     'proof_len' => 0,
     'med_len' => 0,
     'other_len' => 0,
+    'proof_of_membership_len' => 0,
 ];
 
 if (!empty($row['PWD_ID'])) {
@@ -82,9 +90,14 @@ if (!empty($row['CERTIFICATES'])) {
     $files['other_certs'] = base64_encode($row['CERTIFICATES']);
     $file_lengths['other_len'] = strlen($row['CERTIFICATES']);
 }
+if (!empty($row['PROOF_OF_MEMBERSHIP'])) {
+    $files['proof_of_membership'] = base64_encode($row['PROOF_OF_MEMBERSHIP']);
+    $file_lengths['proof_of_membership_len'] = strlen($row['PROOF_OF_MEMBERSHIP']);
+}
 
 // remove raw blobs from $row to keep JSON smaller (they are in $files now)
-unset($row['PWD_ID'], $row['MED_CERTIFICATES'], $row['CERTIFICATES']);
+// remove raw blobs from $row to keep JSON smaller (they are in $files now)
+unset($row['PWD_ID'], $row['MED_CERTIFICATES'], $row['CERTIFICATES'], $row['PROOF_OF_MEMBERSHIP']);
 $row['EDUCATION_LEVEL'] = isset($row['EDUCATION']) ? $row['EDUCATION'] : '';
 $row['SCHOOL_NAME']     = isset($row['SCHOOL']) ? $row['SCHOOL'] : '';
 $row['CERTIFICATES_UPLOADED'] = (!empty($files['other_certs'])) ? true : false;

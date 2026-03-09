@@ -107,7 +107,44 @@ function write_debug_error($filename, $payload) {
 }
 
 // ——— EXTRACT DATA ———
-$user_info         = json_decode($data['rpi_personal'] ?? '{}', true);
+// Robustly decode `rpi_personal` which may be sent as a JSON-encoded string,
+// already-decoded array, or provided under alternate keys like `rpi_personal1`.
+$user_info = [];
+if (isset($data['rpi_personal'])) {
+    if (is_array($data['rpi_personal'])) {
+        $user_info = $data['rpi_personal'];
+    } else if (is_string($data['rpi_personal'])) {
+        $decoded = json_decode($data['rpi_personal'], true);
+        $user_info = is_array($decoded) ? $decoded : [];
+    }
+}
+// fallback to alternate key if present
+if (empty($user_info) && isset($data['rpi_personal1'])) {
+    if (is_array($data['rpi_personal1'])) {
+        $user_info = $data['rpi_personal1'];
+    } else if (is_string($data['rpi_personal1'])) {
+        $decoded = json_decode($data['rpi_personal1'], true);
+        $user_info = is_array($decoded) ? $decoded : [];
+    }
+}
+// Write a small debug snapshot of the decoded rpi_personal to help trace missing guardian cell values
+try {
+    $dbgPath = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_rpi_personal_latest.json';
+    $dbgPayload = [
+        'received_at' => date('c'),
+        'top_level_keys' => array_keys($data),
+        'has_rpi_personal' => isset($data['rpi_personal']),
+        'has_rpi_personal1' => isset($data['rpi_personal1']),
+        'user_info_keys' => is_array($user_info) ? array_keys($user_info) : null,
+        'sample_values' => [
+            'g_phone' => $user_info['g_phone'] ?? null,
+            'guardian_phone' => $user_info['guardian_phone'] ?? null,
+            'GUARDIAN_CELL_NUMBER' => $user_info['GUARDIAN_CELL_NUMBER'] ?? null,
+        ]
+    ];
+    @file_put_contents($dbgPath, json_encode($dbgPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+} catch (Exception $e) { /* ignore debug failures */ }
+// (debug dumps removed) -- server now accepts multiple guardian/spouse key aliases
 // Robustly extract education level and school name (accept JSON object or plain string)
 $education_level_raw = $data['education'] ?? null;
 $edu_level = null;
@@ -142,14 +179,41 @@ $fallback_saved_files = [];
 // Personal
 $firstName   = $user_info['firstName'] ?? null;
 $lastName    = $user_info['lastName'] ?? null;
+$middleName  = $user_info['middleName'] ?? $user_info['middle_name'] ?? $user_info['MIDDLE_NAME'] ?? $user_info['mname'] ?? null;
 $email       = $user_info['email'] ?? null;
 $phone       = $user_info['phone'] ?? null;
 $age         = $user_info['age'] ?? null;
 $address     = $user_info['address'] ?? null;
 $username    = $user_info['username'] ?? null;
 $password    = password_hash($user_info['password'] ?? 'temp123', PASSWORD_DEFAULT);
-$types_of_ds = $user_info['r_dsType1'] ?? null;
+$types_of_ds = null;
+// Accept many possible aliases/locations for the "type of Down Syndrome" value
+$types_of_ds = $user_info['r_dsType1'] ?? $user_info['r_dsType'] ?? $user_info['dsType'] ?? $user_info['down_syndrome_type'] ??
+               $data['r_dsType1'] ?? $data['r_dsType'] ?? $data['dsType'] ?? $data['down_syndrome_type'] ?? null;
 $birthdate_raw   = $user_info['birthdate'] ?? null;
+
+// Helper: convert empty string or whitespace-only values to NULL so DB receives true NULLs
+function normalizeNullableString($v) {
+    if (!isset($v)) return null;
+    if (is_string($v)) {
+        $t = trim($v);
+        return $t === '' ? null : $t;
+    }
+    return $v === '' ? null : $v;
+}
+
+// Accept additional aliases: frontend may send KARYOTYPE or types_of_ds (uppercase/lowercase)
+$types_of_ds = $types_of_ds ?? ($user_info['karyotype'] ?? $user_info['KARYOTYPE'] ?? $user_info['types_of_ds'] ?? $user_info['TYPES_OF_DS'] ?? $data['karyotype'] ?? $data['KARYOTYPE'] ?? $data['types_of_ds'] ?? $data['TYPES_OF_DS'] ?? null);
+
+// Normalize personal fields to ensure empty strings are treated as NULL when persisted
+$firstName = normalizeNullableString($firstName);
+$lastName  = normalizeNullableString($lastName);
+$middleName = normalizeNullableString($middleName);
+$email     = normalizeNullableString($email);
+$phone     = normalizeNullableString($phone);
+$address   = normalizeNullableString($address);
+$username  = normalizeNullableString($username);
+$types_of_ds = normalizeNullableString($types_of_ds);
 
 // Normalize and validate birthdate to 'YYYY-MM-DD' or null to avoid invalid TO_DATE calls
 $birthdate = null;
@@ -175,6 +239,9 @@ $cdd_type = $user_info['r_cddType1'] ?? $user_info['r_cdd_type'] ?? $user_info['
 if (!$cdd_type) {
     $cdd_type = $data['r_cddType1'] ?? $data['r_cdd_type'] ?? $data['cddType'] ?? $data['cdd_type'] ?? $data['cddTypeOther'] ?? $data['cdd_type_other'] ?? $data['r_cddType1_other'] ?? null;
 }
+
+// Accept uppercase or alternate CDD keys
+$cdd_type = $cdd_type ?? ($user_info['CDD_TYPE'] ?? $user_info['CddType'] ?? $data['CDD_TYPE'] ?? null);
 
 // Normalize CDD value to a string and ensure it fits the DB column size (VARCHAR2(50)).
 try {
@@ -202,11 +269,100 @@ try {
 } catch (Exception $e) { /* keep original behavior if anything unexpected happens */ }
 
 // Guardian
-$gf = $user_info['g_first_name'] ?? null;
-$gl = $user_info['g_last_name'] ?? null;
-$ge = $user_info['g_email'] ?? null;
-$gp = $user_info['g_phone'] ?? null;
-$gr = $user_info['guardian_relationship'] ?? null;
+// Guardian name/contact fallbacks: accept multiple alias keys and top-level fallbacks
+$gf = $user_info['g_first_name'] ?? $user_info['guardian_first_name'] ?? $user_info['g_first'] ?? $user_info['guardian_first'] ?? $data['g_first_name'] ?? $data['guardian_first_name'] ?? $data['guardian_first'] ?? null;
+$gl = $user_info['g_last_name'] ?? $user_info['guardian_last_name'] ?? $user_info['g_last'] ?? $user_info['guardian_last'] ?? $data['g_last_name'] ?? $data['guardian_last_name'] ?? $data['guardian_last'] ?? null;
+$ge = $user_info['g_email'] ?? $user_info['guardian_email'] ?? $data['g_email'] ?? $data['guardian_email'] ?? null;
+$gp = $user_info['g_phone'] ?? $user_info['guardian_phone'] ?? $user_info['guardian_contact_number'] ?? $user_info['g_cell'] ?? $user_info['g_mobile'] ?? $data['g_phone'] ?? $data['guardian_phone'] ?? null;
+$gr = $user_info['guardian_relationship'] ?? $user_info['g_relationship'] ?? $data['guardian_relationship'] ?? $data['g_relationship'] ?? null;
+
+// Also accept uppercase DB-style keys
+$gf = $gf ?? ($user_info['GUARDIAN_FIRST_NAME'] ?? $data['GUARDIAN_FIRST_NAME'] ?? null);
+$gl = $gl ?? ($user_info['GUARDIAN_LAST_NAME'] ?? $data['GUARDIAN_LAST_NAME'] ?? null);
+$ge = $ge ?? ($user_info['GUARDIAN_EMAIL'] ?? $data['GUARDIAN_EMAIL'] ?? null);
+$gp = $gp ?? ($user_info['GUARDIAN_CELL_NUMBER'] ?? $data['GUARDIAN_CELL_NUMBER'] ?? null);
+$g_home = $user_info['g_home_phone'] ?? $user_info['guardian_home_phone'] ?? $user_info['g_home_number'] ?? $data['g_home_phone'] ?? null;
+
+// Additional guardian fields (new schema)
+// Additional guardian fields (new schema) — accept multiple aliases and top-level fallbacks
+$gm = $user_info['g_middle_name'] ?? $user_info['guardian_middle_name'] ?? $user_info['g_middle'] ?? $data['g_middle_name'] ?? null;
+$g_birth_raw = $user_info['g_birthdate'] ?? $user_info['guardian_birthdate'] ?? $user_info['g_birth_date'] ?? $data['g_birthdate'] ?? null;
+$g_home = $user_info['g_home_phone'] ?? $user_info['guardian_home_phone'] ?? $user_info['g_home_number'] ?? $data['g_home_phone'] ?? null;
+$g_work = $user_info['g_work_phone'] ?? $user_info['guardian_work_phone'] ?? $user_info['g_work_number'] ?? $data['g_work_phone'] ?? null;
+$g_work_address = $user_info['g_work_address'] ?? $user_info['guardian_work_address'] ?? $data['g_work_address'] ?? null;
+
+// Accept uppercase guardian contact keys
+$g_home = $g_home ?? ($user_info['GUARDIAN_HOME_NUMBER'] ?? $data['GUARDIAN_HOME_NUMBER'] ?? null);
+$g_work = $g_work ?? ($user_info['GUARDIAN_WORK_NUMBER'] ?? $data['GUARDIAN_WORK_NUMBER'] ?? null);
+$g_work_address = $g_work_address ?? ($user_info['GUARDIAN_WORK_ADDRESS'] ?? $data['GUARDIAN_WORK_ADDRESS'] ?? null);
+
+// Spouse fields (new schema)
+$sfirst = $user_info['spouse_first'] ?? $user_info['spouse_first_name'] ?? null;
+$smiddle = $user_info['spouse_middle'] ?? $user_info['spouse_middle_name'] ?? null;
+$slast = $user_info['spouse_last'] ?? $user_info['spouse_last_name'] ?? null;
+$semail = $user_info['spouse_email'] ?? null;
+$sphone = $user_info['spouse_phone'] ?? $user_info['spouse_cell_number'] ?? $user_info['spouse_cell'] ?? null;
+$s_home = $user_info['spouse_home_phone'] ?? $user_info['spouse_home_number'] ?? null;
+$s_work = $user_info['spouse_work_phone'] ?? $user_info['spouse_work_number'] ?? null;
+$s_work_address = $user_info['spouse_work_address'] ?? null;
+$s_birth_raw = $user_info['spouse_birthdate'] ?? $user_info['spouse_birth_date'] ?? null;
+$s_relationship = $user_info['spouse_relationship'] ?? $user_info['spouse_relationship_to_user'] ?? null;
+
+// Also accept uppercase spouse keys (DB-style)
+$sfirst = $sfirst ?? ($user_info['SPOUSE_FIRST_NAME'] ?? $data['SPOUSE_FIRST_NAME'] ?? null);
+$smiddle = $smiddle ?? ($user_info['SPOUSE_MIDDLE_NAME'] ?? $data['SPOUSE_MIDDLE_NAME'] ?? null);
+$slast = $slast ?? ($user_info['SPOUSE_LAST_NAME'] ?? $data['SPOUSE_LAST_NAME'] ?? null);
+$semail = $semail ?? ($user_info['SPOUSE_EMAIL'] ?? $data['SPOUSE_EMAIL'] ?? null);
+$sphone = $sphone ?? ($user_info['SPOUSE_CELL_NUMBER'] ?? $data['SPOUSE_CELL_NUMBER'] ?? null);
+$s_home = $s_home ?? ($user_info['SPOUSE_HOME_NUMBER'] ?? $data['SPOUSE_HOME_NUMBER'] ?? null);
+$s_work = $s_work ?? ($user_info['SPOUSE_WORK_NUMBER'] ?? $data['SPOUSE_WORK_NUMBER'] ?? null);
+$s_work_address = $s_work_address ?? ($user_info['SPOUSE_WORK_ADDRESS'] ?? $data['SPOUSE_WORK_ADDRESS'] ?? null);
+$s_birth_raw = $s_birth_raw ?? ($user_info['SPOUSE_BIRTHDATE'] ?? $data['SPOUSE_BIRTHDATE'] ?? null);
+$s_relationship = $s_relationship ?? ($user_info['SPOUSE_RELATIONSHIP_TO_USER'] ?? $data['SPOUSE_RELATIONSHIP_TO_USER'] ?? null);
+
+// Normalize guardian and spouse birthdates to 'YYYY-MM-DD' or null
+$guardian_birthdate = null;
+if (!empty($g_birth_raw)) {
+    try {
+        $cand = substr(trim((string)$g_birth_raw),0,10);
+        $dtg = DateTime::createFromFormat('Y-m-d', $cand);
+        if ($dtg && $dtg->format('Y-m-d') === $cand) {
+            $guardian_birthdate = $dtg->format('Y-m-d');
+        }
+    } catch (Exception $e) { $guardian_birthdate = null; }
+}
+
+$spouse_birthdate = null;
+if (!empty($s_birth_raw)) {
+    try {
+        $cands = substr(trim((string)$s_birth_raw),0,10);
+        $dts = DateTime::createFromFormat('Y-m-d', $cands);
+        if ($dts && $dts->format('Y-m-d') === $cands) {
+            $spouse_birthdate = $dts->format('Y-m-d');
+        }
+    } catch (Exception $e) { $spouse_birthdate = null; }
+}
+
+// Normalize CDD, guardian and spouse text fields so empty strings become NULL
+$cdd_type = normalizeNullableString($cdd_type);
+$gf = normalizeNullableString($gf);
+$gl = normalizeNullableString($gl);
+$ge = normalizeNullableString($ge);
+$gp = normalizeNullableString($gp);
+$gr = normalizeNullableString($gr);
+$gm = normalizeNullableString($gm);
+$g_home = normalizeNullableString($g_home);
+$g_work = normalizeNullableString($g_work);
+$g_work_address = normalizeNullableString($g_work_address);
+$sfirst = normalizeNullableString($sfirst);
+$smiddle = normalizeNullableString($smiddle);
+$slast = normalizeNullableString($slast);
+$semail = normalizeNullableString($semail);
+$sphone = normalizeNullableString($sphone);
+$s_home = normalizeNullableString($s_home);
+$s_work = normalizeNullableString($s_work);
+$s_work_address = normalizeNullableString($s_work_address);
+$s_relationship = normalizeNullableString($s_relationship);
 
 // IDs
 $user_guardian_id = generateNumericId();    
@@ -236,17 +392,33 @@ INSERT INTO user_guardian (
     role,
     first_name,
     last_name,
+    middle_name,
     email,
     contact_number,
     password,
     age,
     education,
     school,
+    guardian_middle_name,
     guardian_first_name,
     guardian_last_name,
     guardian_email,
     guardian_contact_number,
+    guardian_home_number,
+    guardian_work_number,
+    guardian_work_address,
+    guardian_birthdate,
     relationship_to_user,
+    spouse_first_name,
+    spouse_middle_name,
+    spouse_last_name,
+    spouse_email,
+    spouse_cell_number,
+    spouse_home_number,
+    spouse_work_number,
+    spouse_work_address,
+    spouse_birthdate,
+    spouse_relationship_to_user,
     created_at,
     updated_at,
     address,
@@ -261,17 +433,33 @@ INSERT INTO user_guardian (
     'User',
     :first_name,
     :last_name,
+    :middle_name,
     :email,
     :contact_number,
     :password,
     :age,
     :education,
     :school,
+    :guardian_middle_name,
     :guardian_first_name,
     :guardian_last_name,
     :guardian_email,
     :guardian_contact_number,
+    :guardian_home_number,
+    :guardian_work_number,
+    :guardian_work_address,
+    CASE WHEN :guardian_birthdate IS NULL OR TRIM(:guardian_birthdate) = '' THEN NULL ELSE TO_DATE(:guardian_birthdate,'YYYY-MM-DD') END,
     :relationship,
+    :spouse_first_name,
+    :spouse_middle_name,
+    :spouse_last_name,
+    :spouse_email,
+    :spouse_cell_number,
+    :spouse_home_number,
+    :spouse_work_number,
+    :spouse_work_address,
+    CASE WHEN :spouse_birthdate IS NULL OR TRIM(:spouse_birthdate) = '' THEN NULL ELSE TO_DATE(:spouse_birthdate,'YYYY-MM-DD') END,
+    :spouse_relationship,
     SYSDATE,
     SYSDATE,
     :address,
@@ -290,6 +478,7 @@ $stid1 = oci_parse($conn, $sql1);
 oci_bind_by_name($stid1, ':id',            $user_guardian_id);
 oci_bind_by_name($stid1, ':first_name',    $firstName);
 oci_bind_by_name($stid1, ':last_name',     $lastName);
+oci_bind_by_name($stid1, ':middle_name',   $middleName);
 oci_bind_by_name($stid1, ':email',         $email);
 oci_bind_by_name($stid1, ':contact_number',$phone);
 oci_bind_by_name($stid1, ':password',      $password);
@@ -303,6 +492,23 @@ oci_bind_by_name($stid1, ':guardian_last_name',  $gl);
 oci_bind_by_name($stid1, ':guardian_email',      $ge);
 oci_bind_by_name($stid1, ':guardian_contact_number', $gp);
 oci_bind_by_name($stid1, ':relationship',        $gr);
+// new guardian binds
+oci_bind_by_name($stid1, ':guardian_middle_name', $gm);
+oci_bind_by_name($stid1, ':guardian_home_number', $g_home);
+oci_bind_by_name($stid1, ':guardian_work_number', $g_work);
+oci_bind_by_name($stid1, ':guardian_work_address', $g_work_address);
+oci_bind_by_name($stid1, ':guardian_birthdate', $guardian_birthdate);
+// spouse binds
+oci_bind_by_name($stid1, ':spouse_first_name', $sfirst);
+oci_bind_by_name($stid1, ':spouse_middle_name', $smiddle);
+oci_bind_by_name($stid1, ':spouse_last_name', $slast);
+oci_bind_by_name($stid1, ':spouse_email', $semail);
+oci_bind_by_name($stid1, ':spouse_cell_number', $sphone);
+oci_bind_by_name($stid1, ':spouse_home_number', $s_home);
+oci_bind_by_name($stid1, ':spouse_work_number', $s_work);
+oci_bind_by_name($stid1, ':spouse_work_address', $s_work_address);
+oci_bind_by_name($stid1, ':spouse_birthdate', $spouse_birthdate);
+oci_bind_by_name($stid1, ':spouse_relationship', $s_relationship);
 
 oci_bind_by_name($stid1, ':address',       $address);
 oci_bind_by_name($stid1, ':types_of_ds',   $types_of_ds);
@@ -320,6 +526,7 @@ $stid1 = oci_parse($conn, $sql1_return);
 oci_bind_by_name($stid1, ':id',            $user_guardian_id);
 oci_bind_by_name($stid1, ':first_name',    $firstName);
 oci_bind_by_name($stid1, ':last_name',     $lastName);
+oci_bind_by_name($stid1, ':middle_name',   $middleName);
 oci_bind_by_name($stid1, ':email',         $email);
 oci_bind_by_name($stid1, ':contact_number',$phone);
 oci_bind_by_name($stid1, ':password',      $password);
@@ -331,6 +538,23 @@ oci_bind_by_name($stid1, ':guardian_last_name',  $gl);
 oci_bind_by_name($stid1, ':guardian_email',      $ge);
 oci_bind_by_name($stid1, ':guardian_contact_number', $gp);
 oci_bind_by_name($stid1, ':relationship',        $gr);
+// new guardian binds (rebind)
+oci_bind_by_name($stid1, ':guardian_middle_name', $gm);
+oci_bind_by_name($stid1, ':guardian_home_number', $g_home);
+oci_bind_by_name($stid1, ':guardian_work_number', $g_work);
+oci_bind_by_name($stid1, ':guardian_work_address', $g_work_address);
+oci_bind_by_name($stid1, ':guardian_birthdate', $guardian_birthdate);
+// spouse binds (rebind)
+oci_bind_by_name($stid1, ':spouse_first_name', $sfirst);
+oci_bind_by_name($stid1, ':spouse_middle_name', $smiddle);
+oci_bind_by_name($stid1, ':spouse_last_name', $slast);
+oci_bind_by_name($stid1, ':spouse_email', $semail);
+oci_bind_by_name($stid1, ':spouse_cell_number', $sphone);
+oci_bind_by_name($stid1, ':spouse_home_number', $s_home);
+oci_bind_by_name($stid1, ':spouse_work_number', $s_work);
+oci_bind_by_name($stid1, ':spouse_work_address', $s_work_address);
+oci_bind_by_name($stid1, ':spouse_birthdate', $spouse_birthdate);
+oci_bind_by_name($stid1, ':spouse_relationship', $s_relationship);
 oci_bind_by_name($stid1, ':address',       $address);
 oci_bind_by_name($stid1, ':types_of_ds',   $types_of_ds);
 oci_bind_by_name($stid1, ':cdd_type',       $cdd_type);
@@ -346,6 +570,8 @@ $ug_rowid = null;
 oci_bind_by_name($stid1, ':ug_rowid', $ug_rowid, 256);
 
 // EXECUTE
+    // (debug bind dump removed)
+
     if (!oci_execute($stid1, OCI_NO_AUTO_COMMIT)) {
     $e = oci_error($stid1);
     $lastError = $e;

@@ -299,7 +299,7 @@
                                 Middle Name 
                             </label>
                             <p class="text-gray-500 italic flex text-sm mt-1">Gitnang Pangalan (Opsyonal)</p>
-                            <input id="middle_name" type="text" placeholder="Middle Name"
+                            <input id="middle_name" name="middleName" type="text" placeholder="Middle Name"
                                 class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
                         </div>
 
@@ -405,7 +405,7 @@
                     </label>
 
                     <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" id="down_syndrome_>Mosaic" name="down_syndrome_type" value=">Mosaic Trisomy" class="accent-blue-600"/>
+                        <input type="radio" id="down_syndrome_Mosaic" name="down_syndrome_type" value="Mosaic Trisomy" class="accent-blue-600"/>
                         <span class="text-gray-700">Mosaic Trisomy</span>
                     </label>
 
@@ -413,6 +413,14 @@
                         <input type="radio" id="down_syndrome_Translocation" name="down_syndrome_type" value="Translocation Trisomy" class="accent-blue-600"/>
                         <span class="text-gray-700">Translocation Trisomy 21</span>
                    </label>
+                    <!-- Hidden field to surface selected karyotype into collected form data -->
+                    <input id="dsType" name="dsType" type="hidden" value="" />
+                    <!-- Legacy/alias hidden fields for server and older pages -->
+                    <input id="r_dsType1" name="r_dsType1" type="hidden" value="" />
+                    <input id="r_dsType" name="r_dsType" type="hidden" value="" />
+                    <input id="types_of_ds" name="types_of_ds" type="hidden" value="" />
+                    <input id="TYPES_OF_DS" name="TYPES_OF_DS" type="hidden" value="" />
+                    <input id="karyotype" name="karyotype" type="hidden" value="" />
                 </div>
             </div>
 
@@ -665,7 +673,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Last Name ⭐</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Apelyido</p>
-                        <input id="guardian_last" type="text" placeholder="Last Name"
+                        <input id="guardian_last" name="g_last_name" type="text" placeholder="Last Name"
                             class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -673,7 +681,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">First Name ⭐</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Unang Pangalan</p>
-                        <input id="guardian_first" type="text" placeholder="First Name"
+                        <input id="guardian_first" name="g_first_name" type="text" placeholder="First Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -681,7 +689,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Middle Name</label>
                         <p class="text-gray-500 flex italic text-sm mt-1"> Gitnang Pangalan (Opsyonal)</p>
-                        <input id="guardian_middle" type="text" placeholder="Middle Name"
+                        <input id="guardian_middle" name="g_middle_name" type="text" placeholder="Middle Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -689,7 +697,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Birthdate ⭐</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Petsa ng Kapanganakan</p>
-                        <input id="guardian_birthdate" type="date"
+                        <input id="guardian_birthdate" name="g_birthdate" type="date"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -697,7 +705,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Relationship to Applicant ⭐</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Relasyon sa Applicant</p>
-                        <select id="guardian_relationship"
+                        <select id="guardian_relationship" name="guardian_relationship"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
                             <option value="" disabled selected>Select Relationship</option>
                             <option>Father</option>
@@ -711,7 +719,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Email ⭐</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Email</p>
-                        <input id="guardian_email" type="email" placeholder="Email"
+                        <input id="guardian_email" name="g_email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -719,7 +727,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Home Phone No.</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Telepono sa Bahay</p>
-                        <input id="guardian_home_phone" type="tel" placeholder="Home Phone"
+                        <input id="guardian_home_phone" name="g_home_phone" type="tel" placeholder="Home Phone"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -727,15 +735,16 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Cellphone No. ⭐</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Cellphone</p>
-                        <input id="guardian_phone" type="tel" placeholder="+63 9XX XXX XXXX"
+                        <input id="guardian_phone" name="g_phone" type="tel" placeholder="+63 9XX XXX XXXX"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                        <input id="GUARDIAN_CELL_NUMBER" name="GUARDIAN_CELL_NUMBER" type="hidden" value="" />
                     </div>
 
                     <!-- Work Phone -->
                     <div>
                         <label class="font-semibold flex items-center gap-1">Work Phone No.</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Telepono sa Trabaho</p>
-                        <input type="tel" placeholder="Work Phone"
+                        <input id="guardian_work_phone" name="g_work_phone" type="tel" placeholder="Work Phone"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -745,7 +754,7 @@
                 <div class="mt-6">
                     <label class="font-semibold flex items-center gap-1">Work Address</label>
                     <p class="text-gray-500 flex italic text-sm mt-1">Adress ng Trabaho</p>
-                    <input type="text" placeholder="Work Address"
+                    <input id="guardian_work_address" name="g_work_address" type="text" placeholder="Work Address"
                         class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                 </div>
 
@@ -763,7 +772,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Last Name</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Apelyido</p>
-                        <input type="text" placeholder="Last Name"
+                        <input id="spouse_last" name="spouse_last" type="text" placeholder="Last Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -771,7 +780,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">First Name</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Unang Pangalan</p>
-                        <input type="text" placeholder="First Name"
+                        <input id="spouse_first" name="spouse_first" type="text" placeholder="First Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -779,7 +788,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Middle Name</label>
                         <p class="text-gray-500 flex italic text-sm mt-1"> Gitnang Pangalan (Opsyonal)</p>
-                        <input type="text" placeholder="Middle Name"
+                        <input id="spouse_middle" name="spouse_middle" type="text" placeholder="Middle Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -787,7 +796,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Birthdate</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Petsa ng Kapanganakan</p>
-                        <input type="date"
+                        <input id="spouse_birthdate" name="spouse_birthdate" type="date"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -795,7 +804,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Relationship to Applicant</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Relasyon sa Applicant</p>
-                        <select
+                        <select id="spouse_relationship" name="spouse_relationship"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
                             <option value="" disabled selected>Select Relationship</option>
                             <option>Father</option>
@@ -809,7 +818,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Email</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Email</p>
-                        <input type="email" placeholder="Email"
+                        <input id="spouse_email" name="spouse_email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -817,7 +826,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Cellphone No.</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Cellphone</p>
-                        <input type="tel" placeholder="+63 9XX XXX XXXX"
+                        <input id="spouse_phone" name="spouse_phone" type="tel" placeholder="+63 9XX XXX XXXX"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -825,7 +834,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Home Phone No.</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Telepono sa Bahay</p>
-                        <input type="tel"
+                        <input id="spouse_home_phone" name="spouse_home_phone" type="tel"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -833,7 +842,7 @@
                     <div>
                         <label class="font-semibold flex items-center gap-1">Work Phone No.</label>
                         <p class="text-gray-500 flex italic text-sm mt-1">Numero ng Telepono sa Trabaho</p>
-                        <input type="tel"
+                        <input id="spouse_work_phone" name="spouse_work_phone" type="tel"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -843,7 +852,7 @@
                 <div class="mt-6">
                     <label class="font-semibold flex items-center gap-1">Work Address</label>
                     <p class="text-gray-500 flex italic text-sm mt-1">Adress ng Trabaho</p>
-                    <input type="text" placeholder="Work Address"
+                    <input id="spouse_work_address" name="spouse_work_address" type="text" placeholder="Work Address"
                         class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                 </div>
 
@@ -1273,12 +1282,14 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
         // For PWD ID OCR, show detected Type of Disability under the PWD display (like med date)
         if (detectedType === 'pwd_id' && aiData.type_of_disability) {
             const pd = document.getElementById('pwdidDisplay');
+            const txt = String(aiData.type_of_disability || '');
             if (pd) {
-                const txt = String(aiData.type_of_disability || '');
                 const prev = pd.querySelector('.ocr-summary');
                 if (prev) prev.textContent = `Detected Disability: ${txt}`;
                 else pd.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected Disability: ${txt}</div>`);
             }
+            // Persist detected disability so back-side uploads can include it if DOM isn't available
+            try { localStorage.setItem('admin_uploaded_pwd_detected', txt); } catch(e) {}
         }
 
         // For medical certificate, show detected exam date in medDisplay (formatted)
@@ -1554,6 +1565,44 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     ocr_type: ext
                 };
 
+                // If this is the BACK side of a PWD ID upload and the front side
+                // already detected a disability, include that info so the server
+                // will accept a back-only upload. We look for an existing
+                // `.ocr-summary` rendered by previous OCR runs.
+                try {
+                    if (ocrtype === 'pwd_id' && String(inputId).toLowerCase().includes('back')) {
+                        // Prefer the visible summary in the shared display, then front/back containers,
+                        // then fall back to any persisted detection in localStorage.
+                        let prev = null;
+                        const candidates = [
+                            document.getElementById('pwdidDisplay'),
+                            document.getElementById('pwdidDisplayFront'),
+                            document.getElementById('pwdidDisplayBack')
+                        ];
+                        for (const el of candidates) {
+                            try {
+                                if (!el) continue;
+                                const summary = el.querySelector('.ocr-summary');
+                                if (summary && String(summary.textContent||'').trim()) {
+                                    const txt = String(summary.textContent||'').trim();
+                                    const m = txt.match(/Detected\s*Disability\s*:\s*(.+)/i);
+                                    prev = m ? m[1].trim() : (txt || null);
+                                    if (prev) break;
+                                }
+                            } catch (e) { /* ignore per-element errors */ }
+                        }
+                        // fallback to persisted value if DOM had nothing
+                        if (!prev) {
+                            try { const stored = localStorage.getItem('admin_uploaded_pwd_detected'); if (stored) prev = stored; } catch(e) {}
+                        }
+                        if (prev) {
+                            payload.previous_disability = prev;
+                            payload.previous_disability_source = 'front';
+                            console.info('[upload] Attaching previous_disability to payload:', prev);
+                        }
+                    }
+                } catch (e) { console.warn('previous_disability attach failed', e); }
+
                 console.log("[upload] Sending OCR request for:", file.name);
                 // debugger;   // ← keep if you need to inspect payload
 
@@ -1606,7 +1655,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             errorBox = { textContent: '' };
                         }
 
-                        const detectedDisability = String(aiData.type_of_disability || aiData.disability || aiData.type || '').trim();
+                        // Prefer the AI-parsed disability, but fall back to the server-level
+                        // `detected_disability` (set when OCR ran per-image). This covers
+                        // cases where the model returned an `error` message but the
+                        // server still detected a disability from another image.
+                        if ((!aiData || !aiData.type_of_disability || String(aiData.type_of_disability).trim() === '') && result.data && result.data.detected_disability) {
+                            try { if (!aiData) aiData = {}; aiData.type_of_disability = result.data.detected_disability; } catch(e){}
+                        }
+                        const detectedDisability = String(aiData.type_of_disability || aiData.disability || aiData.type || result.data?.detected_disability || '').trim();
 
                         // determine selected disability from form (supports checkbox group)
                         const dsSelectEl = document.getElementById('dsType');
@@ -1659,25 +1715,17 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         const isMatch = matchesSelected(detectedDisability);
 
                         if (!isMatch) {
-                            // invalid PWD ID for current selection — craft a helpful message
-                            let msg;
+                            // Don't block the upload for missing/mismatched disability — treat as a bonus.
+                            let warnMsg;
                             if (!detectedDisability) {
-                                msg = 'No disability detected in the uploaded PWD ID. Please upload a valid PWD ID that shows the disability type.';
+                                warnMsg = 'No disability detected in the uploaded PWD ID. The upload will still be accepted and any extracted info will be applied.';
                             } else {
-                                msg = `Detected disability "${detectedDisability}" does not match the selected disability. Please upload a valid PWD ID or update the selected disability.`;
+                                warnMsg = `Detected disability "${detectedDisability}" does not match the selected disability. The upload will still be accepted; please review the extracted info.`;
                             }
-
-                            if (errorBox) errorBox.textContent = msg;
-                            // cleanup stored upload keys
-                            try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
-                            // remove displayed preview
-                            try { resetDisplay(); } catch(e){}
-                            // remove loading indicator
-                            const loading = document.getElementById(`ocr-loading-${inputId}`);
-                            if (loading) loading.remove();
-                            alert(msg);
-                            isProcessing = false;
-                            return;
+                            if (errorBox) errorBox.textContent = warnMsg;
+                            try { console.warn('[upload] Non-blocking PWD mismatch:', warnMsg); } catch(e){}
+                            try { const loading = document.getElementById(`ocr-loading-${inputId}`); if (loading) loading.remove(); } catch(e){}
+                            // continue (do not reject)
                         }
 
                         // If match, autofill and persist
@@ -1902,19 +1950,87 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     });
                   
                    window.addEventListener('load', () => {
-                    document.getElementById('first_name').value = '';
-                    document.getElementById('last_name').value = '';
-                    document.getElementById('birthdate').value = '';
-                    document.getElementById('email').value = '';
-                    document.getElementById('phone').value = '';
-                    document.getElementById('address').value = '';
-                    document.getElementById('dsType').selectedIndex = 0;
-                    document.getElementById('guardian_first').value = '';
-                    document.getElementById('guardian_last').value = '';
-                    document.getElementById('guardian_email').value = '';
-                    document.getElementById('guardian_phone').value = '';
-                    document.getElementById('guardian_relationship').selectedIndex = 0;
+                    // clear primary personal fields
+                    try { document.getElementById('first_name').value = ''; } catch(e){}
+                    try { document.getElementById('last_name').value = ''; } catch(e){}
+                    try { document.getElementById('birthdate').value = ''; } catch(e){}
+                    try { document.getElementById('email').value = ''; } catch(e){}
+                    try { document.getElementById('phone').value = ''; } catch(e){}
+                    try { document.getElementById('address').value = ''; } catch(e){}
+                    try { const ds = document.getElementById('dsType'); if(ds) ds.value = ''; document.querySelectorAll('input[name="down_syndrome_type"]').forEach(r=>{ try{ r.checked = false; }catch(e){} }); } catch(e){}
+
+                    // guardian: clear both existing and newly-added fields
+                    try { document.getElementById('guardian_first').value = ''; } catch(e){}
+                    try { document.getElementById('guardian_last').value = ''; } catch(e){}
+                    try { document.getElementById('guardian_middle').value = ''; } catch(e){}
+                    try { document.getElementById('guardian_birthdate').value = ''; } catch(e){}
+                    try { document.getElementById('guardian_email').value = ''; } catch(e){}
+                    try { document.getElementById('guardian_phone').value = ''; } catch(e){}
+                    try { document.getElementById('guardian_home_phone').value = ''; } catch(e){}
+                    try { document.getElementById('guardian_work_phone').value = ''; } catch(e){}
+                    try { document.getElementById('guardian_work_address').value = ''; } catch(e){}
+                    try { const gr = document.getElementById('guardian_relationship'); if(gr) gr.selectedIndex = 0; } catch(e){}
+
+                    // spouse: clear newly-added spouse fields
+                    try { document.getElementById('spouse_first').value = ''; } catch(e){}
+                    try { document.getElementById('spouse_last').value = ''; } catch(e){}
+                    try { document.getElementById('spouse_middle').value = ''; } catch(e){}
+                    try { document.getElementById('spouse_birthdate').value = ''; } catch(e){}
+                    try { document.getElementById('spouse_email').value = ''; } catch(e){}
+                    try { document.getElementById('spouse_phone').value = ''; } catch(e){}
+                    try { document.getElementById('spouse_home_phone').value = ''; } catch(e){}
+                    try { document.getElementById('spouse_work_phone').value = ''; } catch(e){}
+                    try { document.getElementById('spouse_work_address').value = ''; } catch(e){}
+                    try { const sr = document.getElementById('spouse_relationship'); if(sr) sr.selectedIndex = 0; } catch(e){}
                 });
+
+                // Keep the hidden karyotype fields in sync with the radio buttons (including legacy aliases)
+                try {
+                    const dsHiddenIds = ['dsType','r_dsType1','r_dsType','types_of_ds','TYPES_OF_DS','karyotype'];
+                    const setAllDs = (v) => {
+                        dsHiddenIds.forEach(id => {
+                            try { const el = document.getElementById(id); if (el) el.value = v || ''; } catch(e){}
+                        });
+                    };
+
+                    document.querySelectorAll('input[name="down_syndrome_type"]').forEach(r => {
+                        r.addEventListener('change', e => {
+                            setAllDs(e.target.value || '');
+                        });
+                    });
+
+                    // initialize hidden inputs from any pre-checked radio
+                    const sel = document.querySelector('input[name="down_syndrome_type"]:checked');
+                    if (sel) setAllDs(sel.value || '');
+
+                    // Keep radios in sync when any hidden input is changed programmatically
+                    const primaryHidden = document.getElementById('dsType');
+                    if (primaryHidden) {
+                        let lastDs = primaryHidden.value || '';
+                        const applyHiddenToRadios = (v) => {
+                            document.querySelectorAll('input[name="down_syndrome_type"]').forEach(r => {
+                                try { r.checked = (String(r.value || '') === String(v || '')); } catch(e){}
+                            });
+                        };
+                        if (lastDs) applyHiddenToRadios(lastDs);
+                        setInterval(() => {
+                            try {
+                                const v = primaryHidden.value || '';
+                                if (v !== lastDs) { lastDs = v; applyHiddenToRadios(v); setAllDs(v); }
+                            } catch (e) {}
+                        }, 300);
+                    }
+                } catch (e) {}
+                // Keep GUARDIAN_CELL_NUMBER hidden field in sync with guardian phone input
+                try {
+                    const gp = document.getElementById('guardian_phone');
+                    const gHidden = document.getElementById('GUARDIAN_CELL_NUMBER');
+                    if (gp && gHidden) {
+                        // initialize
+                        gHidden.value = gp.value || '';
+                        gp.addEventListener('input', (ev) => { try { gHidden.value = ev.target.value || ''; } catch(e){} });
+                    }
+                } catch(e) {}
 
                 const passwordInput = document.getElementById('password');
                 const passwordMessage = document.getElementById('passwordMessage');
@@ -2097,6 +2213,30 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             applied = setIf('birthdate', birthdate) || applied;
                 applied = setIf('address', address) || applied;
                 applied = setIf('username', username) || applied;
+
+                // Guardian fields (if present in draft)
+                applied = setIf('guardian_first', d.guardian_first || d.guardian_first_name || p.guardian_first || '') || applied;
+                applied = setIf('guardian_last', d.guardian_last || d.guardian_last_name || p.guardian_last || '') || applied;
+                applied = setIf('guardian_middle', d.guardian_middle || d.guardian_middle_name || p.guardian_middle || '') || applied;
+                applied = setIf('guardian_email', d.guardian_email || p.guardian_email || '') || applied;
+                applied = setIf('guardian_phone', d.guardian_phone || p.guardian_phone || '') || applied;
+                applied = setIf('guardian_home_phone', d.guardian_home_phone || p.guardian_home_phone || '') || applied;
+                applied = setIf('guardian_work_phone', d.guardian_work_phone || p.guardian_work_phone || '') || applied;
+                applied = setIf('guardian_birthdate', d.guardian_birthdate || d.guardian_birth_date || p.guardian_birthdate || '') || applied;
+                applied = setIf('guardian_relationship', d.guardian_relationship || p.guardian_relationship || '') || applied;
+                applied = setIf('guardian_work_address', d.guardian_work_address || p.guardian_work_address || '') || applied;
+
+                // Spouse fields
+                applied = setIf('spouse_first', d.spouse_first || p.spouse_first || '') || applied;
+                applied = setIf('spouse_last', d.spouse_last || p.spouse_last || '') || applied;
+                applied = setIf('spouse_middle', d.spouse_middle || p.spouse_middle || '') || applied;
+                applied = setIf('spouse_email', d.spouse_email || p.spouse_email || '') || applied;
+                applied = setIf('spouse_phone', d.spouse_phone || p.spouse_phone || '') || applied;
+                applied = setIf('spouse_home_phone', d.spouse_home_phone || p.spouse_home_phone || '') || applied;
+                applied = setIf('spouse_work_phone', d.spouse_work_phone || p.spouse_work_phone || '') || applied;
+                applied = setIf('spouse_birthdate', d.spouse_birthdate || p.spouse_birthdate || '') || applied;
+                applied = setIf('spouse_relationship', d.spouse_relationship || p.spouse_relationship || '') || applied;
+                applied = setIf('spouse_work_address', d.spouse_work_address || p.spouse_work_address || '') || applied;
 
                 // dsType
                 const ds = d.dsType || d.ds_type || p.dsType || p.ds_type || '';
@@ -2760,31 +2900,78 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 });
 
                 // normalize common fields to expected keys
-                const draft = {
-                    firstName: data.first_name || data.firstName || data.first || '',
-                    lastName: data.last_name || data.lastName || data.last || '',
-                    email: data.email || '',
-                    phone: data.phone || '',
-                    birthdate: data.birthdate || data.birth_date || data.dob || data.dateOfBirth || data.age || '',
-                    address: data.address || '',
-                    username: data.username || '',
-                    // persist selected Down Syndrome type (if present) under multiple keys for compatibility
-                    dsType: data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
-                    // persist CDD (Congenital/Developmental Disability)
-                    cddType: data.cddType || (function(){ try{ const el=document.getElementById('cddType'); if(!el) return ''; const hidden=document.getElementById('cddTypeHidden'); if(hidden && hidden.value) return hidden.value; const vals = Array.from(el.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean); return vals.join(', '); }catch(e){return '';} })() || '',
-                    // persist optional "Other" text when 'Others' is chosen
-                    cddTypeOther: data.cddTypeOther || (document.getElementById('cddTypeOther') ? document.getElementById('cddTypeOther').value : '') || '',
-                    r_cddType1: data.r_cddType1 || data.cddType || (function(){ try{ const el=document.getElementById('cddType'); if(!el) return ''; const hidden=document.getElementById('cddTypeHidden'); if(hidden && hidden.value) return hidden.value; const vals = Array.from(el.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean); return vals.join(', '); }catch(e){return '';} })() || '',
-                    r_dsType1: data.r_dsType1 || data.r_dsType || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
-                    r_dsType: data.r_dsType || data.r_dsType1 || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
-                    guardian_first: data.guardian_first || data.guardianFirst || '',
-                    guardian_last: data.guardian_last || data.guardianLast || '',
-                    guardian_email: data.guardian_email || '',
-                    guardian_phone: data.guardian_phone || '',
-                    guardian_relationship: data.guardian_relationship || data.guardianRelationship || '',
-                    r_dsType1: data.r_dsType1 || '',
-                    password: data.password || '',
-                };
+                    const draft = {
+                        firstName: data.first_name || data.firstName || data.first || '',
+                        middleName: data.middle_name || data.middleName || data.mname || '',
+                        lastName: data.last_name || data.lastName || data.last || '',
+                        email: data.email || '',
+                        phone: data.phone || '',
+                        birthdate: data.birthdate || data.birth_date || data.dob || data.dateOfBirth || data.age || '',
+                        address: data.address || (function(){
+                            try{
+                                const parts = [];
+                                const n = (data.address_number || '').trim(); if(n) parts.push(n);
+                                const s = (data.address_street || '').trim(); if(s) parts.push(s);
+                                const b = (data.address_barangay || '').trim(); if(b) parts.push(b);
+                                const c = (data.address_city || '').trim(); if(c) parts.push(c);
+                                return parts.join(', ');
+                            }catch(e){ return data.address || ''; }
+                        })() || '',
+                        username: data.username || '',
+                        // karyotype / Down syndrome type (persist under multiple aliases)
+                        dsType: data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                        // ensure types_of_ds picks up value from hidden `dsType` (radio group) when present
+                        types_of_ds: data.types_of_ds || data.karyotype || data.TYPES_OF_DS || data.karyotype || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                        // mirror under several legacy keys so server can read whichever it expects
+                        TYPES_OF_DS: data.TYPES_OF_DS || data.types_of_ds || data.karyotype || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                        karyotype: data.karyotype || data.types_of_ds || data.TYPES_OF_DS || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                        // persist CDD (Congenital/Developmental Disability)
+                        cddType: data.cddType || (function(){ try{ const el=document.getElementById('cddType'); if(!el) return ''; const hidden=document.getElementById('cddTypeHidden'); if(hidden && hidden.value) return hidden.value; const vals = Array.from(el.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean); return vals.join(', '); }catch(e){return '';} })() || '',
+                        // persist optional "Other" text when 'Others' is chosen
+                        cddTypeOther: data.cddTypeOther || (document.getElementById('cddTypeOther') ? document.getElementById('cddTypeOther').value : '') || '',
+                        r_cddType1: data.r_cddType1 || data.cddType || (function(){ try{ const el=document.getElementById('cddType'); if(!el) return ''; const hidden=document.getElementById('cddTypeHidden'); if(hidden && hidden.value) return hidden.value; const vals = Array.from(el.querySelectorAll('input[name="cddType[]"]:checked')).map(x=>String(x.value||'').trim()).filter(Boolean); return vals.join(', '); }catch(e){return '';} })() || '',
+                        r_dsType1: data.r_dsType1 || data.r_dsType || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+                        r_dsType: data.r_dsType || data.r_dsType1 || data.dsType || (document.getElementById('dsType') ? document.getElementById('dsType').value : '') || '',
+
+                        // Guardian fields (include multiple alias keys)
+                        guardian_first: data.guardian_first || data.guardianFirst || data.g_first_name || '',
+                        guardian_last: data.guardian_last || data.guardianLast || data.g_last_name || '',
+                        guardian_middle: data.guardian_middle || data.g_middle_name || data.GUARDIAN_MIDDLE_NAME || data.g_middle || '',
+                        // include legacy/uppercase and alternate keys the backend may expect
+                        g_middle_name: data.g_middle_name || data.guardian_middle || data.GUARDIAN_MIDDLE_NAME || data.g_middle || '',
+                        GUARDIAN_MIDDLE_NAME: data.GUARDIAN_MIDDLE_NAME || data.g_middle_name || data.guardian_middle || '',
+                        guardian_birthdate: data.guardian_birthdate || data.g_birthdate || '',
+                        guardian_email: data.guardian_email || data.g_email || '',
+                        guardian_phone: data.guardian_phone || data.g_phone || data.g_cell || data.GUARDIAN_CELL_NUMBER || data.guardian_cell_number || data.guardian_contact_number || '',
+                        // also populate common legacy names so server-side aliases find the value
+                        // Ensure GUARDIAN_CELL_NUMBER is explicitly set from the hidden field or guardian_phone
+                        GUARDIAN_CELL_NUMBER: (document.getElementById('GUARDIAN_CELL_NUMBER') ? document.getElementById('GUARDIAN_CELL_NUMBER').value : (data.GUARDIAN_CELL_NUMBER || '')) || (data.guardian_phone || data.g_phone || data.g_cell || data.guardian_cell_number || ''),
+                        guardian_cell_number: data.guardian_cell_number || data.guardian_phone || data.g_phone || data.g_cell || (document.getElementById('GUARDIAN_CELL_NUMBER') ? document.getElementById('GUARDIAN_CELL_NUMBER').value : data.GUARDIAN_CELL_NUMBER) || '',
+                        guardian_contact_number: data.guardian_contact_number || data.guardian_phone || data.guardian_cell_number || (document.getElementById('GUARDIAN_CELL_NUMBER') ? document.getElementById('GUARDIAN_CELL_NUMBER').value : data.GUARDIAN_CELL_NUMBER) || '',
+                        g_cell: data.g_cell || data.guardian_phone || data.guardian_cell_number || (document.getElementById('GUARDIAN_CELL_NUMBER') ? document.getElementById('GUARDIAN_CELL_NUMBER').value : data.GUARDIAN_CELL_NUMBER) || '',
+                        // legacy/uppercase alias for guardian phone
+                        g_phone: data.g_phone || data.guardian_phone || (document.getElementById('GUARDIAN_CELL_NUMBER') ? document.getElementById('GUARDIAN_CELL_NUMBER').value : data.GUARDIAN_CELL_NUMBER) || '',
+                        guardian_home_phone: data.guardian_home_phone || data.g_home_phone || data.g_home || '',
+                        guardian_work_phone: data.guardian_work_phone || data.g_work_phone || '',
+                        guardian_work_address: data.guardian_work_address || data.g_work_address || '',
+                        guardian_relationship: data.guardian_relationship || data.guardianRelationship || '',
+
+                        // Spouse fields
+                        spouse_first: data.spouse_first || data.spouse_first_name || '',
+                        spouse_middle: data.spouse_middle || data.spouse_middle_name || '',
+                        spouse_last: data.spouse_last || data.spouse_last_name || '',
+                        spouse_birthdate: data.spouse_birthdate || '',
+                        spouse_email: data.spouse_email || '',
+                        spouse_phone: data.spouse_phone || data.spouse_cell_number || '',
+                        spouse_home_phone: data.spouse_home_phone || '',
+                        spouse_work_phone: data.spouse_work_phone || '',
+                        spouse_work_address: data.spouse_work_address || '',
+                        spouse_relationship: data.spouse_relationship || '',
+
+                        // legacy / misc
+                        r_dsType1: data.r_dsType1 || '',
+                        password: data.password || '',
+                    };
 
                 try {
                     localStorage.setItem('rpi_personal1', JSON.stringify(draft));
@@ -2895,6 +3082,24 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     safeSet('guardian_email', (parsed.guardian_email || p.guardian_email || ''));
                     safeSet('guardian_phone', (parsed.guardian_phone || p.guardian_phone || ''));
                     safeSet('guardian_relationship', (parsed.guardian_relationship || p.guardian_relationship || p.relationship || ''));
+                                    // additional guardian fields
+                                    safeSet('guardian_middle', (parsed.guardian_middle || p.guardian_middle || parsed.guardian_middle_name || ''));
+                                    safeSet('guardian_birthdate', (parsed.guardian_birthdate || parsed.guardian_birth_date || p.guardian_birthdate || ''));
+                                    safeSet('guardian_home_phone', (parsed.guardian_home_phone || p.guardian_home_phone || ''));
+                                    safeSet('guardian_work_phone', (parsed.guardian_work_phone || p.guardian_work_phone || ''));
+                                    safeSet('guardian_work_address', (parsed.guardian_work_address || p.guardian_work_address || ''));
+
+                                    // spouse
+                                    safeSet('spouse_first', (parsed.spouse_first || p.spouse_first || ''));
+                                    safeSet('spouse_last', (parsed.spouse_last || p.spouse_last || ''));
+                                    safeSet('spouse_middle', (parsed.spouse_middle || p.spouse_middle || ''));
+                                    safeSet('spouse_email', (parsed.spouse_email || p.spouse_email || ''));
+                                    safeSet('spouse_phone', (parsed.spouse_phone || p.spouse_phone || ''));
+                                    safeSet('spouse_home_phone', (parsed.spouse_home_phone || p.spouse_home_phone || ''));
+                                    safeSet('spouse_work_phone', (parsed.spouse_work_phone || p.spouse_work_phone || ''));
+                                    safeSet('spouse_birthdate', (parsed.spouse_birthdate || p.spouse_birthdate || ''));
+                                    safeSet('spouse_relationship', (parsed.spouse_relationship || p.spouse_relationship || ''));
+                                    safeSet('spouse_work_address', (parsed.spouse_work_address || p.spouse_work_address || ''));
 
                     // password + confirm
                     const pwd = parsed.password || p.password || '';

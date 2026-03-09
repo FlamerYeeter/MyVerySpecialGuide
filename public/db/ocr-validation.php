@@ -276,70 +276,111 @@ $model = implode('', [
 
 $model = base64_decode('bWluaXN0cmFsLTM6MTRiLWNsb3Vk');
 
-$aiResponse = callOCR($model, $prompt, $cleanImages);
-
-if (!$aiResponse || empty($aiResponse['response'])) {
-    response(false, "Did not return any response");
+// Call OCR per image so we can detect which side (front/back) contains the disability
+$per_image_results = [];
+foreach ($cleanImages as $imgPath) {
+    $singleResp = callOCR($model, $prompt, [$imgPath]);
+    if (!$singleResp || empty($singleResp['response'])) {
+        // keep going; record null for this image
+        $per_image_results[basename($imgPath)] = ['ok' => false, 'raw' => null, 'parsed' => null];
+        continue;
+    }
+    $rawText = trim($singleResp['response']);
+    $rawText = preg_replace('/```json\s*|\s*```/', '', $rawText);
+    $rawText = preg_replace('/<think>.*?<\/think>/s', '', $rawText);
+    preg_match('/\{.*\}/s', $rawText, $m);
+    if (empty($m)) {
+        $per_image_results[basename($imgPath)] = ['ok' => false, 'raw' => $rawText, 'parsed' => null];
+        continue;
+    }
+    $jsonOnly = $m[0];
+    $parsedSingle = json_decode($jsonOnly, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        $per_image_results[basename($imgPath)] = ['ok' => false, 'raw' => $jsonOnly, 'parsed' => null, 'json_error' => json_last_error_msg()];
+        continue;
+    }
+    $per_image_results[basename($imgPath)] = ['ok' => true, 'raw' => $rawText, 'parsed' => $parsedSingle];
 }
 
-// ================================
-// 8. PARSE RESPONSE
-// ================================
-
-$aiText = trim($aiResponse['response']);
-$aiText = preg_replace('/```json\s*|\s*```/', '', $aiText);
-$aiText = preg_replace('/<think>.*?<\/think>/s', '', $aiText);
-
-preg_match('/\{.*\}/s', $aiText, $matches);
-if (empty($matches)) {
-    response(false, "No JSON found in response", ["raw" => $aiText]);
+// Ensure we at least have one successful parse
+$anyOk = false;
+foreach ($per_image_results as $r) { if (!empty($r['ok'])) { $anyOk = true; break; } }
+if (!$anyOk) {
+    // If the client provided a previously-detected disability (from the other side),
+    // accept the request and use that provided detection.
+    $previous_disability = $data['previous_disability'] ?? null;
+    $previous_disability_source = $data['previous_disability_source'] ?? null;
+    if (!empty($previous_disability)) {
+        // allow processing to continue and use the provided previous detection
+        $parsed = [];
+        $detected_disability = $previous_disability;
+        $disability_source = $previous_disability_source ?? 'previous';
+        $used_previous = true;
+    } else {
+        // No strict JSON parsed. Rather than rejecting, continue with empty parsed
+        // results and return available raw texts so the frontend can still autofill
+        // using fallback heuristics. Treat disability as optional/bonus.
+        $parsed = [];
+        $detected_disability = null;
+        $disability_source = null;
+        $used_previous = false;
+        // keep per_image_results populated for debugging and fallback extraction on client
+    }
 }
 
-$jsonOnly = $matches[0];
-$parsed = json_decode($jsonOnly, true);
+// Merge per-image parsed results into a combined parsed object (prefer first non-empty values)
+$parsed = [];
+$detected_disability = null;
+$disability_source = null;
+foreach ($per_image_results as $img => $info) {
+    if (empty($info['ok']) || empty($info['parsed']) || !is_array($info['parsed'])) continue;
+    foreach ($info['parsed'] as $k => $v) {
+        if (!isset($parsed[$k]) || $parsed[$k] === null || $parsed[$k] === '') {
+            $parsed[$k] = $v;
+        }
+    }
+    // check disability field presence (common keys)
+    $typeKeys = ['type_of_disability','disability','diagnosis'];
+    foreach ($typeKeys as $tk) {
+        if ($detected_disability === null && !empty($info['parsed'][$tk])) {
+            $detected_disability = $info['parsed'][$tk];
+            $disability_source = $img; // basename of image that provided the info
+            break;
+        }
+    }
+}
 
-if (json_last_error() !== JSON_ERROR_NONE) {
-    response(false, "Invalid JSON", [
-        "error" => json_last_error_msg(),
-        "raw"   => $jsonOnly
-    ]);
+// If we didn't find a disability in any parsed image, allow the client to supply
+// a previously-detected disability (useful when the front side was already
+// processed and the user is now uploading only the back side).
+if ($detected_disability === null) {
+    $previous_disability = $data['previous_disability'] ?? null;
+    $previous_disability_source = $data['previous_disability_source'] ?? null;
+    if (!empty($previous_disability)) {
+        $detected_disability = $previous_disability;
+        $disability_source = $previous_disability_source ?? 'previous';
+        $used_previous = true;
+    } else {
+        $used_previous = false;
+    }
+} else {
+    $used_previous = false;
 }
 
 // ================================
 // 9. FINAL RESULT
 // ================================
 
-// Detect presence of 'fit to work' or semantically similar phrases in the response.
-// Improvements: case-insensitive matching, negative phrase checks, and recursive search
-// through parsed fields to make detection more robust.
+// Detect presence of 'fit to work' or semantically similar phrases in the combined parsed result.
 $containsFit = false;
 try {
-    // Build a searchable string combining AI text and parsed values
-    $searchParts = [$aiText];
-    $flattenValues = function($v) use (&$flattenValues) {
-        $out = [];
-        if (is_array($v)) {
-            foreach ($v as $it) $out = array_merge($out, $flattenValues($it));
-        } elseif (is_object($v)) {
-            foreach (get_object_vars($v) as $it) $out = array_merge($out, $flattenValues($it));
-        } else {
-            $out[] = (string)$v;
-        }
-        return $out;
-    };
-    $searchParts = array_merge($searchParts, $flattenValues($parsed));
-    $searchText = strtolower(implode(" \n ", $searchParts));
-
-    // Negative indicators — if present, treat as NOT fit
-    $negativePatterns = [
-        '/not fit/i', '/unfit/i', '/not cleared/i', '/not fit to work/i', '/not fit for work/i', '/unsuitable/i', '/not able to work/i'
-    ];
-    foreach ($negativePatterns as $np) {
-        if (preg_match($np, $searchText)) {
-            $containsFit = false;
-            goto SKIP_POSITIVE_CHECKS;
-        }
+    // Build a searchable string combining all per-image raw text and parsed values
+    $searchParts = [];
+    foreach ($per_image_results as $info) {
+        if (!empty($info['raw'])) $searchParts[] = $info['raw'];
+        if (!empty($info['parsed'])) $searchParts[] = json_encode($info['parsed']);
     }
+    $searchText = strtolower(implode(" \n ", $searchParts));
 
     // Positive indicators (case-insensitive and flexible)
     $positivePatterns = [
@@ -354,13 +395,54 @@ try {
         '/able to work/i',
         '/\bfit\b.*\bwork\b/i',
         '/\bwork\b.*\bfit\b/i',
+        '/cleared for work/i',
+        '/suitable to work/i',
     ];
 
+    // Negative indicators — look for explicit negations
+    $negativePatterns = [
+        '/not fit to work/i', '/not fit for work/i', '/not fit/i', '/unfit/i', '/not cleared/i', '/unsuitable/i', '/not able to work/i', '/unable to work/i'
+    ];
+
+    $positiveMatches = 0;
     foreach ($positivePatterns as $pp) {
-        if (preg_match($pp, $searchText)) { $containsFit = true; break; }
+        if (preg_match($pp, $searchText)) $positiveMatches++;
     }
 
-    SKIP_POSITIVE_CHECKS: ;
+    $negativeMatches = 0;
+    foreach ($negativePatterns as $np) {
+        if (preg_match($np, $searchText)) $negativeMatches++;
+    }
+
+    // Also inspect parsed fields (prefer structured parsed output from AI)
+    $parsedSuggestsFit = false;
+    foreach ($per_image_results as $info) {
+        if (empty($info['parsed']) || !is_array($info['parsed'])) continue;
+        foreach ($info['parsed'] as $k => $v) {
+            if (!is_string($v)) continue;
+            $kv = strtolower($v);
+            foreach ($positivePatterns as $pp) {
+                if (@preg_match($pp, $kv)) { $parsedSuggestsFit = true; break 2; }
+            }
+        }
+    }
+
+    // Decision rules:
+    // - Prefer parsed evidence: if parsedSuggestsFit is true and negativeMatches == 0 => accept
+    // - Otherwise use counts: accept if positiveMatches > negativeMatches
+    if ($parsedSuggestsFit && $negativeMatches == 0) {
+        $containsFit = true;
+    } elseif ($positiveMatches > $negativeMatches && $positiveMatches > 0) {
+        $containsFit = true;
+    } else {
+        $containsFit = false;
+    }
+
+    // Write a small debug trace to help diagnose failing cases
+    try {
+        $dbg = ['searchText_snippet' => substr($searchText,0,800), 'positive' => $positiveMatches, 'negative' => $negativeMatches, 'parsedSuggestsFit' => $parsedSuggestsFit, 'time' => date('c')];
+        @file_put_contents(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_ocr_fit_debug.json', json_encode($dbg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+    } catch (Exception $e) { /* ignore */ }
 
 } catch (Exception $e) {
     $containsFit = false;
@@ -370,9 +452,42 @@ $result = [
     "ocrtype"  => $ocrtype,
     "ai_data"  => $parsed,
     "images"   => array_map('basename', $cleanImages),
+    // per-image parsed results for debugging and source attribution
+    "per_image" => $per_image_results,
+    // disability detection from per-image merge
+    "detected_disability" => $detected_disability,
+    "disability_source" => $disability_source,
     // Additional validation flags
     "contains_fit_to_work" => $containsFit,
+    // helpful hint: whether we inferred fitness from doctor + date presence
+    "inferred_by_doctor_date" => false,
 ];
+
+// If not explicitly containing fit-to-work text, infer if parsed AI found a doctor and a date
+if (!$result['contains_fit_to_work']) {
+    $foundDoctor = false;
+    $foundDate = false;
+    foreach ($result['per_image'] as $p) {
+        if (!empty($p['parsed']) && is_array($p['parsed'])) {
+            foreach ($p['parsed'] as $k => $v) {
+                $lk = strtolower($k);
+                if (in_array($lk, ['doctor','physician','doctor_name','doctor name','doctor'])) {
+                    if (!empty($v) && is_string($v) && trim($v) !== '') $foundDoctor = true;
+                }
+                if (in_array($lk, ['date','issue_date','exam_date','date_of_exam','date_of_issue','date_of_service'])) {
+                    if (!empty($v) && is_string($v) && preg_match('/\d{4}-\d{2}-\d{2}|\d{1,2}\/\d{1,2}\/\d{2,4}|\w+ \d{1,2}, \d{4}/', $v)) $foundDate = true;
+                }
+            }
+        }
+    }
+    if ($foundDoctor && $foundDate) {
+        $result['contains_fit_to_work'] = true;
+        $result['inferred_by_doctor_date'] = true;
+        try {
+            @file_put_contents(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_ocr_fit_inferred.json', json_encode(['foundDoctor'=>$foundDoctor,'foundDate'=>$foundDate,'time'=>date('c')], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        } catch (Exception $e) { }
+    }
+}
 
 cleanup(array_merge([$tmpFile], $images, $cleanImages));
 

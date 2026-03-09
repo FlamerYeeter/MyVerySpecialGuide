@@ -503,8 +503,8 @@
             <p class="text-sm text-gray-700 mb-4">You can review your information on the next page (recommended), or skip the review and go directly to the final step.</p>
             <div class="flex justify-end gap-3">
                 <button id="reviewModalCancel" class="px-4 py-2 rounded-md bg-gray-200">Cancel</button>
-                <button id="reviewModalReview" class="px-4 py-2 rounded-md bg-[#2E2EFF] text-white">Review information</button>
-                <button id="reviewModalSkip" class="px-4 py-2 rounded-md bg-green-600 text-white">Skip and go to final step</button>
+                <button id="reviewModalReview" class="hidden px-4 py-2 rounded-md bg-[#2E2EFF] text-white">Review information</button>
+                <button id="reviewModalSkip" class="px-4 py-2 rounded-md bg-green-600 text-white">Go to final step</button>
             </div>
         </div>
     </div>

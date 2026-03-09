@@ -1,0 +1,13 @@
+{
+    "stage": "user_guardian_insert",
+    "error": {
+        "code": 1,
+        "message": "ORA-00001: unique constraint (MVSG.EMAIL_UNIQUE) violated",
+        "offset": 0,
+        "sqltext": "\nINSERT INTO user_guardian (\n    id,\n    role,\n    first_name,\n    last_name,\n    email,\n    contact_number,\n    password,\n    age,\n    education,\n    school,\n    guardian_middle_name,\n    guardian_first_name,\n    guardian_last_name,\n    guardian_email,\n    guardian_contact_number,\n    guardian_home_number,\n    guardian_work_number,\n    guardian_work_address,\n    guardian_birthdate,\n    relationship_to_user,\n    spouse_first_name,\n    spouse_middle_name,\n    spouse_last_name,\n    spouse_email,\n    spouse_cell_number,\n    spouse_home_number,\n    spouse_work_number,\n    spouse_work_address,\n    spouse_birthdate,\n    spouse_relationship_to_user,\n    created_at,\n    updated_at,\n    address,\n    types_of_ds,\n    cdd_type,\n    username,\n    med_certificates,\n    pwd_id,\n    date_of_birth\n) VALUES (\n    :id,\n    'User',\n    :first_name,\n    :last_name,\n    :email,\n    :contact_number,\n    :password,\n    :age,\n    :education,\n    :school,\n    :guardian_middle_name,\n    :guardian_first_name,\n    :guardian_last_name,\n    :guardian_email,\n    :guardian_contact_number,\n    :guardian_home_number,\n    :guardian_work_number,\n    :guardian_work_address,\n    CASE WHEN :guardian_birthdate IS NULL OR TRIM(:guardian_birthdate) = '' THEN NULL ELSE TO_DATE(:guardian_birthdate,'YYYY-MM-DD') END,\n    :relationship,\n    :spouse_first_name,\n    :spouse_middle_name,\n    :spouse_last_name,\n    :spouse_email,\n    :spouse_cell_number,\n    :spouse_home_number,\n    :spouse_work_number,\n    :spouse_work_address,\n    CASE WHEN :spouse_birthdate IS NULL OR TRIM(:spouse_birthdate) = '' THEN NULL ELSE TO_DATE(:spouse_birthdate,'YYYY-MM-DD') END,\n    :spouse_relationship,\n    SYSDATE,\n    SYSDATE,\n    :address,\n    :types_of_ds,\n    :cdd_type,\n    :username,\n    EMPTY_BLOB(),\n    EMPTY_BLOB(),\n    CASE WHEN :birthdate IS NULL OR TRIM(:birthdate) = '' THEN NULL ELSE TO_DATE(:birthdate,'YYYY-MM-DD') END\n) RETURNING ROWID INTO :ug_rowid"
+    },
+    "payload_summary": [
+        "rpi_personal"
+    ],
+    "time": "2026-03-09T17:51:16+01:00"
+}

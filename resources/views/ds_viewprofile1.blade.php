@@ -61,6 +61,12 @@
                                 <input id="last_name" type="text" disabled
                                     class="w-full border rounded-xl px-5 py-4 text-lg select-none">
                             </div>
+                                <div>
+                                <label for="middle_name" class="block text-lg font-semibold mb-3">Middle Name <span
+                                    class="text-gray-500 italic">(Gitnang Pangalan)</span></label>
+                                <input id="middle_name" type="text" disabled
+                                    class="w-full border rounded-xl px-5 py-4 text-lg select-none">
+                                </div>
                             <div>
                                 <label for="date_of_birth" class="block text-lg font-semibold mb-3">Date of Birth <span
                                     class="text-gray-500 italic">(Petsa ng Kapanganakan)</span></label>
@@ -96,13 +102,13 @@
                                     class="text-gray-500"></span></label>
                             <select id="r_dsType1" disabled
                                 class="w-full sm:w-80 border rounded-xl px-5 py-4 text-lg select-none">
-                                <option>-- Select Type --</option>
-                                <option value="Trisomy 21 (Nondisjunction)">Trisomy 21 (Nondisjunction)</option>
-                                <option value="Mosaic Down Syndrome">Mosaic Down Syndrome</option>
-                                <option value="Translocation Down">Translocation Down Syndrome</option>
+                                <option value="">-- Select Type --</option>
+                                <option value="Pure Trisomy">Pure Trisomy</option>
+                                <option value="Mosaic Trisomy">Mosaic Trisomy</option>
+                                <option value="Translocation Trisomy">Translocation Trisomy 21</option>
                             </select>
                         </div>
-                        <div class="mt-8">
+                        {{-- <div class="mt-8">
                             <label class="block text-lg font-semibold mb-3">Congenital or Developmental Disability <span
                                     class="text-gray-500"></span></label>
                             <div id="r_cddType1_group" class="w-full sm:w-80 border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none" style="margin-left:-6px;">
@@ -114,7 +120,7 @@
                             </div>
                             <input type="text" id="r_cddType1Other" placeholder="Please specify"
                                 class="w-full border border-gray-300 rounded-xl px-5 py-3 mt-2 hidden" />
-                        </div>
+                        </div> --}}
                     </section>
 
 <!-- Parent/Guardian Info -->
@@ -155,6 +161,43 @@
                             </div>
                         </div>
 
+                        <div class="grid md:grid-cols-2 gap-8 mt-4">
+                            <div>
+                                <label for="g_middle_name" class="block text-lg font-semibold mb-2">Guardian Middle Name</label>
+                                <input id="g_middle_name" type="text" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                            </div>
+                            <div>
+                                <label for="g_birthdate" class="block text-lg font-semibold mb-2">Guardian Birthdate</label>
+                                <input id="g_birthdate" type="date" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                            </div>
+                            {{-- <div>
+                                <label for="g_cell_number" class="block text-lg font-semibold mb-2">Guardian Cell Number</label>
+                                <input id="g_cell_number" type="tel" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                            </div> --}}
+                        </div>
+
+                        <div class="grid md:grid-cols-2 gap-8 mt-4">
+                            <div>
+                                <label for="g_home_number" class="block text-lg font-semibold mb-2">Guardian Home Number</label>
+                                <input id="g_home_number" type="tel" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                            </div>
+                            <div>
+                                <label for="g_work_number" class="block text-lg font-semibold mb-2">Guardian Work Number</label>
+                                <input id="g_work_number" type="tel" disabled
+                                    class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label for="g_work_address" class="block text-lg font-semibold mb-2">Guardian Work Address</label>
+                            <input id="g_work_address" type="text" disabled
+                                class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                        </div>
+
 <!-- Relation -->
                         <div class="mt-8">
                             <label for="guardian_relationship" class="block text-lg font-semibold mb-2">
@@ -170,6 +213,59 @@
                                 <option value="Relative">Relative</option>
                                 <option value="Other">Other</option>
                             </select>
+                        </div>
+
+                        <!-- Spouse Information -->
+                        <div class="mt-8 border-t border-gray-100 pt-6">
+                            <h4 class="text-xl font-semibold text-gray-800 mb-4">Spouse Information</h4>
+                            <div class="grid md:grid-cols-2 gap-8">
+                                <div>
+                                    <label for="spouse_first_name" class="block text-lg font-semibold mb-2">First Name</label>
+                                    <input id="spouse_first_name" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                                </div>
+                                <div>
+                                    <label for="spouse_last_name" class="block text-lg font-semibold mb-2">Last Name</label>
+                                    <input id="spouse_last_name" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-8 mt-4">
+                                <div>
+                                    <label for="spouse_middle_name" class="block text-lg font-semibold mb-2">Middle Name</label>
+                                    <input id="spouse_middle_name" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                                </div>
+                                <div>
+                                    <label for="spouse_email" class="block text-lg font-semibold mb-2">Email</label>
+                                    <input id="spouse_email" type="email" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-8 mt-4">
+                                <div>
+                                    <label for="spouse_cell_number" class="block text-lg font-semibold mb-2">Cell Number</label>
+                                    <input id="spouse_cell_number" type="tel" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                                </div>
+                                <div>
+                                    <label for="spouse_home_number" class="block text-lg font-semibold mb-2">Home Number</label>
+                                    <input id="spouse_home_number" type="tel" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                                </div>
+                            </div>
+                            <div class="grid md:grid-cols-2 gap-8 mt-4">
+                                <div>
+                                    <label for="spouse_work_number" class="block text-lg font-semibold mb-2">Work Number</label>
+                                    <input id="spouse_work_number" type="tel" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                                </div>
+                                <div>
+                                    <label for="spouse_work_address" class="block text-lg font-semibold mb-2">Work Address</label>
+                                    <input id="spouse_work_address" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <label for="spouse_birthdate" class="block text-lg font-semibold mb-2">Spouse Birthdate</label>
+                                <input id="spouse_birthdate" type="date" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                            </div>
+                            <div class="mt-4">
+                                <label for="spouse_relationship" class="block text-lg font-semibold mb-2">Spouse Relationship to User</label>
+                                <input id="spouse_relationship" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
+                            </div>
                         </div>
 
                         <!-- Edit -->
@@ -492,11 +588,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
             set('first_name', u.FIRST_NAME);
             set('last_name', u.LAST_NAME);
+            set('middle_name', u.MIDDLE_NAME);
             set('date_of_birth', u.DATE_OF_BIRTH);
             set('email', u.EMAIL);
             set('phone', u.CONTACT_NUMBER);
             set('address', u.ADDRESS);
-            set('r_dsType1', u.TYPES_OF_DS);
+            // Map server-provided DS type to the adminapprove canonical values
+            function mapDsType(raw) {
+                if (!raw && raw !== 0) return '';
+                const s = String(raw).toLowerCase();
+                if (s.includes('mosaic')) return 'Mosaic Trisomy';
+                if (s.includes('transloc') || s.includes('translocation')) return 'Translocation Trisomy';
+                // treat various 'trisomy' / 'trisomy 21' / 'nondisjunction' labels as Pure Trisomy
+                if (s.includes('trisomy') || s.includes('trisomy 21') || s.includes('nondisjunction') || s.includes('pure')) return 'Pure Trisomy';
+                return String(raw || '');
+            }
+
+            const mappedDs = mapDsType(u.TYPES_OF_DS || u.types_of_ds || u.dsType || u.DS_TYPE);
+            const dsSelect = document.getElementById('r_dsType1');
+            if (dsSelect) {
+                // ensure option exists
+                const has = Array.from(dsSelect.options).some(o => (o.value||'') === mappedDs);
+                if (!has && mappedDs) {
+                    const opt = document.createElement('option'); opt.value = mappedDs; opt.textContent = mappedDs; dsSelect.appendChild(opt);
+                }
+                dsSelect.value = mappedDs || '';
+            }
             const cddValRaw = u.CDD_TYPE ?? u.cdd_type ?? u.CDDTYPE ?? u.cddType ?? u.CDD ?? u.cdd ?? '';
             // support comma-separated lists or single values from server
             try {
@@ -541,6 +658,24 @@ document.addEventListener('DOMContentLoaded', () => {
             set('g_last_name', u.GUARDIAN_LAST_NAME);
             set('g_email', u.GUARDIAN_EMAIL);
             set('g_phone', u.GUARDIAN_CONTACT_NUMBER);
+            set('g_middle_name', u.GUARDIAN_MIDDLE_NAME);
+            set('g_birthdate', u.GUARDIAN_BIRTHDATE);
+            set('g_cell_number', u.GUARDIAN_CELL_NUMBER);
+            set('g_home_number', u.GUARDIAN_HOME_NUMBER);
+            set('g_work_number', u.GUARDIAN_WORK_NUMBER);
+            set('g_work_address', u.GUARDIAN_WORK_ADDRESS);
+
+            // Spouse
+            set('spouse_first_name', u.SPOUSE_FIRST_NAME);
+            set('spouse_middle_name', u.SPOUSE_MIDDLE_NAME);
+            set('spouse_last_name', u.SPOUSE_LAST_NAME);
+            set('spouse_email', u.SPOUSE_EMAIL);
+            set('spouse_cell_number', u.SPOUSE_CELL_NUMBER);
+            set('spouse_home_number', u.SPOUSE_HOME_NUMBER);
+            set('spouse_work_number', u.SPOUSE_WORK_NUMBER);
+            set('spouse_work_address', u.SPOUSE_WORK_ADDRESS);
+            set('spouse_birthdate', u.SPOUSE_BIRTHDATE);
+            set('spouse_relationship', u.SPOUSE_RELATIONSHIP_TO_USER);
 
             // Relationship dropdown
             const relVal = (u.RELATIONSHIP_TO_USER || '').trim();
@@ -560,6 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // username (never populate password)
             set('username', u.USERNAME);
+            set('job_preference', u.JOB_PREFERENCE);
             const pwd = document.getElementById('password');
             if (pwd) {
                 pwd.value = '';
@@ -642,8 +778,10 @@ document.addEventListener('DOMContentLoaded', () => {
 document.addEventListener('DOMContentLoaded', () => {
     // list of fields to toggle (personal + guardian)
     const fieldIds = [
-        "first_name","last_name","date_of_birth","email","phone","address","r_dsType1","r_cddType1Other",
-        "g_first_name","g_last_name","g_email","g_phone","guardian_relationship"
+        "first_name","last_name","middle_name","date_of_birth","email","phone","address","r_dsType1","r_cddType1Other",
+        "g_first_name","g_middle_name","g_last_name","g_birthdate","g_email","g_phone","g_cell_number","g_home_number","g_work_number","g_work_address","guardian_relationship",
+        "spouse_first_name","spouse_middle_name","spouse_last_name","spouse_email","spouse_cell_number","spouse_home_number","spouse_work_number","spouse_work_address","spouse_birthdate","spouse_relationship",
+        "job_preference"
     ];
 
     const btn = document.getElementById('editProfileBtn');
