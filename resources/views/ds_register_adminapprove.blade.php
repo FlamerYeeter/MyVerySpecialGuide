@@ -611,7 +611,7 @@
                     <div>
                         <label class="font-semibold text-gray-800 text-sm sm:text-base">Last Name ⭐</label>
                         <p class="text-gray-600 italic text-xs">Apelyido</p>
-                        <input type="text" placeholder="Last Name"
+                        <input id="guardian_last" type="text" placeholder="Last Name"
                             class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -619,7 +619,7 @@
                     <div>
                         <label class="font-semibold text-gray-800 text-sm sm:text-base">First Name ⭐</label>
                         <p class="text-gray-600 italic text-xs">Unang Pangalan</p>
-                        <input type="text" placeholder="First Name"
+                        <input id="guardian_first" type="text" placeholder="First Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -627,7 +627,7 @@
                     <div>
                         <label class="font-semibold text-gray-800 text-sm sm:text-base">Middle Name</label>
                         <p class="text-gray-600 italic text-xs"> Gitnang Pangalan (Opsyonal)</p>
-                        <input type="text" placeholder="Middle Name"
+                        <input id="guardian_middle" type="text" placeholder="Middle Name"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -635,7 +635,7 @@
                     <div>
                         <label class="font-semibold text-gray-800 text-sm sm:text-base">Birthdate ⭐</label>
                         <p class="text-gray-600 italic text-xs">Petsa ng Kapanganakan</p>
-                        <input type="date"
+                        <input id="guardian_birthdate" type="date"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -643,7 +643,7 @@
                     <div>
                         <label class="font-semibold text-gray-800 text-sm sm:text-base">Relationship to Applicant ⭐</label>
                         <p class="text-gray-600 italic text-xs">Relasyon sa Applicant</p>
-                        <select
+                        <select id="guardian_relationship"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 bg-white focus:ring focus:ring-blue-200 focus:outline-none">
                             <option value="" disabled selected>Select Relationship</option>
                             <option>Father</option>
@@ -657,7 +657,7 @@
                     <div>
                         <label class="font-semibold text-gray-800 text-sm sm:text-base">Email ⭐</label>
                         <p class="text-gray-600 italic text-xs">Email</p>
-                        <input type="email" placeholder="Email"
+                        <input id="guardian_email" type="email" placeholder="Email"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -665,7 +665,7 @@
                     <div>
                         <label class="font-semibold text-gray-800 text-sm sm:text-base">Home Phone No.</label>
                         <p class="text-gray-600 italic text-xs">Numero ng Telepono sa Bahay</p>
-                        <input type="tel" placeholder="Home Phone"
+                        <input id="guardian_home_phone" type="tel" placeholder="Home Phone"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -673,7 +673,7 @@
                     <div>
                         <label class="font-semibold text-gray-800 text-sm sm:text-base">Cellphone No. ⭐</label>
                         <p class="text-gray-600 italic text-xs">Numero ng Cellphone</p>
-                        <input type="tel" placeholder="+63 9XX XXX XXXX"
+                        <input id="guardian_phone" type="tel" placeholder="+63 9XX XXX XXXX"
                             class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
                     </div>
 
@@ -1382,6 +1382,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     let currentFileURL = null;
     let lastChangeTime = 0;
 
+    function safeSetText(el, txt) {
+        try { if (el) el.textContent = txt; } catch (e) { console.warn('safeSetText failed', e); }
+    }
+
     if (!fileInput.dataset.changeListenerAttached) {
         fileInput.addEventListener('change', async function (e) {
             const now = Date.now();
@@ -1622,7 +1626,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         // Remove loading indicator
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
-                        if (pwdDisplayEl && pwdDisplayEl.querySelector('.ocr-error')) pwdDisplayEl.querySelector('.ocr-error').textContent = '';
+                        if (pwdDisplayEl) {
+                            const _e = pwdDisplayEl.querySelector('.ocr-error');
+                            if (_e) _e.textContent = '';
+                        }
                         alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
                         // Use medDisplay as the error container (create a child .ocr-error if missing)
@@ -1730,8 +1737,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     });
                 }
 
-                labelEl.textContent = 'File Uploaded:';
-                hintEl.style.display = 'none';
+                safeSetText(labelEl, 'File Uploaded:');
+                if (hintEl) hintEl.style.display = 'none';
 
             } catch (err) {
                 // Remove loading indicator on error
@@ -1782,8 +1789,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
   function resetDisplay() {
     display.innerHTML = '';
-    labelEl.textContent = labelEl.dataset.original || 'Upload File';
-    hintEl.style.display = '';
+    safeSetText(labelEl, (labelEl && labelEl.dataset ? (labelEl.dataset.original || 'Upload File') : 'Upload File'));
+        if (hintEl) hintEl.style.display = '';
   }
 }
 </script>
@@ -2585,6 +2592,11 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             } catch (e) { /* ignore OCR validation errors */ }
 
             if (errors.length) {
+                console.warn('[validateRequired] blocking errors found');
+                console.log('[validateRequired] values snapshot:', values);
+                console.log('[validateRequired] upload checks:', { med: hasUploadedFileFor('medFile'), pwd: hasUploadedFileFor('pwdidFile') });
+                try { console.log('[validateRequired] storage keys', { admin_med: localStorage.getItem('admin_uploaded_med_name'), admin_pwd: localStorage.getItem('admin_uploaded_pwd_name') }); } catch(e){}
+                console.debug('[validateRequired] errors list:', errors);
                 // show errors; focus first error and scroll into view
                 const first = errors[0];
                 errors.forEach(e => showFieldError(e.id, e.msg));
