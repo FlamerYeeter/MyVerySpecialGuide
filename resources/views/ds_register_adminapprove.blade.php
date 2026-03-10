@@ -243,23 +243,16 @@
                         <div id="pwdidDisplay" class="mt-2"></div>
                     </div>
 
-                    <!-- Upload Buttons: Front & Back -->
+                    <!-- Upload Button: Front/Back combined (allow 1 or 2 files) -->
                     <div class="flex-shrink-0 flex flex-col items-center sm:items-end gap-3">
 
                         <div class="w-full sm:w-auto text-center sm:text-right">
-                            <label for="pwdidFileFront" class="inline-flex items-center justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-4 py-2 rounded-lg transition shadow-md cursor-pointer">
-                                📁 Upload Front of ID 
+                            <label id="pwdidLabel" for="pwdidFile" class="inline-flex items-center justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-4 py-2 rounded-lg transition shadow-md cursor-pointer">
+                                📁 Upload Front/Back of ID (1-2 files)
                             </label>
-                            <input id="pwdidFileFront" name="pwd_id_front" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
-                            <div id="pwdidDisplayFront" class="upload-info text-sm text-gray-700 mt-2 justify-center sm:justify-end"></div>
-                        </div>
-
-                        <div class="w-full sm:w-auto text-center sm:text-right">
-                            <label for="pwdidFileBack" class="inline-flex items-center justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-4 py-2 rounded-lg transition shadow-md cursor-pointer">
-                                📁 Upload Back of ID
-                            </label>
-                            <input id="pwdidFileBack" name="pwd_id_back" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden" />
-                            <div id="pwdidDisplayBack" class="upload-info text-sm text-gray-700 mt-2 justify-center sm:justify-end"></div>
+                            <input id="pwdidFile" name="pwd_id[]" type="file" accept=".jpg,.jpeg,.png,.pdf" multiple class="hidden" />
+                            <div id="pwdidDisplay" class="upload-info text-sm text-gray-700 mt-2 justify-center sm:justify-end"></div>
+                            <p id="pwdidHint" class="text-gray-600 text-xs mt-1">You may upload either the front only, or both front and back (max 2 files).</p>
                         </div>
 
                         <div class="upload-error text-sm text-red-600 w-full text-center sm:text-right"></div>
@@ -1034,8 +1027,7 @@ function validateMedicalCertificateDate(dateString, errorContainer) {
 
 document.addEventListener('DOMContentLoaded', () => {
     setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
-    setupUpload('pwdidFileFront', 'pwdidDisplayFront');
-    setupUpload('pwdidFileBack', 'pwdidDisplayBack');
+    setupUpload('pwdidFile', 'pwdidDisplay', 'pwdidLabel', 'pwdidHint');
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
     try {
         const createToggle = document.getElementById('showCreatePassword');
@@ -1479,8 +1471,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             isProcessing = true;
             console.log("[upload] Change event started", new Date().toISOString());
 
-            try {
-                const file = fileInput.files?.[0];
+                try {
+                const files = Array.from(fileInput.files || []);
+                const file = files[0];
                 if (!file) {
                     resetDisplay();
                     return;
@@ -1497,12 +1490,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         : ext === 'pdf' ? '📄'
                         : '📁';
 
+                const namesList = files.map(f => f.name).join(', ');
+
                                 display.innerHTML = `
                                         <div class="w-full bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm mt-3">
                                             <div class="flex flex-col sm:flex-row items-center sm:items-center justify-between gap-3">
                                                 <div class="flex items-center gap-2">
                                                     <span class="text-2xl">${icon}</span>
-                                                    <span class="text-sm text-gray-700 break-words max-w-[240px]">${file.name}</span>
+                                                    <span class="text-sm text-gray-700 break-words max-w-[240px]">${namesList}</span>
                                                 </div>
                                                 <div class="flex gap-2 mt-2 sm:mt-0">
                                                     <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
@@ -1570,15 +1565,13 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 // will accept a back-only upload. We look for an existing
                 // `.ocr-summary` rendered by previous OCR runs.
                 try {
-                    if (ocrtype === 'pwd_id' && String(inputId).toLowerCase().includes('back')) {
+                    // If this appears to be a BACK side upload (either id name included 'back' or
+                    // the filename hints at 'back'), include previously-detected disability info.
+                    if (ocrtype === 'pwd_id' && (String(inputId).toLowerCase().includes('back') || /\bback|backside|rear|_b\b|\-b\b/i.test(file.name))) {
                         // Prefer the visible summary in the shared display, then front/back containers,
                         // then fall back to any persisted detection in localStorage.
                         let prev = null;
-                        const candidates = [
-                            document.getElementById('pwdidDisplay'),
-                            document.getElementById('pwdidDisplayFront'),
-                            document.getElementById('pwdidDisplayBack')
-                        ];
+                        const candidates = [ document.getElementById('pwdidDisplay') ];
                         for (const el of candidates) {
                             try {
                                 if (!el) continue;
@@ -1812,6 +1805,72 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     if (loading) loading.remove();
                     alert(`Error ${response.status}: ${result.message || 'Unknown server error'}`);
                 }
+
+                // If a second file was selected (merged front/back upload), process it as well
+                try {
+                    const filesAll = Array.from(fileInput.files || []);
+                    if (filesAll.length > 1) {
+                        const file2 = filesAll[1];
+                        if (file2) {
+                            // read second file data
+                            const dataUrl2 = await new Promise((resolve, reject) => {
+                                const reader2 = new FileReader();
+                                reader2.onload = () => resolve(reader2.result);
+                                reader2.onerror = () => reject(reader2.error || new Error('FileReader failed'));
+                                reader2.readAsDataURL(file2);
+                            });
+
+                            const ext2 = (file2.name.split('.').pop()||'').toLowerCase();
+
+                            // Convert existing single-value storage into arrays if needed, then append
+                            try {
+                                const prevName = localStorage.getItem(nameKey);
+                                const prevData = localStorage.getItem(dataKey);
+                                const prevType = localStorage.getItem(typeKey);
+                                let names = [], datas = [], types = [];
+                                try { names = JSON.parse(prevName); } catch(e){ if (prevName) names = [prevName]; }
+                                try { datas = JSON.parse(prevData); } catch(e){ if (prevData) datas = [prevData]; }
+                                try { types = JSON.parse(prevType); } catch(e){ if (prevType) types = [prevType]; }
+
+                                names.push(file2.name);
+                                datas.push(dataUrl2);
+                                types.push(ext2);
+
+                                localStorage.setItem(nameKey, JSON.stringify(names));
+                                localStorage.setItem(dataKey, JSON.stringify(datas));
+                                localStorage.setItem(typeKey, JSON.stringify(types));
+                            } catch(e) { console.warn('updating storage for second file failed', e); }
+
+                            // send OCR request for second file
+                            const payload2 = { type: ocrtype, ocr_name: file2.name, ocr_data: dataUrl2, ocr_type: ext2 };
+                            try {
+                                if (ocrtype === 'pwd_id' && /\bback|backside|rear|_b\b|\-b\b/i.test(file2.name)) {
+                                    const stored = localStorage.getItem('admin_uploaded_pwd_detected');
+                                    if (stored) { payload2.previous_disability = stored; payload2.previous_disability_source = 'front'; }
+                                }
+                            } catch(e){}
+
+                            try {
+                                const resp2 = await fetch('db/ocr-validation.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload2) });
+                                const resJson2 = await resp2.json().catch(()=>({ message: 'Invalid JSON' }));
+                                if (resp2.ok) {
+                                    console.log('OCR Result (file 2):', resJson2);
+                                    const detectedType2 = resJson2.data?.ocrtype;
+                                    const aiData2 = resJson2.data?.ai_data || {};
+                                    if (detectedType2 === 'pwd_id' && aiData2.type_of_disability) {
+                                        const pd = document.getElementById('pwdidDisplay');
+                                        const txt2 = String(aiData2.type_of_disability || '').trim();
+                                        if (pd) pd.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected Disability (2nd image): ${txt2}</div>`);
+                                        try { localStorage.setItem('admin_uploaded_pwd_detected', txt2); } catch(e){}
+                                    }
+                                    try { applyOcrDataToForm(aiData2, detectedType2, ocrtype); } catch(e){}
+                                } else {
+                                    console.warn('OCR failed for second file', resJson2);
+                                }
+                            } catch(e) { console.warn('fetch for second file failed', e); }
+                        }
+                    }
+                } catch(e) { console.warn('second-file OCR flow failed', e); }
 
                 // Attach button listeners (only once per file selection)
                 const viewBtn = display.querySelector('.viewBtn');

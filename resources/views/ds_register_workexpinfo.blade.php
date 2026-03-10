@@ -499,7 +499,7 @@
                                                 <option value="11">Nov</option>
                                                 <option value="12">Dec</option>
                                             </select>
-                                            <input type="text" maxlength="4" inputmode="numeric" placeholder="Year or Present" class="job_end_year w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" />
+                                            <input type="text" maxlength="4" inputmode="numeric" placeholder="Year" class="job_end_year w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" />
                                         </div>
                                     </div>
                                 </div>
