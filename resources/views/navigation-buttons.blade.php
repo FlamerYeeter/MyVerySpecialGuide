@@ -20,7 +20,7 @@
 
     <main class="px-8 sm:px-12 py-10 max-w-7xl mx-auto">
 
-        <!-- Title -->
+        {{-- <!-- Title -->
         <h2 class="text-4xl font-bold text-center text-[#1E40AF] mb-8 flex items-center justify-center gap-3">
             <i class="ri-compass-3-line text-[#2563EB] text-5xl"></i>
             The Navigation Buttons
@@ -45,7 +45,7 @@
             <p class="text-gray-700 text-base italic mt-2">
                 (Ito ang asul na bar sa itaas ng pahina na tumutulong sa’yo pumunta sa iba’t ibang bahagi ng website.)
             </p>
-        </div>
+        </div> --}}
 
 
         <!-- NAVIGATION CARDS -->

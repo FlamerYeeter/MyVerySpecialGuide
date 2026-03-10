@@ -76,21 +76,21 @@
         </style>
 </head>
 
-<body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
+<body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
 
     <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
-        class="hidden sm:block fixed left-1 sm:left-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-slow z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-10 top-1/3 w-20 sm:w-28 md:w-32 opacity-90 animate-float-slow z-0">
     <img src="image/obj7.png" alt="Triangle Mascot"
-        class="hidden sm:block fixed left-1 sm:left-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-28 opacity-90 animate-float-medium z-0">
     <img src="image/obj3.png" alt="Blue Mascot"
-        class="hidden sm:block fixed right-1 sm:right-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-fast z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-10 top-1/4 w-20 sm:w-28 md:w-32 opacity-90 animate-float-fast z-0">
     <img src="image/obj8.png" alt="Twin Mascot"
-        class="hidden sm:block fixed right-1 sm:right-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-32 opacity-90 animate-float-medium z-0">
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
         onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registeradminapprove') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
             class="w-6 h-6">
@@ -101,223 +101,169 @@
 
     <!-- Main Content Container -->
     <div
-        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
         <!-- Header -->
-        <div class="text-center mt-2 sm:mt-4 px-2">
+        <div class="text-center mt-4">
             <h1
-                class="text-xl sm:text-3xl md:text-5xl font-extrabold text-blue-700 mb-2 sm:mb-3 drop-shadow-md leading-snug">
+                class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">
                 Set Up Your Profile</h1>
-            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-16 sm:w-24 md:w-36 mb-3 sm:mb-6">
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
             <h2
-                class="text-base sm:text-xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
-                Continue setting up your profile
-                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                    data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile"
+                class="relative flex flex-wrap items-center justify-center gap-3 text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold">
+                <span class="block mx-auto max-w-[82%] sm:max-w-none md:max-w-[85%] text-center md:pr-2 ">Let’s continue setting up your profile</span>
+                <button type="button" class="ml-2 md:ml-3 text-sm sm:text-2xl bg-[#1E40AF] text-white p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2"
+                    data-tts-en="Let’s continue setting up your profile" data-tts-tl="Ipagpatuloy natin ang pag-set up ng iyong profile"
                     aria-label="Play audio for header">🔊</button>
             </h2>
             <p
-                class="mt-2 sm:mt-3 text-gray-700 italic text-xs sm:text-sm md:text-lg border-b-4 border-blue-500 inline-block pb-1 sm:pb-2 px-2">
-                (Ituloy ang pag-set up ng iyong profile)
+                class="mt-2 sm:mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+                (Ipagpatuloy natin ang pag-set up ng iyong profile)
             </p>
         </div>
 
-        <!-- Information Note -->
-        <div
-            class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-5 md:p-6 mt-6 shadow-sm">
-            <!-- Audio Button -->
-            <button type="button" aria-label="Play audio for information note"
-                class="absolute top-3 right-3 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white 
-           text-base sm:text-m p-2 sm:p-3 rounded-full shadow-md transition-transform 
-           hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-                data-tts-en="Please select your highest education level. This helps us recommend suitable programs, job opportunities, and training that match your background."
-                data-tts-tl="Pumili ng iyong pinakamataas na natapos na antas ng edukasyon. Makakatulong ito upang mairerekomenda namin ang mga angkop na programa, trabaho, at pagsasanay na tumutugma sa iyong kaalaman.">
-                🔊
-            </button>
+         <div
+            class="info-card mt-6 sm:mt-8 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
 
-            <!-- Content -->
-            <div class="flex flex-col sm:flex-row items-start gap-2 sm:gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
+              <!-- Desktop Audio Button -->
+                <button type="button" aria-label="Play audio for info section"
+                    class="hidden sm:block absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+                         text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+                            focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="Please type your information in the boxes below. If you went to school, training, or any learning program, you can type it here.
+                                If not, it’s okay to leave this part blank. Every step of learning is valuable."
+                            data-tts-tl="Ilagay ang iyong impormasyon sa mga kahon sa ibaba.
+                            Kung ikaw ay nag-aral, nag-training, o sumali sa anumang programa sa pag-aaral, maaari mo itong ilagay dito.
+                            Kung hindi, ayos lang na iwan itong walang laman. Mahalaga ang bawat hakbang sa pagkatuto.">
+                            🔊
+                </button>
+
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-4 sm:pr-16"> 
+                <!-- Info Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
                 </svg>
 
-                <div class="flex-1 pr-10"> <!-- padding-right to avoid overlap with button -->
-                    <p class="font-medium text-xs sm:text-base leading-relaxed">
-                        Please select your highest education level and fill in your school information. This helps us
-                        recommend suitable
-                        programs, job opportunities, and training that match your background.
+                <!-- Text Content -->
+                <div class="flex-1 text-center sm:text-left">
+                    <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
+                    Please type your information in the boxes below.
+                    If you went to school, training, or any learning program, you can type it here.
+                    If not, it’s okay to leave this part blank. Every step of learning is valuable.
                     </p>
-                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-                        (Pumili ng iyong pinakamataas na natapos na antas ng edukasyon at ilagay ang impormasyon ng
-                        iyong paaralan.
-                        Makakatulong ito upang mairerekomenda namin ang mga angkop na programa, trabaho, at pagsasanay
-                        na tumutugma
-                        sa iyong kaalaman.)
+                    <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+                        (Ilagay ang iyong impormasyon sa mga kahon sa ibaba. Kung ikaw ay nag-aral, nag-training, o sumali sa anumang programa sa pag-aaral, maaari mo itong ilagay dito.
+                         Kung hindi, ayos lang na iwan itong walang laman. Mahalaga ang bawat hakbang sa pagkatuto.)
                     </p>
+                
+                 <!-- Mobile Audio Button -->
+                    <div class="mt-3 flex justify-center sm:hidden">
+                        <button type="button" aria-label="Play audio for info section"
+                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
+                            transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a star must be filled in. Thank you!"
+                            data-tts-tl="Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
+                            ang mga field na may star ay kinakailangang sagutan. Salamat!">
+                            🔊
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <form id="educationForm" class="mt-10 max-w-3xl mx-auto" novalidate>
+        <form id="educationForm" class="mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-6xl px-4 sm:px-0" novalidate>
             @csrf
-            <!-- Education Question -->
-            <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
-                <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Education</h2>
-                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2">
-                    <p class="text-lg sm:text-xl font-semibold text-gray-800 mt-2">What is your highest education?</p>
-                    <button type="button"
-                        class="mt-2 text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                        data-tts-en="What is your highest education?"
-                        data-tts-tl="Ano ang pinakamataas mong natapos na grade o taon sa school?"
-                        aria-label="Play audio for question">🔊</button>
-                </div>
-                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Ano ang pinakamataas mong natapos na grade o
-                    taon
-                    sa school?)</p>
-            </div>
+                    <!-- Education Background (styled like Personal Information) -->
+                    <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
 
-            <!-- Instruction -->
-            <div class="mt-8 text-center sm:text-left px-1 sm:px-4">
-                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2">
-                    <p class="text-gray-800 font-medium text-base sm:text-lg leading-snug">Choose from the pictures
-                        provided and
-                        click
-                        your answer.</p>
-                    <button type="button"
-                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                        data-tts-en="Choose from the pictures provided and click your answer."
-                        data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot"
-                        aria-label="Play audio for instruction">🔊</button>
-                </div>
-                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Pumili mula sa mga larawan at pindutin ang
-                    iyong sagot)</p>
-            </div>
+                        <div class="mb-3 flex items-start justify-between">
+                            <div>
+                                <h3 class="text-xl sm:text-2xl font-bold text-blue-600">Education Background</h3>
+                                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Add all schools or trainings you attended)</p>
+                            </div>
+                            <button type="button" class="hidden sm:inline-block bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-md tts-btn" data-tts-en="Add details about schools or trainings you attended. You can add multiple entries." data-tts-tl="Maglagay ng impormasyon tungkol sa mga paaralan o pagsasanay na iyong dinaluhan." aria-label="Play audio for education background">🔊</button>
+                        </div>
 
-            <!-- Cards Grid -->
-            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
+                        <div id="educationContainer" class="space-y-6">
 
-                <!-- Card Template -->
+                            <!-- Education Item (template-like card) -->
+                            <div class="education-item bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="text-sm text-gray-600 italic">Fill in one entry per school or training</div>
+                                    <button type="button" onclick="removeEducation(this)" class="remove-education text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium">Remove</button>
+                                </div>
 
-                <!-- Card 1 -->
-                <div id="ElementaryAudioBtn"
-                    class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectEducationChoice(this, 'Elementary')">
-                    <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="Elementary" data-tts-tl="Elementary"
-                        aria-label="Play audio for Elementary option">🔊</button>
-                    <img src="image/educ1.png" alt="elementary"
-                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Elementary</h3>
-                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                            <img src="https://img.icons8.com/fluency/24/graduation-cap.png" alt="Education level icon" class="w-5 h-5" />
+                                            Education Level
+                                        </label>
+                                        <select name="education_level[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 text-gray-800">
+                                            <option value="" disabled selected class="text-gray-400">Select Level</option>
+                                            <option>Elementary</option>
+                                            <option>Highschool</option>
+                                            <option>College</option>
+                                            <option>Vocational / Training</option>
+                                            <option>SPED Program</option>
+                                        </select>
+                                    </div>
 
-                <!-- Card 2 -->
-                <div id="HighSchoolAudioBtn"
-                    class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectEducationChoice(this, 'Highschool')">
-                    <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="Highschool" data-tts-tl="Highschool"
-                        aria-label="Play audio for Highschool option">🔊</button>
-                    <img src="image/educ3.png" alt="highschool"
-                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Highschool</h3>
-                </div>
+                                    <div>
+                                        <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                            <img src="https://img.icons8.com/fluency/24/company.png" alt="School icon" class="w-5 h-5" />
+                                            School / Training Center
+                                        </label>
+                                        <input type="text" name="education_school[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="Enter school name" />
+                                    </div>
 
-                <!-- Card 3 -->
-                <div id="CollegeAudioBtn"
-                    class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectEducationChoice(this, 'College')">
-                    <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="College" data-tts-tl="College"
-                        aria-label="Play audio for College option">🔊</button>
-                    <img src="image/educ2.png" alt="college"
-                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">College</h3>
-                </div>
+                                    <div class="md:col-span-2">
+                                        <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                            <img src="https://img.icons8.com/fluency/24/book.png" alt="Course icon" class="w-5 h-5" />
+                                            Course / Program
+                                        </label>
+                                        <input type="text" name="education_program[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="Example: Food Preparation Training" />
+                                    </div>
 
-                <!-- Card 4 -->
-                <div id="VocationalAudioBtn"
-                    class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectEducationChoice(this, 'Vocational/Training')">
-                    <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="Vocational or Training" data-tts-tl="Vocational o Pagsasanay"
-                        aria-label="Play audio for Vocational option">🔊</button>
-                    <img src="image/educ4.png" alt="vocational"
-                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Vocational/Training</h3>
-                </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-2">
+                                        <div>
+                                            <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                                <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Start year icon" class="w-5 h-5" />
+                                                Year Started
+                                            </label>
+                                            <input type="number" name="education_start[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="e.g. 2018" min="1900" max="2100" />
+                                        </div>
+                                        <div>
+                                            <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                                <img src="https://img.icons8.com/fluency/24/calendar.png" alt="End year icon" class="w-5 h-5" />
+                                                Year Completed
+                                            </label>
+                                            <input type="number" name="education_end[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="e.g. 2022" min="1900" max="2100" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-                <!-- Other Option -->
-                <div id="otherEducation"
-                    class="education-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectEducationChoice(this, 'other')">
+                        </div>
 
-                    <!-- Audio Button -->
-                    <button type="button" aria-label="Play audio for Other option"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm transition-transform hover:scale-110 tts-btn"
-                        data-tts-en="Other, Type your answer inside the box if not in the choices"
-                        data-tts-tl="Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian"
-                        aria-label="Play audio for other option">🔊
-                    </button>
+                        <div class="mt-4 text-center">
+                            <button type="button" onclick="addEducation()" class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                                Add Another School / Training
+                            </button>
+                        </div>
 
-                    <!-- Label -->
-                    <label for="edu_other_text" id="edu_other_label"
-                        class="block text-blue-600 font-semibold mb-2 text-sm sm:text-lg cursor-pointer">
-                        Other
-                    </label>
-
-                    <!-- Description -->
-                    <p class="mt-6 text-sm text-justify">
-                        Type your answer inside the box if not in the choices
-                    </p>
-                    <p class="text-[13px] text-gray-600 italic mt-1 mb-3 text-justify">
-                        (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
-                    </p>
-
-                    <!-- Input -->
-                    <input id="review_other" name="edu_other_text" type="text" aria-labelledby="edu_other_label"
-                        placeholder="Type your answer here"
-                        class="w-full border border-gray-300 rounded-lg p-2 text-xs sm:text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none" />
-                </div>
-            </div>
-
-            <!-- Hidden input for education level (collected by register.js) -->
-            <input id="edu_level" name="edu_level" type="hidden" value="" />
-
-
-            <!-- School Name -->
-            <div class="text-left px-2 sm:px-4 mt-16">
-                <label for="school_name" class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                    Name of your school
-                    <button type="button" aria-label="Play audio for Other option"
-                        class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                        data-tts-en="Name of your school" data-tts-tl="Pangalan ng iyong paaralan"
-                        aria-label="Play audio for other option">🔊
-                    </button>
-                </label>
-
-                <p class="text-gray-600 italic text-sm sm:text-base mb-1">
-                    (Pangalan ng iyong paaralan)
-                </p>
-
-
-
-                <input id="school_name" name="school_name" type="text" placeholder="School Name"
-                    class="w-full border border-gray-300 rounded-lg p-3 sm:p-4 text-sm sm:text-base 
-           focus:ring-2 focus:ring-blue-400 focus:border-blue-400 focus:outline-none transition-all duration-200" />
-            </div>
+                    </div>
 
             <!-- Certificates -->
             <div class="mt-8 text-left px-2 sm:px-4">
-                <label for="certs" class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                    Do you have any certificates or special trainings?
-                    <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                <label for="certs" class="text-xl sm:text-2xl font-bold text-blue-600 flex items-center justify-between gap-2">
+                    <span>Do you have any certificates or special trainings?</span>
+                    <button type="button" class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
                         data-tts-en="Do you have any certificates or special trainings?"
                         data-tts-tl="May mga certificate o special training ka ba?"
                         aria-label="Play audio for other option">🔊</button>
@@ -341,20 +287,20 @@
                 </div>
 
                 <!-- dynamic certificates section (initially hidden) -->
-                <div id="cert_section" class="hidden mt-6">
+                <div id="cert_section" class="hidden mt-6 section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
                     <input id="certificates" name="certificates" type="hidden" value="[]" />
 
                     <!-- Upload cert/training file -->
-                    <div class="mt-8 text-left px-2 sm:px-4">
-                        <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                            Please upload your Certificates/Trainings.
+                    <div class="mt-4 text-left px-2 sm:px-4">
+                        <label class="font-semibold text-gray-800 text-base sm:text-lg flex items-center justify-between gap-2">
+                            <span>Please upload your Certificates/Trainings.</span>
                             <button type="button"
-                                class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
+                                class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
                                 data-tts-en="Please upload your Certificates/Trainings."
-                                data-tts-tl="Paki-upload ang iyong mga certificate at training documents.">🔊</button>
+                                data-tts-tl="Paki-upload ang iyong mga certificate at training documents." aria-label="Play audio for upload instructions">🔊</button>
                         </label>
 
-                        <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
+                        <p class="text-black-700 text-sm sm:text-base mt-4 mb-2">
                            Please upload your certificates and training documents to verify your skills, knowledge, and completed trainings.
                         </p>
 
@@ -367,80 +313,84 @@
                         <div id="certs_container" class="space-y-4"></div>
 
                         <template id="cert_template">
-                            <div class="cert_item mt-8 bg-white border border-gray-200 rounded-lg p-4 sm:p-5">
-                                <div class="flex items-start justify-between mb-3">
-                                    <h3 class="font-semibold text-[#1E40AF] text-base sm:text-lg">Certificate /
-                                        Training
-                                        Details</h3>
-                                    <button type="button"
-                                        class="remove-cert text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium">Remove</button>
+                            <div class="cert_item bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="text-sm text-gray-600 italic">Certificate / Training Details</div>
+                                    <button type="button" class="remove-cert text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium">Remove</button>
                                 </div>
 
-                                <p class="text-gray-600 italic text-xs sm:text-sm mb-4">I-type ang impormasyon tungkol
-                                    sa
-                                    certificate o training.</p>
-
-                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div class="sm:col-span-2">
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                                            <img src="https://img.icons8.com/fluency/24/document.png"
-                                                alt="Certificate icon" class="w-5 h-5" />
+                                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                            <img src="https://img.icons8.com/fluency/24/document.png" alt="Certificate icon" class="w-5 h-5" />
                                             Name of Certificate / Training
                                         </label>
-                                        <input type="text" name="certificate_name"
-                                            class="certificate_name w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                                            placeholder="e.g. Food Safety Training" readonly/>
-                                        <p class="italic text-xs text-gray-500 mt-1">(Pangalan ng training o
-                                            certificate)
-                                        </p>
+                                        <input type="text" name="certificate_name" class="certificate_name w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. Food Safety Training" aria-label="Name of certificate or training" />
+                                        <p class="italic text-xs text-gray-500 mt-1">(Pangalan ng training o certificate)</p>
                                     </div>
 
                                     <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                                            <img src="https://img.icons8.com/fluency/24/company.png"
-                                                alt="Organization icon" class="w-5 h-5" />
+                                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                            <img src="https://img.icons8.com/fluency/24/company.png" alt="Organization icon" class="w-5 h-5" />
                                             Issued By
                                         </label>
-                                        <input type="text" name="issued_by"
-                                            class="issued_by w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                                            placeholder="e.g. TESDA, Training Center" readonly/>
-                                        <p class="italic text-xs text-gray-500 mt-1">(Sino ang nagbigay ng training)
-                                        </p>
+                                        <input type="text" name="issued_by" class="issued_by w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. TESDA, Training Center" aria-label="Issued by" />
+                                        <p class="italic text-xs text-gray-500 mt-1">(Sino ang nagbigay ng training)</p>
                                     </div>
 
                                     <div>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                                            <img src="https://img.icons8.com/fluency/24/calendar.png"
-                                                alt="Calendar icon" class="w-5 h-5" />
+                                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                            <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Calendar icon" class="w-5 h-5" />
                                             Date Completed
                                         </label>
-                                                     <input type="text" name="date_completed" 
-                                                      class="date-completed-display w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-700 focus:ring-0 focus:outline-none bg-white mt-1"
-                                                          placeholder="e.g. February 12, 2026" readonly />
+                                        <input type="text" name="date_completed" class="date-completed-display w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-700 focus:ring-2 focus:ring-blue-200 focus:outline-none bg-white mt-1" placeholder="e.g. February 12, 2026" aria-label="Date completed" />
                                         <p class="italic text-xs text-gray-500 mt-1">(Petsa kung kailan natapos)</p>
                                     </div>
 
                                     <div hidden>
-                                        <label
-                                            class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                                            <img src="https://img.icons8.com/fluency/24/idea.png" alt="Idea icon"
-                                                class="w-5 h-5" />
+                                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                                            <img src="https://img.icons8.com/fluency/24/idea.png" alt="Idea icon" class="w-5 h-5" />
                                             What did you learn?
                                         </label>
-                                        <input type="text" name="training_description"
-                                            class="training_description w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-400 focus:outline-none"
-                                            placeholder="e.g. How to clean, serve food, follow rules" />
-                                        <p class="italic text-xs text-gray-500 mt-1">(Maikling paliwanag ng natutunan)
-                                        </p>
+                                        <input type="text" name="training_description" class="training_description w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. How to clean, serve food, follow rules" aria-label="What did you learn" />
+                                        <p class="italic text-xs text-gray-500 mt-1">(Maikling paliwanag ng natutunan)</p>
                                     </div>
                                 </div>
+
+                                <!-- hidden fields used by upload/OCR code -->
+                                <input type="hidden" name="certificate_file_data" />
+                                <input type="hidden" name="certificate_file_name" />
+                                <input type="hidden" name="certificate_file_type" />
                             </div>
                         </template>
 
                         <script>
+                           // Function to add a new education item by cloning the template and clearing its inputs
+                            function addEducation() {
+
+                                const container = document.getElementById("educationContainer");
+
+                                const item = document.querySelector(".education-item").cloneNode(true);
+
+                                // Clear inputs
+                                item.querySelectorAll("input").forEach(input => input.value = "");
+                                item.querySelectorAll("select").forEach(select => select.selectedIndex = 0);
+
+                                container.appendChild(item);
+
+                                }
+
+                                function removeEducation(button){
+
+                                const item = button.closest(".education-item");
+                                const container = document.getElementById("educationContainer");
+
+                                // Prevent removing the last remaining card
+                                if(container.children.length > 1){
+                                item.remove();
+                                }
+
+                                }
                             // Format a date-like value into 'Month DD, YYYY', e.g. 'February 12, 2026'
                             window.formatDateWords = function(raw) {
                                 if (raw === null || typeof raw === 'undefined' || raw === '') return '';
@@ -1233,6 +1183,19 @@
 
             const debouncedSync = debounce(syncFromUI, 150);
 
+            // Toggle visibility of remove buttons: hide when only one cert entry exists
+            function updateRemoveButtons() {
+                try {
+                    const entries = Array.from(container.querySelectorAll('.cert_item'));
+                    const btns = container.querySelectorAll('.remove-cert');
+                    if (entries.length <= 1) {
+                        btns.forEach(b => b.classList.add('hidden'));
+                    } else {
+                        btns.forEach(b => b.classList.remove('hidden'));
+                    }
+                } catch (e) { /* ignore */ }
+            }
+
             function createUploadSlotForNode(targetNode) {
                 const suf = String(Date.now()) + Math.floor(Math.random()*1000);
                 const slot = document.createElement('div');
@@ -1241,12 +1204,12 @@
                 const left = document.createElement('div');
                 left.className = 'flex-1';
                 const label = document.createElement('p');
-                label.className = 'font-medium text-gray-800 text-sm sm:text-base';
-                label.innerHTML = `<span id="validcertLabel_${suf}" class="flex items-center gap-2"><span>Upload File (Image or PDF)</span></span>`;
+                label.className = 'text-gray-800 text-sm sm:text-base';
+                label.innerHTML = `<span id="validcertLabel_${suf}" class="flex items-center gap-2"><span>Upload an image or PDF of your Certificates / Trainings</span></span>`;
                 const hint = document.createElement('p');
                 hint.id = `validcertHint_${suf}`;
                 hint.className = 'text-gray-600 italic text-xs sm:text-sm mt-1';
-                hint.innerHTML = '(Mag-upload ng larawan o PDF ng iyong Certificates/Trainings)<br /><br />Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />';
+                hint.innerHTML = '(Mag-upload ng larawan o PDF ng iyong Certificates / Trainings)<br /><br />Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />';
                 const display = document.createElement('div');
                 display.id = `validcertDisplay_${suf}`;
                 const fileuploadWrap = document.createElement('div');
@@ -2027,6 +1990,7 @@
                         } catch(e){}
                         node.remove();
                         debouncedSync();
+                        try { updateRemoveButtons(); } catch(e) {}
                     });
                 }
                 node.querySelectorAll('input').forEach(i => i.addEventListener('input', debouncedSync));
@@ -2043,6 +2007,7 @@
                 container.appendChild(slot);
                 container.appendChild(node);
                 debouncedSync();
+                try { updateRemoveButtons(); } catch(e) {}
                 // focus first input of newly added
                 const last = container.lastElementChild;
                 if (last) last.querySelector('input[name="certificate_name"]')?.focus();
@@ -2076,6 +2041,7 @@
                     section.classList.remove('hidden');
                     if (saved && saved.length) saved.forEach(s => addCert(s));
                     else addCert();
+                    try { updateRemoveButtons(); } catch(e) {}
                 } else {
                     section.classList.add('hidden');
                     container.innerHTML = '';

@@ -134,7 +134,7 @@
 
     <!-- Main Container -->
     <div
-        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200"">
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
         <!-- Header -->
         <div class="text-center mt-4">
@@ -423,7 +423,7 @@
                 <!-- Title  -->
                 <div class="flex justify-between items-center">
                     <p class="font-semibold text-gray-800 text-sm sm:text-lg">
-                        Please upload your Medical Certificate <span>⭐</span>
+                        Please upload your Medical Certificate.<span>⭐</span>
                     </p>
                     <!-- TTS Audio Button -->
                     <button type="button"
