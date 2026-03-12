@@ -399,6 +399,9 @@ INSERT INTO user_guardian (
     age,
     education,
     school,
+    education_course,
+    year_start,
+    year_end,
     guardian_middle_name,
     guardian_first_name,
     guardian_last_name,
@@ -440,6 +443,9 @@ INSERT INTO user_guardian (
     :age,
     :education,
     :school,
+    :education_course,
+    :year_start,
+    :year_end,
     :guardian_middle_name,
     :guardian_first_name,
     :guardian_last_name,
@@ -484,8 +490,76 @@ oci_bind_by_name($stid1, ':contact_number',$phone);
 oci_bind_by_name($stid1, ':password',      $password);
 
 oci_bind_by_name($stid1, ':age',           $age);
-oci_bind_by_name($stid1, ':education',     $edu_level);
-oci_bind_by_name($stid1, ':school',        $school_name);
+// Prepare education fields: accept arrays/JSON or single values and persist as JSON strings
+$education_array = [];
+$school_array = [];
+$education_course_array = [];
+$year_start_array = [];
+$year_end_array = [];
+
+// Try several input keys which frontend might send
+$maybeEduSources = [
+    'education_profile', 'education_entries', 'education_list', 'education_array', 'education',
+    'edu_entries', 'edu_list'
+];
+foreach ($maybeEduSources as $k) {
+    if (!empty($data[$k])) {
+        $raw = $data[$k];
+        $decoded = is_string($raw) ? json_decode($raw, true) : $raw;
+        if (is_array($decoded)) {
+            // If it's an associative object with nested entries
+            if (isset($decoded['entries']) && is_array($decoded['entries'])) {
+                $decoded = $decoded['entries'];
+            }
+            // If decoded is a map of known keys (e.g., edu_level + school_name), convert to single-entry array
+            $isMap = false;
+            foreach ($decoded as $ii => $val) { if (!is_int($ii)) { $isMap = true; break; } }
+            if ($isMap) $decoded = [$decoded];
+
+            foreach ($decoded as $entry) {
+                if (is_string($entry)) {
+                    $education_array[] = normalizeNullableString($entry);
+                } elseif (is_array($entry)) {
+                    $education_array[] = normalizeNullableString($entry['education'] ?? $entry['edu_level'] ?? $entry['level'] ?? ($entry[0] ?? null));
+                    $school_array[] = normalizeNullableString($entry['school'] ?? $entry['school_name'] ?? $entry['institution'] ?? ($entry[1] ?? null));
+                    $education_course_array[] = normalizeNullableString($entry['course'] ?? $entry['education_course'] ?? $entry['training_description'] ?? null);
+                    $year_start_array[] = normalizeNullableString($entry['year_start'] ?? $entry['start_year'] ?? $entry['year_start'] ?? null);
+                    $year_end_array[] = normalizeNullableString($entry['year_end'] ?? $entry['end_year'] ?? $entry['year_end'] ?? null);
+                }
+            }
+            break;
+        }
+    }
+}
+
+// Fallback: if frontend still sent single-level fields, use them
+if (empty($education_array) && !empty($edu_level)) $education_array[] = normalizeNullableString($edu_level);
+if (empty($school_array) && !empty($school_name)) $school_array[] = normalizeNullableString($school_name);
+
+// Helper to encode arrays to JSON strings limited to DB column size (~2000)
+function json_for_db($arr) {
+    if (!is_array($arr) || !count($arr)) return null;
+    $clean = array_values(array_filter($arr, function($v){ return $v !== null && $v !== ''; }));
+    if (!count($clean)) return null;
+    $s = json_encode($clean, JSON_UNESCAPED_UNICODE);
+    if (mb_strlen($s, 'UTF-8') > 1900) {
+        // truncate safely
+        $s = mb_substr($s, 0, 1900, 'UTF-8');
+    }
+    return $s;
+}
+
+$education_json = json_for_db($education_array);
+$school_json = json_for_db($school_array);
+$education_course_json = json_for_db($education_course_array);
+$year_start_json = json_for_db($year_start_array);
+$year_end_json = json_for_db($year_end_array);
+
+oci_bind_by_name($stid1, ':education',     $education_json ?? $edu_level);
+oci_bind_by_name($stid1, ':school',        $school_json ?? $school_name);
+oci_bind_by_name($stid1, ':education_course', $education_course_json);
+oci_bind_by_name($stid1, ':year_start', $year_start_json);
+oci_bind_by_name($stid1, ':year_end', $year_end_json);
 
 oci_bind_by_name($stid1, ':guardian_first_name', $gf);
 oci_bind_by_name($stid1, ':guardian_last_name',  $gl);
@@ -531,8 +605,11 @@ oci_bind_by_name($stid1, ':email',         $email);
 oci_bind_by_name($stid1, ':contact_number',$phone);
 oci_bind_by_name($stid1, ':password',      $password);
 oci_bind_by_name($stid1, ':age',           $age);
-oci_bind_by_name($stid1, ':education',     $edu_level);
-oci_bind_by_name($stid1, ':school',        $school_name);
+oci_bind_by_name($stid1, ':education',     $education_json ?? $edu_level);
+oci_bind_by_name($stid1, ':school',        $school_json ?? $school_name);
+oci_bind_by_name($stid1, ':education_course', $education_course_json);
+oci_bind_by_name($stid1, ':year_start', $year_start_json);
+oci_bind_by_name($stid1, ':year_end', $year_end_json);
 oci_bind_by_name($stid1, ':guardian_first_name', $gf);
 oci_bind_by_name($stid1, ':guardian_last_name',  $gl);
 oci_bind_by_name($stid1, ':guardian_email',      $ge);

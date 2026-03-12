@@ -378,6 +378,7 @@
       // Build payload
         const data = {
           education: localStorage.getItem('edu_level'),
+          education_profile: localStorage.getItem('education_profile'),
           job_experiences: localStorage.getItem('job_experiences'),
           review_certs: localStorage.getItem('review_certs'),
           // include rpi_personal so server receives personal fields (but do not recreate debug dump on server)

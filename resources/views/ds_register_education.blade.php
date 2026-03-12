@@ -1414,18 +1414,30 @@
                     clearInline();
                     showSummary('');
                     const errors = [];
-                    const eduVal = (document.getElementById('edu_level') && document.getElementById('edu_level')
-                        .value || '').toString().trim();
-                    if (!eduVal) errors.push({
-                        id: 'edu_level',
-                        msg: 'Please select your highest education.'
-                    });
-                    const school = (document.getElementById('school_name') && document.getElementById(
-                        'school_name').value || '').toString().trim();
-                    if (!school) errors.push({
-                        id: 'school_name',
-                        msg: 'Please enter your school name.'
-                    });
+
+                    // Determine highest education: prefer dynamic entries (select[name="education_level[]"]) then fallback to legacy id
+                    let eduVal = '';
+                    try {
+                        const selects = Array.from(document.querySelectorAll('select[name="education_level[]"]'));
+                        for (const s of selects) {
+                            const v = (s.value || '').toString().trim();
+                            if (v) { eduVal = v; break; }
+                        }
+                    } catch (e) { eduVal = ''; }
+                    if (!eduVal) eduVal = (document.getElementById('edu_level')?.value || '').toString().trim();
+                    if (!eduVal) errors.push({ id: 'edu_level', msg: 'Please select your highest education.' });
+
+                    // Determine school name: prefer first non-empty dynamic entry then fallback
+                    let school = '';
+                    try {
+                        const schools = Array.from(document.querySelectorAll('input[name="education_school[]"]'));
+                        for (const si of schools) {
+                            const sv = (si.value || '').toString().trim();
+                            if (sv) { school = sv; break; }
+                        }
+                    } catch (e) { school = ''; }
+                    if (!school) school = (document.getElementById('school_name')?.value || '').toString().trim();
+                    if (!school) errors.push({ id: 'school_name', msg: 'Please enter your school name.' });
 
                     const certSel = document.querySelector('input[name="certs"]:checked');
                     const certValue = certSel ? certSel.value : null;
@@ -1477,15 +1489,41 @@
                 function saveAndRedirect() {
                     try {
                         btn.classList.add('opacity-60');
+                        // Collect multiple education entries from the dynamic UI
                         const eduObj = {
-                            edu_level: (document.getElementById('edu_level')?.value || '').toString(),
-                            edu_other_text: (document.getElementById('review_other')?.value || '')
-                                .toString(),
-                            school_name: (document.getElementById('school_name')?.value || '').toString(),
-                            certs: (document.querySelector('input[name="certs"]:checked')?.value || '')
-                                .toString(),
+                            edu_other_text: (document.getElementById('review_other')?.value || '').toString(),
+                            certs: (document.querySelector('input[name="certs"]:checked')?.value || '').toString(),
+                            entries: [],
                             certificates: []
                         };
+
+                        // Gather all education-item cards
+                        document.querySelectorAll('.education-item').forEach(item => {
+                            try {
+                                const level = (item.querySelector('select[name="education_level[]"]')?.value || '').toString();
+                                const school = (item.querySelector('input[name="education_school[]"]')?.value || '').toString();
+                                const program = (item.querySelector('input[name="education_program[]"]')?.value || '').toString();
+                                const start = (item.querySelector('input[name="education_start[]"]')?.value || '').toString();
+                                const end = (item.querySelector('input[name="education_end[]"]')?.value || '').toString();
+                                if (level || school || program || start || end) {
+                                    eduObj.entries.push({
+                                        education: level,
+                                        school: school,
+                                        course: program,
+                                        year_start: start,
+                                        year_end: end
+                                    });
+                                }
+                            } catch (e) { /* ignore malformed item */ }
+                        });
+                        // For compatibility keep top-level edu_level/school_name as first entry if present
+                        if (eduObj.entries.length) {
+                            eduObj.edu_level = eduObj.entries[0].education || '';
+                            eduObj.school_name = eduObj.entries[0].school || '';
+                        } else {
+                            eduObj.edu_level = (document.getElementById('edu_level')?.value || '').toString();
+                            eduObj.school_name = (document.getElementById('school_name')?.value || '').toString();
+                        }
 
                         // read hidden serialized certificates (maintains existing behavior)
                         try {
