@@ -554,9 +554,12 @@ $school_json = json_for_db($school_array);
 $education_course_json = json_for_db($education_course_array);
 $year_start_json = json_for_db($year_start_array);
 $year_end_json = json_for_db($year_end_array);
+// Prepare bind variables (OCI requires a variable passed by reference)
+$bind_education = $education_json ?? $edu_level;
+$bind_school = $school_json ?? $school_name;
 
-oci_bind_by_name($stid1, ':education',     $education_json ?? $edu_level);
-oci_bind_by_name($stid1, ':school',        $school_json ?? $school_name);
+oci_bind_by_name($stid1, ':education',     $bind_education);
+oci_bind_by_name($stid1, ':school',        $bind_school);
 oci_bind_by_name($stid1, ':education_course', $education_course_json);
 oci_bind_by_name($stid1, ':year_start', $year_start_json);
 oci_bind_by_name($stid1, ':year_end', $year_end_json);
@@ -605,8 +608,9 @@ oci_bind_by_name($stid1, ':email',         $email);
 oci_bind_by_name($stid1, ':contact_number',$phone);
 oci_bind_by_name($stid1, ':password',      $password);
 oci_bind_by_name($stid1, ':age',           $age);
-oci_bind_by_name($stid1, ':education',     $education_json ?? $edu_level);
-oci_bind_by_name($stid1, ':school',        $school_json ?? $school_name);
+// Re-use prepared bind variables to avoid passing expressions by reference
+oci_bind_by_name($stid1, ':education',     $bind_education);
+oci_bind_by_name($stid1, ':school',        $bind_school);
 oci_bind_by_name($stid1, ':education_course', $education_course_json);
 oci_bind_by_name($stid1, ':year_start', $year_start_json);
 oci_bind_by_name($stid1, ':year_end', $year_end_json);

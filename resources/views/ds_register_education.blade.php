@@ -1415,28 +1415,31 @@
                     showSummary('');
                     const errors = [];
 
-                    // Determine highest education: prefer dynamic entries (select[name="education_level[]"]) then fallback to legacy id
+                    // Determine highest education and school name by inspecting the dynamic
+                    // `.education-item` cards first (preferred), then fall back to legacy ids.
                     let eduVal = '';
-                    try {
-                        const selects = Array.from(document.querySelectorAll('select[name="education_level[]"]'));
-                        for (const s of selects) {
-                            const v = (s.value || '').toString().trim();
-                            if (v) { eduVal = v; break; }
-                        }
-                    } catch (e) { eduVal = ''; }
-                    if (!eduVal) eduVal = (document.getElementById('edu_level')?.value || '').toString().trim();
-                    if (!eduVal) errors.push({ id: 'edu_level', msg: 'Please select your highest education.' });
-
-                    // Determine school name: prefer first non-empty dynamic entry then fallback
                     let school = '';
                     try {
-                        const schools = Array.from(document.querySelectorAll('input[name="education_school[]"]'));
-                        for (const si of schools) {
-                            const sv = (si.value || '').toString().trim();
-                            if (sv) { school = sv; break; }
+                        const items = Array.from(document.querySelectorAll('.education-item'));
+                        for (const item of items) {
+                            try {
+                                const s = (item.querySelector('select[name="education_level[]"]')?.value || '').toString().trim();
+                                const sch = (item.querySelector('input[name="education_school[]"]')?.value || '').toString().trim();
+                                if (!eduVal && s) eduVal = s;
+                                if (!school && sch) school = sch;
+                                if (eduVal && school) break;
+                            } catch (e) { /* ignore malformed item */ }
                         }
-                    } catch (e) { school = ''; }
+                    } catch (e) {
+                        eduVal = '';
+                        school = '';
+                    }
+
+                    // legacy fallbacks
+                    if (!eduVal) eduVal = (document.getElementById('edu_level')?.value || '').toString().trim();
                     if (!school) school = (document.getElementById('school_name')?.value || '').toString().trim();
+
+                    if (!eduVal) errors.push({ id: 'edu_level', msg: 'Please select your highest education.' });
                     if (!school) errors.push({ id: 'school_name', msg: 'Please enter your school name.' });
 
                     const certSel = document.querySelector('input[name="certs"]:checked');

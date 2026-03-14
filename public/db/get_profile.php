@@ -49,7 +49,7 @@ $sql = "SELECT id,
                guardian_contact_number, guardian_cell_number, guardian_home_number, guardian_work_number, guardian_work_address,
                username, relationship_to_user,
                PWD_ID, med_certificates, certificates, proof_of_membership,
-               school, education,
+               school, education, education_course, year_start, year_end,
                spouse_first_name, spouse_middle_name, spouse_last_name, spouse_email,
                spouse_cell_number, spouse_home_number, spouse_work_number, spouse_work_address, TO_CHAR(spouse_birthdate,'YYYY-MM-DD') AS SPOUSE_BIRTHDATE, spouse_relationship_to_user,
                job_preference, approval_status, prog_status, expert_id, age
@@ -98,8 +98,25 @@ if (!empty($row['PROOF_OF_MEMBERSHIP'])) {
 // remove raw blobs from $row to keep JSON smaller (they are in $files now)
 // remove raw blobs from $row to keep JSON smaller (they are in $files now)
 unset($row['PWD_ID'], $row['MED_CERTIFICATES'], $row['CERTIFICATES'], $row['PROOF_OF_MEMBERSHIP']);
-$row['EDUCATION_LEVEL'] = isset($row['EDUCATION']) ? $row['EDUCATION'] : '';
-$row['SCHOOL_NAME']     = isset($row['SCHOOL']) ? $row['SCHOOL'] : '';
+$parseMaybeJson = function($v) {
+    if ($v === null) return '';
+    if (is_array($v) || is_object($v)) return $v;
+    if (!is_string($v)) return $v;
+    $s = trim($v);
+    if ($s === '') return '';
+    if (($s[0] === '{') || ($s[0] === '[')) {
+        $dec = json_decode($s, true);
+        if (json_last_error() === JSON_ERROR_NONE) return $dec;
+    }
+    return $v;
+};
+
+$row['EDUCATION_LEVEL'] = isset($row['EDUCATION']) ? $parseMaybeJson($row['EDUCATION']) : '';
+$row['SCHOOL_NAME']     = isset($row['SCHOOL']) ? $parseMaybeJson($row['SCHOOL']) : '';
+// also expose course and year columns (may be scalar or JSON)
+$row['EDUCATION_COURSE'] = isset($row['EDUCATION_COURSE']) ? $parseMaybeJson($row['EDUCATION_COURSE']) : '';
+$row['YEAR_START'] = isset($row['YEAR_START']) ? $parseMaybeJson($row['YEAR_START']) : '';
+$row['YEAR_END'] = isset($row['YEAR_END']) ? $parseMaybeJson($row['YEAR_END']) : '';
 $row['CERTIFICATES_UPLOADED'] = (!empty($files['other_certs'])) ? true : false;
 echo json_encode([
     'success' => true,

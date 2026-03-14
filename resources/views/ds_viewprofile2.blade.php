@@ -48,39 +48,30 @@
                     <section class="border-b border-gray-200 pb-8 mb-8">
                         <h3 class="text-blue-800 text-3xl font-bold mb-8">Education</h3>
 
-                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-<!-- Education Level -->
-                            <div>
-                                <div class="mb-3">
-                                    <div class="flex items-center gap-4">
-                                        <span class="text-lg font-semibold">Education Level:</span>
-                                        <span id="educationLevel" class="text-gray-800"></span>
-                                    </div>
-                                </div>
-
-                                <!-- Edit Mode -->
-                                <select id="edit_edu_select" class="hidden w-full border rounded px-3 py-2">
-                                    <option value="College">College</option>
-                                    <option value="Vocational/Training">Vocational/Training</option>
-                                    <option value="High School">High School</option>
-                                    <option value="Elementary">Elementary</option>
-                                </select>
-                            </div>
-
-<!-- School Name -->
-                            <div class="col-span-2">
-                                <div class="mb-3">
-                                    <div class="flex items-center gap-4">
-                                        <span class="text-lg font-semibold">School Name:</span>
-                                        <span id="schoolName" class="text-gray-800"></span>
-                                    </div>
-                                </div>
-
-                                <!-- Edit Mode -->
-                                <input type="text" id="edit_school_input" class="hidden w-full border rounded px-3 py-2" />
-                            </div>
+                        <div id="educationList" class="space-y-6">
+                            <!-- Rendered education-item cards will appear here. If server returns a single top-level
+                                 education string, the UI will fall back to the existing simple display below. -->
                         </div>
+
+                        {{-- <div class="mt-4">
+                            <div class="flex items-center gap-4">
+                                <span class="text-lg font-semibold">Highest Education (summary):</span>
+                                <span id="educationLevel" class="text-gray-800">-</span>
+                            </div>
+                            <div class="flex items-center gap-4 mt-2">
+                                <span class="text-lg font-semibold">Primary School / Institution:</span>
+                                <span id="schoolName" class="text-gray-800">-</span>
+                            </div>
+                        </div> --}}
+
+                        <!-- Edit controls (kept for compatibility) -->
+                        <select id="edit_edu_select" class="hidden w-full border rounded px-3 py-2 mt-4">
+                            <option value="College">College</option>
+                            <option value="Vocational/Training">Vocational/Training</option>
+                            <option value="High School">High School</option>
+                            <option value="Elementary">Elementary</option>
+                        </select>
+                        <input type="text" id="edit_school_input" class="hidden w-full border rounded px-3 py-2 mt-2" />
 
                         <!-- Certificates: match layout/column sizing used by Job Experiences -->
                         <div class="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -466,8 +457,126 @@ document.addEventListener('DOMContentLoaded', () => {
         // Education placeholders: use aliases provided by get_profile.php
         const eduEl = document.getElementById('educationLevel');
         const schoolEl = document.getElementById('schoolName');
-        if (eduEl) eduEl.textContent = (u.EDUCATION_LEVEL || u.education || '-') || '-';
-        if (schoolEl) schoolEl.textContent = (u.SCHOOL_NAME || u.school || '-') || '-';
+        // avoid setting raw JSON string into textContent; default to '-' and populate below
+        if (eduEl) eduEl.textContent = '-';
+        if (schoolEl) schoolEl.textContent = '-';
+
+        // Render full education entries (if server returned JSON array/object)
+        let rawEdu = u.EDUCATION_LEVEL || u.education || null;
+        // also accept parallel school/course/year columns (may be scalar, JSON string, or array)
+        let rawSchool = u.SCHOOL_NAME || u.school || null;
+        let rawCourse = u.EDUCATION_COURSE || u.education_course || null;
+        let rawYs = u.YEAR_START || u.year_start || null;
+        let rawYe = u.YEAR_END || u.year_end || null;
+        const listContainer = document.getElementById('educationList');
+        try {
+            const _raw = rawEdu;
+            if (rawEdu && listContainer) {
+                let entries = null;
+                if (Array.isArray(rawEdu)) entries = rawEdu;
+                else if (typeof rawEdu === 'string') {
+                    try { entries = JSON.parse(rawEdu); } catch (e) { entries = null; }
+                } else if (typeof rawEdu === 'object') entries = [rawEdu];
+
+                if (Array.isArray(entries) && entries.length) {
+                    // parse parallel arrays when present
+                    let schoolArr = null, courseArr = null, ysArr = null, yeArr = null;
+                    try { schoolArr = Array.isArray(rawSchool) ? rawSchool : (typeof rawSchool === 'string' && rawSchool.trim()[0] === '[' ? JSON.parse(rawSchool) : null); } catch(e) { schoolArr = null; }
+                    try { courseArr = Array.isArray(rawCourse) ? rawCourse : (typeof rawCourse === 'string' && rawCourse.trim()[0] === '[' ? JSON.parse(rawCourse) : null); } catch(e) { courseArr = null; }
+                    try { ysArr = Array.isArray(rawYs) ? rawYs : (typeof rawYs === 'string' && rawYs.trim()[0] === '[' ? JSON.parse(rawYs) : null); } catch(e) { ysArr = null; }
+                    try { yeArr = Array.isArray(rawYe) ? rawYe : (typeof rawYe === 'string' && rawYe.trim()[0] === '[' ? JSON.parse(rawYe) : null); } catch(e) { yeArr = null; }
+
+                    listContainer.innerHTML = '';
+                    entries.forEach((ent, idx) => {
+                        // support primitive entries like "Highschool" as well as object entries
+                        let lvl = '';
+                        let sch = '';
+                        if (ent === null || ent === undefined) {
+                            lvl = '';
+                        } else if (typeof ent === 'string' || typeof ent === 'number') {
+                            lvl = String(ent);
+                        } else if (Array.isArray(ent)) {
+                            // array-of-strings inside entries — join as level
+                            lvl = ent.filter(Boolean).join(', ');
+                        } else if (typeof ent === 'object') {
+                            lvl = (ent.education || ent.edu_level || ent.level || ent.education_level || '').toString();
+                            sch = (ent.school || ent.school_name || ent.institution || '').toString();
+                        }
+                        let course = (ent && ent.course) ? (ent.course || ent.education_course || ent.program || ent.training || '') : '';
+                        let ys = (ent && (ent.year_start || ent.yearFrom || ent.start)) ? (ent.year_start || ent.yearFrom || ent.start) : '';
+                        let ye = (ent && (ent.year_end || ent.yearTo || ent.end)) ? (ent.year_end || ent.yearTo || ent.end) : '';
+
+                        // fill from parallel arrays when entry doesn't include them
+                        try { if ((!sch || sch === '') && Array.isArray(schoolArr) && schoolArr[idx]) sch = String(schoolArr[idx]); } catch(e){}
+                        try { if ((!course || course === '') && Array.isArray(courseArr) && courseArr[idx]) course = String(courseArr[idx]); } catch(e){}
+                        try { if ((!ys || ys === '') && Array.isArray(ysArr) && ysArr[idx]) ys = String(ysArr[idx]); } catch(e){}
+                        try { if ((!ye || ye === '') && Array.isArray(yeArr) && yeArr[idx]) ye = String(yeArr[idx]); } catch(e){}
+
+                        const node = document.createElement('div');
+                        node.className = 'education-item bg-gray-50 border border-gray-200 rounded-xl p-4';
+                        node.innerHTML = `
+                            <div class="mb-3 flex items-start justify-between">
+                                <div class="text-sm text-gray-600 italic">Filled from your profile</div>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="font-semibold text-gray-800">Education Level</label>
+                                    <div class="w-full rounded-lg p-3 text-gray-800 edu-val">${escapeHtml(lvl) || '-'}</div>
+                                </div>
+                                <div>
+                                    <label class="font-semibold text-gray-800">School / Training Center</label>
+                                    <div class="w-full rounded-lg p-3 text-gray-800 school-val">${escapeHtml(sch) || '-'}</div>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="font-semibold text-gray-800">Course / Program</label>
+                                    <div class="w-full rounded-lg p-3 text-gray-800 course-val">${escapeHtml(course) || '-'}</div>
+                                </div>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-2">
+                                    <div>
+                                        <label class="font-semibold text-gray-800">Year Started</label>
+                                        <div class="w-full rounded-lg p-3 text-gray-800 ys-val">${escapeHtml(ys) || '-'}</div>
+                                    </div>
+                                    <div>
+                                        <label class="font-semibold text-gray-800">Year Completed</label>
+                                        <div class="w-full rounded-lg p-3 text-gray-800 ye-val">${escapeHtml(ye) || '-'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        listContainer.appendChild(node);
+                    });
+                    // update summary fields using first entry
+                    const first = entries[0] || {};
+                    if (eduEl) {
+                        if (typeof first === 'string' || typeof first === 'number') eduEl.textContent = String(first) || '-';
+                        else eduEl.textContent = (first.education || first.edu_level || first.level || eduEl.textContent) || '-';
+                    }
+                    if (schoolEl) {
+                        if (typeof first === 'object' && first !== null) schoolEl.textContent = (first.school || first.school_name || schoolEl.textContent) || '-';
+                    }
+                }
+            }
+        } catch (e) { console.warn('render education failed', e); }
+
+        // If render didn't produce any cards, at least display a readable summary
+        try {
+            if (listContainer && (!listContainer.children || listContainer.children.length === 0)) {
+                if (Array.isArray(rawEdu)) {
+                    if (eduEl) eduEl.textContent = rawEdu.join(', ') || '-';
+                } else if (typeof rawEdu === 'string') {
+                    const s = rawEdu.trim();
+                    if (s[0] === '[' || s[0] === '{') {
+                        try {
+                            const p = JSON.parse(s);
+                            if (Array.isArray(p)) { if (eduEl) eduEl.textContent = p.join(', ') || '-'; }
+                            else if (typeof p === 'object') { if (eduEl) eduEl.textContent = JSON.stringify(p) || '-'; }
+                        } catch(e) { if (eduEl) eduEl.textContent = s || '-'; }
+                    } else {
+                        if (eduEl) eduEl.textContent = s || '-';
+                    }
+                }
+            }
+        } catch(e){}
 
         // guardian/user id
         const userId = u.ID || u.id || u.USER_ID || u.GUARDIAN_ID || u.guardian_id;
@@ -783,7 +892,57 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!editBtn) return;
 
     function enterEditMode() {
-        const cur = (eduSpan.textContent || '').trim();
+        // If we have rendered education cards, make them editable in-place
+        const list = document.getElementById('educationList');
+        if (list && list.children && list.children.length) {
+            Array.from(list.children).forEach((card, idx) => {
+                // replace value divs with inputs
+                const eVal = card.querySelector('.edu-val');
+                const sVal = card.querySelector('.school-val');
+                const cVal = card.querySelector('.course-val');
+                const ysVal = card.querySelector('.ys-val');
+                const yeVal = card.querySelector('.ye-val');
+
+                if (eVal) {
+                    const txt = (eVal.textContent||'').trim();
+                    const inp = document.createElement('input');
+                    inp.type = 'text'; inp.className = 'edu-input w-full rounded-lg p-2 border'; inp.value = txt === '-' ? '' : txt;
+                    eVal.replaceWith(inp);
+                }
+                if (sVal) {
+                    const txt = (sVal.textContent||'').trim();
+                    const inp = document.createElement('input');
+                    inp.type = 'text'; inp.className = 'school-input w-full rounded-lg p-2 border'; inp.value = txt === '-' ? '' : txt;
+                    sVal.replaceWith(inp);
+                }
+                if (cVal) {
+                    const txt = (cVal.textContent||'').trim();
+                    const inp = document.createElement('input');
+                    inp.type = 'text'; inp.className = 'course-input w-full rounded-lg p-2 border'; inp.value = txt === '-' ? '' : txt;
+                    cVal.replaceWith(inp);
+                }
+                if (ysVal) {
+                    const txt = (ysVal.textContent||'').trim();
+                    const inp = document.createElement('input');
+                    inp.type = 'text'; inp.className = 'ys-input w-full rounded-lg p-2 border'; inp.value = txt === '-' ? '' : txt;
+                    ysVal.replaceWith(inp);
+                }
+                if (yeVal) {
+                    const txt = (yeVal.textContent||'').trim();
+                    const inp = document.createElement('input');
+                    inp.type = 'text'; inp.className = 'ye-input w-full rounded-lg p-2 border'; inp.value = txt === '-' ? '' : txt;
+                    yeVal.replaceWith(inp);
+                }
+            });
+            // open certificates editor as well (if available)
+            try { if (typeof window.__mvsg_enterCerts === 'function') window.__mvsg_enterCerts(); } catch(e){}
+            editBtn.textContent = '💾 Save';
+            editBtn.dataset.editing = '1';
+            return;
+        }
+
+        // fallback to legacy summary editor when no cards present
+        const cur = (eduSpan && eduSpan.textContent || '').trim();
         let matched = false;
         Array.from(eduSelect.options).forEach(opt => {
             if (opt.value.toLowerCase() === cur.toLowerCase() || opt.text.toLowerCase() === cur.toLowerCase()) {
@@ -798,34 +957,57 @@ document.addEventListener('DOMContentLoaded', () => {
             tmp.selected = true;
             eduSelect.prepend(tmp);
         }
-        schoolInput.value = (schoolSpan.textContent || '').trim() === '-' ? '' : (schoolSpan.textContent || '').trim();
+        schoolInput.value = (schoolSpan && schoolSpan.textContent || '').trim() === '-' ? '' : (schoolSpan && schoolSpan.textContent || '').trim();
 
         eduSelect.classList.remove('hidden'); eduSelect.style.display = '';
         schoolInput.classList.remove('hidden'); schoolInput.style.display = '';
-        eduSpan.classList.add('hidden'); schoolSpan.classList.add('hidden');
+        if (eduSpan) eduSpan.classList.add('hidden'); if (schoolSpan) schoolSpan.classList.add('hidden');
 
-        // open certificates editor as well (if available)
-        setTimeout(() => {
-            if (typeof window.__mvsg_enterCerts === 'function') window.__mvsg_enterCerts();
-        }, 40);
-
+        try { setTimeout(() => { if (typeof window.__mvsg_enterCerts === 'function') window.__mvsg_enterCerts(); }, 40); } catch(e){}
         editBtn.textContent = '💾 Save';
         editBtn.dataset.editing = '1';
     }
 
     async function exitEditModeAndSave() {
-        const newEdu = (eduSelect.value || '').trim();
-        const newSchool = (schoolInput.value || '').trim();
         editBtn.disabled = true;
-
-        // collect certificates edited entries (if editor present)
-        let certs = null;
-        if (typeof window.__mvsg_collectEditedCerts === 'function') {
-            try { certs = window.__mvsg_collectEditedCerts(); } catch(e){ certs = null; }
+        // if editing cards, collect from inputs
+        const list = document.getElementById('educationList');
+        let payload = {};
+        if (list && list.children && list.children.length) {
+            const eduArr = [];
+            const schoolArr = [];
+            const courseArr = [];
+            const ysArr = [];
+            const yeArr = [];
+            Array.from(list.children).forEach(card => {
+                const eIn = card.querySelector('.edu-input');
+                const sIn = card.querySelector('.school-input');
+                const cIn = card.querySelector('.course-input');
+                const ysIn = card.querySelector('.ys-input');
+                const yeIn = card.querySelector('.ye-input');
+                eduArr.push(eIn ? (eIn.value || '') : '');
+                schoolArr.push(sIn ? (sIn.value || '') : '');
+                courseArr.push(cIn ? (cIn.value || '') : '');
+                ysArr.push(ysIn ? (ysIn.value || '') : '');
+                yeArr.push(yeIn ? (yeIn.value || '') : '');
+            });
+            payload.education = eduArr;
+            payload.school = schoolArr;
+            payload.education_course = courseArr;
+            payload.year_start = ysArr;
+            payload.year_end = yeArr;
+            if (typeof window.__mvsg_collectEditedCerts === 'function') {
+                try { const cs = window.__mvsg_collectEditedCerts(); if (cs && cs.length) payload.certificates = cs; } catch(e){}
+            }
+        } else {
+            // fallback: legacy single-field editor
+            const newEdu = (eduSelect.value || '').trim();
+            const newSchool = (schoolInput.value || '').trim();
+            payload = { education: newEdu, school: newSchool };
+            if (typeof window.__mvsg_collectEditedCerts === 'function') {
+                try { const cs = window.__mvsg_collectEditedCerts(); if (cs && cs.length) payload.certificates = cs; } catch(e){}
+            }
         }
-
-        const payload = { education: newEdu, school: newSchool };
-        if (certs !== null) payload.certificates = certs;
         if (window.__mvsg_guardian_id) payload.guardian_id = window.__mvsg_guardian_id;
 
         try {
@@ -837,11 +1019,37 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             const j = await r.json();
             if (j && j.success) {
-                if (eduSpan) eduSpan.textContent = newEdu || '-';
-                if (schoolSpan) schoolSpan.textContent = newSchool || '-';
-                if (window.__mvsg_guardian_id && typeof window.__mvsg_renderDBCerts === 'function') {
-                    window.__mvsg_renderDBCerts(window.__mvsg_guardian_id);
+                // if edited cards, update UI: replace inputs back to value divs
+                if (list && list.children && list.children.length) {
+                    Array.from(list.children).forEach(card => {
+                        const eIn = card.querySelector('.edu-input');
+                        const sIn = card.querySelector('.school-input');
+                        const cIn = card.querySelector('.course-input');
+                        const ysIn = card.querySelector('.ys-input');
+                        const yeIn = card.querySelector('.ye-input');
+                        if (eIn) {
+                            const d = document.createElement('div'); d.className = 'w-full rounded-lg p-3 text-gray-800 edu-val'; d.textContent = eIn.value || '-'; eIn.replaceWith(d);
+                        }
+                        if (sIn) {
+                            const d = document.createElement('div'); d.className = 'w-full rounded-lg p-3 text-gray-800 school-val'; d.textContent = sIn.value || '-'; sIn.replaceWith(d);
+                        }
+                        if (cIn) {
+                            const d = document.createElement('div'); d.className = 'w-full rounded-lg p-3 text-gray-800 course-val'; d.textContent = cIn.value || '-'; cIn.replaceWith(d);
+                        }
+                        if (ysIn) {
+                            const d = document.createElement('div'); d.className = 'w-full rounded-lg p-3 text-gray-800 ys-val'; d.textContent = ysIn.value || '-'; ysIn.replaceWith(d);
+                        }
+                        if (yeIn) {
+                            const d = document.createElement('div'); d.className = 'w-full rounded-lg p-3 text-gray-800 ye-val'; d.textContent = yeIn.value || '-'; yeIn.replaceWith(d);
+                        }
+                    });
+                } else {
+                    // fallback update summary
+                    if (eduSpan) eduSpan.textContent = (Array.isArray(payload.education) ? (payload.education[0]||'-') : (payload.education||'-')) || '-';
+                    if (schoolSpan) schoolSpan.textContent = (Array.isArray(payload.school) ? (payload.school[0]||'-') : (payload.school||'-')) || '-';
                 }
+                // refresh server certs list if available
+                if (window.__mvsg_guardian_id && typeof window.__mvsg_renderDBCerts === 'function') window.__mvsg_renderDBCerts(window.__mvsg_guardian_id);
             } else {
                 alert('Unable to save education/certificates.');
                 console.warn('save failed', j);
@@ -850,11 +1058,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Save error', err);
             alert('Unable to save education/certificates.');
         } finally {
-            // close editors
-            if (typeof window.__mvsg_exitCerts === 'function') window.__mvsg_exitCerts(false);
-            eduSelect.classList.add('hidden'); eduSelect.style.display = 'none';
-            schoolInput.classList.add('hidden'); schoolInput.style.display = 'none';
-            eduSpan.classList.remove('hidden'); schoolSpan.classList.remove('hidden');
+            try { if (typeof window.__mvsg_exitCerts === 'function') window.__mvsg_exitCerts(false); } catch(e){}
+            // ensure legacy editors hidden
+            try { eduSelect.classList.add('hidden'); eduSelect.style.display = 'none'; } catch(e){}
+            try { schoolInput.classList.add('hidden'); schoolInput.style.display = 'none'; } catch(e){}
+            try { if (eduSpan) eduSpan.classList.remove('hidden'); if (schoolSpan) schoolSpan.classList.remove('hidden'); } catch(e){}
             editBtn.textContent = 'Edit';
             editBtn.dataset.editing = '0';
             editBtn.disabled = false;

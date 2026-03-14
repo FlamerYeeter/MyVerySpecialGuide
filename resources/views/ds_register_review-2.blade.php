@@ -249,8 +249,28 @@
         const schoolInput = document.getElementById('edit_school_input');
 
         // Prefer values from localStorage (most authoritative), then display span, then raw
-        const storedEdu = (localStorage.getItem('educationLevel') || localStorage.getItem('edu_level') || localStorage.getItem('review_edu') || '').trim();
-        const storedSchool = (localStorage.getItem('schoolName') || localStorage.getItem('school') || localStorage.getItem('review_school') || '').trim();
+        const parseMaybeJson = (v) => {
+            if (!v || typeof v !== 'string') return v || '';
+            const s = v.trim();
+            if (!s) return '';
+            if ((s[0] === '[') || (s[0] === '{')) {
+                try { const d = JSON.parse(s); return d; } catch(e) { return s; }
+            }
+            return s;
+        };
+        let storedEdu = (localStorage.getItem('educationLevel') || localStorage.getItem('edu_level') || localStorage.getItem('review_edu') || '').toString().trim();
+        let storedSchool = (localStorage.getItem('schoolName') || localStorage.getItem('school') || localStorage.getItem('review_school') || '').toString().trim();
+        // if stored values are JSON arrays/objects, convert to a human string for editor display
+        try {
+            const pe = parseMaybeJson(storedEdu);
+            if (Array.isArray(pe)) storedEdu = pe.join(', ');
+            else if (typeof pe === 'object' && pe !== null) storedEdu = JSON.stringify(pe);
+        } catch(e){}
+        try {
+            const ps = parseMaybeJson(storedSchool);
+            if (Array.isArray(ps)) storedSchool = ps.join(', ');
+            else if (typeof ps === 'object' && ps !== null) storedSchool = JSON.stringify(ps);
+        } catch(e){}
 
         const currentVal = storedEdu || (disp && (disp.textContent||'').trim()) || (raw && ((raw.value||raw.textContent)||'').toString().trim()) || '';
         const currentSchool = storedSchool || (schoolSpan && (schoolSpan.textContent||'').trim()) || '';
@@ -338,8 +358,15 @@
 
         // update canonical display span
         try {
+            // if displayVal is JSON array string, pretty it up for human readers
+            let pretty = displayVal || '';
+            try {
+                const p = (typeof pretty === 'string' && (pretty.trim()[0] === '[' || pretty.trim()[0] === '{')) ? JSON.parse(pretty) : pretty;
+                if (Array.isArray(p)) pretty = p.join(', ');
+                else if (typeof p === 'object' && p !== null) pretty = JSON.stringify(p);
+            } catch(e){}
             if (disp) {
-                disp.textContent = displayVal || '';
+                disp.textContent = pretty || '';
                 disp.style.display = '';
                 disp.classList.remove('hidden');
             }

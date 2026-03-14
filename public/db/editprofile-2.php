@@ -71,8 +71,57 @@ if (empty($targetId) && isset($body['guardian_id']) && preg_match('/^\d+$/', (st
 if (empty($targetId)) json_err('Not logged in or missing guardian id', null, 403);
 
 /* ---------- extract allowed fields (presence = intent) ---------- */
-$edu    = array_key_exists('education', $body) ? safe_trim_scalar($body['education']) : null;
-$school = array_key_exists('school', $body)  ? safe_trim_scalar($body['school'])  : null;
+// allow education/school to be arrays (encode to JSON) or scalar strings
+$edu = null;
+if (array_key_exists('education', $body)) {
+    if (is_array($body['education'])) {
+        $tmp = array_values(array_filter(array_map(function($v){ return is_scalar($v) ? trim((string)$v) : null; }, $body['education']), 'strlen'));
+        $edu = json_encode($tmp, JSON_UNESCAPED_UNICODE);
+    } else {
+        $edu = safe_trim_scalar($body['education']);
+    }
+}
+
+$school = null;
+if (array_key_exists('school', $body)) {
+    if (is_array($body['school'])) {
+        $tmp = array_values(array_filter(array_map(function($v){ return is_scalar($v) ? trim((string)$v) : null; }, $body['school']), 'strlen'));
+        $school = json_encode($tmp, JSON_UNESCAPED_UNICODE);
+    } else {
+        $school = safe_trim_scalar($body['school']);
+    }
+}
+
+// education_course / year_start / year_end: support arrays or scalars
+$education_course = null;
+if (array_key_exists('education_course', $body)) {
+    if (is_array($body['education_course'])) {
+        $tmp = array_values(array_filter(array_map(function($v){ return is_scalar($v) ? trim((string)$v) : null; }, $body['education_course']), 'strlen'));
+        $education_course = json_encode($tmp, JSON_UNESCAPED_UNICODE);
+    } else {
+        $education_course = safe_trim_scalar($body['education_course']);
+    }
+}
+
+$year_start = null;
+if (array_key_exists('year_start', $body)) {
+    if (is_array($body['year_start'])) {
+        $tmp = array_values(array_filter(array_map(function($v){ return is_scalar($v) ? trim((string)$v) : null; }, $body['year_start']), 'strlen'));
+        $year_start = json_encode($tmp, JSON_UNESCAPED_UNICODE);
+    } else {
+        $year_start = safe_trim_scalar($body['year_start']);
+    }
+}
+
+$year_end = null;
+if (array_key_exists('year_end', $body)) {
+    if (is_array($body['year_end'])) {
+        $tmp = array_values(array_filter(array_map(function($v){ return is_scalar($v) ? trim((string)$v) : null; }, $body['year_end']), 'strlen'));
+        $year_end = json_encode($tmp, JSON_UNESCAPED_UNICODE);
+    } else {
+        $year_end = safe_trim_scalar($body['year_end']);
+    }
+}
 
 $certs = null;
 if (array_key_exists('certificates', $body)) {
@@ -125,6 +174,9 @@ if (!$workOnly && ($edu !== null || $school !== null)) {
     $sets = [];
     if ($edu !== null)    $sets[] = "education = :education";
     if ($school !== null) $sets[] = "school = :school";
+    if ($education_course !== null) $sets[] = "education_course = :education_course";
+    if ($year_start !== null) $sets[] = "year_start = :year_start";
+    if ($year_end !== null) $sets[] = "year_end = :year_end";
     $sets[] = "updated_at = SYSTIMESTAMP";
 
     $sql = "UPDATE MVSG.USER_GUARDIAN SET " . implode(', ', $sets) . " WHERE id = TO_NUMBER(:id)";
@@ -133,6 +185,9 @@ if (!$workOnly && ($edu !== null || $school !== null)) {
 
     if ($edu !== null)    oci_bind_by_name($st, ':education', $edu, -1);
     if ($school !== null) oci_bind_by_name($st, ':school', $school, -1);
+    if ($education_course !== null) oci_bind_by_name($st, ':education_course', $education_course, -1);
+    if ($year_start !== null) oci_bind_by_name($st, ':year_start', $year_start, -1);
+    if ($year_end !== null) oci_bind_by_name($st, ':year_end', $year_end, -1);
     oci_bind_by_name($st, ':id', $targetId);
 
     if (!@oci_execute($st, OCI_NO_AUTO_COMMIT)) {
