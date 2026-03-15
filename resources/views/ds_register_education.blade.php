@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Registration: Education</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -45,35 +46,91 @@
                         transform: scale(1.03);
                 }
 
-                /* OCR Loading Spinner */
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-                .ocr-spinner {
-                    border: 4px solid #e5e7eb;
-                    border-top: 4px solid #2E2EFF;
-                    border-radius: 50%;
-                    width: 40px;
-                    height: 40px;
-                    animation: spin 1s linear infinite;
-                }
-                .ocr-loading-container {
-                    display: flex;
-                    align-items: center;
-                    gap: 12px;
-                    padding: 12px;
-                    background-color: #f0f4ff;
-                    border: 1px solid #2E2EFF;
-                    border-radius: 8px;
-                    margin-top: 12px;
-                }
-                .ocr-loading-text {
-                    font-size: 14px;
-                    color: #1e40af;
-                    font-weight: 500;
-                }
+ /* OCR Loading Spinner */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .ocr-spinner {
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #2E2EFF;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+        .ocr-loading-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background-color: #f0f4ff;
+            border: 1px solid #2E2EFF;
+            border-radius: 8px;
+            margin-top: 12px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+    .ocr-loading-text {
+      font-size: 14px;
+      color: #1e40af;
+      font-weight: 500;
+    }
+        /* Layout & Typography improvements */
+        .main-container h1 { font-size: clamp(1.6rem, 3.6vw, 2.8rem); line-height: 1.05; }
+        .main-container h2, .main-container h3 { font-size: clamp(1.05rem, 2.2vw, 1.4rem); }
+        .main-container .text-gray-600.italic { font-size: 0.92rem; }
+        .main-container .bg-white.rounded-2xl { padding: 1.25rem; }
+        .main-container .upload-error { font-size: 0.92rem; }
+        /* Make TTS buttons consistent */
+        .tts-btn { padding: 0.55rem 0.6rem; border-radius: 9999px; }
+
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+                body { font-size: 15px; }
+                .main-container { padding: 0.6rem; }
+                .main-container h1 { text-align: center; margin-bottom: 0.5rem; }
+                .main-container h3 { text-align: center; }
+                /* make labels and helper text slightly larger for readability */
+                .main-container label, .main-container p, .main-container .text-gray-600 { font-size: 15px; }
+                /* Ensure TTS buttons are touch-friendly */
+                .tts-btn { padding: 0.6rem; font-size: 1.05rem; }
+                /* Ensure inputs stretch and maintain balanced padding */
+                .main-container input[type="text"],
+                .main-container input[type="email"],
+                .main-container input[type="tel"],
+                .main-container input[type="date"],
+                .main-container select,
+                .main-container textarea { font-size: 15px; padding: 0.6rem 0.75rem; }
+        }
+        /* Section card consistency */
+        .main-container .section-card {
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 0.75rem;
+            min-height: 360px;
+            padding: 1.25rem; 
+        }
+        /* Slightly smaller on medium screens */
+        @media (max-width: 1024px) {
+            .main-container .section-card { min-height: 320px; }
+        }
+        /* On small screens make section cards match the instruction blue card size */
+        @media (max-width: 640px) {
+            .main-container .section-card { min-height: 300px; padding: 0.9rem; }
+            /* make section cards visually wider on small screens to use more horizontal space; keep info-card at original size */
+            .main-container .section-card {
+                width: calc(100% + 2rem);
+                max-width: none;
+                margin-left: -1rem;
+                margin-right: -1rem;
+            }
+        }
         </style>
+
 </head>
 
 <body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
@@ -163,9 +220,12 @@
                         <button type="button" aria-label="Play audio for info section"
                             class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
                             transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-                            data-tts-en="Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a star must be filled in. Thank you!"
-                            data-tts-tl="Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
-                            ang mga field na may star ay kinakailangang sagutan. Salamat!">
+                            data-tts-en="Please type your information in the boxes below.
+                            If you went to school, training, or any learning program, you can type it here.
+                            If not, it’s okay to leave this part blank. Every step of learning is valuable."
+                            data-tts-tl="Ilagay ang iyong impormasyon sa mga kahon sa ibaba.
+                            Kung ikaw ay nag-aral, nag-training, o sumali sa anumang programa sa pag-aaral, maaari mo itong ilagay dito.
+                            Kung hindi, ayos lang na iwan itong walang laman. Mahalaga ang bawat hakbang sa pagkatuto.">
                             🔊
                     </button>
                 </div>
@@ -173,9 +233,9 @@
         </div>
     </div>
 
-        <form id="educationForm" class="mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-6xl px-4 sm:px-0" novalidate>
+        <form id="educationForm" class="main-container mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-6xl px-4 sm:px-0" novalidate>
             @csrf
-                    <!-- Education Background (styled like Personal Information) -->
+                    <!-- Education Background -->
                     <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
 
                         <div class="mb-3 flex items-start justify-between">
@@ -227,7 +287,7 @@
                                         <input type="text" name="education_program[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="Example: Food Preparation Training" />
                                     </div>
 
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:col-span-2">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
                                         <div>
                                             <label class="font-semibold text-gray-800 flex items-center gap-2">
                                                 <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Start year icon" class="w-5 h-5" />
@@ -260,30 +320,31 @@
                     </div>
 
             <!-- Certificates -->
-            <div class="mt-8 text-left px-2 sm:px-4">
-                <label for="certs" class="text-xl sm:text-2xl font-bold text-blue-600 flex items-center justify-between gap-2">
-                    <span>Do you have any certificates or special trainings?</span>
-                    <button type="button" class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                        data-tts-en="Do you have any certificates or special trainings?"
-                        data-tts-tl="May mga certificate o special training ka ba?"
-                        aria-label="Play audio for other option">🔊</button>
-                </label>
-
-                <p class="text-gray-600 italic text-sm sm:text-base mb-2">(May mga certificate o special training ka
-                    ba?)</p>
-
-                <div class="flex items-center gap-6 mt-2">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" id="certYes" name="certs" value="yes"
-                            class="text-blue-600 focus:ring-blue-400 w-5 h-5" />
-                        <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+            <div class="mt-8">
+                <div class="text-left px-2 sm:px-4">
+                    <label for="certs" class="text-xl sm:text-2xl font-bold text-blue-600 flex items-center justify-between gap-2">
+                        <span>Do you have any certificates or special trainings?</span>
+                        <button type="button" class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                            data-tts-en="Do you have any certificates or special trainings?"
+                            data-tts-tl="May mga certificate o special training ka ba?"
+                            aria-label="Play audio for other option">🔊</button>
                     </label>
 
-                    <label class="flex items-center gap-2 cursor-pointer">
-                        <input type="radio" id="certNo" name="certs" value="no"
-                            class="text-blue-600 focus:ring-blue-400 w-5 h-5" />
-                        <span class="text-gray-800 text-sm sm:text-base">No</span>
-                    </label>
+                    <p class="text-gray-700 italic text-md flex items-center gap-2">(May mga certificate o special training ka ba?)</p>
+
+                    <div class="flex items-center gap-6 mt-4">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" id="certYes" name="certs" value="yes"
+                                class="text-blue-600 focus:ring-blue-400 w-5 h-5" />
+                            <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+                        </label>
+
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="radio" id="certNo" name="certs" value="no"
+                                class="text-blue-600 focus:ring-blue-400 w-5 h-5" />
+                            <span class="text-gray-800 text-sm sm:text-base">No</span>
+                        </label>
+                    </div>
                 </div>
 
                 <!-- dynamic certificates section (initially hidden) -->
@@ -296,8 +357,9 @@
                             <span>Please upload your Certificates/Trainings.</span>
                             <button type="button"
                                 class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                                data-tts-en="Please upload your Certificates/Trainings."
-                                data-tts-tl="Paki-upload ang iyong mga certificate at training documents." aria-label="Play audio for upload instructions">🔊</button>
+                                data-tts-en="Please upload your certificates and training documents to verify your skills, knowledge, and completed trainings."
+                                data-tts-tl="Paki-upload ang iyong mga certificate at training documents upang ma-verify ang iyong mga kasanayan at natapos na pagsasanay." 
+                                aria-label="Play audio for upload instructions">🔊</button>
                         </label>
 
                         <p class="text-black-700 text-sm sm:text-base mt-4 mb-2">
@@ -345,15 +407,6 @@
                                         </label>
                                         <input type="text" name="date_completed" class="date-completed-display w-full rounded-lg border border-gray-300 p-3 text-sm text-gray-700 focus:ring-2 focus:ring-blue-200 focus:outline-none bg-white mt-1" placeholder="e.g. February 12, 2026" aria-label="Date completed" />
                                         <p class="italic text-xs text-gray-500 mt-1">(Petsa kung kailan natapos)</p>
-                                    </div>
-
-                                    <div hidden>
-                                        <label class="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
-                                            <img src="https://img.icons8.com/fluency/24/idea.png" alt="Idea icon" class="w-5 h-5" />
-                                            What did you learn?
-                                        </label>
-                                        <input type="text" name="training_description" class="training_description w-full rounded-lg border border-gray-300 p-3 text-sm focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. How to clean, serve food, follow rules" aria-label="What did you learn" />
-                                        <p class="italic text-xs text-gray-500 mt-1">(Maikling paliwanag ng natutunan)</p>
                                     </div>
                                 </div>
 
@@ -450,7 +503,7 @@
                             let fileURL = null;
                             let fileExt = null;
 
-                            if (!fileInput || !labelEl) return;
+                            if (!fileInput || !labelEl || !fileDisplay) return;
 
                             fileInput.addEventListener('change', function() {
                                 const f = this.files && this.files[0];
@@ -620,13 +673,12 @@
                 <div class="flex flex-col items-center justify-center mt-10 mb-6 space-y-3 px-2">
                     <div id="educError" class="text-red-600 text-sm text-center"></div>
                     <button id="educNext" type="button"
-                        class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
+                        class="w-full sm:w-auto bg-[#2E2EFF] text-white text-lg sm:text-2xl font-semibold px-6 sm:px-16 md:px-28 py-3 sm:py-4 rounded-2xl shadow-lg hover:bg-blue-600 transition disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-300">
                         Next →
                     </button>
-                    <p class="text-gray-600 text-[11px] sm:text-sm mt-2 text-center leading-snug">
-                        Click <span class="text-[#1E40AF] font-medium">"Next"</span> to move to the next page<br>
-                        <span class="italic text-[#4B4F58]">(Pindutin ang "Next" upang lumipat sa susunod na
-                            pahina)</span>
+                    <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-4 text-center leading-relaxed px-4 sm:px-0">
+                        Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue <br class="hidden sm:block">
+                       <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
                     </p>
                 </div>
         </form>
@@ -1170,12 +1222,10 @@
                     const name = block.querySelector('input[name="certificate_name"]')?.value?.trim() || '';
                     const issued = block.querySelector('input[name="issued_by"]')?.value?.trim() || '';
                     const date = block.querySelector('input[name="date_completed"]')?.value?.trim() || '';
-                    const desc = block.querySelector('input[name="training_description"]')?.value?.trim() || '';
-                    if (name || issued || date || desc) list.push({
+                    if (name || issued || date) list.push({
                         certificate_name: name,
                         issued_by: issued,
-                        date_completed: date,
-                        training_description: desc
+                        date_completed: date
                     });
                 });
                 writeHidden(list);
@@ -1204,11 +1254,11 @@
                 const left = document.createElement('div');
                 left.className = 'flex-1';
                 const label = document.createElement('p');
-                label.className = 'text-gray-800 text-sm sm:text-base';
+                label.className = 'text-gray-700 text-md';
                 label.innerHTML = `<span id="validcertLabel_${suf}" class="flex items-center gap-2"><span>Upload an image or PDF of your Certificates / Trainings</span></span>`;
                 const hint = document.createElement('p');
                 hint.id = `validcertHint_${suf}`;
-                hint.className = 'text-gray-600 italic text-xs sm:text-sm mt-1';
+                hint.className = 'text-gray-700 italic text-xs sm:text-sm mt-1';
                 hint.innerHTML = '(Mag-upload ng larawan o PDF ng iyong Certificates / Trainings)<br /><br />Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />';
                 const display = document.createElement('div');
                 display.id = `validcertDisplay_${suf}`;
@@ -1455,7 +1505,6 @@
                                     String(it.certificate_name || '').trim() ||
                                     String(it.issued_by || '').trim() ||
                                     String(it.date_completed || '').trim() ||
-                                    String(it.training_description || '').trim() ||
                                     String(it.certificate_file_data || '').trim()
                                 ));
                             }
@@ -1546,13 +1595,12 @@
                                 certificate_name: c.certificate_name ?? c.name ?? c.title ?? '',
                                 issued_by: c.issued_by ?? c.issuer ?? c.issuedBy ?? '',
                                 date_completed: c.date_completed ?? c.date ?? c.completed ?? '',
-                                training_description: c.training_description ?? c.description ?? c.what_you_learned ?? '',
                                 // include raw file data if present (base64 data URL or raw base64)
                                 certificate: certData || undefined,
                                 // keep original small metadata if present
                                 filename: c.name ?? c.filename ?? c.fileName ?? undefined
                             };
-                        }).filter(x => x.certificate_name || x.issued_by || x.date_completed || x.training_description || x.certificate);
+                        }).filter(x => x.certificate_name || x.issued_by || x.date_completed || x.certificate);
 
                         // persist the education/profile + canonical certificate array
                         localStorage.setItem('education_profile', JSON.stringify(eduObj));
@@ -1594,28 +1642,33 @@
         });
     </script>
     <script>
-        window.addEventListener("DOMContentLoaded", () => {
-            const fileInput = document.getElementById("proof");
-            const certRadios = document.querySelectorAll('input[name="certs"]');
+            window.addEventListener("DOMContentLoaded", () => {
+                const fileUploadSection = document.getElementById("cert_section"); // your upload div
+                const certRadios = document.querySelectorAll('input[name="certs"]');
 
-            if (!fileInput || certRadios.length === 0) return;
+                if (!fileUploadSection || certRadios.length === 0) return;
 
-            const updateFileInput = () => {
-                const selected = document.querySelector('input[name="certs"]:checked');
-                if (selected) {
-                    if (selected.value === "no") {
-                        fileInput.disabled = false;
-                        fileInput.classList.remove("bg-blue-600", "hover:bg-blue-700");
-                        fileInput.classList.add("bg-gray-400", "cursor-not-allowed");
-                        console.log("Selected cert is 'no' → file input disabled and gray");
-                    } else {
-                        fileInput.disabled = false;
-                        fileInput.classList.remove("bg-gray-400", "cursor-not-allowed");
-                        fileInput.classList.add("bg-blue-600", "hover:bg-blue-700", "cursor-pointer");
-                        console.log("Selected cert is 'yes' → file input enabled and blue");
+                const updateSectionVisibility = () => {
+                    const selected = document.querySelector('input[name="certs"]:checked');
+                    if (!selected) {
+                        fileUploadSection.style.display = "none"; // hide by default if nothing is selected
+                        return;
                     }
-                }
-            };
+
+                    if (selected.value === "yes") {
+                        fileUploadSection.style.display = "block"; // show
+                    } else {
+                        fileUploadSection.style.display = "none"; // hide
+                    }
+                };
+
+                // Initial check
+                updateSectionVisibility();
+
+                // Add change listeners
+                certRadios.forEach(radio => {
+                    radio.addEventListener('change', updateSectionVisibility);
+                });
 
             // Initial check on page load
             updateFileInput();
@@ -1729,7 +1782,6 @@
                     const name = block.querySelector('input[name="certificate_name"]')?.value?.trim() || '';
                     const issued = block.querySelector('input[name="issued_by"]')?.value?.trim() || '';
                     const date = block.querySelector('input[name="date_completed"]')?.value?.trim() || '';
-                    const desc = block.querySelector('input[name="training_description"]')?.value?.trim() || '';
                     const file_name = block.querySelector('input[name="certificate_file_name"]')?.value?.trim() || '';
                     const file_data = block.querySelector('input[name="certificate_file_data"]')?.value || '';
                     const file_type = block.querySelector('input[name="certificate_file_type"]')?.value?.trim() || '';
@@ -1740,7 +1792,6 @@
                             certificate_name: name,
                             issued_by: issued,
                             date_completed: date,
-                            training_description: desc
                         };
                         if (file_name || file_data) {
                             entry.certificate_file_name = file_name;
@@ -1763,12 +1814,13 @@
                 const left = document.createElement('div');
                 left.className = 'flex-1';
                 const label = document.createElement('p');
-                label.className = 'font-medium text-gray-800 text-sm sm:text-base';
-                label.innerHTML = `<span id="validcertLabel_${suf}" class="flex items-center gap-2"><span>Upload File (Image or PDF)</span></span>`;
+                label.className = 'text-gray-700 text-lg sm:text-base';
+                label.innerHTML = `<span id="validcertLabel_${suf}" class="flex items-center gap-2"><span>Upload an image or PDF of your Certificates/Trainings.</span></span>`;
                 const hint = document.createElement('p');
                 hint.id = `validcertHint_${suf}`;
-                hint.className = 'text-gray-600 italic text-xs sm:text-sm mt-1';
-                hint.innerHTML = '(Mag-upload ng larawan o PDF ng iyong Certificates/Trainings)<br /><br />Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b><br />';
+                hint.className = 'text-gray-700 italic text-xs sm:text-base mt-1';
+                hint.innerHTML = '(Mag-upload ng larawan o PDF ng iyong Certificates/Trainings)<br /><br />' +
+                 '<span class="not-italic text-gray-600 text-sm sm:text-base">Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b></span><br />';
                 const display = document.createElement('div');
                 display.id = `validcertDisplay_${suf}`;
                 const fileuploadWrap = document.createElement('div');
@@ -2004,7 +2056,6 @@
                             disp.classList.remove('hidden');
                         }
                     } catch(e) {}
-                    node.querySelector('input[name="training_description"]').value = item.training_description || '';
                 }
                 const removeBtn = node.querySelector('.remove-cert');
                 if (removeBtn) {
@@ -2180,16 +2231,12 @@
                                                     'input[name="issued_by"]');
                                                 const dateEl = node.querySelector(
                                                     'input[name="date_completed"]');
-                                                const descEl = node.querySelector(
-                                                    'input[name="training_description"]');
                                                 if (nameEl) nameEl.value = item.certificate_name || item
                                                     .name || item.title || '';
                                                 if (issuedEl) issuedEl.value = item.issued_by || item
                                                     .issuer || '';
                                                 if (dateEl) dateEl.value = item.date_completed || item
                                                     .date || '';
-                                                if (descEl) descEl.value = item.training_description || item
-                                                    .description || '';
                                                 container.appendChild(node);
                                             });
                                             // notify sync handlers

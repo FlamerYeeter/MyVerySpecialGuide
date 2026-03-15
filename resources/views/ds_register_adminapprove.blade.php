@@ -88,7 +88,7 @@
             justify-content: flex-start;
             gap: 0.75rem;
             min-height: 360px;
-            padding: 1.25rem; /* ensure consistent inner spacing */
+            padding: 1.25rem; 
         }
         /* Slightly smaller on medium screens */
         @media (max-width: 1024px) {
