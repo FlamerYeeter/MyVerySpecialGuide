@@ -397,11 +397,37 @@
       // replace previous data variable in outer scope by attaching to window for the fetch below
       window.__mvsg_registration_payload = data;
 
+      // Ensure each certificate entry includes the canonical text fields the server expects
+      // (certificate_name, issued_by, date_completed). We keep certificate_name defaulted
+      // to 'Uploaded Certificate' when missing, but require the user to supply issued_by
+      // and date_completed before submit to avoid Oracle storing NULLs.
+      window.ensureCertificateFields = function(payload) {
+        try {
+          let certs = [];
+          try { certs = Array.isArray(payload.certificates) ? payload.certificates : JSON.parse(payload.certificates||'[]'); } catch(e) { certs = []; }
+          for (let i=0;i<certs.length;i++) {
+            const c = certs[i] = certs[i] || {};
+            // canonical field names
+            c.certificate_name = (c.certificate_name || c.name || 'Uploaded Certificate').toString();
+            // silently provide a safe issued_by default so DB receives a non-empty string
+            c.issued_by = (c.issued_by || c.issuer || c.issuedBy || 'Not specified').toString();
+            // normalize date_completed but do not force a value here (server may accept NULL)
+            c.date_completed = c.date_completed || c.date || c.completed || '';
+            // preserve training_description and possible binary data
+            c.training_description = c.training_description || c.what_learned || '';
+            c.data = c.data || c.file || c.certificate || c.certificate_data || null;
+            certs[i] = c;
+          }
+          payload.certificates = JSON.stringify(certs);
+          return true;
+        } catch (e) { console.warn('ensureCertificateFields failed', e); return true; }
+      }
+
       // Rehydrate uploaded file base64 data into the payload where possible. This attempts
       // to recover files saved under various localStorage keys (uploadedCertificates_education,
       // uploadedWorkExp_file, uploadedResume_file, uploadedProofs_proof, etc.) and attach them
       // to `certificates` entries or `job_experiences` entries so the server receives base64 blobs.
-      (function rehydrateFilesIntoPayload(payload){
+      ;(function rehydrateFilesIntoPayload(payload){
         try {
           function parseLS(key){ try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
 
@@ -445,6 +471,11 @@
                 certsArr[i].data = eduFiles.shift();
               }
             }
+            // If there are remaining eduFiles and no structured certificate entries, append them
+            while (eduFiles.length) {
+              const f = eduFiles.shift();
+              certsArr.push({ certificate_name: 'Uploaded Certificate', issued_by: '', date_completed: '', training_description: '', data: f });
+            }
             payload.certificates = JSON.stringify(certsArr);
           } catch(e){ console.warn('rehydrate certs failed', e); }
 
@@ -484,6 +515,12 @@
     // show loading modal
     const creatingModal = document.getElementById('creatingModal');
     try { if (creatingModal) creatingModal.classList.remove('hidden'); } catch(e){}
+
+    // Before sending, ensure certificate text fields are present; abort if user cancels
+    if (!ensureCertificateFields(window.__mvsg_registration_payload)) {
+      try { if (creatingModal) creatingModal.classList.add('hidden'); } catch(e){}
+      return;
+    }
 
     const __mvsg_payload_to_send = window.__mvsg_registration_payload || (typeof data !== 'undefined' ? data : {});
     fetch('db/registration-data.php', {

@@ -900,9 +900,128 @@ if ($allGood) {
 // ——— 3. INSERT guardian_certificates (Certificate / Training Details) ———
 if ($allGood) {
     // Accept several possible incoming keys for certificate entries
-    $rawCerts = $data['certificates'] ?? $data['education_certificates'] ?? $data['education_profile'] ?? '[]';
-    $cert_entries = is_string($rawCerts) ? json_decode($rawCerts, true) : $rawCerts;
+    // Frontend may send under different keys or as arrays of data-URLs.
+    $rawCandidates = [];
+    $rawCandidates[] = $data['certificates'] ?? null;
+    $rawCandidates[] = $data['education_certificates'] ?? null;
+    $rawCandidates[] = $data['education_profile'] ?? null;
+    // keys used by the frontend/localStorage uploader
+    $rawCandidates[] = $data['uploadedCertificates_education'] ?? null;
+    $rawCandidates[] = $data['uploadedProofs_proof'] ?? null;
+    $rawCandidates[] = $data['uploadedProofs'] ?? null;
+    $rawCandidates[] = $data['uploadedProofs1'] ?? null;
+
+    // Helper: recursively scan arbitrary payloads for certificate-like candidates
+    function collect_cert_candidates_from($src, &$out) {
+        if ($src === null) return;
+        // If a JSON string, try decode
+        if (is_string($src)) {
+            $decoded = json_decode($src, true);
+            if (is_array($decoded) && count($decoded)) {
+                $src = $decoded;
+            } else {
+                // If string looks like a data URL/base64, treat as candidate
+                if (strpos($src, 'data:') !== false || preg_match('/^data:[^;]+;base64,/', $src)) {
+                    $out[] = $src;
+                    return;
+                }
+                // otherwise nothing to do
+                return;
+            }
+        }
+
+        if (is_array($src)) {
+            // If array elements look like cert objects or base64 strings, consider entire array a candidate
+            $hasCertLike = false;
+            foreach ($src as $k => $v) {
+                if (is_array($v)) {
+                    if (!empty($v['data']) || !empty($v['file']) || !empty($v['certificate']) || !empty($v['certificate_data']) || !empty($v['certificate_name']) || !empty($v['name'])) { $hasCertLike = true; break; }
+                } elseif (is_string($v)) {
+                    if (strpos($v, 'data:') !== false || preg_match('/^data:[^;]+;base64,/', $v)) { $hasCertLike = true; break; }
+                }
+            }
+            if ($hasCertLike) { $out[] = $src; return; }
+
+            // Otherwise, traverse deeper
+            foreach ($src as $v) {
+                collect_cert_candidates_from($v, $out);
+            }
+        }
+    }
+
+    // Also scan nested structures like rpi_personal which some frontends use
+    collect_cert_candidates_from($data, $rawCandidates);
+    if (isset($data['rpi_personal'])) collect_cert_candidates_from($data['rpi_personal'], $rawCandidates);
+    if (!empty($user_info)) collect_cert_candidates_from($user_info, $rawCandidates);
+
+    // Write raw candidate debug snapshot to help trace where data might be located
+    try { write_debug_error('temp_debug_raw_cert_candidates.json', ['count'=>count($rawCandidates),'types'=>array_map(function($v){ return gettype($v); }, $rawCandidates),'sample_keys'=>array_slice(array_keys($data),0,10),'time'=>date('c')]); } catch (Exception $e) {}
+    $cert_entries = [];
+    // pick the first non-empty candidate and normalize into array of entries
+    foreach ($rawCandidates as $rc) {
+        if ($rc === null) continue;
+        $decoded = is_string($rc) ? json_decode($rc, true) : $rc;
+        if (is_array($decoded) && count($decoded)) {
+            // If decoded is an associative map representing a single cert, convert to array
+            $isMap = false;
+            foreach ($decoded as $k => $v) { if (!is_int($k)) { $isMap = true; break; } }
+            if ($isMap) $decoded = [$decoded];
+            // Now $decoded should be a numeric-indexed array of cert-like objects
+            foreach ($decoded as $item) {
+                // various shapes: {name,issued_by,date_completed,training_description,data/file/certificate}
+                if (!is_array($item)) continue;
+                $entry = [];
+                $entry['certificate_name'] = $item['certificate_name'] ?? $item['name'] ?? $item['cert_name'] ?? '';
+                $entry['issued_by'] = $item['issued_by'] ?? $item['issuer'] ?? '';
+                $entry['date_completed'] = $item['date_completed'] ?? $item['date'] ?? '';
+                $entry['training_description'] = $item['training_description'] ?? $item['what_learned'] ?? $item['description'] ?? '';
+                // raw file data / data-url
+                $entry['data'] = $item['data'] ?? $item['file'] ?? $item['certificate'] ?? $item['certificate_data'] ?? null;
+                // Some uploaders store file objects with fields like {name, type, data}
+                if (empty($entry['data']) && isset($item['file_data'])) $entry['data'] = $item['file_data'];
+                $cert_entries[] = $entry;
+            }
+            break;
+        }
+    }
+
+    // Safety: ensure we have an array
     if (!is_array($cert_entries)) $cert_entries = [];
+    // If no structured cert entries were found, try to recover simple base64/data-url strings
+    if (count($cert_entries) === 0) {
+        foreach ($rawCandidates as $rc) {
+            if ($rc === null) continue;
+            // If candidate is a JSON string representing an array of raw data-URLs
+            if (is_string($rc)) {
+                $dec = json_decode($rc, true);
+                if (is_array($dec) && count($dec)) {
+                    foreach ($dec as $el) {
+                        if (is_string($el) && (strpos($el, 'data:') !== false || preg_match('/^[A-Za-z0-9+\/]+=*$/', $el))) {
+                            $cert_entries[] = ['certificate_name' => 'Uploaded Certificate', 'issued_by' => '', 'date_completed' => '', 'training_description' => '', 'data' => $el];
+                        }
+                    }
+                } else {
+                    // Single base64/data URL
+                    if (is_string($rc) && (strpos($rc, 'data:') !== false || preg_match('/^[A-Za-z0-9+\/]+=*$/', $rc))) {
+                        $cert_entries[] = ['certificate_name' => 'Uploaded Certificate', 'issued_by' => '', 'date_completed' => '', 'training_description' => '', 'data' => $rc];
+                    }
+                }
+            } elseif (is_array($rc)) {
+                // If rc is an array of strings
+                $allStrings = true;
+                foreach ($rc as $el) if (!is_string($el)) { $allStrings = false; break; }
+                if ($allStrings) {
+                    foreach ($rc as $el) {
+                        if (is_string($el) && (strpos($el, 'data:') !== false || preg_match('/^[A-Za-z0-9+\/]+=*$/', $el))) {
+                            $cert_entries[] = ['certificate_name' => 'Uploaded Certificate', 'issued_by' => '', 'date_completed' => '', 'training_description' => '', 'data' => $el];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    // debug snapshot for parsed certificates (helps trace missing entries)
+    try { write_debug_error('temp_debug_parsed_cert_candidates.json', ['parsed_count'=>count($cert_entries),'samples'=>array_slice($cert_entries,0,5),'time'=>date('c')]); } catch (Exception $e) {}
 
     foreach ($cert_entries as $ce) {
         if (!is_array($ce)) continue;
@@ -967,7 +1086,14 @@ if ($allGood) {
         }
         $c_learn  = trim($ce['training_description'] ?? $ce['description'] ?? $ce['what_you_learned'] ?? '');
 
-        // skip totally empty entries
+        // Normalize certificate text fields to avoid empty strings becoming NULL in Oracle
+        $c_name = trim((string)$c_name);
+        $c_issued = trim((string)$c_issued);
+        // Provide safe defaults so DB receives non-empty text where appropriate
+        if ($c_name === '') $c_name = 'Uploaded Certificate';
+        if ($c_issued === '') $c_issued = 'Not specified';
+
+        // skip totally empty entries (after normalization, only skip if everything still empty)
         if ($c_name === '' && $c_issued === '' && $c_date === '' && $c_learn === '') continue;
 
         // Use TO_DATE only when a date string is provided; otherwise NULL
@@ -999,6 +1125,20 @@ if ($allGood) {
         }
         $cert_blob = $cert_raw ? base64ToBlob($cert_raw) : null;
 
+        // Prepare a small metadata object we'll append to the response so the client
+        // can inspect what certificates were parsed/inserted. This helps diagnose
+        // cases where DB rows exist but the earlier client-side payload was empty.
+        $cert_meta = [
+            'name' => $c_name,
+            'issued_by' => $c_issued,
+            'date_completed' => $c_date_norm,
+            'what_learned' => $c_learn,
+            'blob_expected' => ($cert_blob !== null && is_string($cert_blob) && strlen($cert_blob) > 0),
+            'insert_ok' => false,
+            'blob_written' => false,
+            'rowid' => null
+        ];
+
         // Bind ROWID holder; we'll SELECT FOR UPDATE after execute to obtain LOB locator
         $g_rowid = null;
         oci_bind_by_name($stidc, ':g_rowid', $g_rowid, 256);
@@ -1018,6 +1158,9 @@ if ($allGood) {
             try { if (isset($lob_cert) && is_object($lob_cert)) $lob_cert->free(); } catch (Exception $e) {}
             break;
         }
+        // Mark insert success and record ROWID (OCI populated $g_rowid via RETURNING)
+        $cert_meta['insert_ok'] = true;
+        $cert_meta['rowid'] = $g_rowid;
         // If we received binary data, obtain the DB LOB locator via SELECT FOR UPDATE and write into it
         if ($cert_blob !== null && is_string($cert_blob) && strlen($cert_blob) > 0) {
             try {
@@ -1040,6 +1183,8 @@ if ($allGood) {
                                     'rowid'=>$g_rowid,
                                     'time'=>date('c')
                                 ]);
+                                // record successful blob write in metadata
+                                $cert_meta['blob_written'] = true;
                             } catch (Exception $e) {
                                 write_debug_error('temp_debug_certificate_blobs_error.json', ['stage'=>'guardian_certificate_blob_write_failed','error'=> (string)$e,'certificate'=>$ce,'time'=>date('c')]);
                                 try { if (!empty($cert_raw)) { $savedc = saveBase64File($cert_raw); if ($savedc) { $fallback_saved_files[] = ['type'=>'guardian_cert','certificate_name'=>$c_name,'file'=>$savedc]; write_debug_error('temp_debug_certificate_fallback_saved.json', ['file'=>$savedc,'time'=>date('c')]); } } } catch (Exception $ee) { write_debug_error('temp_debug_certificate_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
@@ -1050,6 +1195,26 @@ if ($allGood) {
                 }
             } catch (Exception $e) { write_debug_error('temp_debug_certificate_forupdate_error.json', ['error'=> (string)$e, 'time'=>date('c')]); }
         }
+        // After attempting blob write, fetch the stored DB values for this ROWID
+        try {
+            $verifySql = "SELECT name, issued_by, what_learned, TO_CHAR(date_completed,'YYYY-MM-DD') AS date_completed, NVL(dbms_lob.getlength(certificate),0) AS cert_len FROM guardian_certificates WHERE ROWID = :rid";
+            $vst = oci_parse($conn, $verifySql);
+            oci_bind_by_name($vst, ':rid', $g_rowid);
+            if (oci_execute($vst)) {
+                if (oci_fetch($vst)) {
+                    $cert_meta['db_name'] = oci_result($vst, 'NAME');
+                    $cert_meta['db_issued_by'] = oci_result($vst, 'ISSUED_BY');
+                    $cert_meta['db_what_learned'] = oci_result($vst, 'WHAT_LEARNED');
+                    $cert_meta['db_date_completed'] = oci_result($vst, 'DATE_COMPLETED');
+                    $cert_meta['db_cert_len'] = intval(oci_result($vst, 'CERT_LEN'));
+                }
+            }
+            oci_free_statement($vst);
+        } catch (Exception $e) {
+            write_debug_error('temp_debug_certificate_verify_error.json', ['error'=>(string)$e,'rowid'=>$g_rowid,'time'=>date('c')]);
+        }
+        // Add metadata about this certificate to the response array
+        try { $certs[] = $cert_meta; } catch (Exception $e) { /* non-fatal */ }
         oci_free_statement($stidc);
     }
 }

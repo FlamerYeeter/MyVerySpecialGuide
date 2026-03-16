@@ -417,8 +417,14 @@
                             </div>
                         </template>
 
-                        <script>
-                           // Function to add a new education item by cloning the template and clearing its inputs
+                              <script>
+                                  // Ensure canonical localStorage keys exist before any upload handlers run
+                                  try {
+                                   window.LS_KEY = window.LS_KEY || 'uploadedCertificates_education';
+                                   window.SHARED_PROOF_KEY = window.SHARED_PROOF_KEY || 'uploadedProofs_proof';
+                                  } catch(e) { /* best-effort */ }
+
+                                  // Function to add a new education item by cloning the template and clearing its inputs
                             function addEducation() {
 
                                 const container = document.getElementById("educationContainer");
@@ -1203,9 +1209,25 @@
             function writeHidden(arr) {
                 try {
                     hidden.value = JSON.stringify(arr || []);
+                    try {
+                        // Persist canonical certificate entries so later steps pick up text fields
+                        localStorage.setItem('certificates', hidden.value);
+                        // Keep legacy/alternate key in sync for compatibility
+                        localStorage.setItem('education_certificates', hidden.value);
+                    } catch (e) { /* ignore storage failures */ }
                 } catch (e) {
                     hidden.value = '[]';
                 }
+            }
+
+            // Ensure any direct writes to the hidden input are persisted to localStorage as well.
+            if (hidden) {
+                hidden.addEventListener('input', function() {
+                    try {
+                        localStorage.setItem('certificates', hidden.value || '[]');
+                        localStorage.setItem('education_certificates', hidden.value || '[]');
+                    } catch (e) { /* ignore */ }
+                });
             }
 
             function debounce(fn, wait) {
@@ -1671,14 +1693,14 @@
                 });
 
             // Initial check on page load
-            updateFileInput();
+            updateSectionVisibility();
 
             // Add change listeners to all cert radios
             certRadios.forEach(radio => {
                 radio.addEventListener('change', () => {
                     localStorage.setItem("review_certs", radio.value);
                     console.log("Saved cert:", radio.value);
-                    updateFileInput();
+                    updateSectionVisibility();
                 });
             });
         });
@@ -1787,7 +1809,7 @@
                     const file_type = block.querySelector('input[name="certificate_file_type"]')?.value?.trim() || '';
 
                     // include entry if any visible fields OR a file is attached
-                    if (name || issued || date || desc || file_name || file_data) {
+                    if (name || issued || date || file_name || file_data) {
                         const entry = {
                             certificate_name: name,
                             issued_by: issued,

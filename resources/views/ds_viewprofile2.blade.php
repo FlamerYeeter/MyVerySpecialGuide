@@ -614,6 +614,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const arr = j.certificates || j.data || j.rows || [];
                 if (!arr.length) {
+                    // Try to render client-side uploaded certificates (localStorage) as a fallback
+                    try {
+                        const fallbackKeys = ['uploadedCertificates_education','uploadedProofs_proof','uploadedProofs','certificates','education_certificates'];
+                        let fallback = [];
+                        for (const k of fallbackKeys) {
+                            try {
+                                const raw = localStorage.getItem(k) || sessionStorage.getItem(k) || null;
+                                if (!raw) continue;
+                                let parsed = null;
+                                try { parsed = JSON.parse(raw); } catch(e) { parsed = raw; }
+                                if (Array.isArray(parsed)) { fallback = parsed; break; }
+                                if (parsed && typeof parsed === 'object') { fallback = [parsed]; break; }
+                                // raw base64/data-url string
+                                if (typeof parsed === 'string' && (parsed.indexOf('data:') === 0 || parsed.match(/^data:[^;]+;base64,/))) {
+                                    fallback.push({certificate_name: 'Uploaded Certificate', data: parsed});
+                                    break;
+                                }
+                            } catch(e) { /* ignore per-key parse errors */ }
+                        }
+                        if (fallback.length) {
+                            noneEl.style.display = 'none';
+                            fallback.forEach(it => {
+                                const name = it.certificate_name || it.name || it.cert_name || '';
+                                const issuer = it.issued_by || it.issuer || '';
+                                const date = it.date_completed || it.date || '';
+                                const learned = it.training_description || it.what_learned || it.description || '';
+
+                                const card = document.createElement('div');
+                                card.className = 'mb-3 p-3 border rounded-md bg-white shadow-sm relative';
+                                const title = name ? `<div class="font-semibold text-gray-800">${escapeHtml(name)}</div>` : '';
+                                const meta = (issuer || date) ? `<div class="text-sm text-gray-600 mt-1">${escapeHtml(issuer)}${issuer && date ? ' • ' : ''}${date ? escapeHtml(fmtDate(date)) : ''}</div>` : '';
+                                const desc = learned ? `<div class="text-sm text-gray-700 mt-2">${escapeHtml(learned)}</div>` : '';
+                                let badge = '';
+                                try {
+                                    const rawData = it.data || it.file || it.certificate || it.certificate_data || null;
+                                    if (rawData) {
+                                        // create a downloadable/viewable link that opens the data URL in a new tab
+                                        const href = (typeof rawData === 'string' && rawData.indexOf('data:') === 0) ? rawData : (typeof rawData === 'string' ? rawData : null);
+                                        if (href) {
+                                            badge = `<a href="${href}" target="_blank" rel="noopener" class="absolute right-3 top-3 inline-flex items-center gap-2 text-green-700 hover:opacity-90" title="View certificate"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10" fill="#ECFDF5"/><path d="M9 12.5l1.8 1.8L15 10" stroke="#059669" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`;
+                                        }
+                                    }
+                                } catch(e) { badge = ''; }
+                                card.innerHTML = title + meta + desc + badge;
+                                listEl.appendChild(card);
+                            });
+                            return;
+                        }
+                    } catch(e) { /* fallback parsing failed */ }
                     noneEl.style.display = 'block';
                     noneEl.textContent = 'No certificates or trainings added.';
                     return;
