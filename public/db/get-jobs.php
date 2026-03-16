@@ -103,10 +103,49 @@ function map_synonym($val, $synonyms) {
 
 // small synonyms map (expand as needed)
 $SYNONYMS = [
-  'no heavy lifting' => ['no heavy lifting','no heavy lifting / no pharmacy tasks','no lifting','no heavy lifting / no pharmacy tasks'],
-  'simple instructions' => ['simple instructions','clear instructions','simple instruction','simple step by step'],
-  'verbal communication required' => ['verbal communication required','communication skills','communication required'],
-  'task repetition' => ['task repetition','repetitive tasks','task repetition required']
+  // Communication-related
+  'communication requirements' => ['communication requirements','communication required','communication skills','verbal communication','verbal communication required','simple instructions','clear instructions','explain','present menu','greet','greeting','customer assistant','concierge'],
+
+  // Cognitive / instruction-following
+  'cognitive level requirements' => ['cognitive level requirements','cognitive','simple instructions','simple step by step','follow simple instructions','follow instructions','pack','packaging','prepare','organize'],
+
+  // Sensory / light safe tasks
+  'sensory requirements' => ['sensory requirements','sensory','safe and light work','light tasks','no heavy lifting','no lifting','no heavy lifting / no pharmacy tasks','deliver','drive','collect','clean','housekeeping','stockroom','basket','cart','table setter','server assistant','food runner'],
+
+  // Accommodation / supportive workplace
+  'accommodation availability' => ['accommodation availability','accommodation available','friendly team','buddy helper','buddy','supportive team','supportive coworkers','buddy system','assist when needed']
+];
+
+// Map common job-role keywords to requirement tokens (used to augment job access fields)
+$JOB_ROLE_REQUIREMENTS = [
+  'greeter' => ['communication requirements'],
+  'customer assistant' => ['communication requirements'],
+  'merchandis' => ['cognitive level requirements'],
+  'stock' => ['sensory requirements'],
+  'basket' => ['sensory requirements'],
+  'cart' => ['sensory requirements'],
+  'clean' => ['sensory requirements'],
+  'pack' => ['cognitive level requirements'],
+  'bag' => ['cognitive level requirements'],
+  'alteration' => ['cognitive level requirements'],
+  'menu' => ['communication requirements'],
+  'server' => ['sensory requirements'],
+  'table' => ['sensory requirements'],
+  'kitchen' => ['cognitive level requirements'],
+  'housekeeping' => ['sensory requirements'],
+  'concierge' => ['communication requirements'],
+  'sales' => ['communication requirements'],
+  'promotion' => ['communication requirements']
+];
+
+// Map workplace/support phrasing to canonical tokens (augment job accessibility fields)
+$WORK_ENV_REQUIREMENTS = [
+  'friendly team' => ['accommodation availability'],
+  'buddy' => ['accommodation availability'],
+  'buddy helper' => ['accommodation availability'],
+  'simple instructions' => ['communication requirements','cognitive level requirements'],
+  'safe and light work' => ['sensory requirements'],
+  'no heavy lifting' => ['sensory requirements']
 ];
 
 // Fetch and normalize user profile tokens for the requesting guardian (used for PHP-side matching)
@@ -377,6 +416,33 @@ while ($row = oci_fetch_assoc($stid)) {
     if (!empty($row['SENSOR_REQ'])) $job_access_fields[] = $row['SENSOR_REQ'];
     if (!empty($row['COG_LVL_REQ'])) $job_access_fields[] = $row['COG_LVL_REQ'];
     if (!empty($row['ACCOM_AVAIL'])) $job_access_fields[] = $row['ACCOM_AVAIL'];
+
+    // Augment job access fields using job role keywords
+    $roleText = mb_strtolower((string)($row['JOB_ROLE'] ?? ''));
+    if ($roleText !== '') {
+      foreach ($JOB_ROLE_REQUIREMENTS as $kw => $reqs) {
+        if (mb_stripos($roleText, $kw) !== false) {
+          foreach ($reqs as $r) $job_access_fields[] = $r;
+        }
+      }
+    }
+
+    // Augment from JOB_PROFILE aggregated workplace string and WORKING_ENVIRONMENT
+    $envCandidates = [];
+    if (!empty($row['JOB_PROFILE_WORKPLACE'])) $envCandidates[] = $row['JOB_PROFILE_WORKPLACE'];
+    if (!empty($row['WORKING_ENVIRONMENT'])) $envCandidates[] = $row['WORKING_ENVIRONMENT'];
+    if (!empty($workplaces)) $envCandidates = array_merge($envCandidates, $workplaces);
+    foreach ($envCandidates as $ec) {
+      $ecn = mb_strtolower((string)$ec);
+      foreach ($WORK_ENV_REQUIREMENTS as $kw => $reqs) {
+        if (mb_stripos($ecn, $kw) !== false) {
+          foreach ($reqs as $r) $job_access_fields[] = $r;
+        }
+      }
+    }
+
+    // deduplicate
+    $job_access_fields = array_values(array_unique(array_filter($job_access_fields)));
     // normalize job tokens
     $job_tokens = [];
     foreach ($job_access_fields as $jf) {

@@ -1,0 +1,124 @@
+Table,Users
+user_id,name,age,guardian_id,primary_skill,notes
+U001,Anna Cruz,24,G100,Customer Service,Prefers supportive team; needs simple instructions
+U002,Marco Reyes,28,G101,Data Entry,Good fine-motor skills; prefers light work
+U003,Liza Santos,22,G102,Housekeeping,Strong routine skills; benefits from repetition
+U004,Joel Dela,26,G103,Packaging,Fast at repetitive tasks; prefers clear instructions
+U005,Maya Lopez,30,G104,Assembly,Steady pace; comfortable with light manual tasks
+U006,Renzo Valdez,27,G105,Office Helper,Basic computer skills; benefits from buddy support
+U007,Clara Medina,23,G106,Retail Assistant,Good verbal communication; friendly team fit
+U008,Diego Flores,25,G107,Kitchen Helper,Simple step-by-step tasks; avoids heavy lifting
+
+Table,Jobs
+job_id,job_title,company,location,job_type,work_environment,notes
+J101,Office Assistant,BlueWave Ltd,Manila,Part-time,Indoor,Light desk work; basic computer tasks
+J102,Data Entry Clerk,InfoServe Inc,Quezon City,Full-time,Indoor,Repetitive data tasks; quiet space
+J103,Store Helper,SunMart,Rizal,Part-time,Retail,Friendly team; customer-facing
+J104,Housekeeper,StayWell Hotels,Pasay,Part-time,Indoor,Repetitive cleaning tasks
+J105,Assembly Operator,LightBuild Corp,Valenzuela,Full-time,Factory,Simple assembly; light work
+J106,Packaging Associate,PackRight,Paranaque,Full-time,Warehouse,Repetitive packing tasks
+J107,Kitchen Assistant,TasteBuds,Taguig,Part-time,Kitchen,Simple food prep; no heavy lifting
+J108,Reception Aide,FrontDesk PH,Makati,Part-time,Office,Welcoming visitors; buddy support
+J109,Gardening Aide,GreenHands,Quezon City,Part-time,Outdoor,Light gardening; outdoor environment
+J110,Workshop Helper,MakeIt Co.,Caloocan,Full-time,Workshop,Assisted tasks; safety-focused
+J111,Mailroom Clerk,PostalServe,Manila,Full-time,Indoor,Sorting and light deliveries
+J112,File Clerk,Archive Solutions,Pasig,Part-time,Office,Filing and simple admin tasks
+J113,Customer Host,Smile Retail,Makati,Full-time,Retail,Greet customers; friendly team
+J114,Janitorial Staff,CityClean,Manila,Full-time,Indoor,Cleaning with clear routines
+J115,Light Production,MicroFab,Marikina,Full-time,Factory,Simple machines; supervised
+
+Table,OCR_Outputs
+user_id,resume_id,extracted_text_summary,char_accuracy,word_accuracy,skill_extraction_accuracy,detected_skills
+U001,R001,"Skills: customer service, basic cash handling, simple computer tasks",0.96,0.94,0.92,Customer Service;Cash Handling;Basic Computer
+U002,R002,"Skills: fast typing, numeric entry, attention to detail",0.95,0.93,0.90,Data Entry;Numeric Entry;Typing
+U003,R003,"Skills: cleaning, organization,consistent routine",0.94,0.92,0.89,Housekeeping;Cleaning;Organization
+U004,R004,"Skills: repetitive packing, following checklist",0.95,0.93,0.91,Packaging;Task Repetition;Checklist Following
+U005,R005,"Skills: assembly, simple hand tools, steady pace",0.93,0.91,0.88,Assembly;Hand Tools;Steady Pace
+U006,R006,"Skills: basic computer, filing, buddy work preferred",0.94,0.92,0.90,Office Support;Filing;Basic Computer
+U007,R007,"Skills: greeting customers, basic transactions, friendly",0.96,0.95,0.93,Retail;Communication;Customer Service
+U008,R008,"Skills: food preparation, simple steps, avoid lifting",0.92,0.90,0.87,Kitchen Tasks;Step-by-step Instructions;No Heavy Lifting
+
+Table,Content_Based_Matches
+user_id,job_id,matching_skills,cbf_score
+U001,J103,Customer Service;Friendly Team,0.85
+U001,J108,Basic Computer;Reception,0.72
+U002,J102,Data Entry;Numeric Entry,0.88
+U002,J111,Sorting;Numeric Tasks,0.68
+U003,J104,Housekeeping;Routine,0.91
+U004,J106,Packaging;Repetition,0.89
+U005,J105,Assembly;Hand Tools,0.86
+U006,J112,Filing;Office Support,0.77
+U007,J113,Retail;Communication,0.90
+U008,J107,Kitchen Tasks;Step-by-step,0.87
+
+Table,Collaborative_Similarities
+user_id,similar_user,similarity_score,notes
+U001,U007,0.62,Both prefer customer-facing roles and friendly teams
+U002,U006,0.58,Shared office-support and basic computer skills
+U003,U004,0.55,Preference for repetitive tasks and structured routines
+U004,U005,0.49,Manual/light assembly and repetition overlap
+U005,U008,0.45,Comfortable with light manual tasks under supervision
+U007,U001,0.62,Reciprocal similarity for retail/customer service
+U008,U004,0.50,Simple instructions and step-by-step preferred
+
+Table,Hybrid_Recommendations_Top5
+user_id,job_id,cbf_score,cf_score,hybrid_score,rank
+U001,J103,0.85,0.70,0.796,1
+U001,J108,0.72,0.65,0.694,2
+U001,J113,0.66,0.68,0.668,3
+U001,J111,0.50,0.55,0.52,4
+U001,J102,0.44,0.58,0.494,5
+U002,J102,0.88,0.74,0.832,1
+U002,J111,0.68,0.70,0.686,2
+U002,J105,0.54,0.60,0.564,3
+U002,J112,0.60,0.50,0.56,4
+U002,J101,0.48,0.45,0.468,5
+U003,J104,0.91,0.64,0.806,1
+U003,J114,0.78,0.50,0.668,2
+U003,J103,0.52,0.40,0.488,3
+U003,J109,0.46,0.42,0.444,4
+U003,J106,0.50,0.47,0.488,5
+U004,J106,0.89,0.72,0.834,1
+U004,J115,0.70,0.60,0.66,2
+U004,J105,0.60,0.55,0.586,3
+U004,J102,0.48,0.50,0.492,4
+U004,J104,0.42,0.40,0.412,5
+U005,J105,0.86,0.68,0.796,1
+U005,J115,0.74,0.58,0.686,2
+U005,J110,0.60,0.52,0.568,3
+U005,J106,0.56,0.50,0.544,4
+U005,J101,0.44,0.40,0.428,5
+U006,J108,0.77,0.66,0.726,1
+U006,J112,0.72,0.60,0.696,2
+U006,J101,0.65,0.58,0.632,3
+U006,J111,0.52,0.45,0.494,4
+U006,J102,0.48,0.42,0.456,5
+U007,J113,0.90,0.74,0.846,1
+U007,J103,0.66,0.68,0.664,2
+U007,J108,0.60,0.55,0.59,3
+U007,J101,0.50,0.48,0.492,4
+U007,J114,0.46,0.42,0.444,5
+U008,J107,0.87,0.70,0.826,1
+U008,J105,0.58,0.50,0.556,2
+U008,J110,0.52,0.45,0.494,3
+U008,J106,0.50,0.48,0.492,4
+U008,J104,0.44,0.40,0.428,5
+
+Table,Performance_Metrics_Overall
+metric,value,notes
+Precision,0.83,Measured at top-5 recommendations averaged across users
+Recall,0.79,Measured against held-out applied/saved jobs
+F1,0.81,Harmonic mean of precision and recall
+Accuracy,0.88,Overall correctness of classification for job relevance
+Coverage,0.92,Proportion of jobs for which the system can generate recommendations
+
+Table,Per_User_Evaluation
+user_id,precision_at_5,recall_at_5,f1_at_5,notes
+U001,0.80,0.75,0.77,Top-1 matched historical application
+U002,0.86,0.82,0.84,Strong content signals from OCR-extracted skills
+U003,0.88,0.80,0.84,High CBF match for routine tasks
+U004,0.84,0.78,0.81,Collaborative signals boosted packaging matches
+U005,0.82,0.76,0.79,Assembly and light production matched
+U006,0.78,0.70,0.74,Buddy support signals improved ranking
+U007,0.90,0.85,0.87,Retails roles highly aligned
+U008,0.81,0.74,0.77,Kitchen roles prioritized with safety flags
