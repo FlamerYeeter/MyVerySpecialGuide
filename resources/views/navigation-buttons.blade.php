@@ -4,6 +4,18 @@
     <!-- Icon link -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.7.0/fonts/remixicon.css" rel="stylesheet">
 
+    <style>
+        .tts-btn.speaking {
+            background-color: #2563eb !important;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+            transform: scale(1.03);
+        }
+        .tts-btn { padding: 0.55rem 0.6rem; border-radius: 9999px; }
+        @media (max-width: 640px) {
+            .tts-btn { padding: 0.6rem; font-size: 1.05rem; }
+        }
+    </style>
+
     <!-- Back Button 
     <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
         <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
@@ -18,7 +30,7 @@
         </div>
     </div> -->
 
-    <main class="px-8 sm:px-12 py-10 max-w-7xl mx-auto">
+    <main class="px-4 sm:px-8 md:px-12 lg:px-16 py-6 sm:py-8 md:py-12 lg:py-16 max-w-7xl mx-auto">
 
         {{-- <!-- Title -->
         <h2 class="text-4xl font-bold text-center text-[#1E40AF] mb-8 flex items-center justify-center gap-3">
@@ -49,100 +61,248 @@
 
 
         <!-- NAVIGATION CARDS -->
-        <div class="grid md:grid-cols-2 gap-10 justify-center items-stretch">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8 lg:gap-12 justify-center items-stretch">
 
+
+            
             <!-- Card 1: Job Matches -->
             <a href="{{ route('job.matches') }}" class="block h-full">
                 <div
-                    class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
-                    <div class="flex items-center gap-5">
-                        <div class="bg-orange-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
-                            <img src="{{ asset('image/bagicon.png') }}" class="w-14 h-14" alt="">
+                    class="relative bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-4 sm:p-6 md:p-8 hover:bg-blue-50 transition-all h-full">
+                    <div class="flex flex-row md:flex-col items-center gap-2 sm:gap-4 md:gap-3">
+                        <div class="bg-orange-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0 md:mb-2">
+                            <img src="{{ asset('image/bagicon.png') }}" class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16" alt="">
                         </div>
-                        <div>
-                            <h4 class="text-[#1E3A8A] font-bold text-2xl">Jobs</h4>
-                            <p class="text-gray-700 text-lg mt-2">Click here to see jobs perfect for you — matched to your
-                                skills and interests.</p>
-                            <p class="text-gray-600 italic text-base mt-1">(Pindutin ito upang makita ang mga trabahong akma
-                                sa iyong kakayahan at interes.)</p>
+                        <div class="md:text-center">
+                            <h4 class="text-[#1E3A8A] font-bold text-xl sm:text-2xl">Jobs</h4>
+                            <p class="text-gray-700 text-base sm:text-lg mt-2">Explore job opportunities that match your skills and interests. Click here to get started.</p>
+                            <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Tingnan ang mga trabahong tumutugma sa iyong mga kakayahan at interes. I-click dito para makapagsimula.)</p>
                         </div>
                     </div>
+                    <button type="button" class="absolute top-1 right-1 md:top-2 md:right-2 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400" 
+                     data-tts-en="Jobs.Explore job opportunities that match your skills and interests. Click here to get started." 
+                     data-tts-tl="Tingnan ang mga trabahong tumutugma sa iyong mga kakayahan at interes. I-click dito para makapagsimula." aria-label="Play audio for Job Matches card">🔊</button>
                 </div>
             </a>
 
             <!-- Card 2: Saved Jobs -->
-         <a href="{{ route('saved') }}" class="block h-full">
+            <a href="{{ route('saved') }}" class="block h-full">
                 <div
-                    class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
-                    <div class="flex items-center gap-5">
-                        <div class="bg-yellow-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
-                            <img src="{{ asset('image/savedicon.png') }}" class="w-14 h-14" alt="Saved Jobs Icon">
+                    class="relative bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-4 sm:p-6 md:p-8 hover:bg-blue-50 transition-all h-full">
+                    <div class="flex flex-row md:flex-col items-center gap-2 sm:gap-4 md:gap-3">
+                        <div class="bg-yellow-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0 md:mb-2">
+                            <img src="{{ asset('image/savedicon.png') }}" class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16" alt="Saved Jobs Icon">
                         </div>
-                        <div>
-                            <h4 class="text-[#1E3A8A] font-bold text-2xl">Saved Jobs</h4>
-                            <p class="text-gray-700 text-lg mt-2">Click here to view all the jobs you liked or saved for
+                        <div class="md:text-center">
+                            <h4 class="text-[#1E3A8A] font-bold text-xl sm:text-2xl">Saved Jobs</h4>
+                            <p class="text-gray-700 text-base sm:text-lg mt-2">Click here to view all the jobs you saved for
                                 later.</p>
-                            <p class="text-gray-600 italic text-base mt-1">(Pindutin ito upang tingnan ang lahat ng
-                                trabahong iyong nagustuhan o in-save para balikan sa susunod.)</p>
+                            <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Pindutin ito upang tingnan ang lahat ng
+                                trabahong iyong na save para balikan sa susunod.)</p>
                         </div>
                     </div>
+                    <button type="button" class="absolute top-1 right-1 md:top-2 md:right-2 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400" 
+                    data-tts-en="Saved Jobs. Click here to view all the jobs you saved for later." 
+                    data-tts-tl="Pindutin upang makita ang mga trabahong na-save mo." aria-label="Play audio for Saved Jobs card">🔊</button>
                 </div>
             </a>
 
-            <!-- Card 3: Assessment Progress 
-              <a href="{{ route('assessment') }}" class="block h-full">
-                <div
-                    class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
-                    <div class="flex items-center gap-5">
-                        <div class="bg-red-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
-                            <img src="{{ asset('image/targeticon.png') }}" class="w-14 h-14" alt="">
-                        </div>
-                        <div>
-                            <h4 class="text-[#1E3A8A] font-bold text-2xl">Assessment Progress</h4>
-                            <p class="text-gray-700 text-lg mt-2">Click here to see your Assessment Progress</p>
-                            <p class="text-gray-600 italic text-base mt-1">(Pinduting ito upang tingnan ang iyong progress
-                                sa Assessment)</p>
-                        </div>
-                    </div>
-                </div>
-            </a> -->
-
-            <!-- Card 4: Job Application -->
+            <!-- Card 3: Job Application -->
             <a href="{{ route('my.job.applications') }}" class="block h-full">
                 <div
-                    class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
-                    <div class="flex items-center gap-5">
-                        <div class="bg-pink-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
-                            <img src="{{ asset('image/my-job-app.png') }}" class="w-14 h-14" alt="">
+                    class="relative bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-4 sm:p-6 md:p-8 hover:bg-blue-50 transition-all h-full">
+                    <div class="flex flex-row md:flex-col items-center gap-2 sm:gap-4 md:gap-3">
+                        <div class="bg-pink-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0 md:mb-2">
+                            <img src="{{ asset('image/my-job-app.png') }}" class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16" alt="">
                         </div>
-                        <div>
-                            <h4 class="text-[#1E3A8A] font-bold text-2xl">My Job Applications</h4>
-                            <p class="text-gray-700 text-lg mt-2">Click here to track your application progress and manage your job applications</p>
-                            <p class="text-gray-600 italic text-base mt-1">(Pindutin ito upang i-track ang iyong application progress.)</p>
+                        <div class="md:text-center">
+                            <h4 class="text-[#1E3A8A] font-bold text-xl sm:text-2xl">Job Applications</h4>
+                            <p class="text-gray-700 text-base sm:text-lg mt-2">Click here to track your application progress and manage your job applications</p>
+                            <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Pindutin ito upang i-track ang iyong application progress at pamahalaan ang iyong mga job applications.)</p>
                         </div>
                     </div>
+                    <button type="button" class="absolute top-1 right-1 md:top-2 md:right-2 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400" 
+                    data-tts-en="My Job Applications. Click here to track your application progress and manage your job applications" 
+                    data-tts-tl="Pindutin upang subaybayan ang iyong aplikasyon at pamahalaan ang mga ito." aria-label="Play audio for My Job Applications card">🔊</button>
                 </div>
             </a>
 
-            <!-- Card 5: Profile
-      <a href="#" class="block h-full">
-        <div class="bg-white border-4 border-blue-300 rounded-3xl flex flex-col justify-between p-6 hover:bg-blue-50 hover:shadow-lg transition-all h-full">
-          <div class="flex items-center gap-5">
-            <div class="bg-purple-200 p-4 rounded-2xl flex items-center justify-center flex-shrink-0">
-              <img src="{{ asset('image/profileicon.png') }}" class="w-14 h-14" alt="">
-            </div>
-            <div>
-              <h4 class="text-[#1E3A8A] font-bold text-2xl">Profile</h4>
-              <p class="text-gray-700 text-lg mt-2">Click here to view your name, picture, and personal information easily here.</p>
-              <p class="text-gray-600 italic text-base mt-1">(Pindutin upang makita dito ang iyong pangalan, larawan, at iba pang impormasyon tungkol sa iyo.)</p>
-            </div>
-          </div>
-        </div>
-      </a>
-    </div>
-    -->
+
 
     </main>
+
+<!-- TTS: Web Speech API handler -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.tts-btn');
+        const preferredEnglishVoiceName =
+            'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+        const preferredTagalogVoiceName = 'fil-PH-RosaNeural';
+        let preferredEnglishVoice = null;
+        let preferredTagalogVoice = null;
+        let currentBtn = null;
+        let availableVoices = [];
+
+        function populateVoices() {
+            availableVoices = window.speechSynthesis.getVoices() || [];
+            preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName) ||
+                availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name)) ||
+                null;
+            preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName) ||
+                availableVoices.find(v => /rosa|blessica|fil-?ph|filipino|tagalog/i.test(v.name)) ||
+                null;
+        }
+
+        function chooseVoiceForLang(langCode) {
+            if (!availableVoices.length) return null;
+            langCode = (langCode || '').toLowerCase();
+            let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+            if (candidates.length) return pickBest(candidates);
+            candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i
+                .test(v.name));
+            if (candidates.length) return pickBest(candidates);
+            return availableVoices[0];
+        }
+
+        function pickBest(list) {
+            let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+            if (preferred.length) return preferred[0];
+            return list[0];
+        }
+
+        function stopSpeaking() {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            if (currentBtn) {
+                currentBtn.classList.remove('speaking');
+                currentBtn.removeAttribute('aria-pressed');
+                currentBtn = null;
+            }
+        }
+
+        buttons.forEach(function(btn) {
+            btn.setAttribute('role', 'button');
+            btn.setAttribute('tabindex', '0');
+
+            btn.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                // nothing to speak
+                if (!textEn && !textTl) return;
+
+                // If same button clicked while speaking, stop
+                if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn ===
+                    btn) {
+                    stopSpeaking();
+                    return;
+                }
+
+                // Stop any existing speech then speak new text(s)
+                stopSpeaking();
+
+                // Small timeout to ensure previous utterance canceled
+                setTimeout(function() {
+                    if (!window.speechSynthesis) return;
+
+                    // Helper to pick voice for a given language (or selected by user)
+                    function voiceFor(langHint) {
+                        if (langHint) {
+                            const hint = (langHint || '').toLowerCase();
+                            if (hint.startsWith('tl') || hint.startsWith('fil') || hint
+                                .includes('tagalog')) {
+                                if (preferredTagalogVoice) return preferredTagalogVoice;
+                                return chooseVoiceForLang('tl');
+                            }
+                            if (hint.startsWith('en')) {
+                                if (preferredEnglishVoice) return preferredEnglishVoice;
+                                return chooseVoiceForLang('en');
+                            }
+                        }
+                        return preferredEnglishVoice || chooseVoiceForLang('en') || (
+                            availableVoices.length ? availableVoices[0] : null);
+                    }
+
+                    // Build utterances sequence: English first (if any), then Tagalog
+                    const seq = [];
+                    if (textEn) {
+                        const uEn = new SpeechSynthesisUtterance(textEn);
+                        uEn.lang = 'en-US';
+                        const v = voiceFor('en');
+                        if (v) uEn.voice = v;
+                        seq.push(uEn);
+                    }
+                    if (textTl) {
+                        const uTl = new SpeechSynthesisUtterance(textTl);
+                        uTl.lang = 'fil-PH';
+                        const v2 = voiceFor('tl');
+                        if (v2) uTl.voice = v2;
+                        seq.push(uTl);
+                    }
+
+                    if (!seq.length) return;
+
+                    // Attach lifecycle handlers to the sequence
+                    seq[0].onstart = function() {
+                        btn.classList.add('speaking');
+                        btn.setAttribute('aria-pressed', 'true');
+                        currentBtn = btn;
+                    };
+
+                    // chain subsequent utterances
+                    for (let i = 0; i < seq.length; i++) {
+                        const ut = seq[i];
+                        ut.onerror = function() {
+                            if (btn) btn.classList.remove('speaking');
+                            if (btn) btn.removeAttribute('aria-pressed');
+                            currentBtn = null;
+                        };
+                        if (i < seq.length - 1) {
+                            ut.onend = function() {
+                                // speak next
+                                window.speechSynthesis.speak(seq[i + 1]);
+                            };
+                        } else {
+                            ut.onend = function() {
+                                if (btn) btn.classList.remove('speaking');
+                                if (btn) btn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            };
+                        }
+                    }
+
+                    // start sequence
+                    window.speechSynthesis.speak(seq[0]);
+                }, 50);
+            });
+
+            // also allow Enter/Space to trigger
+            btn.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    btn.click();
+                }
+            });
+        });
+
+        // Stop speech when navigating away or reloading
+        window.addEventListener('beforeunload', function() {
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+        });
+        // populate voices now or when they change
+        if (window.speechSynthesis) {
+            populateVoices();
+            window.speechSynthesis.onvoiceschanged = function() {
+                populateVoices();
+            };
+        }
+
+        // No preview UI: when voices are populated we attempt to use the preferred Microsoft AvaMultilingual voice
+    });
+</script>
 @endsection
 
 <!-- Ensure Firebase config + auth guard for navigation page -->
