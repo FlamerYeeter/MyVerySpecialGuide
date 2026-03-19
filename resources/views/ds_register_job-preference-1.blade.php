@@ -496,14 +496,15 @@
     </form>
     </div>
 
-    <!-- Review / Skip modal -->
+    <!-- Review / Preview modal (merged) -->
     <div id="reviewModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white rounded-2xl shadow-lg p-6 w-11/12 max-w-md mx-4">
-            <h3 class="text-lg font-bold mb-2 text-blue-700">Continue to Final Step</h3>
+        <div class="bg-white rounded-2xl shadow-lg p-4 w-11/12 max-w-3xl mx-4 overflow-auto">
+            <h3 class="text-lg font-bold mb-2 text-blue-700">Job Recommendations Preview</h3>
+            <p id="previewBasedOn" class="text-sm text-gray-600 italic mb-4"> </p>
+            <div id="previewList" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-80 overflow-auto mb-4"></div>
             <p class="text-sm text-gray-700 mb-4">You are about to proceed to the final step of the process. Do you want to continue?</p>
             <div class="flex justify-end gap-3">
                 <button id="reviewModalCancel" class="px-4 py-2 rounded-md bg-gray-200">Cancel</button>
-                <button id="reviewModalReview" class="hidden px-4 py-2 rounded-md bg-[#2E2EFF] text-white">Review information</button>
                 <button id="reviewModalSkip" class="px-4 py-2 rounded-md bg-green-600 text-white">Go to final step</button>
             </div>
         </div>
@@ -553,9 +554,9 @@
                     const reviewModal = document.getElementById('reviewModal');
                     if (reviewModal) {
                         reviewModal.classList.remove('hidden');
-                        // focus first actionable button for keyboard users
-                        const reviewBtn = reviewModal.querySelector('#reviewModalReview');
-                        if (reviewBtn) reviewBtn.focus();
+                        // focus Skip button for keyboard users
+                        const skipBtn = reviewModal.querySelector('#reviewModalSkip');
+                        if (skipBtn) skipBtn.focus();
                     } else {
                         window.location.href = '{{ route('registerreview1') }}';
                     }
@@ -571,17 +572,12 @@
         (function(){
             const modal = document.getElementById('reviewModal');
             if (!modal) return;
-            const btnReview = document.getElementById('reviewModalReview');
             const btnSkip = document.getElementById('reviewModalSkip');
             const btnCancel = document.getElementById('reviewModalCancel');
 
             function closeModal() { modal.classList.add('hidden'); }
 
             if (btnCancel) btnCancel.addEventListener('click', function(){ closeModal(); });
-            if (btnReview) btnReview.addEventListener('click', function(){
-                closeModal();
-                window.location.href = '{{ route('registerreview1') }}';
-            });
             if (btnSkip) btnSkip.addEventListener('click', function(){
                 closeModal();
                 window.location.href = '{{ route('registerfinalstep') }}';
@@ -591,6 +587,114 @@
             window.addEventListener('keydown', function (ev) {
                 if (ev.key === 'Escape' && !modal.classList.contains('hidden')) closeModal();
             });
+        })();
+    </script>
+
+    <script>
+        // Job preferences -> merged review/preview modal integration
+        (function(){
+            const reviewModal = document.getElementById('reviewModal');
+            const previewList = document.getElementById('previewList');
+            const previewBasedOn = document.getElementById('previewBasedOn');
+            const btnCancel = document.getElementById('reviewModalCancel');
+            const btnSkip = document.getElementById('reviewModalSkip');
+
+            let debounceTimer = null;
+
+            function closeModal() { if (reviewModal) reviewModal.classList.add('hidden'); }
+            function openModal() { if (reviewModal) reviewModal.classList.remove('hidden'); }
+
+            function getSelectedPrefs() {
+                const els = Array.from(document.querySelectorAll('.jobpref-card.selected'));
+                return els.map(e => e.getAttribute('data-value')).filter(Boolean);
+            }
+
+            async function fetchPreviewFor(prefs) {
+                if (!prefs || prefs.length === 0) return;
+                try {
+                    // Build a compact profile payload from localStorage (if available)
+                    const profileKeys = ['skills','certifications','education','address','city','province','experience','languages','disabilities','age','gender','firstName','lastName','occupation','summary'];
+                    const profile = {};
+                    profileKeys.forEach(k => {
+                        try {
+                            const raw = localStorage.getItem(k);
+                            if (raw === null || raw === undefined) return;
+                            // try to parse JSON arrays/objects, otherwise send raw string
+                            try { profile[k] = JSON.parse(raw); } catch(_) { profile[k] = raw; }
+                        } catch(e) { /* ignore localStorage errors */ }
+                    });
+
+                    const bodyPayload = { job_prefs: prefs };
+                    // only attach profile if it contains any keys
+                    if (Object.keys(profile).length) bodyPayload.profile = profile;
+
+                    const res = await fetch('/db/get-jobs-preview.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(bodyPayload)
+                    });
+                    const data = await res.json();
+                    if (data && data.success && Array.isArray(data.recommendations)) {
+                        renderRecommendations(data.recommendations, data.preview_based_on || prefs);
+                        // show the modal
+                        openModal();
+                    }
+                } catch (err) {
+                    console.warn('Preview fetch failed', err);
+                }
+            }
+
+            function renderRecommendations(list, basedOn) {
+                if (!previewList) return;
+                previewList.innerHTML = '';
+                previewBasedOn.textContent = basedOn && basedOn.length ? 'Based on: ' + basedOn.join(', ') : '';
+                list.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'flex items-center gap-3 p-3 border rounded-lg';
+                    const img = document.createElement('img');
+                    img.src = item.logo || 'https://via.placeholder.com/80?text=Logo';
+                    img.alt = item.company_name || 'logo';
+                    img.className = 'w-16 h-16 object-cover rounded-md';
+                    const body = document.createElement('div');
+                    body.className = 'flex-1';
+                    const title = document.createElement('div');
+                    title.className = 'font-semibold text-blue-700';
+                    title.textContent = item.job_role || 'Job';
+                    const company = document.createElement('div');
+                    company.className = 'text-sm text-gray-600';
+                    company.textContent = item.company_name || '';
+                    const score = document.createElement('div');
+                    score.className = 'text-xs text-gray-500 mt-1';
+                    score.textContent = 'Match: ' + (item.computed_score !== undefined ? item.computed_score + '%' : (item.content_score ? item.content_score + '%' : '—'));
+                    const desc = document.createElement('div');
+                    desc.className = 'text-sm text-gray-700 mt-1';
+                    desc.textContent = (item.description || '').slice(0, 140) + ((item.description || '').length > 140 ? '…' : '');
+                    body.appendChild(title);
+                    body.appendChild(company);
+                    body.appendChild(score);
+                    body.appendChild(desc);
+                    div.appendChild(img);
+                    div.appendChild(body);
+                    previewList.appendChild(div);
+                });
+            }
+
+            // Delegated click: when a job card is clicked, wait briefly then fetch preview if >=3 selected
+            document.addEventListener('click', function(ev){
+                const card = ev.target.closest && ev.target.closest('.jobpref-card');
+                if (!card) return;
+                if (debounceTimer) clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(function(){
+                    const prefs = getSelectedPrefs();
+                    if (prefs.length >= 3) fetchPreviewFor(prefs);
+                }, 220);
+            });
+
+            if (btnCancel) btnCancel.addEventListener('click', function(){ closeModal(); });
+            if (btnSkip) btnSkip.addEventListener('click', function(){ closeModal(); window.location.href = '{{ route('registerfinalstep') }}'; });
+
+            // allow Escape to close modal
+            window.addEventListener('keydown', function(ev){ if (ev.key === 'Escape' && reviewModal && !reviewModal.classList.contains('hidden')) { closeModal(); } });
         })();
     </script>
 
