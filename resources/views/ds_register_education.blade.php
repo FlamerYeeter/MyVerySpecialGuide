@@ -261,7 +261,7 @@
                                             <img src="https://img.icons8.com/fluency/24/graduation-cap.png" alt="Education level icon" class="w-5 h-5" />
                                             Education Level
                                         </label>
-                                        <select name="education_level[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 text-gray-800">
+                                        <select name="education_level[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
                                             <option value="" disabled selected class="text-gray-400">Select Level</option>
                                             <option>Elementary</option>
                                             <option>Highschool</option>
@@ -276,7 +276,7 @@
                                             <img src="https://img.icons8.com/fluency/24/company.png" alt="School icon" class="w-5 h-5" />
                                             School / Training Center
                                         </label>
-                                        <input type="text" name="education_school[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="Enter school name" />
+                                        <input type="text" name="education_school[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="Enter school name" />
                                     </div>
 
                                     <div class="md:col-span-2">
@@ -284,7 +284,7 @@
                                             <img src="https://img.icons8.com/fluency/24/book.png" alt="Course icon" class="w-5 h-5" />
                                             Course / Program
                                         </label>
-                                        <input type="text" name="education_program[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="Example: Food Preparation Training" />
+                                        <input type="text" name="education_program[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="Example: Food Preparation Training" />
                                     </div>
 
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
@@ -293,14 +293,14 @@
                                                 <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Start year icon" class="w-5 h-5" />
                                                 Year Started
                                             </label>
-                                            <input type="number" name="education_start[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="e.g. 2018" min="1900" max="2100" />
+                                            <input type="number" name="education_start[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. 2018" min="1900" max="2100" />
                                         </div>
                                         <div>
                                             <label class="font-semibold text-gray-800 flex items-center gap-2">
                                                 <img src="https://img.icons8.com/fluency/24/calendar.png" alt="End year icon" class="w-5 h-5" />
                                                 Year Completed
                                             </label>
-                                            <input type="number" name="education_end[]" class="w-full border border-gray-300 rounded-lg p-3" placeholder="e.g. 2022" min="1900" max="2100" />
+                                            <input type="number" name="education_end[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. 2022" min="1900" max="2100" />
                                         </div>
                                     </div>
                                 </div>
@@ -351,24 +351,24 @@
                 <div id="cert_section" class="hidden mt-6 section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
                     <input id="certificates" name="certificates" type="hidden" value="[]" />
 
-                    <!-- Upload cert/training file -->
-                    <div class="mt-4 text-left px-2 sm:px-4">
-                        <label class="font-semibold text-gray-800 text-base sm:text-lg flex items-center justify-between gap-2">
-                            <span>Please upload your Certificates/Trainings.</span>
-                            <button type="button"
-                                class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                                data-tts-en="Please upload your certificates and training documents to verify your skills, knowledge, and completed trainings."
-                                data-tts-tl="Paki-upload ang iyong mga certificate at training documents upang ma-verify ang iyong mga kasanayan at natapos na pagsasanay." 
-                                aria-label="Play audio for upload instructions">🔊</button>
-                        </label>
+                            <!-- Upload cert/training file -->
+                            <div class="mt-4 text-left px-2 sm:px-4">
+                                <label class="font-semibold text-gray-800 text-base sm:text-lg flex items-center justify-between gap-2">
+                                    <span>Please upload your Certificates/Trainings.</span>
+                                    <button type="button"
+                                        class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                                        data-tts-en="Please upload your certificates and training documents to verify your skills, knowledge, and completed trainings."
+                                        data-tts-tl="Paki-upload ang iyong mga certificate at training documents upang ma-verify ang iyong mga kasanayan at natapos na pagsasanay." 
+                                        aria-label="Play audio for upload instructions">🔊</button>
+                                </label>
 
-                        <p class="text-black-700 text-sm sm:text-base mt-4 mb-2">
-                           Please upload your certificates and training documents to verify your skills, knowledge, and completed trainings.
-                        </p>
+                                <p class="text-black-700 text-sm sm:text-base mt-4 mb-2">
+                                Please upload your certificates and training documents to verify your skills, knowledge, and completed trainings.
+                                </p>
 
-                        <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-                            (Paki-upload ang iyong mga certificate at training documents upang ma-verify ang iyong mga kasanayan at natapos na pagsasanay.)
-                        </p>
+                                <p class="text-gray-600 italic text-sm sm:text-base mb-2">
+                                    (Paki-upload ang iyong mga certificate at training documents upang ma-verify ang iyong mga kasanayan at natapos na pagsasanay.)
+                                </p>
 
                         
 

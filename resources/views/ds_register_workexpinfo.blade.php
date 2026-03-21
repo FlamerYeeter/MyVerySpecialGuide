@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Registration: Work Experience Information</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
@@ -15,37 +16,125 @@
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
 
-
-        .workyr-card.selected {
-            border: 3px solid #2563eb;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
-            transform: translateY(-4px);
-            background-color: #eff6ff;
-        }
-        /* Make workexp cards animate like workyr cards */
-        .workexp-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.25s ease, border 0.2s ease;
-            will-change: transform, box-shadow;
-        }
-        .workexp-card:hover {
-            transform: translateY(-4px);
-        }
-        .workexp-card.selected {
-            border: 3px solid #2563eb;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
-            transform: translateY(-4px);
-            background-color: #eff6ff;
-        }
-        .workexp-card.disabled,
-        .workyr-card.disabled {
-            opacity: 0.45;
-            pointer-events: none;
-            filter: grayscale(0.05);
-        }
+    .workyr-card.selected {
+        border: 3px solid #2563eb;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
+        transform: translateY(-4px);
+        background-color: #eff6ff;
+    }
+    
+    /* Make workexp cards animate like workyr cards */
+    .workexp-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.25s ease, border 0.2s ease;
+        will-change: transform, box-shadow;
+    }
+    .workexp-card:hover {
+        transform: translateY(-4px);
+    }
+    .workexp-card.selected {
+        border: 3px solid #2563eb;
+        box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
+        transform: translateY(-4px);
+        background-color: #eff6ff;
+    }
+    .workexp-card.disabled,
+    .workyr-card.disabled {
+        opacity: 0.45;
+        pointer-events: none;
+        filter: grayscale(0.05);
+    }
+    
     .tts-btn.speaking {
         background-color: #2563eb !important;
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
         transform: scale(1.03);
+    }
+
+    /* OCR Loading Spinner */
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .ocr-spinner {
+      border: 4px solid #e5e7eb;
+      border-top: 4px solid #2E2EFF;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+    .ocr-loading-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px;
+        background-color: #f0f4ff;
+        border: 1px solid #2E2EFF;
+        border-radius: 8px;
+        margin-top: 12px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .ocr-loading-text {
+      font-size: 14px;
+      color: #1e40af;
+      font-weight: 500;
+    }
+
+    /* Layout & Typography improvements */
+    .main-container h1 { font-size: clamp(1.6rem, 3.6vw, 2.8rem); line-height: 1.05; }
+    .main-container h2, .main-container h3 { font-size: clamp(1.05rem, 2.2vw, 1.4rem); }
+    .main-container .text-gray-600.italic { font-size: 0.92rem; }
+    .main-container .bg-white.rounded-2xl { padding: 1.25rem; }
+    .main-container .upload-error { font-size: 0.92rem; }
+    /* Make TTS buttons consistent */
+    .tts-btn { padding: 0.55rem 0.6rem; border-radius: 9999px; }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        body { font-size: 15px; }
+        .main-container { padding: 0.6rem; }
+        .main-container h1 { text-align: center; margin-bottom: 0.5rem; }
+        .main-container h3 { text-align: center; }
+        /* make labels and helper text slightly larger for readability */
+        .main-container label, .main-container p, .main-container .text-gray-600 { font-size: 15px; }
+        /* Ensure TTS buttons are touch-friendly */
+        .tts-btn { padding: 0.6rem; font-size: 1.05rem; }
+        /* Ensure inputs stretch and maintain balanced padding */
+        .main-container input[type="text"],
+        .main-container input[type="email"],
+        .main-container input[type="tel"],
+        .main-container input[type="date"],
+        .main-container input[type="number"],
+        .main-container input[type="password"],
+        .main-container select,
+        .main-container textarea { font-size: 15px; padding: 0.6rem 0.75rem; }
+    }
+    
+    /* Section card consistency */
+    .main-container .section-card {
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 0.75rem;
+        min-height: 360px;
+        padding: 1.25rem; 
+    }
+    /* Slightly smaller on medium screens */
+    @media (max-width: 1024px) {
+        .main-container .section-card { min-height: 320px; }
+    }
+    /* On small screens make section cards match the instruction blue card size */
+    @media (max-width: 640px) {
+        .main-container .section-card { min-height: 300px; padding: 0.9rem; }
+        /* make section cards visually wider on small screens to use more horizontal space; keep info-card at original size */
+        .main-container .section-card {
+            width: calc(100% + 2rem);
+            max-width: none;
+            margin-left: -1rem;
+            margin-right: -1rem;
+        }
     }
     </style>
     <!-- <script>
@@ -114,162 +203,146 @@
     </script> -->
 </head>
 
-<body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
+<body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
 
     <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
-        class="hidden sm:block fixed left-1 sm:left-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-slow z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-10 top-1/3 w-20 sm:w-28 md:w-32 opacity-90 animate-float-slow z-0">
     <img src="image/obj7.png" alt="Triangle Mascot"
-        class="hidden sm:block fixed left-1 sm:left-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-28 opacity-90 animate-float-medium z-0">
     <img src="image/obj3.png" alt="Blue Mascot"
-        class="hidden sm:block fixed right-1 sm:right-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-fast z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-10 top-1/4 w-20 sm:w-28 md:w-32 opacity-90 animate-float-fast z-0">
     <img src="image/obj8.png" alt="Twin Mascot"
-        class="hidden sm:block fixed right-1 sm:right-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-32 opacity-90 animate-float-medium z-0">
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
         onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registereducation') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
-            class="w-3 h-3 sm:w-6 sm:h-6">
+            class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         Back
     </button>
 
-    <!-- Main Content Container -->
+  <!-- Main Content Container -->
     <div
-        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
-
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
         <!-- Header -->
-        <div class="text-center mt-2 sm:mt-4 px-2">
-            <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-3 drop-shadow-md leading-snug">
-                Set Up Your Profile
-            </h1>
-            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-28 md:w-36 mb-5">
+        <div class="text-center mt-4">
+            <h1
+                class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">
+                Set Up Your Profile</h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
             <h2
-                class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
-                Continue setting up your profile
-                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                    data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile"
+                class="relative flex flex-wrap items-center justify-center gap-3 text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold">
+                <span class="block mx-auto max-w-[82%] sm:max-w-none md:max-w-[85%] text-center md:pr-2 ">Let’s continue setting up your profile</span>
+                <button type="button" class="ml-2 md:ml-3 text-sm sm:text-2xl bg-[#1E40AF] text-white p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2"
+                    data-tts-en="Let’s continue setting up your profile" data-tts-tl="Ipagpatuloy natin ang pag-set up ng iyong profile"
                     aria-label="Play audio for header">🔊</button>
             </h2>
             <p
-                class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
-                (Ituloy ang pag-set up ng iyong profile)
+                class="mt-2 sm:mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+                (Ipagpatuloy natin ang pag-set up ng iyong profile)
             </p>
         </div>
 
-        <!-- Information Note -->
-        <div
-            class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
-            <div class="flex flex-col sm:flex-row items-start gap-3 pr-14">
-                <!-- Info Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
-                </svg>
+            <div class="main-container mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-6xl px-4 sm:px-0">
 
-                <!-- Info Text -->
-                <div class="flex-1">
-                    <p class="font-medium text-xs sm:text-base leading-relaxed">
-                        Please share your work experience information. This helps us understand the kind of work you’ve
-                        done before and identify roles or opportunities where your skills and background will be most
-                        valued.
-                    </p>
-                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-                        (Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan
-                        namin ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na
-                        babagay sa
-                        iyong kasanayan at karanasan.)
-                    </p>
-                    <p class="text-black-700 text-[16px] font-medium sm:text-sm mt-4 leading-relaxed">
-                        Even if you haven’t worked before, you can still share volunteer work, school activities, or
-                        other experiences that helped you develop your skills.
-                    </p>
-                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-                        (Kahit wala ka pang pormal na trabaho, maaari mong ilagay ang mga karanasang boluntaryo,
-                        gawain sa paaralan, o iba pang aktibidad na nakatulong sa iyong paghubog ng kasanayan.)
+            <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+
+                <!-- Header -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
+                <div class="text-left px-2 sm:px-4">
+                    <h2 class="text-xl sm:text-2xl font-bold text-blue-600 flex items-center justify-between gap-2">
+                    Have you done any work or jobs before?
+                    </h2>
+                    <p class="text-gray-700 italic text-md mt-2">
+                    (Nakapagtrabaho ka na ba o nagkaroon ka na ba ng anumang trabaho dati?)
                     </p>
                 </div>
-            </div>
-
-            <!-- Audio Button -->
-            <button type="button"
-                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-lg sm:text-xl p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-                data-tts-en="Please share your work experience information. This helps us understand the kind of work you’ve done before and identify roles or opportunities where your skills and background will be most valued."
-                data-tts-tl="Ilagay ang iyong impormasyon tungkol sa karanasan sa trabaho. Makakatulong ito upang maunawaan namin ang uri ng mga gawaing iyong nagawa na at matukoy ang mga posisyon o oportunidad na babagay sa iyong kasanayan at karanasan."
-                aria-label="Play audio for information note">
-                🔊
-            </button>
-        </div>
-
-        <form class="mt-10 max-w-3xl mx-auto">
-
-            <!-- Work Experience Section -->
-            <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
-
-                <!-- Work Experience Title -->
-                <div class="flex items-center justify-center sm:justify-start gap-3 mb-3">
-                    <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Work Experience</h2>
+                <!-- Audio Button -->
+                <button type="button" 
+                    class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                    data-tts-en="Have you done any work or jobs before? Choose the option from the images below that best describes your work experience." 
+                    data-tts-tl="Nakapagtrabaho ka na ba o nagkaroon ka na ba ng anumang trabaho dati? Piliin ang opsyon mula sa mga larawan sa ibaba na pinakaangkop na naglalarawan ng iyong karanasan sa trabaho."
+                    aria-label="Play audio for question">
+                    🔊
+                </button>
                 </div>
 
-                <!-- Question Box -->
-                <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 rounded-lg px-4 py-4 shadow-sm">
-                    <div class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-2">
-                        <p class="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
-                            Have you worked before?
-                        </p>
-                        <button type="button" class="text-blue-600 text-2xl hover:scale-110 transition-transform focus:outline-none tts-btn"
-                            title="Play audio" data-tts-en="Have you worked before?"
-                            data-tts-tl="Nakapagtrabaho ka na dati?" aria-label="Play audio for question">
-                            🔊
-                        </button>
-                    </div>
-                    <p class="text-gray-600 italic text-base sm:text-lg mt-1">
-                        (Nakapagtrabaho ka na dati?)
-                    </p>
+                <!-- Instruction Box -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 shadow border border-blue-100 mb-10 max-w-3xl mx-auto sm:mx-0">
+                <p class="text-base sm:text-lg font-medium text-gray-800 leading-relaxed">
+                    Choose the option from the images below that best describes your 
+                    <span class="text-blue-700 font-semibold">work experience</span>.
+                </p>
+                <div class="border-t border-gray-200 my-4"></div>
+                <p class="text-sm sm:text-base text-gray-700 italic">
+                    (Piliin ang opsyon mula sa mga larawan sa ibaba na pinakaangkop na naglalarawan ng iyong 
+                    <span class="font-semibold text-blue-700">karanasan sa trabaho</span>.)
+                </p>
                 </div>
 
-                <!-- Instruction -->
-                <div class="mt-8">
-                    <div
-                        class="flex flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-start gap-2">
-                        <p class="text-gray-800 font-medium text-base sm:text-lg leading-snug">
-                            Choose from the pictures provided and click your answer.
-                        </p>
-                        <button type="button"
-                        class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                        data-tts-en="Choose from the pictures provided and click your answer."
-                        data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot"
-                        aria-label="Play audio for instruction">🔊</button>
-                    </div>
-                    <p class="text-gray-600 italic text-sm sm:text-base mt-1">
-                        (Pumili mula sa mga larawan at pindutin ang iyong sagot)
-                    </p>
-                </div>
-            </div>
+                <!-- Options -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 max-w-4xl mx-auto">
 
-            <!-- Cards -->
-            <div class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
-                <!-- Card 1 -->
-                <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
+                <!-- Have Experience-->
+                <div class="workexp-card bg-white border border-gray-200 p-6 rounded-2xl hover:bg-blue-50 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer relative text-center"
                     data-value="paid" onclick="selectWorkTypeChoice(this,'paid')">
-                     <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="Yes, I have had a paid job" data-tts-tl="Oo, nagkaroon ako ng trabahong may bayad"
-                        aria-label="Play audio for 1-2 years option">🔊</button>
-                    <img src="image/jobexp1.png" alt="paid job" class="w-full h-36 object-contain rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Yes, I have had a paid job</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Oo, nagkaroon ako ng trabahong may
-                        bayad)
+
+                    <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow text-sm tts-btn"
+                    data-tts-en="Yes, I have worked before"
+                    data-tts-tl="Oo, nakapagtrabaho na ako dati">
+                    🔊
+                    </button>
+
+                    <img src="image/jobexp1.png"
+                    alt="paid job"
+                    class="w-full h-44 object-contain mb-5">
+
+                    <h3 class="text-lg font-semibold text-blue-700">
+                    Yes, I have worked before
+                    </h3>
+                    <p class="text-sm text-gray-600 italic mt-2">
+                    (Oo, nakapagtrabaho na ako dati)
                     </p>
+
                 </div>
 
-                <!-- Card 2 -->
+                <!-- No Experience -->
+                <div class="workexp-card bg-white border border-gray-200 p-6 rounded-2xl hover:bg-blue-50 hover:shadow-xl hover:-translate-y-1 transition-all duration-200 cursor-pointer relative text-center"
+                    data-value="none" onclick="selectWorkTypeChoice(this,'none')">
+
+                    <button type="button"
+                    class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow text-sm tts-btn"
+                    data-tts-en="No, this would be my first time"
+                    data-tts-tl="Hindi, ito ang magiging unang beses ko">
+                    🔊
+                    </button>
+
+                    <img src="image/jobexp4.png"
+                    alt="no job experience"
+                    class="w-full h-44 object-contain mb-5">
+
+                    <h3 class="text-lg font-semibold text-blue-700">
+                    No, this would be my first time
+                    </h3>
+                    <p class="text-sm text-gray-600 italic mt-2">
+                    (Hindi, ito ang magiging unang beses ko)
+                    </p>
+
+                </div>
+
+                </div>
+
+            </div>
+            </div>
+
+                {{-- <!-- Card 2 -->
                 <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
                     data-value="volunteer" onclick="selectWorkTypeChoice(this,'volunteer')">
                     <button type="button"
@@ -293,257 +366,267 @@
                     </h3>
                     <p class="text-[13px] text-gray-600 italic text-center mt-2">(Nag internship o job training ako)
                     </p>
-                </div>
+                </div> --}}
 
-                <!-- Card 4 -->
-                <div class="workexp-card bg-white p-5 rounded-2xl hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    data-value="none" onclick="selectWorkTypeChoice(this,'none')">
-                   <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="No, this would be my first time" data-tts-tl="Hindi, ito ang magiging unang beses ko"
-                        aria-label="Play audio for 1-2 years option">🔊</button>
-                    <img src="image/jobexp4.png" alt="no job experience"
-                        class="w-full h-36 object-contain rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">No, this would be my first time</h3>
-                    <p class="text-[13px] text-gray-600 italic text-center mt-2">(Hindi, ito ang magiging unang beses
-                        ko)
+            <div
+            class="info-card mt-6 sm:mt-8 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
+
+              <!-- Desktop Audio Button -->
+                <button type="button" aria-label="Play audio for info section"
+                    class="hidden sm:block absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+                         text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+                            focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below. If you do not have any work experience yet, 
+                            it’s okay to leave this section blank. Everyone starts somewhere!"
+                            data-tts-tl="Kung ikaw ay nakapagtrabaho na, ilagay ang posisyon sa trabaho, pangalan at lokasyon ng kumpanya, taon ng pagsisimula at pagtatapos, at maikling paglalarawan ng iyong trabaho sa ibaba.
+                                         Kung wala ka pang karanasan sa trabaho, okay lang na iwanang blangko ang bahaging ito..">
+                            🔊
+                </button>
+
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-4 sm:pr-16"> 
+                <!-- Info Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+                </svg>
+
+                <!-- Text Content -->
+                <div class="flex-1 text-center sm:text-left">
+                    <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
+                        If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below. 
+                        If you do not have any work experience yet, it’s okay to leave this section blank. Everyone starts somewhere!
                     </p>
+                    <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+                        (Kung ikaw ay nakapagtrabaho na, ilagay ang posisyon sa trabaho, pangalan at lokasyon ng kumpanya, taon ng pagsisimula at pagtatapos, at maikling paglalarawan ng iyong trabaho sa ibaba.
+                         Kung wala ka pang karanasan sa trabaho, okay lang na iwanang blangko ang bahaging ito.)
+                    </p>
+                
+                 <!-- Mobile Audio Button -->
+                    <div class="mt-3 flex justify-center sm:hidden">
+                        <button type="button" aria-label="Play audio for info section"
+                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
+                            transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                                data-tts-en="If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below. If you do not have any work experience yet, 
+                                it’s okay to leave this section blank. Everyone starts somewhere!"
+                            data-tts-tl="Kung ikaw ay nakapagtrabaho na, ilagay ang posisyon sa trabaho, pangalan at lokasyon ng kumpanya, taon ng pagsisimula at pagtatapos, at maikling paglalarawan ng iyong trabaho sa ibaba.
+                                         Kung wala ka pang karanasan sa trabaho, okay lang na iwanang blangko ang bahaging ito.">
+                            🔊
+                    </button>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Hidden input for work type (collected by register.js) -->
-            <input id="work_type" type="hidden" value="" />
 
-            <!-- Work Experience Question 
-            <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
 
-                <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 rounded-lg px-4 py-4 shadow-sm">
-                    <div
-                       class="flex flex-col sm:flex-row items-center sm:items-start justify-between gap-2">
-                        <p class="text-lg sm:text-xl font-semibold text-gray-800 text-center sm:text-left">
-                            If you have worked before, how long did you work there?
-                        </p>
-                        <button type="button"
-                            class="text-blue-600 text-2xl hover:scale-110 transition-transform tts-btn"
-                            data-tts-en="If you have worked before, how long did you work there?"
-                            data-tts-tl="Kung may karanasan ka sa trabaho, gaano ka katagal nagtrabaho doon?"
-                            aria-label="Play audio for work experience question">🔊</button>
-                    </div>
-                    <p class="text-gray-600 italic text-base sm:text-lg mt-1">
-                        (Kung may karanasan ka sa trabaho, gaano ka katagal nagtrabaho doon?)
-                    </p>
-                </div> -->
 
-                <!-- Instruction 
-                <div class="mt-8">
-                    <div
-                        class="flex flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-start gap-2">
-                        <p class="text-gray-800 font-medium text-base sm:text-lg leading-snug">
-                            Choose from the pictures provided and click your answer.
-                        </p>
-                        <button type="button"
-                            class="text-blue-600 text-2xl hover:scale-110 transition-transform tts-btn"
-                            data-tts-en="Choose from the pictures provided and click your answer."
-                            data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot"
-                            aria-label="Play audio for instruction">🔊</button>
-                    </div>
-                    <p class="text-gray-600 italic text-sm sm:text-base mt-1">
-                        (Pumili mula sa mga larawan at pindutin ang iyong sagot)
-                    </p>
+                <!-- Shared preview modal (used by per-entry view buttons) -->
+                <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
+                <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
+                    <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
+                    <div id="modalContent" class="p-2 text-center"></div>
+                </div>
                 </div>
 
-            </div> -->
+                <!-- Experiences Section -->
+                <div id="experiences_section" class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200 mt-12 hidden">
 
-            <!-- Work Years Cards 
-            <div
-                class="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-8 px-2 sm:px-4">
-             
-                <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkYearsChoice(this, 'lt1')">
-                    <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="Less than 1 year" data-tts-tl="Mas mababa sa 1 taon"
-                        aria-label="Play audio for Less than 1 year option">🔊</button>
-                    <img src="image/workyr1.png" alt="less 1 yr"
-                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Less than 1 year</h3>
-                </div>
-
-            
-                <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkYearsChoice(this, '1-2')">
-                    <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="1 to 2 years" data-tts-tl="1 hanggang 2 taon"
-                        aria-label="Play audio for 1-2 years option">🔊</button>
-                    <img src="image/workyr2.png" alt="1-2 yrs"
-                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">1-2 years</h3>
-                </div>
-
-            
-                <div class="workyr-card bg-white p-4 sm:p-5 rounded-2xl transition-all duration-300 hover:bg-blue-100 hover:shadow-xl hover:-translate-y-1 cursor-pointer relative text-center"
-                    onclick="selectWorkYearsChoice(this, 'gt3')">
-                    <button type="button"
-                        class="absolute top-2 right-2 sm:top-3 sm:right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-1.5 sm:p-2 rounded-full shadow text-xs sm:text-sm tts-btn"
-                        data-tts-en="More than 3 years" data-tts-tl="Mahigit 3 taon"
-                        aria-label="Play audio for More than 3 years option">🔊</button>
-                    <img src="image/workyr3.png" alt="more than 3 yrs"
-                        class="w-full h-32 sm:h-44 md:h-48 object-contain rounded-md mb-3 sm:mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">More than 3 years</h3>
-                </div>
-            </div>  -->
-
-            <!-- top-level typed start year removed per UX request — per-job start_year remains editable -->
-        <!-- Upload Work Exp Certificate -->
-            <div class="mt-8 text-left px-2 sm:px-4">
-                        <label class="font-semibold text-base sm:text-lg flex items-center gap-2">
-                            Please upload your Work Experience Certificate.
-                            <button type="button"
-                                class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn"
-                                data-tts-en="Please upload your Work Experience Certificate."
-                                data-tts-tl="Paki-upload ang iyong Certificate ng Work Experience.">🔊</button>
-                        </label>
-
-                        <p class="text-black-600 text-sm sm:text-base mt-4 mb-2">
-                           Upload your work experience certificate as supporting proof.
-                        </p>
-
-                        <p class="text-gray-600 italic text-sm sm:text-base mb-2">
-                            (I-upload ang iyong certificate ng karanasan sa trabaho bilang karagdagang patunay.)
-                        </p>
-
-                        <!-- Per-entry certificates are used now. Top-level upload removed. -->
-                        <!-- Shared preview modal (used by per-entry view buttons) -->
-                        <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
-                        <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
-                            <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
-                            <div id="modalContent" class="p-2 text-center"></div>
-                        </div>
+                        <div class="mb-3 flex items-start justify-between">
+                            <div>
+                                <h3 class="text-xl sm:text-2xl font-bold text-blue-600">Work Experiences</h3>
+                                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Add all your work experiences)</p>
+                            </div>
+                            <button type="button" class="hidden sm:inline-block bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-md tts-btn" data-tts-en="Add details about your work experiences. You can add multiple entries." data-tts-tl="Maglagay ng impormasyon tungkol sa iyong mga karanasan sa trabaho." aria-label="Play audio for work experiences">🔊</button>
                         </div>
 
-            <!-- Experiences Section -->
-            <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
-                <h2 class="text-xl sm:text-3xl font-bold text-blue-700 mb-2">Experiences</h2>
-                <div id="job_experiences_container" class="space-y-4 mt-4"></div>
-                <template id="job_exp_template">
-                    <div
-                        class="job_exp_item bg-white p-5 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 ease-in-out mt-3">
-                        <div class="flex justify-between items-center">
-                            <h4 class="font-semibold text-blue-800 text-sm sm:text-base">Work Experience</h4>
-                            <button type="button"
-                                class="remove-job text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium transition-colors duration-200">
-                                Remove
-                            </button>
-                        </div>
+                    <div id="job_experiences_container" class="space-y-6"></div>
+                    <template id="job_exp_template">                                    
 
-                        <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <!-- Job Title -->
-                            <div class="flex flex-col">
-                                <label for="job_title" class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job
-                                    Title</label>
-                                <input id="job_title" name="job_title"
-                                    class="job_title w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="e.g. Kitchen Helper"/>
+                        <div class="job_exp_item bg-gray-50 border border-gray-200 rounded-xl p-4">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="text-sm text-gray-600 italic">Fill in one entry per work experience</div>
+                                <button type="button"
+                                    class="remove-job text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium transition-colors duration-200">
+                                    Remove
+                                </button>
                             </div>
 
-                            <!-- Company Name -->
-                            <div class="flex flex-col">
-                                <label for="company_name"
-                                    class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Company Name</label>
-                                <input id="company_name" name="company_name"
-                                    class="company_name w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="e.g., McDonald's or University of Makati"/>
-                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Job Title -->
+                                <div>
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/briefcase.png" alt="Job title icon" class="w-5 h-5" />
+                                        Job Title
+                                    </label>
+                                    <input 
+                                        list="job-title-options"
+                                        id="job_title"
+                                        name="job_title"
+                                        class="job_title w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800"
+                                        placeholder="Select or type your job (e.g. Kitchen Helper)"
+                                    />
+                                    <datalist id="job-title-options">
+                                        <option value="Customer Assistant">
+                                        <option value="Merchandising Assistant">
+                                        <option value="Stockroom Helper">
+                                        <option value="Office Helper">
+                                        <option value="Service Crew">
+                                        <option value="Store Utility / Cleaner">
+                                        <option value="Front Desk Helper">
+                                        <option value="Housekeeping Assistant">
+                                    </datalist>
+                                </div>
+                                <!-- Company Name -->
+                                <div>
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/company.png" alt="Company icon" class="w-5 h-5" />
+                                        Company Name
+                                    </label>
+                                    <input id="company_name" name="company_name"
+                                        class="company_name w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800"
+                                        placeholder="e.g., McDonald's"/>
+                                </div>
 
-                            <!-- Work Period: Start (month/year) and End (month/year) -->
-                            <div class="flex flex-col">
-                                <label class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Work Period</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <div class="text-[11px] text-gray-600 mb-1">Start</div>
-                                        <div class="flex gap-2">
-                                            <select class="job_start_month w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" title="Start month">
-                                                <option value="">Month</option>
-                                                <option value="1">Jan</option>
-                                                <option value="2">Feb</option>
-                                                <option value="3">Mar</option>
-                                                <option value="4">Apr</option>
-                                                <option value="5">May</option>
-                                                <option value="6">Jun</option>
-                                                <option value="7">Jul</option>
-                                                <option value="8">Aug</option>
-                                                <option value="9">Sep</option>
-                                                <option value="10">Oct</option>
-                                                <option value="11">Nov</option>
-                                                <option value="12">Dec</option>
-                                            </select>
-                                            <input type="text" maxlength="4" inputmode="numeric" placeholder="Year" class="job_start_year w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" />
+                                <!-- Company Location -->
+                                <div class="md:col-span-2">
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/map-pin.png" alt="Location icon" class="w-5 h-5" />
+                                        Company Location
+                                    </label>
+                                    <input type="text"
+                                        class="company_location w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800"
+                                        placeholder="e.g., Taguig City">
+                                </div>
+
+                                <!-- Work Period -->
+                                <div class="md:col-span-2">
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Calendar icon" class="w-5 h-5" />
+                                        Work Period
+                                    </label>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                        <!-- Start -->
+                                        <div>
+                                            <p class="text-xs text-gray-600 mb-2">Start</p>
+                                            <div class="flex gap-2">
+                                                <select class="job_start_month w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                                    <option>Month</option>
+                                                    <option>January</option><option>February</option><option>March</option>
+                                                    <option>April</option><option>May</option><option>June</option>
+                                                    <option>July</option><option>August</option><option>September</option>
+                                                    <option>October</option><option>November</option><option>December</option>
+                                                </select>
+                                                <input type="text" placeholder="Year"
+                                                    class="job_start_year w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div>
-                                        <div class="text-[11px] text-gray-600 mb-1">End</div>
-                                        <div class="flex gap-2">
-                                            <select class="job_end_month w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" title="End month">
-                                                <option value="">Month</option>
-                                                <option value="1">Jan</option>
-                                                <option value="2">Feb</option>
-                                                <option value="3">Mar</option>
-                                                <option value="4">Apr</option>
-                                                <option value="5">May</option>
-                                                <option value="6">Jun</option>
-                                                <option value="7">Jul</option>
-                                                <option value="8">Aug</option>
-                                                <option value="9">Sep</option>
-                                                <option value="10">Oct</option>
-                                                <option value="11">Nov</option>
-                                                <option value="12">Dec</option>
-                                            </select>
-                                            <input type="text" maxlength="4" inputmode="numeric" placeholder="Year" class="job_end_year w-1/2 border border-gray-300 rounded-lg px-2 py-2 text-xs sm:text-sm bg-white focus:outline-none" />
+
+                                        <!-- End -->
+                                        <div>
+                                            <p class="text-xs text-gray-600 mb-2">End</p>
+                                            <div class="flex gap-2">
+                                                <select class="job_end_month w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                                    <option>Month</option>
+                                                    <option>January</option><option>February</option><option>March</option>
+                                                    <option>April</option><option>May</option><option>June</option>
+                                                    <option>July</option><option>August</option><option>September</option>
+                                                    <option>October</option><option>November</option><option>December</option>
+                                                </select>
+                                                <input type="text" placeholder="Year / Present"
+                                                    class="job_end_year w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
-                                <p class="text-[11px] text-gray-500 mt-1">Enter month and year for start and end (end can be "Present").</p>
-                            </div>
 
-                            <!-- Job Description  -->
-                            <div class="sm:col-span-2 flex flex-col">
-                                <label for="job_description"
-                                    class="text-xs sm:text-sm font-medium text-gray-700 mb-1">Job Description</label>
-                                <textarea id="job_description" name="job_description"
-                                    class="job_description w-full border border-gray-300 rounded-lg px-3 py-2 text-xs sm:text-sm h-20 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
-                                    placeholder="What you did (e.g. cleaned tables, organized shelves)">
-                         </textarea>
-                            </div>
-                            <!-- Per-entry upload for Work Experience certificate -->
-                            <div class="sm:col-span-2 mt-3">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Upload Certificate <span class="text-red-600">(required)</span>
-                                </label>
-                                <p class="text-gray-600 italic text-xs sm:text-sm mb-2 job_cert_hint">Accepted: .jpg .jpeg .png .pdf — Max 5MB</p>
-                                <div class="job_cert_display"></div>
-                                <label class="inline-block mt-2 bg-[#2E2EFF] text-white px-3 py-2 rounded-md cursor-pointer">
-                                    📁 Choose File
-                                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" required />
-                                </label>
-                                <input type="hidden" class="job_cert_data" value="" />
-                            </div>
+                                <!-- Job Description  -->
+                                <div class="md:col-span-2">
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/document.png" alt="Document icon" class="w-5 h-5" />
+                                        Job Description
+                                    </label>
+                                    <textarea id="job_description" name="job_description"
+                                        class="job_description w-full border border-gray-300 rounded-lg p-3 h-20 resize-none focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800"
+                                        placeholder="What you did (e.g. cleaned tables, organized shelves)">
+                                    </textarea>
+                                </div>
+
+                                <!-- Upload Instruction -->
+                                <div class="md:col-span-2 mt-6">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <label class="font-semibold text-gray-800 text-base sm:text-lg flex items-center gap-2">
+                                            <span>Please upload your Work Certificate.</span>
+                                        </label>
+
+                                        <button type="button"
+                                            class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                                            data-tts-en="Please upload your work certificate as proof of your previous job."
+                                            data-tts-tl="Paki-upload ang work certificate bilang patunay ng iyong nakaraang trabaho."
+                                            aria-label="Play audio for upload instructions">
+                                            🔊
+                                        </button>
+                                    </div>
+
+                                    <!-- Description -->
+                                    <p class="text-black-700 text-sm sm:text-base mt-4 mb-2 leading-relaxed">
+                                        Please upload your work certificate as proof of your previous job.
+                                    </p>
+
+                                    <p class="text-gray-600 italic text-sm sm:text-base mt-1">
+                                        (Paki-upload ang work certificate bilang patunay ng iyong nakaraang trabaho.)
+                                    </p>
+                                </div>
+                        
+                                <!-- Per-entry upload for Work Experience certificate -->
+                                <div class="md:col-span-2 mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5">
+                                    <div class="flex flex-col gap-3">
+                                        <div class="sm:flex sm:items-start sm:justify-between gap-4">
+                                            <div class="flex-1 min-w-0">
+                                                <label class="text-gray-700 text-md flex items-center gap-2">
+                                                    Upload an image or PDF of your Certificates.<span class="font-semibold italic text-sm sm:text-md text-red-600">*required</span>
+                                                </label>
+                                                <p class="text-gray-700 italic text-md mt-1 leading-relaxed">
+                                                    (Mag-upload ng larawan o PDF ng iyong Certificates)
+                                                </p>
+                                                <p class="text-gray-600 text-md mt-4 leading-relaxed">
+                                                    Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b>
+                                                </p>
+
+                                                <!-- Display uploaded file + OCR progress here -->
+                                                <div class="job_cert_display mt-3"></div>
+                                            </div>
+
+                                            <div class="flex-shrink-0">
+                                                <label class="inline-flex items-center justify-center w-full sm:w-auto mt-2 cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+                                                    📁 Choose File / Pumili ng File
+                                                    <input type="file" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" required />
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        <input type="hidden" class="job_cert_data" value="" />
+                                    </div>
+                                </div>
                         </div>
                     </div>
-                </template>
+                    </template>
 
-                <!-- Add Another Work Exp Button  -->
-                <div class="mt-4 text-center">
-                    <button id="addJobBtn" type="button"
-                        class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                            stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Add Another Work Experience
-                    </button>
+                    <!-- Add Another Work Exp Button  -->
+                    <div class="mt-4 text-center">
+                        <button id="addJobBtn" type="button"
+                            class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                            </svg>
+                            Add Another Work Experience
+                        </button>
+                    </div>
                 </div>
 
+                <input id="work_type" type="hidden" value="[]" />
                 <input id="work_experiences" type="hidden" value="[]" />
                 <input id="work_years" type="hidden" value="" />
 
@@ -551,17 +634,16 @@
                 <div class="flex flex-col items-center justify-center mt-6 mb-6 space-y-3 px-2">
                     <div id="workExpError" class="text-red-600 text-sm text-center"></div>
                     <button id="workExpNext" type="button"
-                        class="bg-[#2E2EFF] text-white text-sm sm:text-lg font-semibold px-10 sm:px-16 md:px-20 py-2 sm:py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2 shadow-md">
+                        class="w-full sm:w-auto bg-[#2E2EFF] text-white text-lg sm:text-2xl font-semibold px-6 sm:px-16 md:px-28 py-3 sm:py-4 rounded-2xl shadow-lg hover:bg-blue-600 transition disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-300">
                         Next →
                     </button>
-                    <p class="text-gray-600 text-[11px] sm:text-sm mt-2 text-center leading-snug">
-                        Click <span class="text-[#1E40AF] font-medium">"Next"</span> to move to the next page<br>
-                        <span class="italic text-[#4B4F58]">(Pindutin ang "Next" upang lumipat sa susunod na
-                            pahina)</span>
+                    <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-4 text-center leading-relaxed px-4 sm:px-0">
+                        Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue <br class="hidden sm:block">
+                       <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
                     </p>
                 </div>
         </form>
-    </div>
+
 
     <!-- Small inline helper to toggle selection and write the value -->
     <script>
@@ -649,13 +731,25 @@
             const container = document.getElementById('job_experiences_container');
             const workyrHidden = document.getElementById('work_years');
             const workyrCards = document.querySelectorAll('.workyr-card');
+            const experiencesSection = document.getElementById('experiences_section');
 
             let noneSelected = false;
+            let paidSelected = false;
             try {
                 const v = hidden ? (hidden.value || '') : '';
                 const arr = v && v.trim().startsWith('[') ? JSON.parse(v) : (v ? String(v).split(',').map(s=>s.trim()).filter(Boolean) : []);
                 noneSelected = Array.isArray(arr) && arr.includes('none');
-            } catch (e) { noneSelected = false; }
+                paidSelected = Array.isArray(arr) && arr.includes('paid');
+            } catch (e) { noneSelected = false; paidSelected = false; }
+
+            // Show/hide experiences section based on selection
+            if (experiencesSection) {
+                if (paidSelected && !noneSelected) {
+                    experiencesSection.classList.remove('hidden');
+                } else {
+                    experiencesSection.classList.add('hidden');
+                }
+            }
 
             if (noneSelected) {
                 // disable work-year cards and clear any selection
@@ -746,6 +840,9 @@
                             if (val && current.includes(val)) card.classList.add('selected');
                         });
                     }
+
+                    // Initialize experiences section visibility
+                    updateWorkExpState();
                 } catch (e) { console.warn('workexp init failed', e); }
 
                 const workExpNextBtn = document.getElementById('workExpNext');
@@ -1104,7 +1201,9 @@
                             if (!obj || !obj.name) { display.innerHTML = ''; if (hint) hint.style.display = ''; return; }
                             const icon = (obj.type === 'pdf') ? '📄' : '🖼️';
                             const name = obj.name.length > 60 ? obj.name.slice(0,57)+'...' : obj.name;
-                            display.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${icon}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${name}</span><div class="flex gap-2"><button type="button" class="view-cert bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View</button><button type="button" class="remove-cert-entry bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove</button></div></div>`;
+                            display.innerHTML = `<div class="flex flex-wrap items-center gap-3 bg-white border border-gray-200 rounded-lg px-4 py-3 shadow-sm"><span class="text-2xl">${icon}</span><span class="truncate max-w-[160px] sm:max-w-[240px]">${name}</span>
+                                                 <div class="flex gap-2"><button type="button" class="view-cert bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+                                                <button type="button" class="remove-cert-entry bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button></div></div>`;
                             if (hint) hint.style.display = 'none';
                         } catch (e) { console.warn('renderCertFromData', e); }
                     }
@@ -1128,11 +1227,16 @@
                                         // Attempt OCR autofill: POST to server OCR endpoint and map fields
                                         try {
                                             if (!display) return;
-                                            // show temporary status
-                                            const statusEl = document.createElement('div');
-                                            statusEl.className = 'mt-2 text-sm text-gray-500 ocr-status';
-                                            statusEl.textContent = 'Scanning document…';
-                                            display.appendChild(statusEl);
+                                            // Create and show loading indicator
+                                            const loadingId = `ocr-loading-${Date.now()}`;
+                                            const loadingDiv = document.createElement('div');
+                                            loadingDiv.className = 'ocr-loading-container';
+                                            loadingDiv.id = loadingId;
+                                            loadingDiv.innerHTML = `
+                                                <div class="ocr-spinner"></div>
+                                                <span class="ocr-loading-text">Processing OCR... Please wait</span>
+                                            `;
+                                            display.appendChild(loadingDiv);
 
                                             const resp = await fetch('/db/ocr-validation.php', {
                                                 method: 'POST',
@@ -1140,6 +1244,8 @@
                                                 body: JSON.stringify({ type: 'certificate_proof', ocr_data: data })
                                             });
                                             const json = await resp.json();
+                                            // remove loading
+                                            try { const ld = display.querySelector('.ocr-loading-container'); if (ld) ld.remove(); } catch(e){}
                                             if (json && json.status && json.data && json.data.ai_data) {
                                                 const ai = json.data.ai_data || {};
                                                 // Map OCR fields into job entry fields
@@ -1179,7 +1285,7 @@
                                         } catch (e) {
                                             console.warn('OCR request failed', e);
                                         } finally {
-                                            try { const s = display.querySelector('.ocr-status'); if (s) s.remove(); } catch(e){}
+                                            try { const s = display.querySelector('.ocr-loading-container'); if (s) s.remove(); } catch(e){}
                                         }
 
                                     } catch (e) { console.warn(e); }
@@ -1318,7 +1424,6 @@
     <!-- TTS: Web Speech API handler -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const buttons = document.querySelectorAll('.tts-btn');
             const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
             const preferredTagalogVoiceName = 'fil-PH-BlessicaNeural';
             let preferredEnglishVoice = null;
@@ -1361,49 +1466,52 @@
                 }
             }
 
-            buttons.forEach(function(btn) {
+            // Use event delegation to handle both static and dynamically added buttons
+            document.addEventListener('click', function(e) {
+                const btn = e.target.closest('.tts-btn');
+                if (!btn) return;
+                
                 btn.setAttribute('role', 'button');
                 btn.setAttribute('tabindex', '0');
 
-                btn.addEventListener('click', function() {
-                    const textEn = (btn.getAttribute('data-tts-en') || '').trim();
-                    const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
-                    if (!textEn && !textTl) return;
+                const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                if (!textEn && !textTl) return;
 
-                    if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
-                        stopSpeaking();
-                        return;
+                if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                    stopSpeaking();
+                    return;
+                }
+
+                stopSpeaking();
+
+                setTimeout(function() {
+                    if (!window.speechSynthesis) return;
+
+                    function voiceFor(langHint) {
+                        if (langHint) {
+                            const hint = (langHint || '').toLowerCase();
+                            if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                if (preferredTagalogVoice) return preferredTagalogVoice;
+                                return chooseVoiceForLang('tl');
+                            }
+                            if (hint.startsWith('en')) {
+                                if (preferredEnglishVoice) return preferredEnglishVoice;
+                                return chooseVoiceForLang('en');
+                            }
+                        }
+                        return preferredEnglishVoice || chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
                     }
 
-                    stopSpeaking();
-
-                    setTimeout(function() {
-                        if (!window.speechSynthesis) return;
-
-                        function voiceFor(langHint) {
-                            if (langHint) {
-                                const hint = (langHint || '').toLowerCase();
-                                if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
-                                    if (preferredTagalogVoice) return preferredTagalogVoice;
-                                    return chooseVoiceForLang('tl');
-                                }
-                                if (hint.startsWith('en')) {
-                                    if (preferredEnglishVoice) return preferredEnglishVoice;
-                                    return chooseVoiceForLang('en');
-                                }
-                            }
-                            return preferredEnglishVoice || chooseVoiceForLang('en') || (availableVoices.length ? availableVoices[0] : null);
-                        }
-
-                        const seq = [];
-                        if (textEn) {
-                            const uEn = new SpeechSynthesisUtterance(textEn);
-                            uEn.lang = 'en-US';
-                            const v = voiceFor('en');
-                            if (v) uEn.voice = v;
-                            seq.push(uEn);
-                        }
-                        if (textTl) {
+                    const seq = [];
+                    if (textEn) {
+                        const uEn = new SpeechSynthesisUtterance(textEn);
+                        uEn.lang = 'en-US';
+                        const v = voiceFor('en');
+                        if (v) uEn.voice = v;
+                        seq.push(uEn);
+                    }
+                    if (textTl) {
                             const uTl = new SpeechSynthesisUtterance(textTl);
                             uTl.lang = 'tl-PH';
                             const v2 = voiceFor('tl');
@@ -1439,14 +1547,20 @@
 
                         window.speechSynthesis.speak(seq[0]);
                     }, 50);
-                });
+            });
 
-                btn.addEventListener('keydown', function(ev) {
-                    if (ev.key === 'Enter' || ev.key === ' ') {
-                        ev.preventDefault();
-                        btn.click();
-                    }
-                });
+            // Handle keydown for accessibility on any .tts-btn
+            document.addEventListener('keydown', function(e) {
+                if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('tts-btn')) {
+                    e.preventDefault();
+                    e.target.click();
+                }
+            });
+
+            // Initialize static buttons on page load
+            document.querySelectorAll('.tts-btn').forEach(function(btn) {
+                btn.setAttribute('role', 'button');
+                btn.setAttribute('tabindex', '0');
             });
 
             window.addEventListener('beforeunload', function() { if (window.speechSynthesis) window.speechSynthesis.cancel(); });
