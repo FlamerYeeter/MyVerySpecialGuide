@@ -979,30 +979,50 @@
                             // Additional validation: ensure per-entry month/year ranges are valid
                             const jobItemsAll = Array.from(document.querySelectorAll('#job_experiences_container .job_exp_item'));
                             const today = new Date();
+
+                            // helper: convert month name or numeric string to month number (1-12). Returns '' when not a real month.
+                            function monthToNumber(m) {
+                                if (!m) return '';
+                                const s = String(m).trim();
+                                if (!s) return '';
+                                // allow numeric months like '1'..'12' or '01'..'12'
+                                if (/^0?[1-9]$|^1[0-2]$/.test(s)) return String(Number(s));
+                                const map = {
+                                    january: '1', february: '2', march: '3', april: '4', may: '5', june: '6',
+                                    july: '7', august: '8', september: '9', october: '10', november: '11', december: '12'
+                                };
+                                const key = s.toLowerCase();
+                                return map[key] || '';
+                            }
+
                             for (const item of jobItemsAll) {
                                 const jt = item.querySelector('.job_title')?.value?.trim() || '';
                                 const cn = item.querySelector('.company_name')?.value?.trim() || '';
                                 const jd = item.querySelector('.job_description')?.value?.trim() || '';
-                                const sm = item.querySelector('.job_start_month')?.value?.trim() || '';
+                                const smRaw = item.querySelector('.job_start_month')?.value?.trim() || '';
                                 const sy = item.querySelector('.job_start_year')?.value?.trim() || '';
-                                const em = item.querySelector('.job_end_month')?.value?.trim() || '';
+                                const emRaw = item.querySelector('.job_end_month')?.value?.trim() || '';
                                 const ey = item.querySelector('.job_end_year')?.value?.trim() || '';
+
+                                const sm = monthToNumber(smRaw);
+                                const em = monthToNumber(emRaw);
+
                                 const hasAny = jt || cn || jd || sm || sy || em || ey;
-                                if (!hasAny) continue; // skip empty rows
+                                if (!hasAny) continue; // skip empty rows or rows with only placeholders
 
                                 // if any part of the period is provided, require start month+year and end month+year (or 'Present')
                                 if (sm || sy || em || ey) {
                                     // start must have month and 4-digit year
-                                    if (!/^[1-9]$|^1[0-2]$/.test(String(sm)) || !/^\d{4}$/.test(String(sy))) {
+                                    if (!sm || !/^\d{4}$/.test(String(sy))) {
                                         if (errorEl) errorEl.textContent = 'Please provide a valid start month and 4-digit start year for each experience.';
                                         try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
                                         return;
                                     }
                                     // end may be 'Present' (case-insensitive) or month+4-digit year
                                     const eyRaw = String(ey || '').trim();
-                                    const endIsPresent = /^present$/i.test(eyRaw) || eyRaw === '' && em === '';
+                                    const endIsPresent = /^present$/i.test(eyRaw) || (eyRaw === '' && em === '');
                                     if (!endIsPresent) {
-                                        if (!/^[1-9]$|^1[0-2]$/.test(String(em)) || !/^\d{4}$/.test(String(eyRaw))) {
+                                        if (!em || !/^\d{4}$/.test(String(eyRaw))) {
                                             if (errorEl) errorEl.textContent = 'Please provide a valid end month and 4-digit end year (or "Present").';
                                             try { item.scrollIntoView({behavior:'smooth', block:'center'}); } catch (e) {}
                                             return;

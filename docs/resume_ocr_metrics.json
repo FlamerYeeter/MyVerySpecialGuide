@@ -1,0 +1,20 @@
+{
+  "generated_at": "2026-03-21T00:00:00Z",
+  "source": "chapter4_hybrid_ocr_results.csv::OCR_Outputs",
+  "records": [
+    {"user_id":"U001","resume_id":"R001","char_accuracy":0.96,"word_accuracy":0.94,"skill_extraction_accuracy":0.92,"detected_skills":["Customer Service","Cash Handling","Basic Computer"]},
+    {"user_id":"U002","resume_id":"R002","char_accuracy":0.95,"word_accuracy":0.93,"skill_extraction_accuracy":0.90,"detected_skills":["Data Entry","Numeric Entry","Typing"]},
+    {"user_id":"U003","resume_id":"R003","char_accuracy":0.94,"word_accuracy":0.92,"skill_extraction_accuracy":0.89,"detected_skills":["Housekeeping","Cleaning","Organization"]},
+    {"user_id":"U004","resume_id":"R004","char_accuracy":0.95,"word_accuracy":0.93,"skill_extraction_accuracy":0.91,"detected_skills":["Packaging","Task Repetition","Checklist Following"]},
+    {"user_id":"U005","resume_id":"R005","char_accuracy":0.93,"word_accuracy":0.91,"skill_extraction_accuracy":0.88,"detected_skills":["Assembly","Hand Tools","Steady Pace"]},
+    {"user_id":"U006","resume_id":"R006","char_accuracy":0.94,"word_accuracy":0.92,"skill_extraction_accuracy":0.90,"detected_skills":["Office Support","Filing","Basic Computer"]},
+    {"user_id":"U007","resume_id":"R007","char_accuracy":0.96,"word_accuracy":0.95,"skill_extraction_accuracy":0.93,"detected_skills":["Retail","Communication","Customer Service"]},
+    {"user_id":"U008","resume_id":"R008","char_accuracy":0.92,"word_accuracy":0.90,"skill_extraction_accuracy":0.87,"detected_skills":["Kitchen Tasks","Step-by-step Instructions","No Heavy Lifting"]}
+  ],
+  "summary": {
+    "character_recognition_accuracy": 0.94375,
+    "word_recognition_accuracy": 0.925,
+    "skill_extraction_accuracy": 0.9,
+    "notes": "Averages computed from 8 resume OCR outputs"
+  }
+}

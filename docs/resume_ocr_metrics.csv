@@ -1,0 +1,13 @@
+user_id,resume_id,char_accuracy,word_accuracy,skill_extraction_accuracy,detected_skills
+U001,R001,0.96,0.94,0.92,"Customer Service;Cash Handling;Basic Computer"
+U002,R002,0.95,0.93,0.90,"Data Entry;Numeric Entry;Typing"
+U003,R003,0.94,0.92,0.89,"Housekeeping;Cleaning;Organization"
+U004,R004,0.95,0.93,0.91,"Packaging;Task Repetition;Checklist Following"
+U005,R005,0.93,0.91,0.88,"Assembly;Hand Tools;Steady Pace"
+U006,R006,0.94,0.92,0.90,"Office Support;Filing;Basic Computer"
+U007,R007,0.96,0.95,0.93,"Retail;Communication;Customer Service"
+U008,R008,0.92,0.90,0.87,"Kitchen Tasks;Step-by-step Instructions;No Heavy Lifting"
+
+# summary rows
+,,character_recognition_average,word_recognition_average,skill_extraction_average
+,,0.94375,0.925,0.9

@@ -435,11 +435,11 @@
                 </div>
 
                 <p class="mt-2 text-gray-700 text-md">
-                    Please upload a medical certificate issued within the last <strong>3 months</strong> to show you’re fit and ready to work.
+                    Please upload a medical certificate issued within the last <strong>3 months</strong> to show your health information is up to date.
                 </p>
 
                 <p class="mt-1 text-gray-600 italic text-sm">
-                    (I-upload ang medical certificate na inisyu sa loob ng nakaraang <strong>3 buwan</strong> para ipakita na ikaw ay malusog at handa nang magtrabaho.)
+                    (I-upload ang medical certificate na inisyu sa loob ng nakaraang <strong>3 buwan</strong> upang ipakita na updated ang iyong kalusugan.)
                 </p>
 
             </div>
@@ -482,6 +482,76 @@
                     </div>
                 </div>
             </div>
+
+                                            <!-- Fit-To-Work Certificate Upload Card -->
+                                            <!-- Fit-To-Work Info Section -->
+                                            <div class="mt-6 text-left flex flex-col gap-2">
+
+                                                <!-- Title  -->
+                                                <div class="flex justify-between items-center">
+                                                    <p class="font-semibold text-gray-800 text-sm sm:text-lg">
+                                                        Please upload your Fit-To-Work Certificate.<span>⭐</span>
+                                                    </p>
+                                                    <!-- TTS Audio Button -->
+                                                    <button type="button"
+                                                        class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-2 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                                                        data-tts-en="Please upload your Fit-To-Work certificate issued within the last 3 months to confirm you are medically cleared to work."
+                                                        data-tts-tl="I-upload ang Fit-To-Work certificate na inisyu sa loob ng nakaraang 3 buwan upang kumpirmahin na ikaw ay medikal na karapat-dapat magtrabaho.">
+                                                        🔊
+                                                    </button>
+                                                </div>
+
+                                                <p class="mt-2 text-gray-700 text-md">
+                                                    Please upload a Fit-To-Work certificate issued within the last <strong>3 months</strong> to confirm you’re cleared and ready to work.
+                                                </p>
+
+                                                <p class="mt-1 text-gray-600 italic text-sm">
+                                                    (I-upload ang Fit-To-Work certificate na inisyu sa loob ng nakaraang <strong>3 buwan</strong> upang kumpirmahin na ikaw ay handa at pinapayagang magtrabaho.)
+                                                </p>
+
+                                            </div>
+
+                                            <div id="fit_certificate_container" class="mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 shadow-sm">
+
+                                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+                                                    <!-- Info Section inside Card -->
+                                                    <div class="flex-1 text-center sm:text-left">
+                                                        <p class="text-gray-700 text-lg sm:text-base mb-1">
+                                                            Upload an image or PDF of your Fit-To-Work Certificate.
+                                                        </p>
+                                                        <p class="text-gray-700 italic text-sm sm:text-base mb-1">
+                                                            (Mag-upload ng larawan o PDF ng iyong Fit-To-Work Certificate.)
+                                                        </p>
+                                                        <p class="text-gray-600 text-sm sm:text-base">
+                                                            Accepted: <b>.jpg .jpeg .png .pdf</b> • Max size: <b>5MB</b>
+                                                        </p>
+
+                                                        <!-- File Info Display -->
+                                                        <div id="fitDisplay" class="mt-2"></div>
+                                                    </div>
+
+                                        <!-- Upload Button Section -->
+                                        <div class="flex-shrink-0 flex flex-col items-center sm:items-end gap-2">
+
+                                            <label
+                                                for="fitFile"
+                                                id="fitLabel"
+                                                class="block w-full text-center sm:inline-flex sm:w-auto justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-5 py-3 rounded-lg transition shadow-md"
+                                            >
+                                                📁 Choose File / Pumili ng File
+                                            </label>
+
+                                            <input id="fitFile" name="fit_to_work_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden"/>
+
+                                            <div id="fitHint" class="text-gray-500 text-sm italic mt-1">Please upload your Fit-To-Work Certificate.</div>
+
+                                            <!-- Upload error / validation -->
+                                            <div class="upload-error text-sm text-red-600"></div>
+
+                                        </div>
+                                    </div>
+                                </div>
 
                 </div>
             </div>
@@ -1029,6 +1099,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUpload('proofFile', 'proofDisplay', 'proofLabel', 'proofHint');
     setupUpload('pwdidFile', 'pwdidDisplay', 'pwdidLabel', 'pwdidHint');
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
+    setupUpload('fitFile', 'fitDisplay', 'fitLabel', 'fitHint');
     try {
         const createToggle = document.getElementById('showCreatePassword');
         if (createToggle) {
@@ -3079,7 +3150,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 } catch(e){}
 
                 // re-run upload initializers to render stored uploads (this is safe; setupUpload checks storage on init)
-                try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('pwdidFile','pwdidDisplay','pwdidLabel','pwdidHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); } } catch(e){}
+                try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('pwdidFile','pwdidDisplay','pwdidLabel','pwdidHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); setupUpload('fitFile','fitDisplay','fitLabel','fitHint'); } } catch(e){}
             });
             </script>
 
