@@ -1228,12 +1228,8 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         }
 
-        // Email
-        const email = aiData.email || aiData.e_mail || aiData.mail;
-        if (email) {
-            const e = document.getElementById('email') || document.querySelector('[name="email"]');
-            if (e) e.value = String(email).trim();
-        }
+        // Email autofill from OCR is intentionally disabled for privacy.
+        // (Do not populate email fields from OCR results.)
 
         // ID / card number -> try filling commonly-named fields
         const idVal = aiData.id_number || aiData.id_no || aiData.idno || aiData.id || aiData.number || aiData.card_number || aiData.pwd_number || aiData.identity_number || aiData.identification_number;
