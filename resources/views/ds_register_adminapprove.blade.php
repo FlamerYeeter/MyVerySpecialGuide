@@ -1843,7 +1843,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         if (fitDisplayEl) {
                             const _e = fitDisplayEl.querySelector('.ocr-error'); if (_e) _e.textContent = '';
                         }
-                        alert(`Fit-To-Work: ${aiData.fit_statement || aiData.doctor || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                        alert('Fit-To-Work document processed successfully.');
 
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
                         // Use medDisplay as the error container (create a child .ocr-error if missing)
