@@ -168,8 +168,11 @@ $status            = $data['workplace'] ?? null;
 // $proof = base64ToBlob($data['admin_uploaded_proof_data'] ?? '');
 $medRaw = $data['admin_uploaded_med_data'] ?? null;
 $pwdRaw = $data['admin_uploaded_pwd_data'] ?? null;
+// Fit-To-Work certificate candidates (frontend name: fit_to_work_certificate)
+$fitRaw = $data['fit_to_work_certificate'] ?? $data['fit_certificate'] ?? $data['fitFileData'] ?? $data['admin_uploaded_fit_data'] ?? $data['fitness_certificate'] ?? null;
 $medcerts = base64ToBlob($medRaw);
 $pwdid    = base64ToBlob($pwdRaw);
+$fitBlob  = base64ToBlob($fitRaw);
 
 $medBlob = $medcerts;
 $pwdBlob = $pwdid;
@@ -429,6 +432,7 @@ INSERT INTO user_guardian (
     cdd_type,
     username,
     med_certificates,
+    certificates,
     pwd_id,
     date_of_birth
 ) VALUES (
@@ -472,6 +476,7 @@ INSERT INTO user_guardian (
     :types_of_ds,
     :cdd_type,
     :username,
+    EMPTY_BLOB(),
     EMPTY_BLOB(),
     EMPTY_BLOB(),
     CASE WHEN :birthdate IS NULL OR TRIM(:birthdate) = '' THEN NULL ELSE TO_DATE(:birthdate,'YYYY-MM-DD') END
@@ -669,13 +674,15 @@ oci_bind_by_name($stid1, ':ug_rowid', $ug_rowid, 256);
 // After successful execute, obtain LOB locators using SELECT ... FOR UPDATE and write med/pwd blobs
 if ($allGood) {
     if (($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0) || ($pwdBlob !== null && is_string($pwdBlob) && strlen($pwdBlob) > 0)) {
-        try {
-            $sel = "SELECT med_certificates, pwd_id FROM user_guardian WHERE ROWID = :rid FOR UPDATE";
+            try {
+            // include CERTIFICATES so we can write Fit-To-Work certificate into user_guardian
+            $sel = "SELECT med_certificates, certificates, pwd_id FROM user_guardian WHERE ROWID = :rid FOR UPDATE";
             $selt = oci_parse($conn, $sel);
             oci_bind_by_name($selt, ':rid', $ug_rowid);
             if (oci_execute($selt, OCI_NO_AUTO_COMMIT)) {
                 if (oci_fetch($selt)) {
                     $lob_med_sel = oci_result($selt, 'MED_CERTIFICATES');
+                    $lob_cert_sel = oci_result($selt, 'CERTIFICATES');
                     $lob_pwd_sel = oci_result($selt, 'PWD_ID');
                     if ($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0 && $lob_med_sel && is_object($lob_med_sel)) {
                         try {
@@ -701,6 +708,19 @@ if ($allGood) {
                             try { if (!empty($pwdRaw)) { $savedp = saveBase64File($pwdRaw); if ($savedp) $fallback_saved_files[] = ['type'=>'pwd','file'=>$savedp]; write_debug_error('temp_debug_pwd_blob_fallback_saved.json', ['file'=>$savedp,'time'=>date('c')]); } } catch (Exception $ee) { write_debug_error('temp_debug_pwd_blob_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
                         }
                     }
+                    // Fit-To-Work certificate write
+                    if ($fitBlob !== null && is_string($fitBlob) && strlen($fitBlob) > 0 && isset($lob_cert_sel) && $lob_cert_sel && is_object($lob_cert_sel)) {
+                        try {
+                            if (method_exists($lob_cert_sel, 'write')) $lob_cert_sel->write($fitBlob);
+                            elseif (method_exists($lob_cert_sel, 'writeTemporary')) $lob_cert_sel->writeTemporary($fitBlob, OCI_TEMP_BLOB);
+                            elseif (method_exists($lob_cert_sel, 'saveTemporary')) $lob_cert_sel->saveTemporary($fitBlob, OCI_TEMP_BLOB);
+                            else $lob_cert_sel->write($fitBlob);
+                            write_debug_error('temp_debug_fit_certificate_blob_written.json', ['size_bytes'=>strlen($fitBlob),'time'=>date('c')]);
+                        } catch (Exception $e) {
+                            write_debug_error('temp_debug_fit_certificate_blob_error.json', ['error'=> (is_object($e)? (method_exists($e,'getMessage')?$e->getMessage():(string)$e) : (string)$e), 'time'=>date('c')]);
+                            try { if (!empty($fitRaw)) { $savedf = saveBase64File($fitRaw); if ($savedf) $fallback_saved_files[] = ['type'=>'fit','file'=>$savedf]; write_debug_error('temp_debug_fit_certificate_blob_fallback_saved.json', ['file'=>$savedf,'time'=>date('c')]); } } catch (Exception $ee) { write_debug_error('temp_debug_fit_certificate_blob_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
+                        }
+                    }
                 }
                 oci_free_statement($selt);
             }
@@ -710,11 +730,15 @@ if ($allGood) {
 
 // ——— 2. INSERT job_experiences ———
 if ($allGood) {
-    $work_exp = json_decode($data['job_experiences'] ?? '[]', true);
+    // Accept multiple possible keys the frontend may submit (legacy and current names)
+    $work_json = $data['job_experiences'] ?? $data['work_experiences'] ?? $data['work_experience'] ?? $data['job_experience'] ?? null;
+    $work_exp = json_decode($work_json ?? '[]', true);
     foreach ($work_exp as $work) {
         // Accept multiple possible field names and normalize year
         $job_title   = $work['title'] ?? $work['job_title'] ?? $work['position'] ?? null;
         $company     = $work['company'] ?? $work['company_name'] ?? $work['employer'] ?? null;
+        // Accept various possible location keys from frontend
+        $company_location = $work['company_location'] ?? $work['location'] ?? $work['company_address'] ?? $work['address'] ?? $work['company_city'] ?? null;
         $raw_year    = $work['years_experience'] ?? $work['yearsExperience'] ?? $work['start_year'] ?? $work['year'] ?? $work['work_year'] ?? null;
         $description = $work['description'] ?? $work['job_description'] ?? $work['desc'] ?? null;
 
@@ -774,8 +798,10 @@ if ($allGood) {
             $end_date = $end_year . '-' . $em . '-01';
         }
 
-        // Detect presence of START_DATE/END_DATE columns to avoid ORA-00904
+        // Detect presence of START_DATE/END_DATE and possible location columns to avoid ORA-00904
         $optionalCols = ['START_DATE','END_DATE'];
+        // We'll also check for a location-like column (try COMPANY_LOCATION then ADDRESS)
+        $possibleLocationCols = ['COMPANY_LOCATION','ADDRESS','COMPANY_ADDRESS','LOCATION','COMPANY_CITY'];
         $have = [];
         foreach ($optionalCols as $oc) {
             $q = oci_parse($conn, "SELECT COUNT(*) AS CNT FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'JOB_EXPERIENCE' AND COLUMN_NAME = :col");
@@ -790,14 +816,37 @@ if ($allGood) {
             oci_free_statement($q);
         }
 
+        // Check for location-like columns and pick the first one that exists
+        $locationCol = null;
+        foreach ($possibleLocationCols as $lc) {
+            $q2 = oci_parse($conn, "SELECT COUNT(*) AS CNT FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'JOB_EXPERIENCE' AND COLUMN_NAME = :col");
+            $colUp = strtoupper($lc);
+            oci_bind_by_name($q2, ':col', $colUp);
+            if (oci_execute($q2)) {
+                if (oci_fetch($q2)) {
+                    $cnt2 = oci_result($q2, 'CNT');
+                    if ($cnt2 > 0) { $locationCol = $colUp; break; }
+                }
+            }
+            oci_free_statement($q2);
+        }
+
         // Build columns and placeholders (use YEARS_EXPERIENCE per DB)
         $cols = ['guardian_id','job_title','company_name','years_experience','job_description'];
+        if ($locationCol) {
+            // add DB column for location; will bind value below
+            $cols[] = strtolower($locationCol);
+        }
         $placeholders = [':guardian_id' => $user_guardian_id,
                  ':job_title' => $job_title,
                  ':company_name' => $company,
                  ':years_experience' => $years_experience,
                  ':job_description' => $description];
-
+        if ($locationCol) {
+            // maintain consistent placeholder name (lowercase column name prefixed)
+            $ph = ':' . strtolower($locationCol);
+            $placeholders[$ph] = $company_location;
+        }
         if (in_array('START_DATE', $have)) { $cols[] = 'start_date'; $placeholders[':start_date'] = $start_date; }
         if (in_array('END_DATE', $have))   { $cols[] = 'end_date';   $placeholders[':end_date']   = $end_date; }
 

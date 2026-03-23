@@ -61,14 +61,33 @@ try {
 
     // fetch JOB_EXPERIENCE rows
     $jobRows = [];
-    $sql2 = "SELECT id, years_experience, job_title, company_name, job_description, working_environment,
-             TO_CHAR(start_date,'YYYY-MM-DD') AS START_DATE,
-             TO_CHAR(end_date,'YYYY-MM-DD') AS END_DATE,
-             created_at,
-             CASE WHEN NVL(dbms_lob.getlength(workexp_certificate),0) > 0 THEN 1 ELSE 0 END AS HAS_CERT
-             FROM job_experience
-             WHERE guardian_id = :gid
-             ORDER BY created_at DESC";
+    // detect a location-like column (avoid ORA-00904 by checking USER_TAB_COLUMNS)
+    $locationCol = null;
+    $possible = ['COMPANY_LOCATION','ADDRESS','COMPANY_ADDRESS','LOCATION','COMPANY_CITY'];
+    foreach ($possible as $pc) {
+        $q = oci_parse($conn, "SELECT COUNT(*) AS CNT FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'JOB_EXPERIENCE' AND COLUMN_NAME = :col");
+        $colUp = strtoupper($pc);
+        oci_bind_by_name($q, ':col', $colUp);
+        if (@oci_execute($q)) {
+            if ($r2 = oci_fetch_array($q, OCI_ASSOC+OCI_RETURN_NULLS)) {
+                if (!empty($r2['CNT'])) { $locationCol = $colUp; }
+            }
+        }
+        oci_free_statement($q);
+        if ($locationCol) break;
+    }
+
+    $locSelect = '';
+    if ($locationCol) {
+        // alias to LOCATION so fetch keys are consistent
+        $locSelect = "$locationCol AS LOCATION, ";
+    }
+
+    $sql2 = "SELECT id, years_experience, job_title, company_name, job_description, working_environment, " .
+            $locSelect .
+            "TO_CHAR(start_date,'YYYY-MM-DD') AS START_DATE, TO_CHAR(end_date,'YYYY-MM-DD') AS END_DATE, created_at, ";
+    $sql2 .= "CASE WHEN NVL(dbms_lob.getlength(workexp_certificate),0) > 0 THEN 1 ELSE 0 END AS HAS_CERT ";
+    $sql2 .= "FROM job_experience WHERE guardian_id = :gid ORDER BY created_at DESC";
     $stid2 = oci_parse($conn, $sql2);
     oci_bind_by_name($stid2, ':gid', $guardian_id);
     oci_execute($stid2);
@@ -97,6 +116,9 @@ try {
             'years_experience' => $r['YEARS_EXPERIENCE'] ?? null,
             'job_title' => $r['JOB_TITLE'] ?? null,
             'company_name' => $r['COMPANY_NAME'] ?? null,
+            // include LOCATION from DB (may be aliased in SELECT)
+            'company_location' => $r['LOCATION'] ?? null,
+            'location' => $r['LOCATION'] ?? null,
             'work_year' => null,
             'job_description' => $r['JOB_DESCRIPTION'] ?? null,
             'working_environment' => $r['WORKING_ENVIRONMENT'] ?? null,

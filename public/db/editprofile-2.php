@@ -363,18 +363,46 @@ if (is_array($jobs)) {
 
     // insert job rows with EMPTY_BLOB for workexp_certificate so we can write when provided
     // Use START_DATE / END_DATE DATE columns (compute from start_month/start_year if provided)
-    $insSql = "
-        INSERT INTO MVSG.JOB_EXPERIENCE
-        (GUARDIAN_ID, COMPANY_NAME, JOB_TITLE, YEARS_EXPERIENCE, JOB_DESCRIPTION, START_DATE, END_DATE, CREATED_AT, UPDATED_AT, WORKEXP_CERTIFICATE)
-            VALUES (TO_NUMBER(:gid), :jcompany, :jtitle, :jwork_year, :jdesc,
-                CASE WHEN :jstart_date IS NULL OR TRIM(:jstart_date) = '' THEN NULL ELSE TO_DATE(:jstart_date,'YYYY-MM-DD') END,
-                CASE WHEN :jend_date IS NULL OR TRIM(:jend_date) = '' THEN NULL ELSE TO_DATE(:jend_date,'YYYY-MM-DD') END,
-                SYSTIMESTAMP, SYSTIMESTAMP, EMPTY_BLOB()) RETURNING ROWID INTO :job_rowid
-    ";
+    // Detect if a location-like column exists on JOB_EXPERIENCE so we can include it
+    $locationCol = null;
+    $possibleLocationCols = ['COMPANY_LOCATION','ADDRESS','COMPANY_ADDRESS','LOCATION','COMPANY_CITY'];
+    foreach ($possibleLocationCols as $pc) {
+        $q = oci_parse($conn, "SELECT COUNT(*) AS CNT FROM USER_TAB_COLUMNS WHERE TABLE_NAME = 'JOB_EXPERIENCE' AND COLUMN_NAME = :col");
+        $colUp = strtoupper($pc);
+        oci_bind_by_name($q, ':col', $colUp);
+        if (@oci_execute($q)) {
+            if ($r2 = oci_fetch_array($q, OCI_ASSOC+OCI_RETURN_NULLS)) {
+                if (!empty($r2['CNT'])) { $locationCol = $colUp; }
+            }
+        }
+        oci_free_statement($q);
+        if ($locationCol) break;
+    }
+
+    // Build INSERT SQL dynamically to include optional location column
+    $cols = ['GUARDIAN_ID','COMPANY_NAME','JOB_TITLE','YEARS_EXPERIENCE','JOB_DESCRIPTION'];
+    if ($locationCol) $cols[] = $locationCol;
+    $cols = array_merge($cols, ['START_DATE','END_DATE','CREATED_AT','UPDATED_AT','WORKEXP_CERTIFICATE']);
+
+    $vals = [];
+    $vals[] = 'TO_NUMBER(:gid)';
+    $vals[] = ':jcompany';
+    $vals[] = ':jtitle';
+    $vals[] = ':jwork_year';
+    $vals[] = ':jdesc';
+    if ($locationCol) $vals[] = ':jlocation';
+    $vals[] = "CASE WHEN :jstart_date IS NULL OR TRIM(:jstart_date) = '' THEN NULL ELSE TO_DATE(:jstart_date,'YYYY-MM-DD') END";
+    $vals[] = "CASE WHEN :jend_date IS NULL OR TRIM(:jend_date) = '' THEN NULL ELSE TO_DATE(:jend_date,'YYYY-MM-DD') END";
+    $vals[] = 'SYSTIMESTAMP';
+    $vals[] = 'SYSTIMESTAMP';
+    $vals[] = 'EMPTY_BLOB()';
+
+    $insSql = "INSERT INTO MVSG.JOB_EXPERIENCE (" . implode(', ', $cols) . ") VALUES (" . implode(', ', $vals) . ") RETURNING ROWID INTO :job_rowid";
 
     foreach ($jobs as $row) {
         $company = trim($row['company'] ?? $row['company_name'] ?? '');
         $title   = trim($row['title'] ?? $row['job_title'] ?? '');
+        $company_location = trim($row['company_location'] ?? $row['location'] ?? $row['company_city'] ?? $row['address'] ?? '');
         $yearRaw = trim($row['start_year'] ?? $row['work_year'] ?? '');
         $start_month_raw = trim((string)($row['start_month'] ?? ''));
         $start_year_raw = trim((string)($row['start_year'] ?? ''));
@@ -435,6 +463,9 @@ if (is_array($jobs)) {
         // bind WORK_YEAR as string (or null) with length to avoid bind-name/null issues
         oci_bind_by_name($ins, ':jwork_year', $jwork_year, -1);
         oci_bind_by_name($ins, ':jdesc', $desc, -1);
+        if ($locationCol) {
+            oci_bind_by_name($ins, ':jlocation', $company_location, -1);
+        }
             // compute canonical start/end DATE strings (YYYY-MM-DD) from provided month/year or year-only
             $jstart_date = null;
             $jend_date = null;

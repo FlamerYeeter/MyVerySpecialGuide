@@ -1070,17 +1070,19 @@
                                 let certObj = null;
                                 try { const raw = item.querySelector('.job_cert_data')?.value || ''; if (raw) certObj = JSON.parse(raw); } catch(e) { certObj = null; }
                                 if (jobTitle || companyName || start_month || start_year || end_month || end_year || jobDescription || certObj) {
-                                    jobExperiences.push({
-                                        title: jobTitle,
-                                        company: companyName,
-                                        start_month: start_month || undefined,
-                                        start_year: start_year || undefined,
-                                        end_month: end_month || undefined,
-                                        end_year: end_year || undefined,
-                                        description: jobDescription,
-                                        certificate: certObj || undefined
-                                    });
-                                }
+                                        const companyLocation = item.querySelector('.company_location')?.value?.trim() || '';
+                                        jobExperiences.push({
+                                            title: jobTitle,
+                                            company: companyName,
+                                            company_location: companyLocation || undefined,
+                                            start_month: start_month || undefined,
+                                            start_year: start_year || undefined,
+                                            end_month: end_month || undefined,
+                                            end_year: end_year || undefined,
+                                            description: jobDescription,
+                                            certificate: certObj || undefined
+                                        });
+                                    }
                             });
                             localStorage.setItem('job_experiences', JSON.stringify(jobExperiences));
                             console.log('✅ Job experiences saved:', jobExperiences);

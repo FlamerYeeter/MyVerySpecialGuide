@@ -364,6 +364,23 @@
                                         class="hidden w-full border border-gray-300 rounded-xl px-5 py-3 text-sm" />
                                 </div>
                             </div>
+
+                            <!-- Fit-To-Work Certificate -->
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">
+                                   Fit-To-Work Certificate
+                                </label>
+                                <div id="r_certificates"
+                                    class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
+                                    No file uploaded
+                                </div>
+
+                                <!-- file input (hidden until edit) -->
+                                <div class="mt-3">
+                                    <input id="fit_input" name="fit" type="file" accept="application/pdf,image/*"
+                                        class="hidden w-full border border-gray-300 rounded-xl px-5 py-3 text-sm" />
+                                </div>
+                            </div>
                         </div>
 
                         <div class="flex flex-col items-end mt-10 space-y-2">
@@ -719,6 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const proofEl = document.getElementById('r_proof');
             const medEl = document.getElementById('r_medical');
+            const certEl = document.getElementById('r_certificates');
 
             // Helper: decide whether server reports a file exists. We accept multiple possible shapes.
             function fileExistsAccordingToServer(type) {
@@ -764,6 +782,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     no.className = 'text-gray-600';
                     no.textContent = 'No file uploaded';
                     medEl.appendChild(no);
+                }
+            }
+
+            if (certEl) {
+                certEl.innerHTML = '';
+                // prefer checking key 'other' which aligns with file_lengths.other_len and get_file.php type
+                if (fileExistsAccordingToServer('other')) {
+                    certEl.appendChild(makeServerLink('other', 'View / Download', 'fit_certificate.pdf'));
+                } else {
+                    const no = document.createElement('div');
+                    no.className = 'text-gray-600';
+                    no.textContent = 'No file uploaded';
+                    certEl.appendChild(no);
                 }
             }
 
@@ -1022,8 +1053,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelBtn = document.getElementById('cancelFilesBtn');
     const proofInput = document.getElementById('proof_input');
     const medInput = document.getElementById('med_input');
+    const fitInput = document.getElementById('fit_input');
     const proofEl = document.getElementById('r_proof');
     const medEl = document.getElementById('r_medical');
+    const certEl = document.getElementById('r_certificates');
 
     if (!editBtn || !saveBtn || !cancelBtn) return;
 
@@ -1031,17 +1064,20 @@ document.addEventListener('DOMContentLoaded', () => {
         if (on) {
             proofInput.classList.remove('hidden');
             medInput.classList.remove('hidden');
+            if (fitInput) fitInput.classList.remove('hidden');
             saveBtn.classList.remove('hidden');
             cancelBtn.classList.remove('hidden');
             editBtn.classList.add('hidden');
         } else {
             proofInput.classList.add('hidden');
             medInput.classList.add('hidden');
+            if (fitInput) fitInput.classList.add('hidden');
             saveBtn.classList.add('hidden');
             cancelBtn.classList.add('hidden');
             editBtn.classList.remove('hidden');
             proofInput.value = '';
             medInput.value = '';
+            if (fitInput) fitInput.value = '';
         }
     }
 
@@ -1066,9 +1102,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const fd = new FormData();
         if (proofInput.files && proofInput.files[0]) fd.append('proof', proofInput.files[0]);
         if (medInput.files && medInput.files[0]) fd.append('med', medInput.files[0]);
+        if (fitInput && fitInput.files && fitInput.files[0]) fd.append('other', fitInput.files[0]);
 
         // if no files selected, cancel
-        if (!fd.has('proof') && !fd.has('med')) {
+        if (!fd.has('proof') && !fd.has('med') && !fd.has('other')) {
             alert('Please choose at least one file to upload.');
             saveBtn.disabled = false;
             saveBtn.textContent = 'Save';
@@ -1092,6 +1129,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (medEl) {
                     medEl.innerHTML = '';
                     medEl.appendChild(makeDownloadLink('med','View / Download','medical.pdf'));
+                }
+                if (certEl) {
+                    certEl.innerHTML = '';
+                    certEl.appendChild(makeDownloadLink('other','View / Download','fit_certificate.pdf'));
                 }
                 setEditing(false);
                 alert('Files updated successfully.');

@@ -865,6 +865,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const meta = (expLabel ? escapeHtml(expLabel) : '') + (period ? (expLabel ? ' • ' : '') + escapeHtml(period) : '');
                     const desc = escapeHtml(j.job_description || '');
                     const env = j.working_environment ? '<div class="text-xs text-gray-500 mt-2">Environment: ' + escapeHtml(j.working_environment) + '</div>' : '';
+                    const locVal = j.company_location || j.LOCATION || j.location || '';
+                    const locHtml = locVal ? '<div class="text-sm text-gray-500 mt-1">' + escapeHtml(locVal) + '</div>' : '';
                     // If this job has per-entry certificate, show blue check with link
                     let jobBadge = '';
                     try {
@@ -887,6 +889,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     card.innerHTML = '<div class="font-semibold">' + title + jobBadge + '</div>' +
                                      '<div class="text-sm text-gray-600">' + meta + '</div>' +
+                                     locHtml +
                                      '<div class="text-sm text-gray-700 mt-2">' + desc + '</div>' + env;
                     jobContainer.appendChild(card);
 
@@ -1306,6 +1309,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             <input type="text" class="job-edit-title mt-1 w-full border rounded px-2 py-1" />
                         </div>
                         <div>
+                            <label class="text-sm font-medium text-gray-700">Location</label>
+                            <input type="text" class="job-edit-location mt-1 w-full border rounded px-2 py-1" placeholder="City / Municipality" />
+                        </div>
+                        <div>
                             <label class="text-sm font-medium text-gray-700">Start Month</label>
                             <select class="job-edit-start-month mt-1 w-full border rounded px-2 py-1">
                                 <option value="">--</option>
@@ -1432,6 +1439,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (endMonthEl) endMonthEl.value = (eMonth || '').toString();
         if (endYearEl) endYearEl.value = (eYear || '').toString();
         node.querySelector('.job-edit-desc').value = data.job_description || data.description || '';
+        // populate location when present
+        try {
+            const locEl = node.querySelector('.job-edit-location');
+            if (locEl) locEl.value = data.company_location || data.location || data.company_city || '';
+        } catch (e) {}
         // wire remove
         node.querySelector('.remove-job').addEventListener('click', () => node.remove());
 
@@ -1515,9 +1527,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 const end_month = node.querySelector('.job-edit-end-month')?.value?.trim() || '';
                 const end_year = node.querySelector('.job-edit-end-year')?.value?.trim() || '';
                 const desc = node.querySelector('.job-edit-desc')?.value?.trim() || '';
+                const company_location = node.querySelector('.job-edit-location')?.value?.trim() || '';
                 const certData = node.querySelector('.job-edit-file-data')?.value?.trim() || '';
                 if (!company && !title && !start_year && !desc) return null;
-                const obj = { company: company, title: title, start_month: start_month, start_year: start_year, end_month: end_month, end_year: end_year, description: desc };
+                const obj = { company: company, title: title, company_location: company_location || undefined, start_month: start_month, start_year: start_year, end_month: end_month, end_year: end_year, description: desc };
                 if (certData) obj.certificate = certData;
                 return obj;
             }).filter(Boolean);
@@ -1568,8 +1581,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                         meta += (meta ? ' — ' : '') + end;
                                     }
                                     const desc = (it.description || '');
+                                    const loc = it.company_location ? '<div class="text-sm text-gray-500 mt-1">' + escapeHtml(it.company_location) + '</div>' : '';
                                     card.innerHTML = '<div class="font-semibold">' + escapeHtml(title) + '</div>' +
-                                                    '<div class="text-sm text-gray-600">' + escapeHtml(meta) + '</div>' +
+                                                    '<div class="text-sm text-gray-600">' + escapeHtml(meta) + '</div>' + loc +
                                                     '<div class="text-sm text-gray-700 mt-2">' + escapeHtml(desc) + '</div>';
                                     reviewJobs.appendChild(card);
                                 });

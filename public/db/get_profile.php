@@ -88,7 +88,28 @@ if (!empty($row['MED_CERTIFICATES'])) {
 }
 if (!empty($row['CERTIFICATES'])) {
     $files['other_certs'] = base64_encode($row['CERTIFICATES']);
+    // provide a conventional alias 'other' so clients checking 'other' find the blob
+    $files['other'] = $files['other_certs'];
     $file_lengths['other_len'] = strlen($row['CERTIFICATES']);
+}
+// If CERTIFICATES LOB is empty (length 0) try falling back to guardian_certificates table
+if ((empty($files['other']) || (isset($file_lengths['other_len']) && $file_lengths['other_len'] == 0))) {
+    try {
+        $qc = "SELECT certificate FROM (SELECT certificate FROM guardian_certificates WHERE guardian_id = :gid AND NVL(dbms_lob.getlength(certificate),0) > 0 ORDER BY created_at) WHERE ROWNUM = 1";
+        $stc = oci_parse($conn, $qc);
+        if ($stc) {
+            oci_bind_by_name($stc, ':gid', $id);
+            if (oci_execute($stc)) {
+                $crow = oci_fetch_array($stc, OCI_ASSOC + OCI_RETURN_LOBS);
+                if ($crow && !empty($crow['CERTIFICATE'])) {
+                    $files['other'] = base64_encode($crow['CERTIFICATE']);
+                    $files['other_certs'] = $files['other_certs'] ?? $files['other'];
+                    $file_lengths['other_len'] = strlen($crow['CERTIFICATE']);
+                }
+            }
+            oci_free_statement($stc);
+        }
+    } catch (Exception $e) { /* ignore fallback failures */ }
 }
 if (!empty($row['PROOF_OF_MEMBERSHIP'])) {
     $files['proof_of_membership'] = base64_encode($row['PROOF_OF_MEMBERSHIP']);
