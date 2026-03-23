@@ -1072,9 +1072,11 @@
 
 
 <script>
-function validateMedicalCertificateDate(dateString, errorContainer) {
+function validateMedicalCertificateDate(dateString, errorContainer, label) {
+    // label: optional friendly name for the certificate (e.g. 'Fit-To-Work certificate')
+    label = typeof label === 'string' && label ? label : 'Medical certificate';
     if (!dateString) {
-        if (errorContainer) errorContainer.textContent = "Unable to detect the medical certificate date.";
+        if (errorContainer) errorContainer.textContent = `Unable to detect the ${label.toLowerCase()} date.`;
         return false;
     }
     const today = new Date();
@@ -1085,12 +1087,12 @@ function validateMedicalCertificateDate(dateString, errorContainer) {
     expiryDate.setMonth(expiryDate.getMonth() + 3);
     
     if (today > expiryDate) {
-        if (errorContainer) errorContainer.textContent = "Medical certificate must be within 3 months only.";
+        if (errorContainer) errorContainer.textContent = `${label} must be within 3 months only.`;
         return false;
     } 
     else {
         if (errorContainer) errorContainer.textContent = "";
-        alert("Medical certificate is valid!");
+        alert(`${label} is valid!`);
         return true; 
     }
 }
@@ -1408,8 +1410,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         // If storage already contains a previously-uploaded file, render its preview on init
         // NOTE: we intentionally skip auto-restoring previews for PWD ID and Medical Certificate
         // inputs so a page refresh won't show previously-uploaded previews for those sensitive fields.
-        try {
-            if (!/pwdidfile|\bpwdid\b|medfile/i.test(String(inputId))) {
+                try {
+            if (!/pwdidfile|\bpwdid\b|medfile|fitfile/i.test(String(inputId))) {
                 const storedName = localStorage.getItem(nameKey);
                 const storedData = localStorage.getItem(dataKey);
                 const storedType = localStorage.getItem(typeKey);
@@ -1590,6 +1592,11 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     dataKey = 'admin_uploaded_pwd_data';
                     typeKey = 'admin_uploaded_pwd_type';
                     ocrtype = 'pwd_id';
+                } else if (String(inputId).toLowerCase().includes('fit') || /fitfile/i.test(String(inputId))) {
+                    nameKey = 'admin_uploaded_fit_name';
+                    dataKey = 'admin_uploaded_fit_data';
+                    typeKey = 'admin_uploaded_fit_type';
+                    ocrtype = 'fit_to_work';
                 } else {
                     nameKey = 'admin_uploaded_med_name';
                     dataKey = 'admin_uploaded_med_data';
@@ -1803,6 +1810,45 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             if (_e) _e.textContent = '';
                         }
                         alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                    } else if (detectedType === 'fit_to_work' && ocrtype === 'fit_to_work') {
+                        // Fit-To-Work specific handling: require explicit fit-to-work text/statement
+                        let fitDisplayEl = document.getElementById('fitDisplay') || document.getElementById('medDisplay');
+                        let errorBox = null;
+                        if (fitDisplayEl) {
+                            errorBox = fitDisplayEl.querySelector('.ocr-error');
+                            if (!errorBox) {
+                                errorBox = document.createElement('div');
+                                errorBox.className = 'ocr-error mt-2 text-sm text-red-600';
+                                fitDisplayEl.appendChild(errorBox);
+                            }
+                        } else {
+                            errorBox = { textContent: '' };
+                        }
+
+                        // Check server-side flag for 'Fit to Work' presence
+                        const containsFit = Boolean(result.data && result.data.contains_fit_to_work);
+
+                        if (!containsFit) {
+                            const loading = document.getElementById(`ocr-loading-${inputId}`);
+                            if (loading) loading.remove();
+                            if (errorBox) errorBox.textContent = "Fit-To-Work statement not detected in this document. Upload rejected.";
+                            try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                            try { resetDisplay(); } catch(e){}
+                            alert('The uploaded Fit-To-Work document does not indicate fitness to work. Please upload a valid Fit-To-Work certificate.');
+                            isProcessing = false;
+                            return;
+                        }
+
+                        // Autofill and persist but do not enforce date strictness here
+                        applyOcrDataToForm(aiData, detectedType, ocrtype);
+                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
+                        if (fitDisplayEl) {
+                            const _e = fitDisplayEl.querySelector('.ocr-error'); if (_e) _e.textContent = '';
+                        }
+                        alert(`Fit-To-Work: ${aiData.fit_statement || aiData.doctor || '?'}  OCR Type: ${detectedType} processed successfully.`);
+
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
                         // Use medDisplay as the error container (create a child .ocr-error if missing)
                         let medDisplayEl = document.getElementById('medDisplay');
@@ -1819,28 +1865,12 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             errorBox = { textContent: '' };
                         }
 
-                        // Check server-side flag for 'Fit to Work' presence
-                        const containsFit = Boolean(result.data && result.data.contains_fit_to_work);
-
-                        if (!containsFit) {
-                            // Remove loading indicator
-                            const loading = document.getElementById(`ocr-loading-${inputId}`);
-                            if (loading) loading.remove();
-
-                            // show explicit error message and reject this upload
-                            if (errorBox) errorBox.textContent = "Medical certificate does not indicate 'Fit to Work' (or equivalent). Upload rejected.";
-                            try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
-                            try { resetDisplay(); } catch(e){}
-                            alert('The uploaded medical certificate does not state that the person is fit to work. Please upload a valid medical certificate that explicitly indicates fitness to work.');
-                            isProcessing = false;
-                            return;
-                        }
-
                         // autofill where possible
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
 
-                        const isValid = validateMedicalCertificateDate(aiData.date, errorBox);
+                        // For pure medical certificates we enforce the 3-month date rule
+                        const isValid = validateMedicalCertificateDate(aiData.date, errorBox, 'Medical certificate');
                         // Remove loading indicator
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();

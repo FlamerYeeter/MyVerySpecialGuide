@@ -40,6 +40,8 @@ function buildOcrPrompt($fields, $imagePaths, $ocrtype)
         $extraHint = "This is a proof of membership document — look for organization Proof of membership in the Down Syndrome Association of the Philippines, Inc. (DSAPI). if this is not Proof of Membership then return error else if it contains Medical Certificate then its good. \n";   
     } elseif ($ocrtype === 'certificate_proof') {
         $extraHint = "This is a certificate proof of training — look for organization name, date, and participant details. if this is not Certificate of Training then return error else if it contains Certificate of Training then its good. \n";   
+    } elseif ($ocrtype === 'fit_to_work') {
+        $extraHint = "This is a Fit-To-Work certificate — look specifically for explicit statements like 'fit to work', 'cleared for work', 'medically fit', and the examining doctor's name. If such statements are not present, return parsed fields but set contains_fit_to_work=false.\n";
     }          
 
     return <<<PROMPT
@@ -127,7 +129,7 @@ $ocrtype = $data['type'] ?? null;
 // 2. HANDLE BASE64 INPUT
 // ================================
 
-if (!in_array($ocrtype, ['certificate_proof', 'membership_proof', 'pwd_id', 'medical_certificate'])) {
+if (!in_array($ocrtype, ['certificate_proof', 'membership_proof', 'pwd_id', 'medical_certificate', 'fit_to_work'])) {
     response(false, "Invalid OCR type");
 }
 
@@ -243,12 +245,20 @@ if ($ocrtype === 'pwd_id') {
         "id_number" => "ID / card number",
         "type_of_disability" => "Type of disability (if present)"
     ]);
-} elseif ($ocrtype === 'medical_certificate') {
+    } elseif ($ocrtype === 'medical_certificate') {
     // Medical certificate: patient name/date, optionally dob and doctor
     $fields = array_merge($common, [
         "date" => "Exam/issue date (YYYY-MM-DD)",
         "doctor" => "Doctor or physician name",
         "diagnosis" => "Diagnosis/notes"
+    ]);
+} elseif ($ocrtype === 'fit_to_work') {
+    // Fit-To-Work certificate: focus on fit statements, doctor, and any fit-specific phrasing
+    $fields = array_merge($common, [
+        "date" => "Exam/issue date (YYYY-MM-DD)",
+        "doctor" => "Doctor or physician name",
+        "fit_statement" => "Explicit statement indicating fitness to work (e.g. 'fit to work', 'cleared for work', etc.)",
+        "notes" => "Any additional notes or restrictions"
     ]);
 } elseif ($ocrtype === 'membership_proof') {
     $fields = array_merge($common, [
