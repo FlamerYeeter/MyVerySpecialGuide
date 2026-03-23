@@ -388,6 +388,8 @@
           selected_work_year: JSON.stringify(validYears),
           admin_uploaded_med_data: localStorage.getItem('admin_uploaded_med_data'),
           admin_uploaded_pwd_data: localStorage.getItem('admin_uploaded_pwd_data'), 
+          // Fit-To-Work certificate data (admin uploader)
+          admin_uploaded_fit_data: localStorage.getItem('admin_uploaded_fit_data'),
           workplace: localStorage.getItem('workplace'),
           jobPreferences: localStorage.getItem('jobPreferences'),
           skills1_selected: localStorage.getItem('skills1_selected'),

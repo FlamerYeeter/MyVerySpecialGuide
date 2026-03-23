@@ -233,6 +233,33 @@ if (!empty($birthdate_raw)) {
     } catch (Exception $e) { $birthdate = null; }
 }
 
+// Helper: parse a variety of common date formats into Y-m-d or return null
+function parseDateToYMD($raw) {
+    if (empty($raw)) return null;
+    $s = trim((string)$raw);
+    if ($s === '') return null;
+
+    // Common formats to try
+    $formats = [
+        'Y-m-d','Y/m/d','m/d/Y','d/m/Y','d-M-Y','M j, Y','F j, Y','j F Y','Y.m.d'
+    ];
+
+    foreach ($formats as $fmt) {
+        $dt = DateTime::createFromFormat($fmt, $s);
+        if ($dt && $dt->format($fmt) === $s) {
+            $yr = intval($dt->format('Y'));
+            if ($yr !== 0) return $dt->format('Y-m-d');
+        }
+    }
+
+    // Fallback: try strtotime which handles many human formats
+    $ts = strtotime($s);
+    if ($ts !== false && $ts > 0) {
+        return date('Y-m-d', $ts);
+    }
+    return null;
+}
+
 // Congenital/Developmental Disability (CDD) - accept from nested rpi_personal or top-level keys
 $cdd_type = null;
 // Accept many possible key names from different frontend pages: prefer nested user_info (rpi_personal)
@@ -326,24 +353,12 @@ $s_relationship = $s_relationship ?? ($user_info['SPOUSE_RELATIONSHIP_TO_USER'] 
 // Normalize guardian and spouse birthdates to 'YYYY-MM-DD' or null
 $guardian_birthdate = null;
 if (!empty($g_birth_raw)) {
-    try {
-        $cand = substr(trim((string)$g_birth_raw),0,10);
-        $dtg = DateTime::createFromFormat('Y-m-d', $cand);
-        if ($dtg && $dtg->format('Y-m-d') === $cand) {
-            $guardian_birthdate = $dtg->format('Y-m-d');
-        }
-    } catch (Exception $e) { $guardian_birthdate = null; }
+    $guardian_birthdate = parseDateToYMD($g_birth_raw);
 }
 
 $spouse_birthdate = null;
 if (!empty($s_birth_raw)) {
-    try {
-        $cands = substr(trim((string)$s_birth_raw),0,10);
-        $dts = DateTime::createFromFormat('Y-m-d', $cands);
-        if ($dts && $dts->format('Y-m-d') === $cands) {
-            $spouse_birthdate = $dts->format('Y-m-d');
-        }
-    } catch (Exception $e) { $spouse_birthdate = null; }
+    $spouse_birthdate = parseDateToYMD($s_birth_raw);
 }
 
 // Normalize CDD, guardian and spouse text fields so empty strings become NULL
@@ -673,7 +688,7 @@ oci_bind_by_name($stid1, ':ug_rowid', $ug_rowid, 256);
 }
 // After successful execute, obtain LOB locators using SELECT ... FOR UPDATE and write med/pwd blobs
 if ($allGood) {
-    if (($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0) || ($pwdBlob !== null && is_string($pwdBlob) && strlen($pwdBlob) > 0)) {
+    if ((($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0) || ($pwdBlob !== null && is_string($pwdBlob) && strlen($pwdBlob) > 0)) || ($fitBlob !== null && is_string($fitBlob) && strlen($fitBlob) > 0)) {
             try {
             // include CERTIFICATES so we can write Fit-To-Work certificate into user_guardian
             $sel = "SELECT med_certificates, certificates, pwd_id FROM user_guardian WHERE ROWID = :rid FOR UPDATE";
