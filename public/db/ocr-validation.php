@@ -411,7 +411,9 @@ try {
 
     // Negative indicators — look for explicit negations
     $negativePatterns = [
-        '/not fit to work/i', '/not fit for work/i', '/not fit/i', '/unfit/i', '/not cleared/i', '/unsuitable/i', '/not able to work/i', '/unable to work/i'
+        '/not fit to work/i', '/not fit for work/i', '/not fit/i', '/unfit/i', '/not cleared/i', '/unsuitable/i', '/not able to work/i', '/unable to work/i',
+        // stricter phrasings specifically disallowing work-related tasks
+        '/not fit to perform work-related tasks/i', '/not fit to perform work related tasks/i', '/not fit to perform work related duties/i', '/not fit to perform work related/i'
     ];
 
     $positiveMatches = 0;
@@ -438,14 +440,20 @@ try {
     }
 
     // Decision rules:
-    // - Prefer parsed evidence: if parsedSuggestsFit is true and negativeMatches == 0 => accept
+    // - If any explicit negative/unfit phrase is found, reject immediately.
+    // - Otherwise prefer parsed evidence: if parsedSuggestsFit is true and negativeMatches == 0 => accept
     // - Otherwise use counts: accept if positiveMatches > negativeMatches
-    if ($parsedSuggestsFit && $negativeMatches == 0) {
-        $containsFit = true;
-    } elseif ($positiveMatches > $negativeMatches && $positiveMatches > 0) {
-        $containsFit = true;
-    } else {
+    $explicitUnfitFound = ($negativeMatches > 0);
+    if ($explicitUnfitFound) {
         $containsFit = false;
+    } else {
+        if ($parsedSuggestsFit && $negativeMatches == 0) {
+            $containsFit = true;
+        } elseif ($positiveMatches > $negativeMatches && $positiveMatches > 0) {
+            $containsFit = true;
+        } else {
+            $containsFit = false;
+        }
     }
 
     // Write a small debug trace to help diagnose failing cases
@@ -469,12 +477,15 @@ $result = [
     "disability_source" => $disability_source,
     // Additional validation flags
     "contains_fit_to_work" => $containsFit,
+    // whether explicit negative/unfit statements were detected (reason for rejection)
+    "contains_unfit_statement" => ($negativeMatches > 0),
     // helpful hint: whether we inferred fitness from doctor + date presence
     "inferred_by_doctor_date" => false,
 ];
 
 // If not explicitly containing fit-to-work text, infer if parsed AI found a doctor and a date
-if (!$result['contains_fit_to_work']) {
+// Do not infer fitness when an explicit unfit statement was detected.
+if (!$result['contains_fit_to_work'] && empty($result['contains_unfit_statement'])) {
     $foundDoctor = false;
     $foundDate = false;
     foreach ($result['per_image'] as $p) {
