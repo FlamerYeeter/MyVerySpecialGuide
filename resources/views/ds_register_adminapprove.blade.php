@@ -1176,6 +1176,18 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
     try {
         if (!aiData || typeof aiData !== 'object') return;
 
+        // SECURITY: Only allow autofill from PWD ID OCR results.
+        // Do NOT autofill form fields for medical certificates or fit-to-work
+        // documents. These should be reviewed manually.
+        try {
+            const ot = String(ocrtype || '').toLowerCase();
+            const dt = String(detectedType || '').toLowerCase();
+            if (ot !== 'pwd_id' && dt !== 'pwd_id') {
+                console.info('applyOcrDataToForm: skipping autofill for', ocrtype, detectedType);
+                return;
+            }
+        } catch (e) { /* ignore and proceed only if values are present */ }
+
         // Name -> first / last (accept either `name` or separate `first_name`/`last_name`)
         if (aiData.first_name || aiData.last_name) {
             const firstEl = document.getElementById('first_name');
