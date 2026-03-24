@@ -30,6 +30,7 @@
     }
     .workexp-card:hover {
         transform: translateY(-4px);
+        border-color: #9ca3af; 
     }
     .workexp-card.selected {
         border: 3px solid #2563eb;
@@ -262,12 +263,20 @@
                     <p class="text-gray-700 italic text-md mt-2">
                     (Nakapagtrabaho ka na ba o nagkaroon ka na ba ng anumang trabaho dati?)
                     </p>
+                    <p class="font-semibold text-blue-600 text-lg mt-4">
+                     No work experience yet? That’s totally fine, everyone has to start somewhere!
+                    </p>
+                    <p class="text-gray-700 italic text-md mt-2">
+                    (Wala ka pang work experience? Ayos lang ito lahat ay nagsisimula sa isang punto!)
+                    </p>
+                    
                 </div>
                 <!-- Audio Button -->
                 <button type="button" 
                     class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                    data-tts-en="Have you done any work or jobs before? Choose the option from the images below that best describes your work experience." 
-                    data-tts-tl="Nakapagtrabaho ka na ba o nagkaroon ka na ba ng anumang trabaho dati? Piliin ang opsyon mula sa mga larawan sa ibaba na pinakaangkop na naglalarawan ng iyong karanasan sa trabaho."
+                    data-tts-en="Have you done any work or jobs before? Choose the option from the images below that best describes your work experience. No work experience yet? That’s totally fine, everyone has to start somewhere!" 
+                    data-tts-tl="Nakapagtrabaho ka na ba o nagkaroon ka na ba ng anumang trabaho dati? Piliin ang opsyon mula sa mga larawan sa ibaba na pinakaangkop na naglalarawan ng iyong karanasan sa trabaho.
+                    Wala ka pang work experience? Ayos lang ito lahat ay nagsisimula sa isang punto!"
                     aria-label="Play audio for question">
                     🔊
                 </button>
@@ -376,8 +385,7 @@
                     class="hidden sm:block absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
                          text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
                             focus:ring-2 focus:ring-blue-400 tts-btn"
-                            data-tts-en="If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below. If you do not have any work experience yet, 
-                            it’s okay to leave this section blank. Everyone starts somewhere!"
+                            data-tts-en="If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below."
                             data-tts-tl="Kung ikaw ay nakapagtrabaho na, ilagay ang posisyon sa trabaho, pangalan at lokasyon ng kumpanya, taon ng pagsisimula at pagtatapos, at maikling paglalarawan ng iyong trabaho sa ibaba.
                                          Kung wala ka pang karanasan sa trabaho, okay lang na iwanang blangko ang bahaging ito..">
                             🔊
@@ -394,12 +402,10 @@
                 <!-- Text Content -->
                 <div class="flex-1 text-center sm:text-left">
                     <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
-                        If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below. 
-                        If you do not have any work experience yet, it’s okay to leave this section blank. Everyone starts somewhere!
+                        If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below.
                     </p>
                     <p class="text-gray-700 italic text-sm sm:text-base mt-2">
-                        (Kung ikaw ay nakapagtrabaho na, ilagay ang posisyon sa trabaho, pangalan at lokasyon ng kumpanya, taon ng pagsisimula at pagtatapos, at maikling paglalarawan ng iyong trabaho sa ibaba.
-                         Kung wala ka pang karanasan sa trabaho, okay lang na iwanang blangko ang bahaging ito.)
+                        (Kung ikaw ay nakapagtrabaho na, ilagay ang posisyon sa trabaho, pangalan at lokasyon ng kumpanya, taon ng pagsisimula at pagtatapos, at maikling paglalarawan ng iyong trabaho sa ibaba.)
                     </p>
                 
                  <!-- Mobile Audio Button -->
@@ -407,10 +413,8 @@
                         <button type="button" aria-label="Play audio for info section"
                             class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
                             transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-                                data-tts-en="If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below. If you do not have any work experience yet, 
-                                it’s okay to leave this section blank. Everyone starts somewhere!"
-                            data-tts-tl="Kung ikaw ay nakapagtrabaho na, ilagay ang posisyon sa trabaho, pangalan at lokasyon ng kumpanya, taon ng pagsisimula at pagtatapos, at maikling paglalarawan ng iyong trabaho sa ibaba.
-                                         Kung wala ka pang karanasan sa trabaho, okay lang na iwanang blangko ang bahaging ito.">
+                                data-tts-en="If you have worked before, please type your job title,company name and location, start and end year, and a short description of what you did in your job below."
+                            data-tts-tl="Kung ikaw ay nakapagtrabaho na, ilagay ang posisyon sa trabaho, pangalan at lokasyon ng kumpanya, taon ng pagsisimula at pagtatapos, at maikling paglalarawan ng iyong trabaho sa ibaba.">
                             🔊
                     </button>
                 </div>

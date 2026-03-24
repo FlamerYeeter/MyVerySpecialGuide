@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Registration: Working Environment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
     /* Floating animations */
@@ -15,126 +16,240 @@
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
 
-
     /* visual for selected workplace card */
+    .workplace-card {
+        transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.25s ease, border 0.2s ease;
+        will-change: transform, box-shadow;
+        border: 1px solid #d1d5db; /* gray-300 border like workexpinfo cards */
+    }
+    .workplace-card:hover {
+        transform: translateY(-4px);
+        border-color: #9ca3af; 
+    }
     .workplace-card.selected {
             border: 3px solid #2563eb;
             box-shadow: 0 8px 20px rgba(37, 99, 235, 0.15);
             transform: translateY(-4px);
             background-color: #eff6ff;
     }
+    .workplace-card.disabled {
+        opacity: 0.45;
+        pointer-events: none;
+        filter: grayscale(0.05);
+    }
+    
     .tts-btn.speaking {
         background-color: #2563eb !important;
         box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
         transform: scale(1.03);
     }
+
+    .chip-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background-color: #dbeafe;
+        color: #1d4ed8;
+        padding: 0.2rem 0.55rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+    }
+    .chip-item button { line-height: 1; }
+    
+    .tts-btn {
+        padding: 0.55rem 0.6rem;
+        border-radius: 9999px;
+    }
+
+    /* Layout & Typography improvements */
+    .main-container h1 { font-size: clamp(1.6rem, 3.6vw, 2.8rem); line-height: 1.05; }
+    .main-container h2, .main-container h3 { font-size: clamp(1.05rem, 2.2vw, 1.4rem); }
+    .main-container .text-gray-600.italic { font-size: 0.92rem; }
+    .main-container .bg-white.rounded-2xl { padding: 1.25rem; }
+    .main-container .upload-error { font-size: 0.92rem; }
+
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        body { font-size: 15px; }
+        .main-container { padding: 0.6rem; }
+        .main-container h1 { text-align: center; margin-bottom: 0.5rem; }
+        .main-container h2, .main-container h3 { text-align: center; }
+        /* make labels and helper text slightly larger for readability */
+        .main-container label, .main-container p, .main-container .text-gray-600 { font-size: 15px; }
+        /* Ensure TTS buttons are touch-friendly */
+        .tts-btn { padding: 0.6rem; font-size: 1.05rem; }
+        /* Ensure inputs stretch and maintain balanced padding */
+        .main-container input[type="text"],
+        .main-container input[type="email"],
+        .main-container input[type="tel"],
+        .main-container input[type="date"],
+        .main-container input[type="number"],
+        .main-container input[type="password"],
+        .main-container select,
+        .main-container textarea { font-size: 15px; padding: 0.6rem 0.75rem; }
+    }
+    
+    /* Section card consistency */
+    .main-container .section-card {
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 0.75rem;
+        min-height: 360px;
+        padding: 1.25rem; 
+    }
+    /* Slightly smaller on medium screens */
+    @media (max-width: 1024px) {
+        .main-container .section-card { min-height: 320px; }
+    }
+    /* On small screens make section cards match the instruction blue card size */
+    @media (max-width: 640px) {
+        .main-container .section-card { min-height: 300px; padding: 0.9rem; }
+        /* make section cards visually wider on small screens to use more horizontal space; keep info-card at original size */
+        .main-container .section-card {
+            width: calc(100% + 2rem);
+            max-width: none;
+            margin-left: -1rem;
+            margin-right: -1rem;
+        }
+    }
     </style>
 </head>
 
-<body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
+<body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
 
     <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
-        class="hidden sm:block fixed left-1 sm:left-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-slow z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-10 top-1/3 w-20 sm:w-28 md:w-32 opacity-90 animate-float-slow z-0">
     <img src="image/obj7.png" alt="Triangle Mascot"
-        class="hidden sm:block fixed left-1 sm:left-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+        class="hidden sm:block fixed left-2 sm:left-6 lg:left-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-28 opacity-90 animate-float-medium z-0">
     <img src="image/obj3.png" alt="Blue Mascot"
-        class="hidden sm:block fixed right-1 sm:right-4 top-1/4 w-16 sm:w-20 lg:w-28 opacity-80 animate-float-fast z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-10 top-1/4 w-20 sm:w-28 md:w-32 opacity-90 animate-float-fast z-0">
     <img src="image/obj8.png" alt="Twin Mascot"
-        class="hidden sm:block fixed right-1 sm:right-6 bottom-10 sm:bottom-20 w-16 sm:w-24 lg:w-28 opacity-80 animate-float-medium z-0">
+        class="hidden sm:block fixed right-2 sm:right-6 lg:right-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-32 opacity-90 animate-float-medium z-0">
 
     <!-- Back Button -->
     <button
-        class="fixed left-4 top-4 bg-[#2E2EFF] text-white px-6 py-3 rounded-2xl flex items-center gap-3 text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+        class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
         onclick="(history.length>1 ? history.back() : window.location.href='{{ route('registerworkexpinfo') }}')">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
-            class="w-3 h-3 sm:w-6 sm:h-6">
+            class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
         Back
     </button>
 
-    <!-- Main Content Container -->
+  <!-- Main Content Container -->
     <div
-        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden">
+        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
         <!-- Header -->
-        <div class="text-center mt-2 sm:mt-4 px-2">
-            <h1 class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-3 drop-shadow-md leading-snug">
-                Set Up Your Profile
-            </h1>
-            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-28 md:w-36 mb-5">
+        <div class="text-center mt-4">
+            <h1
+                class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">
+                Set Up Your Profile</h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
             <h2
-                class="text-lg sm:text-2xl md:text-3xl text-blue-600 font-bold flex justify-center items-center gap-2 flex-wrap">
-                Continue setting up your profile
-                <button type="button" class="text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Continue setting up your profile" data-tts-tl="Ituloy ang pag-set up ng iyong profile" aria-label="Play audio for header">🔊</button>
+                class="relative flex flex-wrap items-center justify-center gap-3 text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold">
+                <span class="block mx-auto max-w-[82%] sm:max-w-none md:max-w-[85%] text-center md:pr-2 ">Let’s continue setting up your profile</span>
+                <button type="button" class="ml-2 md:ml-3 text-sm sm:text-2xl bg-[#1E40AF] text-white p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2"
+                    data-tts-en="Let’s continue setting up your profile" data-tts-tl="Ipagpatuloy natin ang pag-set up ng iyong profile"
+                    aria-label="Play audio for header">🔊</button>
             </h2>
             <p
-                class="mt-2 text-gray-700 italic text-sm sm:text-base md:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
-                (Ituloy ang pag-set up ng iyong profile)
+                class="mt-2 sm:mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+                (Ipagpatuloy natin ang pag-set up ng iyong profile)
             </p>
         </div>
 
         <!-- Information Section -->
         <div
-            class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-5 sm:p-6 mt-8 shadow-sm text-center sm:text-left">
-            <div class="flex flex-col sm:flex-row items-start gap-3 pr-14">
-                <svg xmlns="http://www.w3.org/2000/svg"
-                    class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
+            class="info-card mt-6 sm:mt-8 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
+
+              <!-- Desktop Audio Button -->
+                <button type="button" aria-label="Play audio for info section"
+                    class="hidden sm:block absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+                         text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+                            focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="Please choose the kind of workplace you like! Do you prefer a quiet, calm space, or a more active and lively environment? 
+                            Your choice will help us recommend the best fit for you."
+                            data-tts-tl="Piliin mo kung anong klase ng lugar ng trabaho ang swak sa’yo! Mas gusto mo ba ang tahimik at chill na kapaligiran, o mas masigla at lively na lugar? 
+                            Makakatulong ang sagot mo para irekomenda namin ang pinakabagay sa’yo.">
+                            🔊
+                </button>
+
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-4 sm:pr-16"> 
+                <!-- Info Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
                 </svg>
 
-                <div class="flex-1">
-                    <p class="font-medium text-xs sm:text-base leading-relaxed">
-                        The information you share here helps us find workplaces that match your comfort level — whether
-                        you prefer a
-                        quiet environment or one that’s more active and lively.
+                <!-- Text Content -->
+                <div class="flex-1 text-center sm:text-left">
+                    <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
+                    Please choose the kind of workplace you like! Do you prefer a quiet, calm space, or a more active and lively environment? 
+                    Your choice will help us recommend the best fit for you.
                     </p>
-                    <p class="italic text-gray-600 text-[11px] sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-                        (Ang impormasyong iyong ibibigay dito ay makatutulong upang mahanap namin ang mga lugar ng
-                        trabaho na akma sa iyong kaginhawaan — tahimik man o masigla ang iyong gusto.)
+                    <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+                        (Piliin mo kung anong klase ng lugar ng trabaho ang swak sa’yo! Mas gusto mo ba ang tahimik at chill na kapaligiran, o mas masigla at lively na lugar?
+                         Makakatulong ang sagot mo para irekomenda namin ang pinakabagay sa’yo.)
                     </p>
+                
+                 <!-- Mobile Audio Button -->
+                    <div class="mt-3 flex justify-center sm:hidden">
+                        <button type="button" aria-label="Play audio for info section"
+                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
+                            transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="Please choose the kind of workplace you like! Do you prefer a quiet, calm space, or a more active and lively environment? 
+                            Your choice will help us recommend the best fit for you."
+                            data-tts-tl="Piliin mo kung anong klase ng lugar ng trabaho ang swak sa’yo! Mas gusto mo ba ang tahimik at chill na kapaligiran, o mas masigla at lively na lugar?
+                             Makakatulong ang sagot mo para irekomenda namin ang pinakabagay sa’yo.">
+                            🔊
+                    </button>
                 </div>
             </div>
-
-            <button type="button"
-                class="absolute top-3 right-3 bg-[#1E40AF] text-white text-base sm:text-xl p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-800 hover:scale-105 transition-transform duration-200 tts-btn"
-                data-tts-en="The information you share here helps us find workplaces that match your comfort level — whether you prefer a quiet environment or one that’s more active and lively." data-tts-tl="Ang impormasyong iyong ibibigay dito ay makatutulong upang mahanap namin ang mga lugar ng trabaho na akma sa iyong kaginhawaan — tahimik man o masigla ang iyong gusto." aria-label="Play audio for information note">
-                🔊
-            </button>
         </div>
+    </div>
 
-        <form class="mt-10 max-w-3xl mx-auto">
-            <!-- Workplace Question -->
-            <div class="mt-12 px-2 sm:px-4 text-center sm:text-left">
-                <h2 class= "text-xl sm:text-3xl font-bold text-blue-700 mb-2">Working Environment</h2>
-                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2">
-                    <p class="mt-2 text-base sm:text-lg font-medium text-gray-800">
-                        What kind of working environment feels comfortable for you?
-                        <button type="button"
-                            class="text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="What kind of working environment feels comfortable for you? Select all that apply." data-tts-tl="Ano klaseng lugar ng trabaho ang komportable para sa iyo? Piliin lahat ng naaangkop." aria-label="Play audio for question">🔊</button>
+        <div class="main-container mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-6xl px-4 sm:px-0">
+
+            <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+
+                <!-- Header -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6">
+                <div class="text-left px-2 sm:px-4">
+                    <h2 class="text-xl sm:text-2xl font-bold text-blue-600 flex items-center justify-between gap-2">
+                    What kind of workplace feels right for you?
+                    </h2>
+                    <p class="text-gray-700 italic text-md mt-2">
+                    (Anong klase ng lugar ng trabaho ang komportable para sa’yo?)
                     </p>
                 </div>
-                <p class="text-gray-600 italic text-sm sm:text-base mt-1">
-                    (Ano klaseng lugar ng trabaho ang komportable para sa iyo? Piliin lahat ng naaangkop na kakayahan na
-                    meron ka)
-                </p>
-            </div>
-
-            <!-- Instruction -->
-            <div class="mt-4 text-center sm:text-left px-1 sm:px-4">
-                <div class="flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-1 sm:gap-2">
-                    <p class="mt-4 text-gray-800 font-medium text-base sm:text-lg leading-snug">Choose from the pictures provided and
-                        click
-                        your answer.</p>
-                    <button type="button"
-                        class="mt-4 text-gray-500 text-lg sm:text-2xl hover:scale-110 transition-transform tts-btn" data-tts-en="Choose from the pictures provided and click your answer." data-tts-tl="Pumili mula sa mga larawan at pindutin ang iyong sagot" aria-label="Play audio for instruction">🔊</button>
+                <!-- Audio Button -->
+                <button type="button" 
+                    class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                    data-tts-en="What kind of workplace feels right for you? Choose the option from the images below that best describes the kind of workplace you prefer." 
+                        data-tts-tl="Anong klase ng lugar ng trabaho ang komportable para sa’yo? Piliin ang opsyon sa mga larawan sa ibaba na pinakaakma sa klase ng lugar ng trabaho na gusto mo."
+                    aria-label="Play audio for question">
+                    🔊
+                </button>
                 </div>
-                <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Pumili mula sa mga larawan at pindutin ang
-                    iyong sagot)</p>
-            </div>
+
+                <!-- Instruction Box -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 shadow border border-blue-100 mb-10 max-w-3xl mx-auto sm:mx-0">
+                <p class="text-base sm:text-lg font-medium text-gray-800 leading-relaxed">
+                    Choose the option from the images below that best describes the kind of
+                    <span class="text-blue-700 font-semibold">workplace</span> you prefer.
+                </p>
+                <div class="border-t border-gray-200 my-4"></div>
+                <p class="text-sm sm:text-base text-gray-700 italic">
+                    (Piliin ang opsyon sa mga larawan sa ibaba na pinakaakma 
+                    <span class="font-semibold text-blue-700">sa klase ng lugar ng trabaho</span> na gusto mo.)
+                </p>
+                </div>
 
 
             <!-- Cards Grid -->
@@ -149,9 +264,9 @@
                         data-tts-tl="Makikipagtrabaho ka sa mabait at matulunging team" 
                         aria-label="Play audio for Quiet place option">🔊</button>
                     <img src="image/workplc1.jpg" alt="friendly" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Friendly Team</h3>
-                    <p class="mt-2 text-[13px] text-black-600 text-center">You will work with a kind and helpful team.</p>
-                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Makikipagtrabaho ka sa mabait at matulunging team)</p>
+                    <h3 class="text-blue-600 font-semibold text-center text-base sm:text-lg">Friendly Team</h3>
+                    <p class="mt-2 text-sm sm:text-base text-gray-800 text-center">You will work with a kind and helpful team.</p>
+                    <p class="mt-2 text-xs sm:text-sm text-gray-600 italic text-center">(Makikipagtrabaho ka sa mabait at matulunging team)</p>
                 </div>
 
                 <!-- Card 2 -->
@@ -163,10 +278,9 @@
                         data-tts-tl="Magkakaroon ka ng buddy (katrabaho) na gagabay at tutulong sa’yo kapag kailangan mo" 
                         aria-label="Play audio for Busy place option">🔊</button>
                     <img src="image/workplc2.jpg" alt="buddy" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Buddy Helper
-                    </h3>
-                    <p class="mt-2 text-[13px] text-black-600 text-center">You will have a buddy (a coworker) who will guide you and help you when you need support.</p>
-                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Magkakaroon ka ng buddy (katrabaho) na gagabay at tutulong sa’yo kapag kailangan mo)</p>
+                    <h3 class="text-blue-600 font-semibold text-center text-base sm:text-lg">Buddy Helper</h3>
+                    <p class="mt-2 text-sm sm:text-base text-gray-800 text-center">You will have a buddy (a coworker) who will guide you and help you when you need support.</p>
+                    <p class="mt-2 text-xs sm:text-sm text-gray-600 italic text-center">(Magkakaroon ka ng buddy (katrabaho) na gagabay at tutulong sa'yo kapag kailangan mo)</p>
                 </div>
 
                   <!-- Card 3 -->
@@ -178,10 +292,9 @@
                         data-tts-tl="Makakatanggap ka ng malinaw at madaling sundan na instructions. Maaaring may kasama itong larawan o sunod-sunod na steps" 
                         aria-label="Play audio for Busy place option">🔊</button>
                     <img src="image/workplc3.jpg" alt="simpleinstructions" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Simple Instructions 
-                    </h3>
-                    <p class="mt-2 text-[13px] text-black-600 text-center">You will receive instructions that are easy to understand. These may include pictures, signs, or step-by-step directions.</p>
-                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Makakatanggap ka ng malinaw at madaling sundan na instructions. Maaaring may kasama itong larawan o sunod-sunod na steps)</p>
+                    <h3 class="text-blue-600 font-semibold text-center text-base sm:text-lg">Simple Instructions</h3>
+                    <p class="mt-2 text-sm sm:text-base text-gray-800 text-center">You will receive instructions that are easy to understand. These may include pictures, signs, or step-by-step directions.</p>
+                    <p class="mt-2 text-xs sm:text-sm text-gray-600 italic text-center">(Makakatanggap ka ng malinaw at madaling sundan na instructions. Maaaring may kasama itong larawan o sunod-sunod na steps)</p>
                 </div>
 
                   <!-- Card 4 -->
@@ -192,10 +305,9 @@
                         data-tts-en="Safe and Light Work: Your tasks will be safe and not too heavy." 
                         data-tts-tl="Ang mga gagawin mo ay ligtas at hindi mabigat na gawain" aria-label="Play audio for Busy place option">🔊</button>
                     <img src="image/workplc4.jpg" alt="safe&light" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">Safe and Light Work
-                    </h3>
-                    <p class="mt-2 text-[13px] text-black-600 text-center">Your tasks will be safe and not too heavy.</p>
-                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Ang mga gagawin mo ay ligtas at hindi mabigat na gawain)</p>
+                    <h3 class="text-blue-600 font-semibold text-center text-base sm:text-lg">Safe and Light Work</h3>
+                    <p class="mt-2 text-sm sm:text-base text-gray-800 text-center">Your tasks will be safe and not too heavy.</p>
+                    <p class="mt-2 text-xs sm:text-sm text-gray-600 italic text-center">(Ang mga gagawin mo ay ligtas at hindi mabigat na gawain)</p>
                 </div>
 
                   <!-- Card 5 -->
@@ -206,10 +318,9 @@
                         data-tts-en="No Heavy Lifting / No Pharmacy Tasks:You will not carry heavy items and you will not do pharmacy-related tasks." 
                         data-tts-tl="Hindi ka magbubuhat ng mabibigat na gamit at hindi ka gagawa ng anumang pharmacy-related na trabaho" aria-label="Play audio for Busy place option">🔊</button>
                     <img src="image/workplc5.jpg" alt="heavy&pharmacytask" class="w-full rounded-md mb-4">
-                    <h3 class="text-blue-600 font-semibold text-center">No Heavy Lifting / No Pharmacy Tasks
-                    </h3>
-                    <p class="mt-2 text-[13px] text-black-600 text-center">You will not carry heavy items and you will not do pharmacy-related tasks.</p>
-                    <p class="mt-2 text-[13px] text-gray-600 italic text-center">(Hindi ka magbubuhat ng mabibigat na gamit at hindi ka gagawa ng anumang pharmacy-related na trabaho)</p>
+                    <h3 class="text-blue-600 font-semibold text-center text-base sm:text-lg">No Heavy Lifting / No Pharmacy Tasks</h3>
+                    <p class="mt-2 text-sm sm:text-base text-gray-800 text-center">You will not carry heavy items and you will not do pharmacy-related tasks.</p>
+                    <p class="mt-2 text-xs sm:text-sm text-gray-600 italic text-center">(Hindi ka magbubuhat ng mabibigat na gamit at hindi ka gagawa ng anumang pharmacy-related na trabaho)</p>
                 </div>
 
                 <!-- Other -->
@@ -219,17 +330,34 @@
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
                         data-tts-en="Other, Type your answer inside the box if not in the choices" 
                         data-tts-tl="Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian" aria-label="Play audio for Other option">🔊</button>
-                    <h3 id="workplace_other_label" class="text-blue-600 font-semibold text-center mb-2">Other</h3>
-                    <p class="mt-6 text-sm text-justify">
+                    <h3 id="workplace_other_label" class="text-blue-600 font-semibold text-center text-base sm:text-lg mb-2">Other</h3>
+                    <p class="mt-6 text-sm sm:text-base text-gray-800">
                         Type your answer inside the box if not in the choices
                     </p>
-                    <label for="workplace_other_text" class="sr-only">Type your other answer here</label>
-                    <p class="text-[13px] text-gray-600 italic mt-1 mb-3 text-justify">
-                        (Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian)
+                    <label for="workplace_other_text" class="sr-only">Type your other answer and enter here</label>
+                    <p class="text-xs sm:text-sm text-gray-600 italic mt-1 mb-3">
+                        (Isulat ang sagot at i-enter sa loob ng kahon kung wala sa pagpipilian)
                     </p>
+                    <div id="workplace_other_chips" class="flex flex-wrap gap-2 mb-2"></div>
                     <input id="selectworkplace_other_text" name="workplace_other_text" type="text"
-                        aria-labelledby="workplace_other_label" placeholder="Type your answer here"
+                        list="workplace_other_suggestions"
+                        aria-labelledby="workplace_other_label" placeholder="Type your answer here (press Enter to add)"
                         class="w-full border border-gray-300 rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    <datalist id="workplace_other_suggestions">
+                        <option value="Calm and low-noise space"></option>
+                        <option value="Work tasks with visual guides"></option>
+                        <option value="Short breaks and gentle pacing"></option>
+                        <option value="Step-by-step checklists"></option>
+                        <option value="One task at a time"></option>
+                        <option value="Extra time for learning new tasks"></option>
+                        <option value="Visual schedule board"></option>
+                        <option value="A patient coach or buddy"></option>
+                    </datalist>
+                    <datalist id="workplace_other_suggestions">
+                        <option value="Calm and low-noise space"></option>
+                        <option value="Work tasks with visual guides"></option>
+                        <option value="Short breaks and gentle pacing"></option>
+                    </datalist>
                 </div> 
             </div>
 
@@ -237,8 +365,59 @@
             <input id="workplace_choices" type="hidden" value="[]" />
 
             <script>
-                document.addEventListener("DOMContentLoaded", () => {
+                function addWorkplaceOtherChip(value) {
+                    const chipsContainer = document.getElementById('workplace_other_chips');
+                    if (!chipsContainer || !value) return;
+                    const normalized = value.trim();
+                    if (!normalized) return;
+
+                    // Prevent duplicates
+                    const existing = Array.from(chipsContainer.querySelectorAll('.chip-item')).map(c => c.textContent.trim());
+                    if (existing.includes(normalized)) return;
+
+                    const chip = document.createElement('span');
+                    chip.className = 'chip-item inline-flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs sm:text-sm';
+                    chip.textContent = normalized;
+
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.className = 'text-blue-700 hover:text-blue-900 font-bold';
+                    remove.innerHTML = '&times;';
+                    remove.addEventListener('click', () => chip.remove());
+
+                    chip.appendChild(remove);
+                    chipsContainer.appendChild(chip);
+                }
+
+                function getWorkplaceOtherChips() {
+                    const chipsContainer = document.getElementById('workplace_other_chips');
+                    if (!chipsContainer) return [];
+                    return Array.from(chipsContainer.querySelectorAll('.chip-item')).map(c => c.firstChild.textContent.trim());
+                }
+
+                function clearWorkplaceOtherChips() {
+                    const chipsContainer = document.getElementById('workplace_other_chips');
+                    if (!chipsContainer) return;
+                    chipsContainer.innerHTML = '';
+                }
+
+                document.addEventListener('DOMContentLoaded', () => {
                     const workplaceNextbtn = document.getElementById('workplaceNext');
+                    const otherInput = document.getElementById('selectworkplace_other_text');
+
+                    if (otherInput) {
+                        otherInput.addEventListener('keydown', function (e) {
+                            if (e.key === 'Enter' || e.key === ',') {
+                                e.preventDefault();
+                                const value = otherInput.value.trim();
+                                if (value) {
+                                    addWorkplaceOtherChip(value);
+                                    otherInput.value = '';
+                                }
+                            }
+                        });
+                    }
+
                     if (!workplaceNextbtn) return;
 
                     workplaceNextbtn.addEventListener('click', function() {
@@ -247,10 +426,10 @@
 
                         const selected = [];
                         document.querySelectorAll('.workplace-card.selected').forEach(card => {
-                           const onclickAttr = card.getAttribute('onclick') || '';
-                           const match = onclickAttr.match(/'([^']+)'/);
-                           let value = match ? match[1] : (card.getAttribute('data-value') || (card.querySelector('h3')?.textContent || '').trim());
-                           if (value) selected.push({ card, value });
+                            const onclickAttr = card.getAttribute('onclick') || '';
+                            const match = onclickAttr.match(/'([^']+)'/);
+                            let value = match ? match[1] : (card.getAttribute('data-value') || (card.querySelector('h3')?.textContent || '').trim());
+                            if (value) selected.push({ card, value });
                         });
 
                         // Validation: require at least one selection
@@ -261,32 +440,36 @@
                             return;
                         }
 
-                        // If "other" was selected, require the text input to be filled
+                        // If "other" was selected, require at least one chip or entered value
                         const otherSelected = selected.find(s => (String(s.value).toLowerCase() === 'other' || s.value === 'other'));
                         if (otherSelected) {
-                            const otherInput = document.getElementById('selectworkplace_other_text');
-                            if (!otherInput || !otherInput.value || !otherInput.value.trim()) {
-                                if (errorEl) errorEl.textContent = 'Please type your answer for "Other".';
+                            const chips = getWorkplaceOtherChips();
+                            const typed = (otherInput && otherInput.value.trim()) || '';
+                            if (!chips.length && !typed) {
+                                if (errorEl) errorEl.textContent = 'Please add at least one answer for "Other".';
                                 if (otherInput) { otherInput.scrollIntoView({behavior:'smooth', block:'center'}); otherInput.focus(); }
                                 return;
+                            }
+
+                            if (typed) {
+                                addWorkplaceOtherChip(typed);
+                                otherInput.value = '';
                             }
                         }
 
                         // Passed validation — build array and save
-                        const values = selected.map(s => {
+                        const values = selected.flatMap(s => {
                             if (String(s.value).toLowerCase() === 'other') {
-                                const otherInput = document.getElementById('selectworkplace_other_text');
-                                return otherInput && otherInput.value.trim() ? otherInput.value.trim() : 'Other';
+                                const chips = getWorkplaceOtherChips();
+                                return chips.length ? chips : ['Other'];
                             }
-                            return s.value;
+                            return [s.value];
                         });
 
-                        // Save array to hidden input and localStorage
                         const hidden = document.getElementById('workplace_choices');
                         if (hidden) hidden.value = JSON.stringify(values);
                         try { localStorage.setItem('workplace', JSON.stringify(values)); } catch (e) {}
 
-                        // Navigate to skills page
                         window.location.href = '{{ route("registerskills1") }}';
                     });
                 });
@@ -319,18 +502,17 @@
                     }
                 }
             </script>
-
+    </div>
             <!-- Next Button -->
-            <div class="w-full flex flex-col items-center justify-center mt-12 mb-8">
-                <div id="workplaceError" class="text-red-600 text-sm mb-2"></div>
+            <div class="flex flex-col items-center justify-center mt-6 mb-6 space-y-3 px-2">
+                <div id="workplaceError" class="text-red-600 text-sm text-center"></div>
                 <button id="workplaceNext" type="button"
-                    class="bg-[#2E2EFF] text-white text-lg font-semibold px-24 py-3 rounded-xl hover:bg-blue-600 transition flex items-center gap-2">
+                     class="w-full sm:w-auto bg-[#2E2EFF] text-white text-lg sm:text-2xl font-semibold px-6 sm:px-16 md:px-28 py-3 sm:py-4 rounded-2xl shadow-lg hover:bg-blue-600 transition disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-300">
                     Next →
                 </button>
-                <p class="text-gray-600 text-sm mt-2 text-center">
-                    Click <span class="text-[#1E40AF] font-medium">"Next"</span> to move to the next page Your
-                    Skills<br>
-                    <span class="italic text-[#4B4F58]">(Pindutin ang "Next" upang lumipat sa susunod na pahina)</span>
+                 <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-4 text-center leading-relaxed px-4 sm:px-0">
+                        Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue <br class="hidden sm:block">
+                       <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
                 </p>
             </div>
     </div>
