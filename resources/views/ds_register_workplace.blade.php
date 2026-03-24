@@ -16,11 +16,10 @@
     .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
     .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
 
-    /* visual for selected workplace card */
     .workplace-card {
         transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.25s ease, border 0.2s ease;
         will-change: transform, box-shadow;
-        border: 1px solid #d1d5db; /* gray-300 border like workexpinfo cards */
+        border: 1px solid #d1d5db; 
     }
     .workplace-card:hover {
         transform: translateY(-4px);
@@ -175,7 +174,7 @@
                             data-tts-en="Please choose the kind of workplace you like! Do you prefer a quiet, calm space, or a more active and lively environment? 
                             Your choice will help us recommend the best fit for you."
                             data-tts-tl="Piliin mo kung anong klase ng lugar ng trabaho ang swak sa’yo! Mas gusto mo ba ang tahimik at chill na kapaligiran, o mas masigla at lively na lugar? 
-                            Makakatulong ang sagot mo para irekomenda namin ang pinakabagay sa’yo.">
+                            Makakatulong ang sagot mo para ma-rekomenda namin ang pinakabagay sa’yo.">
                             🔊
                 </button>
 
@@ -195,7 +194,7 @@
                     </p>
                     <p class="text-gray-700 italic text-sm sm:text-base mt-2">
                         (Piliin mo kung anong klase ng lugar ng trabaho ang swak sa’yo! Mas gusto mo ba ang tahimik at chill na kapaligiran, o mas masigla at lively na lugar?
-                         Makakatulong ang sagot mo para irekomenda namin ang pinakabagay sa’yo.)
+                         Makakatulong ang sagot mo para ma-rekomenda namin ang pinakabagay sa’yo.)
                     </p>
                 
                  <!-- Mobile Audio Button -->
@@ -206,7 +205,7 @@
                             data-tts-en="Please choose the kind of workplace you like! Do you prefer a quiet, calm space, or a more active and lively environment? 
                             Your choice will help us recommend the best fit for you."
                             data-tts-tl="Piliin mo kung anong klase ng lugar ng trabaho ang swak sa’yo! Mas gusto mo ba ang tahimik at chill na kapaligiran, o mas masigla at lively na lugar?
-                             Makakatulong ang sagot mo para irekomenda namin ang pinakabagay sa’yo.">
+                             Makakatulong ang sagot mo para ma-rekomenda namin ang pinakabagay sa’yo.">
                             🔊
                     </button>
                 </div>
@@ -231,8 +230,9 @@
                 <!-- Audio Button -->
                 <button type="button" 
                     class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                    data-tts-en="What kind of workplace feels right for you? Choose the option from the images below that best describes the kind of workplace you prefer." 
-                        data-tts-tl="Anong klase ng lugar ng trabaho ang komportable para sa’yo? Piliin ang opsyon sa mga larawan sa ibaba na pinakaakma sa klase ng lugar ng trabaho na gusto mo."
+                    data-tts-en="What kind of workplace feels right for you? Choose the option from the images below that best describes the kind of workplace you prefer. You can choose more than one if it fits" 
+                        data-tts-tl="Anong klase ng lugar ng trabaho ang komportable para sa’yo? Piliin ang opsyon sa mga larawan sa ibaba na pinakaakma sa klase ng lugar ng trabaho na gusto mo.
+                        Pwede kang pumili ng higit sa isa kung bagay sa’yo!"
                     aria-label="Play audio for question">
                     🔊
                 </button>
@@ -242,12 +242,12 @@
                 <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 sm:p-8 shadow border border-blue-100 mb-10 max-w-3xl mx-auto sm:mx-0">
                 <p class="text-base sm:text-lg font-medium text-gray-800 leading-relaxed">
                     Choose the option from the images below that best describes the kind of
-                    <span class="text-blue-700 font-semibold">workplace</span> you prefer.
+                    <span class="text-blue-700 font-semibold">workplace</span> you prefer. You can choose more than one if it fits!
                 </p>
                 <div class="border-t border-gray-200 my-4"></div>
                 <p class="text-sm sm:text-base text-gray-700 italic">
                     (Piliin ang opsyon sa mga larawan sa ibaba na pinakaakma 
-                    <span class="font-semibold text-blue-700">sa klase ng lugar ng trabaho</span> na gusto mo.)
+                    <span class="font-semibold text-blue-700">sa klase ng lugar ng trabaho</span> na gusto mo. Pwede kang pumili ng higit sa isa kung bagay sa’yo!)
                 </p>
                 </div>
 
@@ -328,15 +328,15 @@
                     data-value="other" onclick="selectWorkplaceChoice(this,'other')">
                     <button type="button"
                         class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-600 text-white p-2 rounded-full shadow transition tts-btn"
-                        data-tts-en="Other, Type your answer inside the box if not in the choices" 
-                        data-tts-tl="Isulat ang sagot sa loob ng kahon kung wala sa pagpipilian" aria-label="Play audio for Other option">🔊</button>
+                        data-tts-en="Other, Type your answer and press enter inside the box if not in the choices" 
+                        data-tts-tl="Isulat ang sagot at pindutin ang enter sa loob ng kahon kung wala sa pagpipilian" aria-label="Play audio for Other option">🔊</button>
                     <h3 id="workplace_other_label" class="text-blue-600 font-semibold text-center text-base sm:text-lg mb-2">Other</h3>
                     <p class="mt-6 text-sm sm:text-base text-gray-800">
-                        Type your answer inside the box if not in the choices
+                        Type your answer and press enter inside the box if not in the choices
                     </p>
-                    <label for="workplace_other_text" class="sr-only">Type your other answer and enter here</label>
+                    <label for="workplace_other_text" class="sr-only">Type your other answer and press enter here</label>
                     <p class="text-xs sm:text-sm text-gray-600 italic mt-1 mb-3">
-                        (Isulat ang sagot at i-enter sa loob ng kahon kung wala sa pagpipilian)
+                        (Isulat ang sagot at pindutin ang enter sa loob ng kahon kung wala sa pagpipilian)
                     </p>
                     <div id="workplace_other_chips" class="flex flex-wrap gap-2 mb-2"></div>
                     <input id="selectworkplace_other_text" name="workplace_other_text" type="text"
