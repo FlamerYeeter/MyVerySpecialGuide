@@ -2750,6 +2750,16 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     if (storedHasData('admin_uploaded_pwd_name') || storedHasData('admin_uploaded_pwd_data') || storedHasData('admin_uploaded_pwd_type')) return true;
                     if (storedHasData('uploaded_pwd_name') || storedHasData('uploaded_pwd_data')) return true;
                     if (storedHasData('pwdName') || storedHasData('pwdFilename')) return true;
+                    // Also accept a rendered preview in the UI as evidence of upload (more robust)
+                    try {
+                        const displayEl = document.getElementById('pwdidDisplay');
+                        if (displayEl) {
+                            // presence of action buttons (View/Remove) indicates a rendered uploaded preview
+                            if (displayEl.querySelector('button')) return true;
+                            const txt = (displayEl.textContent || '').trim();
+                            if (txt && txt.length > 5 && txt.toLowerCase().indexOf('please upload') === -1) return true;
+                        }
+                    } catch(e) {}
                     return false;
                 }
 
@@ -2853,6 +2863,15 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         function validateRequired() {
             // clear previous errors
             [...required.personal, ...required.guardian, ...required.account, ...required.uploads].forEach(clearFieldError);
+
+            // If any OCR processing indicators are present, prevent premature submission
+            try {
+                const anyLoading = document.querySelector('[id^="ocr-loading-"]');
+                if (anyLoading) {
+                    alert('OCR is still processing one or more uploads. Please wait a moment and try again.');
+                    return false;
+                }
+            } catch(e) {}
 
                 const values = {};
             // Only gather non-file inputs into values; uploads are checked via hasUploadedFileFor()
