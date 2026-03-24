@@ -74,6 +74,30 @@ $SYNONYMS = [
   'accommodation availability' => ['accommodation available','friendly team','buddy helper','buddy','supportive team']
 ];
 
+// Disability -> incompatible job phrases map (case-insensitive substrings)
+$DISABILITY_INCOMPAT = [
+  'deaf' => ['communication requirements','communication required','communication skills','verbal communication','greet','greeting','present menu','speak','phone','telephone'],
+  'hearing_impairment' => ['communication requirements','verbal communication','phone','telephone','listen','hearing'],
+  'blind' => ['visual','see','read','sight','vision','display','inspect','observe'],
+  'vision_impairment' => ['visual','see','read','sight','vision','display','inspect','observe'],
+  'limited_mobility' => ['heavy lifting','lift','carry','drive','deliver','move stock','manual handling'],
+  'wheelchair' => ['stairs','step','climb','heavy lifting','lift','carry']
+];
+
+// derive user conditions from provided profile tokens (preview accepts `profile`)
+$user_conditions = [];
+if (!empty($profile) && is_array($profile)) {
+  foreach (extract_profile_tokens($profile) as $t) {
+    $lt = mb_strtolower(trim((string)$t));
+    if ($lt === '') continue;
+    // match common condition keywords
+    if (mb_stripos($lt, 'deaf') !== false || mb_stripos($lt, 'hearing') !== false) $user_conditions[] = 'deaf';
+    if (mb_stripos($lt, 'blind') !== false || mb_stripos($lt, 'vision') !== false) $user_conditions[] = 'blind';
+    if (mb_stripos($lt, 'mobility') !== false || mb_stripos($lt, 'wheelchair') !== false || mb_stripos($lt, 'limited mobility') !== false) $user_conditions[] = 'limited_mobility';
+  }
+}
+$user_conditions = array_values(array_unique($user_conditions));
+
 $JOB_ROLE_REQUIREMENTS = [
   'greeter' => ['communication requirements'],
   'customer assistant' => ['communication requirements'],
@@ -178,6 +202,20 @@ while ($row = oci_fetch_assoc($stid)) {
       }
     }
     $contentScoreRaw = min(1.0, $content_matches / 5.0);
+
+    // If user has disabilities, exclude jobs that appear incompatible
+    if (!empty($user_conditions)) {
+      $hay = mb_strtolower($fields_text . ' ' . ($row['COMP_REQ'] ?? '') . ' ' . ($row['SENSOR_REQ'] ?? '') . ' ' . ($row['COG_LVL_REQ'] ?? '') . ' ' . ($row['ACCOM_AVAIL'] ?? ''));
+      $exclude = false;
+      foreach ($user_conditions as $cond) {
+        if (!isset($DISABILITY_INCOMPAT[$cond])) continue;
+        foreach ($DISABILITY_INCOMPAT[$cond] as $phrase) {
+          if ($phrase === '') continue;
+          if (mb_stripos($hay, $phrase) !== false) { $exclude = true; break 2; }
+        }
+      }
+      if ($exclude) continue; // skip this job entirely
+    }
 
     // access matches (PHP-side): build job access fields
     $job_access_fields = [];

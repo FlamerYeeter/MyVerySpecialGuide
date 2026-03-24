@@ -116,6 +116,16 @@ $SYNONYMS = [
   'accommodation availability' => ['accommodation availability','accommodation available','friendly team','buddy helper','buddy','supportive team','supportive coworkers','buddy system','assist when needed']
 ];
 
+// Disability -> incompatible job phrases map (case-insensitive substrings)
+$DISABILITY_INCOMPAT = [
+  'deaf' => ['communication requirements','communication required','communication skills','verbal communication','greet','greeting','present menu','speak','phone','telephone','listen'],
+  'hearing_impairment' => ['communication requirements','verbal communication','phone','telephone','listen','hearing'],
+  'blind' => ['visual','see','read','sight','vision','display','inspect','observe'],
+  'vision_impairment' => ['visual','see','read','sight','vision','display','inspect','observe'],
+  'limited_mobility' => ['heavy lifting','lift','carry','drive','deliver','move stock','manual handling','stairs','step','climb'],
+  'wheelchair' => ['stairs','step','climb','heavy lifting','lift','carry']
+];
+
 // Map common job-role keywords to requirement tokens (used to augment job access fields)
 $JOB_ROLE_REQUIREMENTS = [
   'greeter' => ['communication requirements'],
@@ -168,6 +178,28 @@ if (!empty($user_id)) {
   @oci_free_statement($upSt);
   // unique
   $user_profile_tokens = array_values(array_unique($user_profile_tokens));
+
+// derive user conditions from user_profile_tokens or request payload
+$user_conditions = [];
+foreach ($user_profile_tokens as $t) {
+  $lt = mb_strtolower(trim((string)$t));
+  if ($lt === '') continue;
+  if (mb_stripos($lt, 'deaf') !== false || mb_stripos($lt, 'hearing') !== false) $user_conditions[] = 'deaf';
+  if (mb_stripos($lt, 'blind') !== false || mb_stripos($lt, 'vision') !== false) $user_conditions[] = 'blind';
+  if (mb_stripos($lt, 'mobility') !== false || mb_stripos($lt, 'wheelchair') !== false) $user_conditions[] = 'limited_mobility';
+}
+// also accept explicit profile payload in JSON body
+if (!empty($data['profile']) && is_array($data['profile'])) {
+  // flatten
+  foreach ($data['profile'] as $k => $v) {
+    if (is_array($v)) {
+      foreach ($v as $vv) { if ($vv === null) continue; $lt = mb_strtolower(trim((string)$vv)); if ($lt === '') continue; if (mb_stripos($lt, 'deaf')!==false||mb_stripos($lt,'hearing')!==false) $user_conditions[]='deaf'; if (mb_stripos($lt,'blind')!==false||mb_stripos($lt,'vision')!==false) $user_conditions[]='blind'; if (mb_stripos($lt,'mobility')!==false||mb_stripos($lt,'wheelchair')!==false) $user_conditions[]='limited_mobility'; }
+    } else {
+      if ($v === null) continue; $lt = mb_strtolower(trim((string)$v)); if ($lt === '') continue; if (mb_stripos($lt, 'deaf')!==false||mb_stripos($lt,'hearing')!==false) $user_conditions[]='deaf'; if (mb_stripos($lt,'blind')!==false||mb_stripos($lt,'vision')!==false) $user_conditions[]='blind'; if (mb_stripos($lt,'mobility')!==false||mb_stripos($lt,'wheelchair')!==false) $user_conditions[]='limited_mobility';
+    }
+  }
+}
+$user_conditions = array_values(array_unique($user_conditions));
 }
 
 // SQL: content matches for the provided guardian (if any) + global collab counts (all saved/applications)
@@ -453,6 +485,23 @@ while ($row = oci_fetch_assoc($stid)) {
       $job_tokens[] = $t;
     }
     $job_tokens = array_values(array_unique($job_tokens));
+
+    // If user has disabilities, exclude jobs that appear incompatible
+    if (!empty($user_conditions)) {
+      $hay = mb_strtolower(
+        ($row['JOB_ROLE'] ?? '') . ' ' . ($row['JOB_DESCRIPTION'] ?? '') . ' ' . ($row['JOB_PROFILE_WORKPLACE'] ?? '') . ' ' .
+        implode(' ', $job_access_fields) . ' ' . ($row['COMP_REQ'] ?? '') . ' ' . ($row['SENSOR_REQ'] ?? '') . ' ' . ($row['COG_LVL_REQ'] ?? '') . ' ' . ($row['ACCOM_AVAIL'] ?? '')
+      );
+      $exclude = false;
+      foreach ($user_conditions as $cond) {
+        if (!isset($DISABILITY_INCOMPAT[$cond])) continue;
+        foreach ($DISABILITY_INCOMPAT[$cond] as $phrase) {
+          if ($phrase === '') continue;
+          if (mb_stripos($hay, $phrase) !== false) { $exclude = true; break 2; }
+        }
+      }
+      if ($exclude) continue; // skip this job entirely
+    }
 
     if (!empty($user_profile_tokens) && !empty($job_tokens)) {
       foreach ($user_profile_tokens as $ut) {
