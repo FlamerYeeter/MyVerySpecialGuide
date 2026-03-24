@@ -1843,7 +1843,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         if (fitDisplayEl) {
                             const _e = fitDisplayEl.querySelector('.ocr-error'); if (_e) _e.textContent = '';
                         }
-                        alert('Fit-To-Work document processed successfully.');
+                        // Show a clearer valid message including the uploaded filename when possible
+                        try {
+                            const storedName = localStorage.getItem(nameKey) || null;
+                            const fname = storedName || (fileInput && fileInput.files && fileInput.files[0] && fileInput.files[0].name) || 'uploaded document';
+                            alert(`Fit-To-Work (${fname}) is valid.`);
+                        } catch(e) {
+                            alert('Fit-To-Work document processed successfully.');
+                        }
 
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
                         // Use medDisplay as the error container (create a child .ocr-error if missing)
