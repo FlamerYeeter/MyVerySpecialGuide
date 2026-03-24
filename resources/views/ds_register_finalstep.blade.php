@@ -50,7 +50,7 @@
     </script>
   </head>
 
-  <body class="bg-white flex justify-center items-start min-h-screen p-4 sm:p-6 md:p-8 relative overflow-x-hidden">
+<body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
 
   <!-- Floating Mascots -->
     <img src="image/obj4.png" alt="Yellow Mascot"
@@ -64,7 +64,7 @@
 
   <!-- Back Button -->
   <button
-    class="fixed left-3 top-3 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 sm:px-6 py-2 sm:py-3 rounded-2xl flex items-center gap-2 sm:gap-3 text-base sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
+    class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
     onclick="window.location.href='{{ route('registerreview5') }}'">
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
       class="w-4 h-4 sm:w-6 sm:h-6">
@@ -75,7 +75,7 @@
 
   <!-- Main Container -->
   <div
-    class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-4 sm:p-8 md:p-10 relative z-10 border-4 border-blue-200 overflow-hidden mt-20 sm:mt-24 md:mt-28">
+    class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
     <!-- Header -->
     <div class="text-center mt-2 sm:mt-4 px-2">
@@ -86,36 +86,57 @@
       <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-28 md:w-36 mb-5">
     </div>
 
-    <!-- Instruction Box -->
-    <div
-      class="relative bg-blue-50 border border-blue-200 text-blue-800 rounded-xl p-4 sm:p-6 mt-6 sm:mt-8 shadow-sm">
-      <div class="flex flex-col sm:flex-row items-start gap-3 pr-12 sm:pr-14">
-        <svg xmlns="http://www.w3.org/2000/svg"
-          class="h-5 w-5 sm:h-6 sm:w-6 text-blue-500 mt-1 flex-shrink-0 mx-auto sm:mx-0" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
-        </svg>
-        <div class="flex-1 text-center sm:text-left">
-          <p class="font-medium text-sm sm:text-base leading-relaxed">
-            Please check the boxes below if you agree to the terms of this agreement.
-          </p>
-          <p class="italic text-gray-600 text-xs sm:text-sm mt-1 sm:mt-2 leading-relaxed">
-            (Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito.)
-          </p>
+     <!-- Information Section -->
+        <div
+            class="info-card mt-6 sm:mt-8 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
+
+              <!-- Desktop Audio Button -->
+                <button type="button" aria-label="Play audio for info section"
+                    class="hidden sm:block absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
+                         text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
+                            focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en=" Please check all the boxes below if you agree to the terms of this agreement."
+                            data-tts-tl="Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito.">
+                            🔊
+                </button>
+
+            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-4 sm:pr-16"> 
+                <!-- Info Icon -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
+                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
+                </svg>
+
+                <!-- Text Content -->
+                <div class="flex-1 text-center sm:text-left">
+                    <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
+                    Please check all the boxes below if you agree to the terms of this agreement.
+                    </p>
+                    <p class="text-gray-700 italic text-sm sm:text-base mt-2">
+                        (Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito.)
+                    </p>
+                    
+                
+                 <!-- Mobile Audio Button -->
+                    <div class="mt-3 flex justify-center sm:hidden">
+                        <button type="button" aria-label="Play audio for info section"
+                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
+                            transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="Please check all the boxes below if you agree to the terms of this agreement."
+                            data-tts-tl="Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito.">
+                            🔊
+                    </button>
+                </div>
+            </div>
         </div>
-      </div>
-      <button type="button"
-        class="absolute top-4 right-4 bg-[#1E40AF] text-white text-xl sm:text-2xl p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn"
-        data-tts-en="Please check the boxes below if you agree to the terms of this agreement."
-        data-tts-tl="Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito."
-        aria-label="Read agreement instructions aloud in English then Filipino">🔊</button>
     </div>
+    <div class="main-container mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-6xl px-4 sm:px-0">
 
     <!-- Agreement Box -->
     <div class="bg-white rounded-2xl shadow-md p-4 sm:p-6 border border-gray-200 mt-6">
       <h3 class="text-lg sm:text-xl font-semibold text-blue-600 mb-4 border-b border-blue-300 pb-2 text-center sm:text-left">
-        Important Agreements <span class="text-gray-700 text-[18px]">(Mahalagang Kasunduan)</span>
+        Important Agreements <span class="text-blue-600 italic text-[18px]">(Mahalagang Kasunduan)</span>
       </h3>
 
       <!-- Agreement 1 -->
@@ -165,24 +186,24 @@
           </div>
         </div>
       </label>
+
+
     </div>
 
     <!-- Info Box -->
     <div class="bg-green-50 border border-green-400 rounded-lg px-4 sm:px-6 py-4 mt-6 shadow-sm">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <p class="text-sm sm:text-[15px] text-black leading-relaxed flex-1">
-          By creating an account, you confirm that the information entered is true and that you are an authorized 
-          individual to use this platform. Any misuse or false representation may lead to account restriction.
+          By creating an account, you confirm that all information provided is accurate and truthful. You agree to use this platform responsibly and comply with all applicable laws and regulations. We are committed to protecting your privacy and data security.
         </p>
         <button type="button"
           class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
-          data-tts-en="After creating your account, we will match you with jobs that fit your skills and preferences. You will receive notifications when new opportunities are available."
-          data-tts-tl="Pagkatapos gumawa ng iyong account, itutugma ka namin sa mga trabaho na ayon sa iyong kakayahan at kagustuhan. Makakatanggap ka ng notification kapag may bagong trabaho na available."
+          data-tts-en="By creating an account, you confirm that all information provided is accurate and truthful. You agree to use this platform responsibly and comply with all applicable laws and regulations. We are committed to protecting your privacy and data security."
+          data-tts-tl="Sa paglikha ng account, pinapatunayan mong lahat ng impormasyong ibinigay ay tumpak at totoo. Sumasang-ayon ka na gamitin ang platform na ito nang responsable at sumunod sa lahat ng naaangkop na batas at regulasyon. Kami ay nakatuon sa pagprotekta sa iyong privacy at seguridad ng data."
           aria-label="Read info aloud in English then Filipino" title="Play Audio">🔊</button>
       </div>
       <p class="mt-2 italic text-gray-700 text-xs sm:text-[13px] leading-relaxed">
-        (Sa paglikha ng account, pinapatunayan mong totoo at tama ang impormasyong iyong inilagay at na ikaw ay awtorisadong indibidwal na gumamit ng platform na ito. Ang anumang maling paggamit o pagpapahayag ng hindi 
-        totoong impormasyon ay maaaring magresulta sa pagkakabawal o pagkakasuspinde ng iyong account.)
+        (Sa paglikha ng account, pinapatunayan mong lahat ng impormasyong ibinigay ay tumpak at totoo. Sumusunod ka sa lahat ng batas at regulasyon. Kami ay nakatuon sa pagprotekta sa iyong privacy at seguridad ng data.)
     </div>
 
     <!-- Buttons -->
@@ -204,6 +225,7 @@
     <p class="text-gray-600 italic text-[12px] sm:text-[13px] text-center">
       (Pindutin ang “Create Account” upang tapusin ang iyong pagpaparehistro)
     </p>
+    </div>
   </div>
 
   <!-- Created Success Modal (hidden) -->
