@@ -5,53 +5,82 @@
     <!-- Icon link -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 
+    <style>
+        .tts-btn.speaking {
+            background-color: #2563eb !important;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+            transform: scale(1.03);
+        }
+        .tts-btn { 
+            padding: 0.4rem 0.5rem; 
+            border-radius: 9999px; 
+        }
+        @media (min-width: 640px) {
+            .tts-btn { 
+                padding: 0.5rem 0.6rem; 
+                font-size: 1rem; 
+            }
+        }
+        @media (min-width: 1024px) {
+            .tts-btn { 
+                padding: 0.55rem 0.6rem; 
+                font-size: 1.125rem; 
+            }
+        }
+    </style>
+
     <!-- Hero Section -->
-    <section class="bg-[#FCD34D] flex items-center justify-center py-16 px-6 sm:px-12 lg:px-20 rounded-b-3xl">
-        <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-10 max-w-5xl w-full">
+    <section class="relative bg-[#FCD34D] flex items-center justify-center py-12 sm:py-16 px-4 sm:px-8 lg:px-20 rounded-b-3xl">
+        <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-8 sm:gap-10 max-w-5xl w-full">
 
             <div class="flex-shrink-0 flex justify-center">
-                <img src="{{ asset('image/jobsicon.png') }}" alt="Job Search Icon" class="w-32 sm:w-40 lg:w-52">
+                <img src="{{ asset('image/jobsicon.png') }}" alt="Job Search Icon" class="w-24 sm:w-32 lg:w-40 xl:w-52">
             </div>
 
             <!-- Text Content -->
             <div class="flex flex-col items-center lg:items-start">
-                <h1 class="text-5xl sm:text-4xl lg:text-5xl font-extrabold text-[#1E40AF] drop-shadow-md">
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1E3A8A] drop-shadow-md">
                     Job Recommended For You
                 </h1>
-                <p class="text-2xl text-gray-800 mt-4 italic font-medium">
+                <p class="text-lg sm:text-xl lg:text-2xl text-[#1E3A8A] mt-4 italic font-medium">
                     (Mga Trabahong Para sa Iyo)
                 </p>
+                <button type="button" class="mt-5 lg:mt-0 lg:absolute lg:top-4 lg:right-4 inline-flex items-center gap-2 bg-[#1E40AF] hover:bg-blue-700 text-white text-sm sm:text-base lg:text-lg font-semibold px-4 py-1 rounded-full shadow-md tts-btn transition-transform hover:scale-105 focus:ring-2 focus:ring-blue-400" 
+                data-tts-en="These are jobs recommended for you based on your profile and preferences." data-tts-tl="Ito ang mga trabahong inirerekomenda para sa iyo batay sa iyong profile at gusto." aria-label="Play audio for recommended jobs section">🔊</button>
             </div>
 
         </div>
     </section>
 
-    <section class="max-w-6xl mx-auto mt-12 px-6">
+    <section class="max-w-7xl mx-auto mt-8 sm:mt-12 px-4 sm:px-6 lg:px-8">
         <!-- Title -->
         <h3
-            class="text-5xl sm:text-4xl font-extrabold text-[#1E3A8A] mb-8 text-center tracking-wide flex items-center justify-center gap-3">
+            class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1E3A8A] mb-6 sm:mb-8 text-center tracking-wide flex items-center justify-center gap-3">
             <!-- <img src="https://img.icons8.com/ios-filled/50/1E3A8A/search--v1.png" alt="Search Icon" class="w-10 h-10"> -->
             Filter Jobs
         </h3>
 
                 <!-- Instruction -->
-        <div class="mt-12 bg-blue-50 border-l-8 border-blue-500 rounded-2xl p-6 text-center shadow-md">
-            <p class="text-xl font-bold text-[#1E3A8A] mb-2 flex items-center justify-center gap-2">
-                <img src="https://img.icons8.com/color/48/compass--v1.png" alt="Compass Icon" class="w-7 h-7">
+        <div class="relative mt-8 sm:mt-12 bg-blue-50 border-l-8 border-blue-500 rounded-2xl p-4 sm:p-6 lg:p-8 text-center shadow-md">
+            <p class="text-lg sm:text-xl font-bold text-[#1E3A8A] mb-2 flex items-center justify-center gap-2">
+                <img src="https://img.icons8.com/color/48/compass--v1.png" alt="Compass Icon" class="w-6 h-6 sm:w-7 sm:h-7">
                 How to use the filter:
             </p>
-            <p class="text-lg text-gray-800 font-medium leading-relaxed">
+            <p class="text-base sm:text-lg text-gray-800 font-medium leading-relaxed">
                 Click the dropdowns above and choose what you like — the system will show jobs that match your choice.
             </p>
-            <p class="text-base text-gray-600 italic mt-1">
+            <p class="text-sm sm:text-base text-gray-700 italic mt-1">
                 (Piliin ang mga opsyon sa itaas. Ipapakita ng system ang mga trabahong akma sa iyong pinili.)
             </p>
+            <button type="button" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400" 
+             data-tts-en="How to use the filter: Click the dropdowns above and choose what you like — the system will show jobs that match your choice." 
+             data-tts-tl="Piliin ang mga opsyon sa itaas. Ipapakita ng system ang mga trabahong akma sa iyong pinili." aria-label="Play audio for filter instructions">🔊</button>
         </div>
 
 
         <!-- Filter Form -->
-        <form method="GET" class="mt-8 w-full space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 w-full">
+        <form method="GET" class="mt-6 sm:mt-8 w-full space-y-4 sm:space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
                 <!-- Filter Dropdown (Industry) -->
                 {{-- <div class="relative w-full">
                     <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Industry</label>
@@ -168,7 +197,7 @@
                 </div>
 
                 <!-- Search Bar -->
-                <div class="mt-4 relative w-full sm:col-span-2 md:col-span-3">
+                <div class="mt-4 relative w-full sm:col-span-2 lg:col-span-3">
                 <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Search Job Title</label>
                 <div class="relative">
                     <!-- Give the input extra right padding so text never sits under the button -->
@@ -351,59 +380,59 @@
                                 $logoUrl = $resolveLogo($r);
                             @endphp
 
-                            <div class="relative bg-white border-2 border-blue-200 rounded-3xl shadow-lg p-10 mb-6 transition-transform hover:scale-[1.02] {{ $hide }}">
-                                <div class="flex flex-col lg:flex-row justify-between items-start gap-8">
-                                    <div class="flex items-start gap-6">
-                                        <div class="flex items-center gap-4">
-                                            <button class="flag-btn text-gray-400 text-5xl focus:outline-none hover:text-red-500 transition-all duration-300"><i class="ri-flag-line"></i></button>
+                            <div class="relative bg-white border-2 border-blue-200 rounded-3xl shadow-lg p-4 sm:p-6 lg:p-10 mb-6 transition-transform hover:scale-[1.02] {{ $hide }}">
+                                <div class="flex flex-col lg:flex-row justify-between items-start gap-4 sm:gap-6 lg:gap-8">
+                                    <div class="flex items-start gap-4 sm:gap-6">
+                                        <div class="flex items-center gap-2 sm:gap-4">
+                                            <button class="flag-btn text-gray-400 text-3xl sm:text-4xl lg:text-5xl focus:outline-none hover:text-red-500 transition-all duration-300"><i class="ri-flag-line"></i></button>
                                             <div class="flex-shrink-0">
                                                 @if ($logoUrl)
-                                                    <img src="{{ $logoUrl }}" alt="Company Logo" class="w-32 h-32 rounded-2xl border-4 border-gray-300 object-cover" />
+                                                    <img src="{{ $logoUrl }}" alt="Company Logo" class="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 rounded-2xl border-4 border-gray-300 object-cover" />
                                                 @else
-                                                    <div class="w-32 h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
-                                                        <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
+                                                    <div class="w-20 h-20 sm:w-24 sm:h-24 lg:w-32 lg:h-32 flex items-center justify-center rounded-2xl border-4 border-gray-300 bg-gray-50">
+                                                        <i class="ri-building-4-fill text-[#1E40AF] text-4xl sm:text-5xl lg:text-6xl"></i>
                                                     </div>
                                                 @endif
                                             </div>
                                         </div>
 
                                         <div>
-                                            <h3 class="font-bold text-3xl text-gray-900">{!! $title !!}</h3>
-                                            <p class="text-gray-700 text-2xl font-medium mt-2">{!! $companyName !!}</p>
-                                            <p class="text-gray-600 text-lg mt-1 flex items-center gap-2">@if($location)<img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/> <span>{!! $location !!}</span>@endif</p>
+                                            <h3 class="font-bold text-xl sm:text-2xl lg:text-3xl text-gray-900">{!! $title !!}</h3>
+                                            <p class="text-gray-700 text-lg sm:text-xl lg:text-2xl font-medium mt-2">{!! $companyName !!}</p>
+                                            <p class="text-gray-600 text-sm sm:text-base lg:text-lg mt-1 flex items-center gap-2">@if($location)<img src="https://img.icons8.com/color/48/marker--v1.png" class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6"/> <span>{!! $location !!}</span>@endif</p>
 
-                                            <div class="flex flex-wrap gap-3 mt-3">@php echo $renderTags($skills); @endphp</div>
+                                            <div class="flex flex-wrap gap-2 sm:gap-3 mt-3">@php echo $renderTags($skills); @endphp</div>
                                         </div>
                                     </div>
 
-                                    <a href="/whythisjob?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job matches you?</a>
+                                    <a href="/whythisjob?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="text-[#2563EB] text-lg sm:text-xl lg:text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-4 sm:mt-6 lg:mt-0">Why this job matches you?</a>
                                 </div>
 
-                                <p class="text-gray-700 text-xl mt-8 leading-relaxed max-w-4xl">{!! $desc !!}</p>
+                                <p class="text-gray-700 text-base sm:text-lg lg:text-xl mt-6 sm:mt-8 leading-relaxed max-w-4xl">{!! $desc !!}</p>
 
-                                <div class="flex flex-wrap gap-3 mt-6">@php echo $renderTags($skills); @endphp</div>
+                                <div class="flex flex-wrap gap-2 sm:gap-3 mt-4 sm:mt-6">@php echo $renderTags($skills); @endphp</div>
 
-                                <div class="flex flex-wrap gap-3 mt-8">
-                                    <span class="border border-[#2563EB] text-[#2563EB] text-lg px-5 py-2 rounded-md font-semibold">Full-Time</span>
-                                    <span class="border border-[#88BF02] text-[#88BF02] text-lg px-5 py-2 rounded-md font-semibold">Full Support</span>
-                                    <span class="border border-[#F89596] text-[#F89596] text-lg px-5 py-2 rounded-md font-semibold">Excellent Fit</span>
+                                <div class="flex flex-wrap gap-2 sm:gap-3 mt-6 sm:mt-8">
+                                    <span class="border border-[#2563EB] text-[#2563EB] text-sm sm:text-base lg:text-lg px-3 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-md font-semibold">Full-Time</span>
+                                    <span class="border border-[#88BF02] text-[#88BF02] text-sm sm:text-base lg:text-lg px-3 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-md font-semibold">Full Support</span>
+                                    <span class="border border-[#F89596] text-[#F89596] text-sm sm:text-base lg:text-lg px-3 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-md font-semibold">Excellent Fit</span>
                                 </div>
 
-                                <div class="flex justify-end mt-10">
-                                    <button class="bg-[#FFAC1D] text-white text-lg font-bold rounded-md px-10 py-3 w-[480px] hover:bg-[#D78203] transition text-center">Apply for Therapist Job Readiness Assessment</button>
+                                <div class="flex justify-center lg:justify-end mt-6 sm:mt-8 lg:mt-10">
+                                    <button class="bg-[#FFAC1D] text-white text-sm sm:text-base lg:text-lg font-bold rounded-md px-6 sm:px-8 lg:px-10 py-2 sm:py-3 w-full sm:w-[400px] lg:w-[480px] hover:bg-[#D78203] transition text-center">Apply for Therapist Job Readiness Assessment</button>
                                 </div>
 
-                                <div class="flex justify-end flex-wrap gap-4 mt-4">
-                                    <a href="/job-details?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="px-10 py-3 inline-flex items-center justify-center bg-[#55BEBB] text-white text-lg font-bold rounded-md w-[150px] hover:bg-[#47a4a1] transition">Details</a>
-                                    <a href="/job-application-1?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="px-10 py-3 inline-flex items-center justify-center bg-[#2563EB] text-white text-lg font-bold rounded-md w-[150px] hover:bg-[#1e4fc5] transition">Apply</a>
-                                    <button onclick="saveJob('{{ $r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '' }}', this)" class="bg-[#008000] text-white text-lg font-bold rounded-md px-10 py-3 w-[150px] hover:bg-[#006400] transition">Save</button>
+                                <div class="flex flex-col sm:flex-row justify-center lg:justify-end flex-wrap gap-2 sm:gap-4 mt-4">
+                                    <a href="/job-details?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="px-6 sm:px-8 lg:px-10 py-2 sm:py-3 inline-flex items-center justify-center bg-[#55BEBB] text-white text-sm sm:text-base lg:text-lg font-bold rounded-md w-full sm:w-32 lg:w-[150px] hover:bg-[#47a4a1] transition">Details</a>
+                                    <a href="/job-application-1?job_id={{ urlencode($r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '') }}" class="px-6 sm:px-8 lg:px-10 py-2 sm:py-3 inline-flex items-center justify-center bg-[#2563EB] text-white text-sm sm:text-base lg:text-lg font-bold rounded-md w-full sm:w-32 lg:w-[150px] hover:bg-[#1e4fc5] transition">Apply</a>
+                                    <button onclick="saveJob('{{ $r['id'] ?? $r['job_id'] ?? $r['ID'] ?? '' }}', this)" class="bg-[#008000] text-white text-sm sm:text-base lg:text-lg font-bold rounded-md px-6 sm:px-8 lg:px-10 py-2 sm:py-3 w-full sm:w-32 lg:w-[150px] hover:bg-[#006400] transition">Save</button>
                                 </div>
                             </div>
                         @endforeach
 
                         @if (count($hybridRecs) > 12)
                             <div class="text-center mb-6">
-                                <button id="show-more-content" class="bg-gray-100 text-gray-800 px-4 py-2 rounded-md border">Show more</button>
+                                <button id="show-more-content" class="bg-gray-100 text-gray-800 px-4 sm:px-6 py-2 sm:py-3 rounded-md border text-sm sm:text-base font-medium hover:bg-gray-200 transition">Show more</button>
                             </div>
                         @endif
                         @else
@@ -790,25 +819,25 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
     </section> -->
 
     <!-- Job Match Notice -->
-    <section class="bg-[#10B981] text-white mx-6 sm:mx-12 lg:mx-20 rounded-2xl p-8 mt-8 shadow-lg">
+    <section class="bg-[#10B981] text-white mx-4 sm:mx-6 lg:mx-20 rounded-2xl p-6 sm:p-8 mt-6 sm:mt-8 shadow-lg">
         <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
 
             <div class="flex items-center gap-3 text-center sm:text-left">
                 <div
-                    class="flex items-center justify-center bg-white w-12 h-12 rounded-full shadow-md border-4 border-[#0EA5E9] overflow-hidden">
-                    <img src="image/bulb.png" alt="Bulb Icon" class="w-8 h-8 object-contain">
+                    class="flex items-center justify-center bg-white w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-md border-4 border-[#0EA5E9] overflow-hidden">
+                    <img src="image/bulb.png" alt="Bulb Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
                 </div>
 
                 <div>
-                    <p class="text-2xl font-bold">Jobs Matched to Your Skills & Preferences</p>
-                    <p class="text-base italic mt-1">
+                    <p class="text-lg sm:text-2xl font-bold">Jobs Matched to Your Skills & Preferences</p>
+                    <p class="text-sm sm:text-base italic mt-1">
                         (Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)
                     </p>
                 </div>
             </div>
             <div
-                class="inline-flex items-center gap-2 rounded-full px-6 py-2 text-lg font-semibold text-white border-2 border-white bg-[#10B981]">
-                <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="Star icon" class="w-7 h-7" />
+                class="inline-flex items-center gap-2 rounded-full px-4 py-2 sm:px-6 sm:py-2 text-sm sm:text-lg font-semibold text-white border-2 border-white bg-[#10B981]">
+                <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="Star icon" class="w-5 h-5 sm:w-7 sm:h-7" />
 
                 <!-- Text -->
                 <span id='all-matches'>All Matches (🔃)</span>
@@ -816,9 +845,9 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
     </section>
 
     <!-- Recommended Job Section -->
-            <section class="bg-[#E8F3FF] px-14 sm:px-12 lg:px-20 py-12 rounded-none">
-                <h2 class="text-3xl font-bold text-[#1E3A8A] mb-2">Recommended Job</h2>
-                <p class="text-gray-600 mb-6 text-lg">
+            <section class="bg-[#E8F3FF] px-4 sm:px-8 lg:px-20 py-8 sm:py-12 rounded-none">
+                <h2 class="text-2xl sm:text-3xl font-bold text-[#1E3A8A] mb-4 sm:mb-6">Recommended Job</h2>
+                <p class="text-gray-600 mb-4 sm:mb-6 text-base sm:text-lg">
                     Recommended companies based on application history, preferences, and recent platform activity.
               </p>
        <!--Job Card -->
@@ -877,7 +906,7 @@ function loadJobs() {
 
         if (!result.success || !result.jobs.length) {
             count_matches.innerHTML = 'All Matches (0)';
-            container.innerHTML = '<p class="text-center text-3xl text-gray-600">No job postings available at the moment.</p>';
+            container.innerHTML = '<p class="text-center text-xl sm:text-2xl lg:text-3xl text-gray-600">No job postings available at the moment.</p>';
             return;
         }
 
@@ -909,73 +938,73 @@ function loadJobs() {
             // Disable Apply only when the requesting user already applied for this job.
             const userApplied = !!job.user_applied;
             const applyDisabled = userApplied;
-            const applyBtnClass = applyDisabled ? 'bg-gray-400 text-white text-xl font-bold rounded-md px-10 py-4 cursor-not-allowed transition' : 'bg-[#2563EB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#1e4fc5] transition';
+            const applyBtnClass = applyDisabled ? 'bg-gray-400 text-white text-sm sm:text-base lg:text-xl font-bold rounded-md px-6 sm:px-8 lg:px-10 py-3 sm:py-4 cursor-not-allowed transition w-full sm:w-auto' : 'bg-[#2563EB] text-white text-sm sm:text-base lg:text-xl font-bold rounded-md px-6 sm:px-8 lg:px-10 py-3 sm:py-4 hover:bg-[#1e4fc5] transition w-full sm:w-auto';
             const applyBtnAttr = applyDisabled ? 'disabled' : `onclick="location.href='/job-application-1?job_id=${encodeURIComponent(job.id)}'"`;
             const applyBtnText = applyDisabled ? '🚫 Applied' : '🚀 Apply Now';
 
             const cardHTML = `
-            <div data-job-id="${job.id}" class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-10 mb-10 max-w-[90rem] mx-auto hover:shadow-2xl transition-all duration-300">
-                <div class="flex flex-col lg:flex-row justify-between items-start gap-10">
-                    <div class="flex items-start gap-6">
-                        <div class="w-36 h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
+            <div data-job-id="${job.id}" class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-4 sm:p-6 lg:p-10 mb-6 sm:mb-8 lg:mb-10 max-w-full mx-auto hover:shadow-2xl transition-all duration-300">
+                <div class="flex flex-col lg:flex-row justify-between items-start gap-4 sm:gap-6 lg:gap-10">
+                    <div class="flex items-start gap-4 sm:gap-6">
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 lg:w-36 lg:h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
                             <img src="${escapeHtml(job.logo)}" alt="${escapeHtml(job.company_name)} logo" class="w-full h-full object-cover">
                         </div>
                         <div>
-                            <h2 class="text-4xl font-extrabold text-gray-900 mb-2">${escapeHtml(job.job_role)}</h2>
-                            <p class="text-2xl text-gray-800 font-semibold mb-2">${escapeHtml(job.company_name)}</p>
-                            <p class="flex items-center text-xl text-gray-700 gap-2">
-                                <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
+                            <h2 class="text-xl sm:text-2xl lg:text-4xl font-extrabold text-gray-900 mb-2">${escapeHtml(job.job_role)}</h2>
+                            <p class="text-lg sm:text-xl lg:text-2xl text-gray-800 font-semibold mb-2">${escapeHtml(job.company_name)}</p>
+                            <p class="flex items-center text-sm sm:text-base lg:text-xl text-gray-700 gap-2">
+                                <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
                                 ${escapeHtml(job.address)}
                             </p>
                         </div>
                     </div>
-                <a href="/whythisjob?job_id=${encodeURIComponent(job.id)}" class="text-[#2563EB] text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-22 lg:mt-0">Why this job matches you?</a>
+                <a href="/whythisjob?job_id=${encodeURIComponent(job.id)}" class="text-[#2563EB] text-lg sm:text-xl lg:text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-4 sm:mt-6 lg:mt-0">Why this job matches you?</a>
                 </div>
 
-                <hr class="my-8 border-gray-300">
+                <hr class="my-6 sm:my-8 border-gray-300">
 
                 <div>
-                    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Description</h3>
-                    <p class="text-gray-800 text-2xl leading-relaxed max-w-6xl">
+                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1E40AF] mb-4">Job Description</h3>
+                    <p class="text-gray-800 text-base sm:text-lg lg:text-2xl leading-relaxed max-w-6xl">
                         ${escapeHtml(job.description).replace(/\n/g, '<br>')}
                     </p>
                 </div>
 
                 ${job.skills && job.skills.length > 0 ? `
-                <div class="mt-8">
-                    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Required Skills</h3>
-                    <div class="flex flex-wrap gap-4">
-                        ${job.skills.map(skill => `<span class="bg-blue-200 text-blue-900 text-lg font-semibold px-5 py-2 rounded-full">${escapeHtml(skill)}</span>`).join('')}
+                <div class="mt-6 sm:mt-8">
+                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1E40AF] mb-4">Required Skills</h3>
+                    <div class="flex flex-wrap gap-2 sm:gap-4">
+                        ${job.skills.map(skill => `<span class="bg-blue-200 text-blue-900 text-sm sm:text-base lg:text-lg font-semibold px-3 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-full">${escapeHtml(skill)}</span>`).join('')}
                     </div>
                 </div>` : ''}
 
-                <div class="mt-8">
-                    <h3 class="text-3xl font-bold text-[#1E40AF] mb-4">Job Type</h3>
-                    <div class="flex flex-wrap gap-4">
-                        <span class="border-2 border-[#2563EB] text-[#2563EB] text-lg px-6 py-2 rounded-md font-bold bg-blue-50">
+                <div class="mt-6 sm:mt-8">
+                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1E40AF] mb-4">Job Type</h3>
+                    <div class="flex flex-wrap gap-2 sm:gap-4">
+                        <span class="border-2 border-[#2563EB] text-[#2563EB] text-sm sm:text-base lg:text-lg px-4 sm:px-5 lg:px-6 py-1 sm:py-2 rounded-md font-bold bg-blue-50">
                             ${escapeHtml(job.job_type)}
                         </span>
                     </div>
                 </div>
 
-                <div class="mt-10 w-full">
-                    <p class="text-xl font-semibold text-gray-800 mb-2 text-center">Number of Applicants</p>
-                    <div class="h-5 bg-gray-200 rounded-md overflow-hidden">
+                <div class="mt-8 sm:mt-10 w-full">
+                    <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-2 text-center">Number of Applicants</p>
+                    <div class="h-4 sm:h-5 bg-gray-200 rounded-md overflow-hidden">
                         <div class="h-full bg-[#88BF02]" style="width: ${progress}%;"></div>
                     </div>
-                    <p class="text-lg text-gray-700 mt-2 text-center">
+                    <p class="text-base sm:text-lg text-gray-700 mt-2 text-center">
                         <strong>${job.applied} applied</strong> out of ${job.openings} openings
                     </p>
                 </div>
 
-                <div class="flex flex-wrap justify-center gap-6 mt-10">
-                    <button onclick="location.href='/job-details?job_id=${encodeURIComponent(job.id)}'" class="bg-[#55BEBB] text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#47a4a1] transition">
+                <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-8 sm:mt-10">
+                    <button onclick="location.href='/job-details?job_id=${encodeURIComponent(job.id)}'" class="bg-[#55BEBB] text-white text-lg sm:text-xl font-bold rounded-md px-6 sm:px-8 lg:px-10 py-3 sm:py-4 hover:bg-[#47a4a1] transition w-full sm:w-auto">
                         📝 See Details
                     </button>
-                    <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
+                    <button ${applyBtnAttr} class="${applyBtnClass} w-full sm:w-auto" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
                         ${applyBtnText}
                     </button>
-                    <button onclick="saveJob('${job.id}', this)" class="bg-[#008000] save-btn text-white text-xl font-bold rounded-md px-10 py-4 hover:bg-[#006400] transition" data-job-id="${job.id}">
+                    <button onclick="saveJob('${job.id}', this)" class="bg-[#008000] save-btn text-white text-lg sm:text-xl font-bold rounded-md px-6 sm:px-8 lg:px-10 py-3 sm:py-4 hover:bg-[#006400] transition w-full sm:w-auto" data-job-id="${job.id}">
                         💾 Save
                     </button>
                 </div>
@@ -1111,79 +1140,87 @@ document.querySelector('select[name="growth_potential"]')?.addEventListener('cha
 </script>
 
         <!-- Instruction Section Wrapper -->
-        <div class="mt-8 space-y-8">
+        <div class="mt-6 sm:mt-8 space-y-4 sm:space-y-6 lg:space-y-8">
 
             <!-- Apply Button Instruction -->
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-3xl border-l-8 border-[#2563EB] p-8 shadow-lg">
-                <div class="flex items-start gap-4">
+            <div class="relative bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border-l-8 border-[#2563EB] p-4 sm:p-6 lg:p-8 shadow-lg">
+                <div class="flex items-start gap-3 sm:gap-4">
 
                     <div
-    class="flex items-center justify-center bg-white w-16 h-16 rounded-full shadow-md border-4 border-[#2563EB] overflow-hidden">
+    class="flex items-center justify-center bg-white w-12 h-12 sm:w-16 sm:h-16 rounded-full shadow-md border-4 border-[#2563EB] overflow-hidden flex-shrink-0">
     <img src="https://img.icons8.com/color/96/resume.png" alt="Application Icon"
-        class="w-10 h-10 object-contain">
+        class="w-8 h-8 sm:w-10 sm:h-10 object-contain">
 </div>
 
-                    <div>
-                         <p class="text-xl text-gray-900 font-semibold leading-snug">
+                    <div class="flex-1">
+                         <p class="text-lg sm:text-xl text-gray-900 font-semibold leading-snug">
                             Click the <span class="text-[#2563EB] font-bold">“Apply”</span> button to apply for 
                             the job.
                         </p>
-                        <p class="text-base text-gray-700 italic mt-2">
+                        <p class="text-sm sm:text-base text-gray-700 italic mt-2">
                             (Pindutin ang <span class="font-semibold text-[#2563EB]">“Apply”</span> upang mag apply sa trabaho.)
                     </div>
                 </div>
+                <button type="button" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400" 
+                 data-tts-en="Click the Apply button to apply for the job." 
+                 data-tts-tl="Pindutin ang Apply upang mag apply sa trabaho." aria-label="Play audio for Apply instruction">🔊</button>
             </div>
 
             <!-- Details Instruction -->
-            <div
-                class="bg-gradient-to-r from-[#E0F7F6] to-[#C6F0EF] rounded-3xl border-l-8 border-[#55BEBB] p-8 shadow-lg">
-                <div class="flex items-start gap-4">
+            <div class="relative bg-gradient-to-r from-[#E0F7F6] to-[#C6F0EF] rounded-2xl border-l-8 border-[#55BEBB] p-4 sm:p-6 lg:p-8 shadow-lg">
+                <div class="flex items-start gap-3 sm:gap-4">
                     <div
-                        class="flex items-center justify-center bg-white w-16 h-16 rounded-full shadow-md border-4 border-[#55BEBB] overflow-hidden">
+                        class="flex items-center justify-center bg-white w-12 h-12 sm:w-16 sm:h-16 rounded-full shadow-md border-4 border-[#55BEBB] overflow-hidden flex-shrink-0">
                         <img src="https://img.icons8.com/color/96/info--v1.png" alt="Info Icon"
-                            class="w-10 h-10 object-contain">
+                            class="w-8 h-8 sm:w-10 sm:h-10 object-contain">
                     </div>
 
-                    <div>
-                        <p class="text-xl text-gray-900 font-semibold leading-snug">
+                    <div class="flex-1">
+                        <p class="text-lg sm:text-xl text-gray-900 font-semibold leading-snug">
                             Click the <span class="text-[#55BEBB] font-bold">“Details”</span> button to learn more about
                             this job.
                         </p>
-                        <p class="text-base text-gray-700 italic mt-2">
+                        <p class="text-sm sm:text-base text-gray-700 italic mt-2">
                             (Pindutin ang <span class="font-semibold text-[#55BEBB]">“Details”</span> upang makita ang
                             karagdagang impormasyon tungkol sa trabaho.)
                         </p>
                     </div>
                 </div>
+                <button type="button" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-teal-400" 
+                 data-tts-en="Click the Details button to learn more about this job." 
+                 data-tts-tl="Pindutin ang Details upang makita ang karagdagang impormasyon tungkol sa trabaho." aria-label="Play audio for Details instruction">🔊</button>
             </div>
 
             <!-- Saved Jobs Box -->
-            <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-3xl border-l-8 border-green-500 p-8 shadow-lg">
-                <div class="flex items-start gap-4">
+            <div class="relative bg-gradient-to-r from-green-50 to-green-100 rounded-2xl border-l-8 border-green-500 p-4 sm:p-6 lg:p-8 shadow-lg">
+                <div class="flex items-start gap-3 sm:gap-4">
                     <div
-                        class="flex items-center justify-center bg-white w-16 h-16 rounded-full shadow-md border-4 border-green-500 overflow-hidden">
+                        class="flex items-center justify-center bg-white w-12 h-12 sm:w-16 sm:h-16 rounded-full shadow-md border-4 border-green-500 overflow-hidden flex-shrink-0">
                         <img src="https://img.icons8.com/color/96/save-as.png" alt="Saved Jobs Icon"
-                            class="w-10 h-10 object-contain">
+                            class="w-8 h-8 sm:w-10 sm:h-10 object-contain">
                     </div>
 
-                    <div>
-                        <a href="#" class="text-green-700 font-bold text-2xl hover:underline">Saved Jobs</a>
-                        <p class="text-lg text-gray-900 mt-3 leading-snug">
+                    <div class="flex-1">
+                        <a href="#" class="text-green-700 font-bold text-lg sm:text-2xl hover:underline">Saved Jobs</a>
+                        <p class="text-base sm:text-lg text-gray-900 mt-3 leading-snug">
                             Click <span class="text-green-700 font-bold">“Save”</span> on any job listing to keep it for
                             later.
                         </p>
-                        <p class="text-base text-gray-700 italic mt-2">
+                        <p class="text-sm sm:text-base text-gray-700 italic mt-2">
                             (Pindutin ang <span class="font-semibold text-green-700">“Save”</span> button sa anumang
                             trabaho upang mai-save ito para sa susunod.)
                         </p>
                     </div>
                 </div>
+                <button type="button" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-green-400" 
+                 data-tts-en="Click Save on any job listing to keep it for later." 
+                 data-tts-tl="Pindutin ang Save button sa anumang trabaho upang mai-save ito para sa susunod." aria-label="Play audio for Save instruction">🔊</button>
             </div>
 
 
             <!-- BACK TO TOP BUTTON -->
             <button id="backToTopBtn"
-                class="hidden fixed bottom-8 right-8 bg-[#1E40AF] text-white px-6 py-4 rounded-full shadow-xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110 flex items-center gap-3 text-2xl font-semibold"
+                class="hidden fixed bottom-4 right-4 sm:bottom-8 sm:right-8 bg-[#1E40AF] text-white px-4 py-3 sm:px-6 sm:py-4 rounded-full shadow-xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110 flex items-center gap-2 sm:gap-3 text-lg sm:text-2xl font-semibold"
                 onclick="scrollToTop()" aria-label="Back to top">
 
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
@@ -1496,7 +1533,7 @@ document.querySelector('select[name="growth_potential"]')?.addEventListener('cha
                 window.__SERVER_RECO_LOADED = @json(!empty($recommendations) && count($recommendations) > 0);
             </script>
 
-            <div class="max-w-6xl mx-auto px-6 space-y-8 mb-20">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 space-y-6 sm:space-y-8 lg:space-y-10 mb-16 sm:mb-20">
                 <!-- Simplified client-side recommendation container -->
                 {{-- <div id="jobs-container" class="bg-white p-6 rounded-xl text-center text-gray-600">
                     <p id="reco-info" class="mb-3">Personalized job recommendations will appear here.</p>
@@ -1949,5 +1986,176 @@ document.querySelector('select[name="growth_potential"]')?.addEventListener('cha
 
   console.info('Hybrid-score-logger loaded — press Ctrl+Shift+L or call logHybridScores() to re-print scores.');
 })();
+</script>
+
+<!-- TTS: Web Speech API handler -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const buttons = document.querySelectorAll('.tts-btn');
+        const preferredEnglishVoiceName =
+            'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+        const preferredTagalogVoiceName = 'fil-PH-RosaNeural';
+        let preferredEnglishVoice = null;
+        let preferredTagalogVoice = null;
+        let currentBtn = null;
+        let availableVoices = [];
+
+        function populateVoices() {
+            availableVoices = window.speechSynthesis.getVoices() || [];
+            preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName) ||
+                availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name)) ||
+                null;
+            preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName) ||
+                availableVoices.find(v => /rosa|blessica|fil-?ph|filipino|tagalog/i.test(v.name)) ||
+                null;
+        }
+
+        function chooseVoiceForLang(langCode) {
+            if (!availableVoices.length) return null;
+            langCode = (langCode || '').toLowerCase();
+            let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+            if (candidates.length) return pickBest(candidates);
+            candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i
+                .test(v.name));
+            if (candidates.length) return pickBest(candidates);
+            return availableVoices[0];
+        }
+
+        function pickBest(list) {
+            let preferred = list.filter(v => /neural|wave|wavenet|google|microsoft|polly|amazon/i.test(v.name));
+            if (preferred.length) return preferred[0];
+            return list[0];
+        }
+
+        function stopSpeaking() {
+            if (window.speechSynthesis) {
+                window.speechSynthesis.cancel();
+            }
+            if (currentBtn) {
+                currentBtn.classList.remove('speaking');
+                currentBtn.removeAttribute('aria-pressed');
+                currentBtn = null;
+            }
+        }
+
+        buttons.forEach(function(btn) {
+            btn.setAttribute('role', 'button');
+            btn.setAttribute('tabindex', '0');
+
+            btn.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                // nothing to speak
+                if (!textEn && !textTl) return;
+
+                // If same button clicked while speaking, stop
+                if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn ===
+                    btn) {
+                    stopSpeaking();
+                    return;
+                }
+
+                // Stop any existing speech then speak new text(s)
+                stopSpeaking();
+
+                // Small timeout to ensure previous utterance canceled
+                setTimeout(function() {
+                    if (!window.speechSynthesis) return;
+
+                    // Helper to pick voice for a given language (or selected by user)
+                    function voiceFor(langHint) {
+                        if (langHint) {
+                            const hint = (langHint || '').toLowerCase();
+                            if (hint.startsWith('tl') || hint.startsWith('fil') || hint
+                                .includes('tagalog')) {
+                                if (preferredTagalogVoice) return preferredTagalogVoice;
+                                return chooseVoiceForLang('tl');
+                            }
+                            if (hint.startsWith('en')) {
+                                if (preferredEnglishVoice) return preferredEnglishVoice;
+                                return chooseVoiceForLang('en');
+                            }
+                        }
+                        return preferredEnglishVoice || chooseVoiceForLang('en') || (
+                            availableVoices.length ? availableVoices[0] : null);
+                    }
+
+                    // Build utterances sequence: English first (if any), then Tagalog
+                    const seq = [];
+                    if (textEn) {
+                        const uEn = new SpeechSynthesisUtterance(textEn);
+                        uEn.lang = 'en-US';
+                        const v = voiceFor('en');
+                        if (v) uEn.voice = v;
+                        seq.push(uEn);
+                    }
+                    if (textTl) {
+                        const uTl = new SpeechSynthesisUtterance(textTl);
+                        uTl.lang = 'fil-PH';
+                        const v2 = voiceFor('tl');
+                        if (v2) uTl.voice = v2;
+                        seq.push(uTl);
+                    }
+
+                    if (!seq.length) return;
+
+                    // Attach lifecycle handlers to the sequence
+                    seq[0].onstart = function() {
+                        btn.classList.add('speaking');
+                        btn.setAttribute('aria-pressed', 'true');
+                        currentBtn = btn;
+                    };
+
+                    // chain subsequent utterances
+                    for (let i = 0; i < seq.length; i++) {
+                        const ut = seq[i];
+                        ut.onerror = function() {
+                            if (btn) btn.classList.remove('speaking');
+                            if (btn) btn.removeAttribute('aria-pressed');
+                            currentBtn = null;
+                        };
+                        if (i < seq.length - 1) {
+                            ut.onend = function() {
+                                // speak next
+                                window.speechSynthesis.speak(seq[i + 1]);
+                            };
+                        } else {
+                            ut.onend = function() {
+                                if (btn) btn.classList.remove('speaking');
+                                if (btn) btn.removeAttribute('aria-pressed');
+                                currentBtn = null;
+                            };
+                        }
+                    }
+
+                    // start sequence
+                    window.speechSynthesis.speak(seq[0]);
+                }, 50);
+            });
+
+            // also allow Enter/Space to trigger
+            btn.addEventListener('keydown', function(ev) {
+                if (ev.key === 'Enter' || ev.key === ' ') {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    btn.click();
+                }
+            });
+        });
+
+        // Stop speech when navigating away or reloading
+        window.addEventListener('beforeunload', function() {
+            if (window.speechSynthesis) window.speechSynthesis.cancel();
+        });
+        // populate voices now or when they change
+        if (window.speechSynthesis) {
+            populateVoices();
+            window.speechSynthesis.onvoiceschanged = function() {
+                populateVoices();
+            };
+        }
+    });
 </script>
     @endsection

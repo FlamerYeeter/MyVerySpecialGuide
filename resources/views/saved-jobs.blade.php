@@ -22,32 +22,28 @@
     </div>
 
     <!-- Saved Jobs Overview -->
-    <section class="max-w-6xl mx-auto mt-10 px-6">
+    <section class="max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-12 px-4 sm:px-6 lg:px-8">
 
         <!-- Overview Card -->
-        <div
-            class="border-4 border-blue-300 bg-blue-50 rounded-3xl shadow-md p-10 flex flex-col sm:flex-row items-center sm:items-start sm:space-x-8 space-y-6 sm:space-y-0">
+        <div class="border-4 border-blue-300 bg-blue-50 rounded-3xl shadow-md p-6 sm:p-8 lg:p-10 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
 
             <!-- Icon -->
-            <div
-                class="flex items-center justify-center bg-yellow-200 border-2 border-yellow-300 p-6 rounded-2xl shadow-sm flex-shrink-0">
-                <img src="image/savedicon.png" alt="Saved Jobs Icon" class="h-16 w-16">
+            <div class="flex items-center justify-center bg-yellow-200 border-2 border-yellow-300 p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm flex-shrink-0">
+                <img src="image/savedicon.png" alt="Saved Jobs Icon" class="h-14 sm:h-16 lg:h-20 w-14 sm:w-16 lg:w-20">
             </div>
 
             <!-- Text + Button -->
             <div class="text-center sm:text-left flex-1">
-                <h2 class="text-3xl font-extrabold text-blue-700 mb-3 tracking-wide">
+                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-700 mb-2 sm:mb-3 tracking-wide">
                     Your Saved Jobs
                 </h2>
-                <p class="text-lg text-gray-700 mb-6 leading-relaxed">
+                <p class="text-base sm:text-lg lg:text-lg text-gray-700 mb-4 sm:mb-6 leading-relaxed">
                     These are the jobs you’ve saved for later. You can look at them again and apply when you’re ready!
                 </p>
 
                 <div class="flex justify-center sm:justify-start">
-                    <button id="savedJobsCountBtn"
-                        class="flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white text-xl font-bold px-10 py-4 rounded-2xl shadow-lg transition-all duration-200 focus:ring-4 focus:ring-green-400 focus:outline-none">
-                        <img src="https://img.icons8.com/fluency/48/bookmark-ribbon.png" alt="Saved Jobs Icon"
-                            class="h-8 w-8">
+                    <button id="savedJobsCountBtn" class="flex items-center justify-center gap-2 sm:gap-3 bg-green-600 hover:bg-green-700 text-white text-base sm:text-lg lg:text-xl font-bold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 lg:py-4 rounded-2xl shadow-lg transition-all duration-200 focus:ring-4 focus:ring-green-400 focus:outline-none">
+                        <img src="https://img.icons8.com/fluency/48/bookmark-ribbon.png" alt="Saved Jobs Icon" class="h-6 sm:h-7 lg:h-8 w-6 sm:w-7 lg:w-8">
                         <span id="savedJobsCountText">No Saved Jobs Yet</span>
                     </button>
                 </div>
@@ -143,8 +139,8 @@
 
 
     <!-- Job Cards -->
-    <div id="saved-jobs-list" class="max-w-6xl mx-auto mt-8 px-4 space-y-8">
-        <p class="text-center text-gray-600">Loading saved jobs…</p>
+    <div id="saved-jobs-list" class="max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-12 mb-12 sm:mb-16 lg:mb-20 px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+        <p class="text-center text-gray-600 text-sm sm:text-base">Loading saved jobs…</p>
     </div>
 
     <script>
@@ -166,9 +162,9 @@
 
                         if (!json || !json.success || !Array.isArray(json.saved) || json.saved.length === 0) {
                                 container.innerHTML = `
-                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center text-gray-700">
-                                        <p class="text-xl font-semibold mb-2">No Saved Jobs Yet</p>
-                                        <p class="text-sm">Save jobs from the Jobs page and they'll appear here.</p>
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 sm:p-8 text-center text-gray-700">
+                                        <p class="text-lg sm:text-xl font-semibold mb-2">No Saved Jobs Yet</p>
+                                        <p class="text-sm sm:text-base">Save jobs from the Jobs page and they'll appear here.</p>
                                     </div>`;
                                 return;
                         }
@@ -176,7 +172,7 @@
                         // Build modern cards, skip removed entries (server can return j.removed = true)
                         const rows = json.saved.filter(j => !(j.removed || j.is_removed || j.status === 'removed'));
                         if (rows.length === 0) {
-                                container.innerHTML = '<div class="text-center text-gray-600">You have no active saved jobs.</div>';
+                                container.innerHTML = '<div class="text-center text-gray-600 text-sm sm:text-base">You have no active saved jobs.</div>';
                                 return;
                         }
 
@@ -207,37 +203,35 @@
                                 const userApplied = appliedSet.has(jid);
                                 const applyDisabled = userApplied;
                                 const applyBtnAttr = applyDisabled ? 'disabled' : `onclick="location.href='/job-application-1?job_id=${encodeURIComponent(jid)}'"`;
-                                const applyBtnClass = applyDisabled ? 'px-5 py-3 bg-gray-400 text-white rounded-md shadow-md cursor-not-allowed' : 'px-5 py-3 bg-[#2563EB] text-white rounded-md shadow-md hover:bg-[#1e4fc5] font-semibold';
+                                const applyBtnClass = applyDisabled ? 'px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base bg-gray-400 text-white rounded-md shadow-md cursor-not-allowed font-semibold' : 'px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base bg-[#2563EB] text-white rounded-md shadow-md hover:bg-[#1e4fc5] font-semibold transition-all';
                                 const applyBtnText = applyDisabled ? '🚫 Applied' : '🚀 Apply Now';
 
                                 return `
-                                    <div data-job-id="${jid}" class="job-card bg-white border border-gray-200 rounded-2xl shadow-sm p-6 flex flex-col lg:flex-row justify-between gap-6 transition-transform hover:scale-[1.01]">
-                                        <div class="flex items-start gap-4 lg:gap-6">
-                                            <div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 border bg-gray-50">
+                                    <div data-job-id="${jid}" class="job-card bg-white border border-gray-200 rounded-2xl shadow-md p-4 sm:p-5 lg:p-6 flex flex-col sm:flex-row justify-between gap-4 sm:gap-5 lg:gap-6 transition-transform hover:shadow-lg hover:scale-[1.01]">
+                                        <div class="flex items-start gap-3 sm:gap-4 lg:gap-6 flex-1 min-w-0">
+                                            <div class="w-20 sm:w-24 lg:w-28 h-20 sm:h-24 lg:h-28 rounded-xl overflow-hidden flex-shrink-0 border border-gray-300 bg-gray-50">
                                                 <img src="${logo}" alt="${title} logo" class="w-full h-full object-cover">
                                             </div>
-                                            <div class="min-w-0">
-                                                <h3 class="text-2xl font-extrabold text-gray-900 leading-tight">${title}</h3>
-                                                ${ company ? `<p class="text-lg text-gray-700 mt-1">${company}</p>` : '' }
-                                                ${ loc ? `<p class="text-sm text-gray-500 mt-1 flex items-center gap-2"><img src='https://img.icons8.com/color/48/marker--v1.png' class='w-4 h-4'> ${loc}</p>` : '' }
+                                            <div class="min-w-0 flex-1">
+                                                <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 leading-tight truncate">${title}</h3>
+                                                ${ company ? `<p class="text-base sm:text-lg text-gray-700 mt-1 truncate">${company}</p>` : '' }
+                                                ${ loc ? `<p class="text-xs sm:text-sm text-gray-600 mt-2 flex items-center gap-2"><img src='https://img.icons8.com/color/48/marker--v1.png' class='w-4 h-4 flex-shrink-0'> <span class='truncate'>${loc}</span></p>` : '' }
                                             </div>
                                         </div>
-                                        <div class="flex flex-col items-end justify-between gap-4">
-                                            <div class="flex gap-3">
-                                                <a href="/job-details?job_id=${encodeURIComponent(jid)}"
-                                                class="px-5 py-3 bg-[#55BEBB] text-white rounded-md shadow-md hover:bg-[#47a4a1] font-semibold">
-                                                📝 See Details
-                                                </a>
+                                        <div class="flex flex-col gap-3 sm:flex-wrap sm:justify-end sm:gap-2 lg:flex-row lg:gap-3 lg:items-center">
+                                            <a href="/job-details?job_id=${encodeURIComponent(jid)}"
+                                            class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base bg-[#55BEBB] text-white rounded-md shadow-md hover:bg-[#47a4a1] font-semibold transition-all text-center whitespace-nowrap">
+                                            📝 Details
+                                            </a>
 
-                                                <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
-                                                ${applyBtnText}
-                                                </button>
+                                            <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
+                                            ${applyBtnText}
+                                            </button>
 
-                                                <button onclick="removeSavedJob('${esc(jid)}', this)"
-                                                class="px-4 py-2 bg-[#FF2400] text-white rounded-md shadow-sm hover:bg-[#C41E3A] font-semibold">
-                                                🗑️ Remove
-                                                </button>
-                                            </div>
+                                            <button onclick="removeSavedJob('${esc(jid)}', this)"
+                                            class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base bg-[#FF2400] text-white rounded-md shadow-sm hover:bg-[#C41E3A] font-semibold transition-all whitespace-nowrap">
+                                            🗑️ Remove
+                                            </button>
                                         </div>
                                     </div>`;
                             }).join('\n');
@@ -245,7 +239,7 @@
         })
         .catch(err => {
             console.error('get-saved-jobs error', err);
-            container.innerHTML = '<div class="text-center text-red-600">Failed to load saved jobs. Please try again later.</div>';
+            container.innerHTML = '<div class="text-center text-red-600 text-sm sm:text-base">Failed to load saved jobs. Please try again later.</div>';
         });
     })();
     // ...existing code...
@@ -265,9 +259,9 @@
             // if no jobs left, show the empty placeholder
             if (listContainer && remaining === 0) {
                 listContainer.innerHTML = `
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-8 text-center text-gray-700">
-                        <p class="text-xl font-semibold mb-2">No Saved Jobs Yet</p>
-                        <p class="text-sm">Save jobs from the Jobs page and they'll appear here.</p>
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 sm:p-8 text-center text-gray-700">
+                        <p class="text-lg sm:text-xl font-semibold mb-2">No Saved Jobs Yet</p>
+                        <p class="text-sm sm:text-base">Save jobs from the Jobs page and they'll appear here.</p>
                     </div>`;
             }
         } catch (e) { /* ignore */ }

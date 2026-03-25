@@ -1,6 +1,31 @@
-@extends('layouts.includes')
+﻿@extends('layouts.includes')
 
 @section('content')
+
+    <style>
+        .tts-btn.speaking {
+            background-color: #2563eb !important;
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
+            transform: scale(1.03);
+        }
+        .tts-btn {
+            padding: 0.4rem 0.5rem;
+            border-radius: 9999px;
+            transition: transform 0.2s ease;
+        }
+        @media (min-width: 640px) {
+            .tts-btn {
+                padding: 0.5rem 0.6rem;
+                font-size: 1rem;
+            }
+        }
+        @media (min-width: 1024px) {
+            .tts-btn {
+                padding: 0.55rem 0.6rem;
+                font-size: 1.125rem;
+            }
+        }
+    </style>
 
     <!-- NOTE: THIS IS STILL IN PROGRESS, I'M NOT SURE PANO AANUHIN YAN -->
     <!-- Back Button -->
@@ -18,13 +43,18 @@
     </div>
 
     <!-- HERO SECTION -->
-    <section class="bg-[#D78203] py-10 text-center shadow-md rounded-b-3xl">
-        <div class="flex flex-col items-center justify-center">
-            <img src="{{ asset('image/my-job-app.png') }}" alt="Brain Icon" class="w-24 h-24 mb-3 animate-bounce-slow">
-            <h2 class="text-4xl font-extrabold text-white tracking-wide drop-shadow-md">
+    <section class="relative bg-[#D78203] flex items-center justify-center py-10 sm:py-14 lg:py-16 px-4 sm:px-8 lg:px-20 shadow-md rounded-b-3xl">
+        <div class="relative flex flex-col items-center justify-center text-center max-w-4xl mx-auto gap-4 sm:gap-6">
+            <button type="button" class="absolute top-4 right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                data-tts-en="Track your application progress and manage your job applications on this page." 
+                data-tts-tl="Subaybayan ang progreso ng iyong aplikasyon at pamahalaan ang mga aplikasyon mo sa page na ito." 
+                aria-label="Play audio for My Job Application hero section">🔊</button>
+
+            <img src="{{ asset('image/my-job-app.png') }}" alt="Brain Icon" class="w-20 h-20 sm:w-24 sm:h-24 mb-2 sm:mb-3 animate-bounce-slow">
+            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-wide drop-shadow-md">
                 My Job Application
             </h2>
-            <p class="text-lg text-white/90 mt-2 max-w-2xl">
+            <p class="text-base sm:text-lg lg:text-xl text-white/90 mt-2 max-w-2xl">
                 Track your application progress and manage your job applications
             </p>
         </div>
@@ -32,19 +62,31 @@
 
     <!-- APPLICATION STATS -->
     <section class="max-w-6xl mx-auto mt-10 px-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-        <div class="bg-[#FFF6E5] border-4 border-[#FFD27F] rounded-3xl shadow-md p-6">
+        <div class="relative bg-[#FFF6E5] border-4 border-[#FFD27F] rounded-3xl shadow-md p-6">
+            <button type="button" class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-xs sm:text-sm transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                data-tts-en="Pending applications. These are applications awaiting a response from the employer."
+                data-tts-tl="Mga pending na aplikasyon. Ito ay mga aplikasyon na naghihintay ng tugon mula sa employer."
+                aria-label="Play audio for pending applications">🔊</button>
             <img src="https://img.icons8.com/emoji/48/hourglass-not-done.png" alt="Pending Icon" class="mx-auto mb-2">
             <h3 class="text-4xl font-extrabold text-[#D78203]"><span id="statPendingCount">-</span></h3>
             <p class="text-lg font-semibold text-gray-800 mt-1">Pending</p>
         </div>
 
-        <div class="bg-[#E9FFE9] border-4 border-[#8BE18B] rounded-3xl shadow-md p-6">
+        <div class="relative bg-[#E9FFE9] border-4 border-[#8BE18B] rounded-3xl shadow-md p-6">
+            <button type="button" class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-xs sm:text-sm transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                data-tts-en="Applications under review. The employer is currently reviewing your qualifications and experience."
+                data-tts-tl="Mga aplikasyon na nasa review. Ang employer ay kasalukuyang nag-review ng iyong mga qualification at karanasan."
+                aria-label="Play audio for applications under review">🔊</button>
             <img src="https://img.icons8.com/emoji/48/check-mark-emoji.png" alt="Review Icon" class="mx-auto mb-2">
             <h3 class="text-4xl font-extrabold text-[#1F8B24]"><span id="statReviewedCount">-</span></h3>
             <p class="text-lg font-semibold text-gray-800 mt-1">Under Review</p>
         </div>
 
-        <div class="bg-[#E8F3FF] border-4 border-[#7FBFFF] rounded-3xl shadow-md p-6">
+        <div class="relative bg-[#E8F3FF] border-4 border-[#7FBFFF] rounded-3xl shadow-md p-6">
+            <button type="button" class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-xs sm:text-sm transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                data-tts-en="Total applications. This is the total number of job applications you have submitted."
+                data-tts-tl="Kabuuang aplikasyon. Ito ang kabuuang bilang ng mga job application na iyong napadala."
+                aria-label="Play audio for total applications">🔊</button>
             <img src="https://img.icons8.com/emoji/48/file-folder-emoji.png" alt="Applications Icon" class="mx-auto mb-2">
             <h3 class="text-4xl font-extrabold text-[#007BFF]"><span id="statTotalCount">-</span></h3>
             <p class="text-lg font-semibold text-gray-800 mt-1">Total Applications</p>
@@ -117,9 +159,9 @@
     </section>
 
         <!-- JOB APPLICATIONS LIST -->
-        <section class="max-w-6xl mx-auto mt-8 px-6 mb-16">
-                <div id="applicationsList" class="space-y-8">
-                        <div class="text-center text-gray-500 py-8">Loading applications…</div>
+        <section class="max-w-6xl mx-auto mt-8 px-4 sm:px-6 lg:px-8 mb-16">
+                <div id="applicationsList" class="space-y-6">
+                        <div class="text-center text-gray-500 py-8">Loading applications...</div>
                 </div>
         </section>
 
@@ -207,23 +249,23 @@
                             const feedbackChecked = isFeedback;
 
                             const submittedIconClass = submittedChecked ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
-                            const submittedLabelClass = submittedChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+                            const submittedLabelClass = submittedChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-xs sm:text-sm';
 
                             const reviewIconClass = reviewChecked ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
-                            const reviewLabelClass = reviewChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+                            const reviewLabelClass = reviewChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-xs sm:text-sm';
 
                             const feedbackIconClass = feedbackChecked ? 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md' : 'w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white';
-                            const feedbackLabelClass = feedbackChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-sm';
+                            const feedbackLabelClass = feedbackChecked ? 'mt-3 text-green-700 font-semibold text-sm' : 'mt-3 text-gray-600 text-xs sm:text-sm';
 
-                            const conn1Class = reviewChecked ? 'h-1 w-12 bg-green-400' : 'h-1 w-12 bg-gray-300';
-                            const conn2Class = feedbackChecked ? 'h-1 w-12 bg-green-400' : 'h-1 w-12 bg-gray-300';
+                            const conn1Class = reviewChecked ? 'h-1 w-full sm:w-12 bg-green-400' : 'h-1 w-full sm:w-12 bg-gray-300';
+                            const conn2Class = feedbackChecked ? 'h-1 w-full sm:w-12 bg-green-400' : 'h-1 w-full sm:w-12 bg-gray-300';
 
                             const checkSvg = `<svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" /></svg>`;
                             const submittedInnerSvg = submittedChecked ? checkSvg : '';
                             const reviewInnerSvg = reviewChecked ? checkSvg : '';
                             const feedbackInnerSvg = feedbackChecked ? checkSvg : '';
 
-                            return `\n<div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">\n  <div class="p-6">\n    <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">${esc(a.job_role || 'Job Role')}</h3>\n    <p class="mt-2 text-xl font-semibold text-black-700">${esc(a.company_name || 'Company Name')}</p>\n  \n  <p class="mt-2 text-lg text-gray-700 flex items-center gap-2">\n      <img src=\"https://img.icons8.com/color/48/marker--v1.png\" class=\"w-6 h-6\"/>\n      ${esc(a.job_address || 'Location')}\n    </p>\n    <p class="mt-4 text-base text-gray-700 flex items-center gap-2">\n      <img src=\"https://img.icons8.com/color/48/calendar--v1.png\" class=\"w-6 h-6\"/>\n      <span>Date Applied: ${dateApplied}</span>\n    </p>\n  </div>\n\n  <div class="bg-green-50 border-t-4 border-green-300 px-8 py-10">\n    <h2 class="text-xl font-semibold text-black text-center mb-10">Application Progress</h2>\n    <div class="flex items-center justify-between w-full max-w-3xl mx-auto">\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${submittedIconClass}\">\n          ${submittedInnerSvg}\n        </div>\n        <p class=\"${submittedLabelClass}\">Application Submitted</p>\n        <p class=\"text-xs text-gray-500\">${dateApplied}</p>\n      </div>\n      <div class=\"${conn1Class}\"></div>\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${reviewIconClass}\">\n          ${reviewInnerSvg}\n        </div>\n        <p class=\"${reviewLabelClass}\">Under Review</p>\n      </div>\n      <div class=\"${conn2Class}\"></div>\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${feedbackIconClass}\">\n          ${feedbackInnerSvg}\n        </div>\n        <p class=\"${feedbackLabelClass}\">Feedback</p>\n      </div>\n          <div class=\"flex flex-col items-center opacity-40\">\n          </div>\n    </div>\n    <div class=\"text-center mt-10\"><p class=\"text-gray-600 text-sm\">Last update: ${dateApplied}</p></div>\n  </div>\n</div>`;
+                            return `\n<div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">\n  <div class="p-6">\n    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">${esc(a.job_role || 'Job Role')}</h3>\n    <p class="mt-2 text-lg sm:text-xl font-semibold text-gray-800">${esc(a.company_name || 'Company Name')}</p>\n  \n  <p class="mt-2 text-sm sm:text-base text-gray-700 flex items-center gap-2">\n      <img src=\"https://img.icons8.com/color/48/marker--v1.png\" class=\"w-6 h-6\"/>\n      ${esc(a.job_address || 'Location')}\n    </p>\n    <p class="mt-2 text-sm sm:text-base text-gray-700 flex items-center gap-2">\n      <img src=\"https://img.icons8.com/color/48/calendar--v1.png\" class=\"w-6 h-6\"/>\n      <span>Date Applied: ${dateApplied}</span>\n    </p>\n  </div>\n\n  <div class="bg-green-50 border-t-4 border-green-300 px-4 sm:px-8 py-6 sm:py-8">\n    <h2 class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 text-center mb-6">Application Progress</h2>\n    <div class="flex flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-between w-full max-w-full sm:max-w-3xl mx-auto gap-4 sm:gap-2">\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${submittedIconClass}\">\n          ${submittedInnerSvg}\n        </div>\n        <p class=\"${submittedLabelClass}\">Application Submitted</p>\n        <p class=\"text-xs text-gray-500\">${dateApplied}</p>\n      </div>\n      <div class=\"${conn1Class}\"></div>\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${reviewIconClass}\">\n          ${reviewInnerSvg}\n        </div>\n        <p class=\"${reviewLabelClass}\">Under Review</p>\n      </div>\n      <div class=\"${conn2Class}\"></div>\n      <div class=\"flex flex-col items-center\">\n        <div class=\"${feedbackIconClass}\">\n          ${feedbackInnerSvg}\n        </div>\n        <p class=\"${feedbackLabelClass}\">Feedback</p>\n      </div>\n          <div class=\"flex flex-col items-center opacity-40\">\n          </div>\n    </div>\n    <div class=\"text-center mt-10\"><p class=\"text-gray-600 text-xs sm:text-sm\">Last update: ${dateApplied}</p></div>\n  </div>\n</div>`;
                         }
             // Format a Date or date-string into "Month day, Year" (e.g. January 11, 2026)
             function formatNiceDate(v){
@@ -240,7 +282,7 @@
                     const d = tryParseDate(a.created_at);
                     return d ? esc(formatNiceDate(d)) : esc(a.created_at || 'Unknown');
                 })();
-                return `\n<div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">\n  <div class="p-6">\n    <h3 class="text-2xl font-bold text-gray-900 flex items-center gap-2">${esc(a.job_role || 'Job Role')}</h3>\n    <p class="mt-2 text-xl font-semibold text-black-700">${esc(a.company_name || 'Company Name')}</p>\n  \n  <p class="mt-2 text-lg text-gray-700 flex items-center gap-2">\n      <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/>\n      ${esc(a.job_address || 'Location')}\n    </p>\n    <p class="mt-4 text-base text-gray-700 flex items-center gap-2">\n      <img src="https://img.icons8.com/color/48/calendar--v1.png" class="w-6 h-6"/>\n      <span>Date Applied: ${dateApplied}</span>\n    </p>\n  </div>\n\n  <div class="bg-green-50 border-t-4 border-green-300 px-8 py-10">\n    <h2 class="text-xl font-semibold text-black text-center mb-10">Application Progress</h2>\n    <div class="flex items-center justify-between w-full max-w-3xl mx-auto">\n      <div class="flex flex-col items-center">\n        <div class="w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" />\n          </svg>\n        </div>\n        <p class=\"mt-3 text-green-700 font-semibold text-sm\">Application Submitted</p>\n        <p class=\"text-xs text-gray-500\">${dateApplied}</p>\n      </div>\n      <div class=\"h-1 w-12 bg-green-400\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-sm\">Under Review</p>\n      </div>\n      <div class=\"h-1 w-12 bg-gray-300\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-sm\">Feedback</p>\n      </div>\n          <div class=\"flex flex-col items-center opacity-40\">\n          </div>\n    </div>\n    <div class=\"text-center mt-10\"><p class=\"text-gray-600 text-sm\">Last update: ${dateApplied}</p></div>\n  </div>\n</div>`;
+                return `\n<div class="bg-white border-4 border-green-200 rounded-3xl shadow-lg overflow-hidden">\n  <div class="p-6">\n    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900">${esc(a.job_role || 'Job Role')}</h3>\n    <p class="mt-2 text-lg sm:text-xl font-semibold text-gray-800">${esc(a.company_name || 'Company Name')}</p>\n  \n  <p class="mt-2 text-sm sm:text-base text-gray-700 flex items-center gap-2">\n      <img src="https://img.icons8.com/color/48/marker--v1.png" class="w-6 h-6"/>\n      ${esc(a.job_address || 'Location')}\n    </p>\n    <p class="mt-2 text-sm sm:text-base text-gray-700 flex items-center gap-2">\n      <img src="https://img.icons8.com/color/48/calendar--v1.png" class="w-6 h-6"/>\n      <span>Date Applied: ${dateApplied}</span>\n    </p>\n  </div>\n\n  <div class="bg-green-50 border-t-4 border-green-300 px-4 sm:px-8 py-6 sm:py-8">\n    <h2 class="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 text-center mb-6">Application Progress</h2>\n    <div class="flex flex-col sm:flex-row items-center sm:items-start justify-center sm:justify-between w-full max-w-full sm:max-w-3xl mx-auto gap-4 sm:gap-2">\n      <div class="flex flex-col items-center">\n        <div class="w-12 h-12 flex items-center justify-center rounded-full border-4 border-green-500 bg-white shadow-md">\n          <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-6 w-6 text-green-500\" fill=\"none\" viewBox=\"0 0 24 24\" stroke=\"currentColor\">\n            <path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"3\" d=\"M5 13l4 4L19 7\" />\n          </svg>\n        </div>\n        <p class=\"mt-3 text-green-700 font-semibold text-sm\">Application Submitted</p>\n        <p class=\"text-xs text-gray-500\">${dateApplied}</p>\n      </div>\n      <div class=\"h-1 w-full sm:w-12 bg-green-400\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-xs sm:text-sm\">Under Review</p>\n      </div>\n      <div class=\"h-1 w-full sm:w-12 bg-gray-300\"></div>\n      <div class=\"flex flex-col items-center opacity-40\">\n        <div class=\"w-12 h-12 flex items-center justify-center rounded-full border-4 border-gray-300 bg-white\"></div>\n        <p class=\"mt-3 text-gray-600 text-xs sm:text-sm\">Feedback</p>\n      </div>\n          <div class=\"flex flex-col items-center opacity-40\">\n          </div>\n    </div>\n    <div class=\"text-center mt-10\"><p class=\"text-gray-600 text-xs sm:text-sm\">Last update: ${dateApplied}</p></div>\n  </div>\n</div>`;
             }
 
             function renderFiltered(){
@@ -301,12 +343,12 @@
                                         const h3 = p6.querySelector('h3');
                                         if (h3) {
                                             const wrapper = document.createElement('div');
-                                            wrapper.className = 'flex items-start justify-between';
+                                            wrapper.className = 'flex flex-col sm:flex-row items-start justify-between w-full gap-3';
                                             const clonedH3 = h3.cloneNode(true);
 
                                             // Button container (withdraw + feedback)
                                             const btnWrap = document.createElement('div');
-                                            btnWrap.className = 'flex items-center gap-2';
+                                            btnWrap.className = 'flex flex-wrap items-center justify-start sm:justify-end gap-2';
 
                                             const btn = document.createElement('button');
                                             btn.type = 'button';
@@ -357,7 +399,7 @@
 
             async function fetchAndRender(){
                 try{
-                    container.innerHTML = '<div class="text-center text-gray-500 py-8">Loading applications…</div>';
+                    container.innerHTML = '<div class="text-center text-gray-500 py-8">Loading applicationsâ€¦</div>';
                     const res = await fetch('/db/get-applications.php');
                     const j = await res.json();
                     if (!j || !j.success){
@@ -481,10 +523,156 @@
         })();
         </script>
 
+        <!-- TTS: Web Speech API handler (same behavior as Job Matches) -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const buttons = Array.from(document.querySelectorAll('.tts-btn'));
+                const preferredEnglishVoiceName = 'Microsoft AvaMultilingual Online (Natural) - English (United States)';
+                const preferredTagalogVoiceName = 'fil-PH-RosaNeural';
+                let preferredEnglishVoice = null;
+                let preferredTagalogVoice = null;
+                let currentBtn = null;
+                let availableVoices = [];
+
+                function populateVoices() {
+                    availableVoices = window.speechSynthesis.getVoices() || [];
+                    preferredEnglishVoice = availableVoices.find(v => v.name === preferredEnglishVoiceName) ||
+                        availableVoices.find(v => /ava.*multilingual|microsoft ava/i.test(v.name)) || null;
+                    preferredTagalogVoice = availableVoices.find(v => v.name === preferredTagalogVoiceName) ||
+                        availableVoices.find(v => /rosa|blessica|fil-?ph|filipino|tagalog/i.test(v.name)) || null;
+                }
+
+                function chooseVoiceForLang(langCode) {
+                    if (!availableVoices.length) return null;
+                    langCode = (langCode || '').toLowerCase();
+                    let candidates = availableVoices.filter(v => (v.lang || '').toLowerCase().startsWith(langCode));
+                    if (candidates.length) return candidates[0];
+                    candidates = availableVoices.filter(v => /wave|neural|google|premium|microsoft|mbrola|amazon|polly/i.test(v.name));
+                    if (candidates.length) return candidates[0];
+                    return availableVoices[0];
+                }
+
+                function stopSpeaking() {
+                    if (window.speechSynthesis) {
+                        window.speechSynthesis.cancel();
+                    }
+                    if (currentBtn) {
+                        currentBtn.classList.remove('speaking');
+                        currentBtn.removeAttribute('aria-pressed');
+                        currentBtn = null;
+                    }
+                }
+
+                buttons.forEach(function(btn) {
+                    btn.setAttribute('role', 'button');
+                    btn.setAttribute('tabindex', '0');
+
+                    btn.addEventListener('click', function(event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        const textEn = (btn.getAttribute('data-tts-en') || '').trim();
+                        const textTl = (btn.getAttribute('data-tts-tl') || '').trim();
+                        if (!textEn && !textTl) return;
+
+                        if (window.speechSynthesis && window.speechSynthesis.speaking && currentBtn === btn) {
+                            stopSpeaking();
+                            return;
+                        }
+
+                        stopSpeaking();
+
+                        setTimeout(function() {
+                            if (!window.speechSynthesis) return;
+
+                            function voiceFor(langHint) {
+                                if (langHint) {
+                                    const hint = (langHint || '').toLowerCase();
+                                    if (hint.startsWith('tl') || hint.startsWith('fil') || hint.includes('tagalog')) {
+                                        if (preferredTagalogVoice) return preferredTagalogVoice;
+                                        return chooseVoiceForLang('tl');
+                                    }
+                                    if (hint.startsWith('en')) {
+                                        if (preferredEnglishVoice) return preferredEnglishVoice;
+                                        return chooseVoiceForLang('en');
+                                    }
+                                }
+                                return preferredEnglishVoice || chooseVoiceForLang('en') ||
+                                    (availableVoices.length ? availableVoices[0] : null);
+                            }
+
+                            const seq = [];
+                            if (textEn) {
+                                const uEn = new SpeechSynthesisUtterance(textEn);
+                                uEn.lang = 'en-US';
+                                const v = voiceFor('en');
+                                if (v) uEn.voice = v;
+                                seq.push(uEn);
+                            }
+                            if (textTl) {
+                                const uTl = new SpeechSynthesisUtterance(textTl);
+                                uTl.lang = 'fil-PH';
+                                const v2 = voiceFor('tl');
+                                if (v2) uTl.voice = v2;
+                                seq.push(uTl);
+                            }
+                            if (!seq.length) return;
+
+                            seq[0].onstart = function() {
+                                btn.classList.add('speaking');
+                                btn.setAttribute('aria-pressed', 'true');
+                                currentBtn = btn;
+                            };
+
+                            for (let i = 0; i < seq.length; i++) {
+                                const ut = seq[i];
+                                ut.onerror = function() {
+                                    if (btn) btn.classList.remove('speaking');
+                                    if (btn) btn.removeAttribute('aria-pressed');
+                                    currentBtn = null;
+                                };
+                                if (i < seq.length - 1) {
+                                    ut.onend = function() {
+                                        window.speechSynthesis.speak(seq[i + 1]);
+                                    };
+                                } else {
+                                    ut.onend = function() {
+                                        if (btn) btn.classList.remove('speaking');
+                                        if (btn) btn.removeAttribute('aria-pressed');
+                                        currentBtn = null;
+                                    };
+                                }
+                            }
+
+                            window.speechSynthesis.speak(seq[0]);
+                        }, 50);
+                    });
+
+                    btn.addEventListener('keydown', function(ev) {
+                        if (ev.key === 'Enter' || ev.key === ' ') {
+                            ev.preventDefault();
+                            ev.stopPropagation();
+                            btn.click();
+                        }
+                    });
+                });
+
+                window.addEventListener('beforeunload', function() {
+                    if (window.speechSynthesis) window.speechSynthesis.cancel();
+                });
+
+                if (window.speechSynthesis) {
+                    populateVoices();
+                    window.speechSynthesis.onvoiceschanged = function() {
+                        populateVoices();
+                    };
+                }
+            });
+        </script>
 
 
 
-    <!-- âœ–ï¸ -->
+
+    <!-- Ã¢Å“â€“Ã¯Â¸Â -->
     @php
         $csv_path = public_path('resume_job_matching_dataset.csv');
         $savedJobs = $savedJobs ?? [];
@@ -585,3 +773,5 @@
     }
   })();
 </script> --}}
+
+

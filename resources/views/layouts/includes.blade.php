@@ -221,7 +221,7 @@
 
                   </a>
 
-                  <span class="text-gray-600 italic ml-2">
+                  <span class="text-blue-800 italic ml-2">
                       (pindutin upang malaman ang tungkol sa navigation bar)
                   </span>
 
