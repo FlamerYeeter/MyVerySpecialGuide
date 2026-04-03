@@ -670,8 +670,9 @@
                     }
                     if (errEl) errEl.textContent = '';
 
-                    // ✅ Save selected job preferences to localStorage
+                    // ✅ Save selected job preferences to localStorage and hidden input
                     localStorage.setItem('jobPreferences', JSON.stringify(arr));
+                    if (hidden) hidden.value = JSON.stringify(arr);
                     console.log('Saved job preferences to localStorage:', arr);
 
                     // Allow register.js to handle navigation and saving if present
@@ -679,20 +680,16 @@
                         return; // defer to register.js
                     }
 
-                    // Fallback if register.js not present
+                    // If preview function is available, fetch preview and show modal (user-triggered)
+                    if (typeof window.fetchPreviewFor === 'function') {
+                        try { window.fetchPreviewFor(arr); } catch(e) { console.warn('fetchPreviewFor failed', e); }
+                        return;
+                    }
+
+                    // Fallback if register.js / preview not present: submit form or navigate
                     const form = document.querySelector('form');
                     if (form) { form.submit(); return; }
-
-                    // Show modal to allow review or skip to final step
-                    const reviewModal = document.getElementById('reviewModal');
-                    if (reviewModal) {
-                        reviewModal.classList.remove('hidden');
-                        // focus Skip button for keyboard users
-                        const skipBtn = reviewModal.querySelector('#reviewModalSkip');
-                        if (skipBtn) skipBtn.focus();
-                    } else {
-                        window.location.href = '{{ route('registerreview1') }}';
-                    }
+                    window.location.href = '{{ route('registerreview1') }}';
                 } catch (e) {
                     console.error('jobpref1Next click handler error', e);
                 }
@@ -812,16 +809,15 @@
                 });
             }
 
-            // Delegated click: when a job card is clicked, wait briefly then fetch preview if >=3 selected
-            document.addEventListener('click', function(ev){
-                const card = ev.target.closest && ev.target.closest('.skills-card, .jobpref-card');
-                if (!card) return;
-                if (debounceTimer) clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(function(){
-                    const prefs = getSelectedPrefs();
-                    if (prefs.length >= 3) fetchPreviewFor(prefs);
-                }, 220);
-            });
+            // Delegated click handler intentionally left minimal: selection is handled
+            // by `toggleJobPref1Choice()` which updates the hidden input. We do NOT
+            // auto-open the preview modal on selection anymore; the preview/modal
+            // will be shown only when the user clicks Next.
+            // (No auto-fetch on click.)
+
+            // Expose fetchPreviewFor and getSelectedPrefs globally so Next button can invoke them
+            window.getSelectedJobPrefs = getSelectedPrefs;
+            window.fetchPreviewFor = fetchPreviewFor;
 
             if (btnCancel) btnCancel.addEventListener('click', function(){ closeModal(); });
             if (btnSkip) btnSkip.addEventListener('click', function(){ closeModal(); window.location.href = '{{ route('registerfinalstep') }}'; });
