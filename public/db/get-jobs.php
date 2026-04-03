@@ -374,6 +374,21 @@ oci_bind_by_name($stid, ':work_env', $work_env, -1);
 oci_bind_by_name($stid, ':work_env_like', $work_env_like, -1);
 oci_bind_by_name($stid, ':job_type', $job_type, -1);
 oci_bind_by_name($stid, ':job_type_like', $job_type_like, -1);
+// Simple short-lived caching to reduce repeated identical requests (APCu preferred, file fallback)
+$cacheKey = 'getjobs:' . md5(json_encode(['user_id'=>$user_id,'title'=>$title,'location'=>$location,'work_env'=>$work_env,'job_type'=>$job_type]));
+$cacheTtl = 10; // seconds
+$cachedOut = false;
+if (function_exists('apcu_fetch')) {
+  $c = apcu_fetch($cacheKey);
+  if ($c !== false) { header('X-Cache: HIT'); echo $c; oci_free_statement($stid); oci_close($conn); exit; }
+} else {
+  $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'getjobs_' . md5($cacheKey) . '.json';
+  if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
+    $c = @file_get_contents($cacheFile);
+    if ($c !== false) { header('X-Cache: HIT'); echo $c; oci_free_statement($stid); oci_close($conn); exit; }
+  }
+}
+
 if (!@oci_execute($stid)) {
     $e = oci_error($stid) ?: oci_error($conn);
     http_response_code(500);
@@ -383,200 +398,208 @@ if (!@oci_execute($stid)) {
 
 $jobs = [];
 
-while ($row = oci_fetch_assoc($stid)) {
-    $jobId = $row['ID'];
+// --- Collect all rows first (reduce round-trips)
+$rows = [];
+while ($r = oci_fetch_assoc($stid)) $rows[] = $r;
+oci_free_statement($stid);
 
-    // Fetch skills from JOB_PROFILE
-    $profileSql = "
-      SELECT VALUE, TYPE
-      FROM MVSG.JOB_PROFILE
-      WHERE JOB_POSTING_ID = :job_id
-        AND VALUE IS NOT NULL
-        AND LOWER(TYPE) IN ('skills','job-position','role','workplace','workplace_preference','work_environment','job_positions','job_preference','comp_req','sensor_req','cog_lvl_req','accom_avail')
-    ";
+if (count($rows) > 0) {
+    // batch job ids (preserve as strings to avoid PHP int overflow)
+    $jobIds = array_values(array_unique(array_map(function($r){ return isset($r['ID']) ? (string)$r['ID'] : '0'; }, $rows)));
+    // ensure numeric-only tokens for SQL IN list
+    $ids_list = implode(',', array_map(function($id){ $n = preg_replace('/[^0-9]/','', (string)$id); return $n === '' ? '0' : $n; }, $jobIds));
+
+    // Batch fetch JOB_PROFILE rows for all jobs to avoid N+1
+    $profileSql = "SELECT JOB_POSTING_ID, VALUE, TYPE FROM MVSG.JOB_PROFILE WHERE JOB_POSTING_ID IN ($ids_list) AND VALUE IS NOT NULL AND LOWER(TYPE) IN ('skills','job-position','role','workplace','workplace_preference','work_environment','job_positions','job_preference','comp_req','sensor_req','cog_lvl_req','accom_avail') ORDER BY JOB_POSTING_ID";
     $pstid = oci_parse($conn, $profileSql);
-    oci_bind_by_name($pstid, ':job_id', $jobId, -1);
-    oci_execute($pstid);
-
-    $skills = []; $jobTypes = [];
-    $workplaces = [];
-    $compReqs = []; $sensorReqs = []; $cogLvlReqs = []; $accomAvail = [];
-    while ($p = oci_fetch_assoc($pstid)) {
-        $type = strtolower($p['TYPE'] ?? '');
-      if (strpos($type, 'role') !== false || $type === 'job-position') $jobTypes[] = $p['VALUE'];
-      elseif ($type === 'skills') $skills[] = $p['VALUE'];
-      elseif (strpos($type, 'work') !== false || strpos($type, 'workplace') !== false || strpos($type, 'job_preference') !== false || strpos($type,'job_positions') !== false) {
-        $workplaces[] = $p['VALUE'];
-      } elseif ($type === 'comp_req') {
-        $compReqs[] = $p['VALUE'];
-      } elseif ($type === 'sensor_req') {
-        $sensorReqs[] = $p['VALUE'];
-      } elseif ($type === 'cog_lvl_req') {
-        $cogLvlReqs[] = $p['VALUE'];
-      } elseif ($type === 'accom_avail') {
-        $accomAvail[] = $p['VALUE'];
-      }
+    @oci_execute($pstid);
+    $profilesByJob = [];
+    while ($pr = oci_fetch_assoc($pstid)) {
+      $jid = isset($pr['JOB_POSTING_ID']) ? (string)$pr['JOB_POSTING_ID'] : '0';
+      $profilesByJob[$jid][] = $pr;
     }
-    oci_free_statement($pstid);
+    @oci_free_statement($pstid);
 
-    // Fetch COMPANY_IMAGE as before
-    $imgSql = "SELECT COMPANY_IMAGE FROM MVSG.JOB_POSTINGS WHERE ID = :job_id";
-    $imgStid = oci_parse($conn, $imgSql);
-    oci_bind_by_name($imgStid, ':job_id', $jobId, -1);
-    oci_execute($imgStid);
-    $imgRow = oci_fetch_assoc($imgStid);
-    if ($imgRow && $imgRow['COMPANY_IMAGE'] !== null) {
-        $blob = $imgRow['COMPANY_IMAGE'];
-        $imageContent = $blob->load();
-        $logoSrc = "data:image/png;base64," . base64_encode($imageContent);
-    } else {
-        $logoSrc = "https://via.placeholder.com/150?text=Logo";
-    }
-    oci_free_statement($imgStid);
-
-    // ensure numeric non-null values by explicit casts/fallbacks
-    $contentScoreRaw = isset($row['CONTENT_SCORE_RAW']) ? floatval($row['CONTENT_SCORE_RAW']) : 0.0;
-    $collabScoreRaw  = isset($row['COLLAB_SCORE_RAW'])  ? floatval($row['COLLAB_SCORE_RAW'])  : 0.0;
-    $contentMatches  = isset($row['CONTENT_MATCHES'])  ? intval($row['CONTENT_MATCHES']) : 0;
-    $collabCount     = isset($row['COLLAB_COUNT'])     ? intval($row['COLLAB_COUNT']) : 0;
-    $debugMaxCo      = isset($row['DEBUG_MAX_CO'])     ? intval($row['DEBUG_MAX_CO']) : 0;
-
-    // --- PHP-side accessibility matching (normalization + synonyms) for additional recall
-    $access_matches_php = 0;
-    $job_access_fields = [];
-    if (!empty($row['COMP_REQ'])) $job_access_fields[] = $row['COMP_REQ'];
-    if (!empty($row['SENSOR_REQ'])) $job_access_fields[] = $row['SENSOR_REQ'];
-    if (!empty($row['COG_LVL_REQ'])) $job_access_fields[] = $row['COG_LVL_REQ'];
-    if (!empty($row['ACCOM_AVAIL'])) $job_access_fields[] = $row['ACCOM_AVAIL'];
-
-    // Augment job access fields using job role keywords
-    $roleText = mb_strtolower((string)($row['JOB_ROLE'] ?? ''));
-    if ($roleText !== '') {
-      foreach ($JOB_ROLE_REQUIREMENTS as $kw => $reqs) {
-        if (mb_stripos($roleText, $kw) !== false) {
-          foreach ($reqs as $r) $job_access_fields[] = $r;
+    // Batch fetch images (small optimization: return placeholder if not present)
+    $imgSql = "SELECT ID, COMPANY_IMAGE FROM MVSG.JOB_POSTINGS WHERE ID IN ($ids_list)";
+    $imgSt = oci_parse($conn, $imgSql);
+    @oci_execute($imgSt);
+    $logos = [];
+    while ($ir = oci_fetch_assoc($imgSt)) {
+      $jid = isset($ir['ID']) ? (string)$ir['ID'] : '0';
+      if ($ir && array_key_exists('COMPANY_IMAGE', $ir) && $ir['COMPANY_IMAGE'] !== null) {
+        $blob = $ir['COMPANY_IMAGE'];
+        $content = null;
+        if (is_object($blob) && method_exists($blob, 'load')) {
+          $content = $blob->load();
+        } elseif (is_resource($blob)) {
+          $content = stream_get_contents($blob);
+        } else {
+          $content = (string)$blob;
         }
-      }
-    }
-
-    // Augment from JOB_PROFILE aggregated workplace string and WORKING_ENVIRONMENT
-    $envCandidates = [];
-    if (!empty($row['JOB_PROFILE_WORKPLACE'])) $envCandidates[] = $row['JOB_PROFILE_WORKPLACE'];
-    if (!empty($row['WORKING_ENVIRONMENT'])) $envCandidates[] = $row['WORKING_ENVIRONMENT'];
-    if (!empty($workplaces)) $envCandidates = array_merge($envCandidates, $workplaces);
-    foreach ($envCandidates as $ec) {
-      $ecn = mb_strtolower((string)$ec);
-      foreach ($WORK_ENV_REQUIREMENTS as $kw => $reqs) {
-        if (mb_stripos($ecn, $kw) !== false) {
-          foreach ($reqs as $r) $job_access_fields[] = $r;
-        }
-      }
-    }
-
-    // deduplicate
-    $job_access_fields = array_values(array_unique(array_filter($job_access_fields)));
-    // normalize job tokens
-    $job_tokens = [];
-    foreach ($job_access_fields as $jf) {
-      $t = normalize_token($jf);
-      if ($t === '') continue;
-      // also map synonyms on job side
-      $job_tokens[] = map_synonym($t, $SYNONYMS);
-      $job_tokens[] = $t;
-    }
-    $job_tokens = array_values(array_unique($job_tokens));
-
-    // If user has disabilities, exclude jobs that appear incompatible
-    if (!empty($user_conditions)) {
-      $hay = mb_strtolower(
-        ($row['JOB_ROLE'] ?? '') . ' ' . ($row['JOB_DESCRIPTION'] ?? '') . ' ' . ($row['JOB_PROFILE_WORKPLACE'] ?? '') . ' ' .
-        implode(' ', $job_access_fields) . ' ' . ($row['COMP_REQ'] ?? '') . ' ' . ($row['SENSOR_REQ'] ?? '') . ' ' . ($row['COG_LVL_REQ'] ?? '') . ' ' . ($row['ACCOM_AVAIL'] ?? '')
-      );
-      $exclude = false;
-      foreach ($user_conditions as $cond) {
-        if (!isset($DISABILITY_INCOMPAT[$cond])) continue;
-        foreach ($DISABILITY_INCOMPAT[$cond] as $phrase) {
-          if ($phrase === '') continue;
-          if (mb_stripos($hay, $phrase) !== false) { $exclude = true; break 2; }
-        }
-      }
-      if ($exclude) continue; // skip this job entirely
-    }
-
-    if (!empty($user_profile_tokens) && !empty($job_tokens)) {
-      foreach ($user_profile_tokens as $ut) {
-        if ($ut === '') continue;
-        foreach ($job_tokens as $jt) {
-          // partial match both directions
-          if (mb_stripos($ut, $jt) !== false || mb_stripos($jt, $ut) !== false) {
-            // weight each accessibility match as 2 (to align with SQL-side design)
-            $access_matches_php += 2;
+        if ($content !== false && $content !== '') {
+          $mime = 'image/png';
+          if (substr($content, 0, 2) === "\xFF\xD8") {
+            $mime = 'image/jpeg';
+          } elseif (substr($content, 0, 8) === "\x89PNG\x0D\x0A\x1A\x0A") {
+            $mime = 'image/png';
+          } elseif (strpos(ltrim($content), '<svg') === 0) {
+            $mime = 'image/svg+xml';
           }
+                $dataUri = 'data:' . $mime . ';base64,' . base64_encode($content);
+                $logos[$jid] = $dataUri;
+                $logos[(string)$jid] = $dataUri;
+                $intKey = is_numeric($jid) ? intval($jid) : null;
+                if ($intKey !== null) $logos[$intKey] = $dataUri;
         }
       }
     }
+    @oci_free_statement($imgSt);
 
-
-    // Fetch number of applicants (applications) for this job
-    $appSql = "SELECT COUNT(DISTINCT GUARDIAN_ID) AS APPLIED_COUNT FROM MVSG.APPLICATIONS WHERE JOB_POSTING_ID = :job_id";
+    // Batch fetch application counts
+    // Handle schemas that use either JOB_POSTING_ID or JOB_ID
+    $appSql = "SELECT NVL(JOB_POSTING_ID, JOB_ID) AS JOB_ID, COUNT(DISTINCT GUARDIAN_ID) AS APPLIED_COUNT FROM MVSG.APPLICATIONS WHERE NVL(JOB_POSTING_ID, JOB_ID) IN ($ids_list) GROUP BY NVL(JOB_POSTING_ID, JOB_ID)";
     $appSt = oci_parse($conn, $appSql);
-    oci_bind_by_name($appSt, ':job_id', $jobId, -1);
-    if (@oci_execute($appSt)) {
-      $appRow = oci_fetch_assoc($appSt);
-      $appliedCount = $appRow && isset($appRow['APPLIED_COUNT']) ? intval($appRow['APPLIED_COUNT']) : 0;
-    } else {
-      $appliedCount = 0;
+    @oci_execute($appSt);
+    $appliedCounts = [];
+    while ($ar = oci_fetch_assoc($appSt)) {
+      $jid = isset($ar['JOB_ID']) ? (string)$ar['JOB_ID'] : '0';
+      $cnt = isset($ar['APPLIED_COUNT']) ? intval($ar['APPLIED_COUNT']) : 0;
+      $appliedCounts[$jid] = $cnt;
+      $appliedCounts[(string)$jid] = $cnt;
+      $intKey = is_numeric($jid) ? intval($jid) : null;
+      if ($intKey !== null) $appliedCounts[$intKey] = $cnt;
     }
     @oci_free_statement($appSt);
 
-    // Blend: 70% content, 30% collaborative
-    // Compute a small accessibility score from PHP-side matches and blend it into final score
-    $accessScoreRaw = min(1.0, $access_matches_php / 4.0); // 4 weighted points -> full
-    $computedScore = round((0.65 * $contentScoreRaw + 0.25 * $accessScoreRaw + 0.1 * $collabScoreRaw) * 100, 2);
-    // ensure numeric non-null values by explicit casts/fallbacks
-    $contentScoreRaw = isset($row['CONTENT_SCORE_RAW']) ? floatval($row['CONTENT_SCORE_RAW']) : 0.0;
-    $collabScoreRaw  = isset($row['COLLAB_SCORE_RAW'])  ? floatval($row['COLLAB_SCORE_RAW'])  : 0.0;
-    $contentMatches  = isset($row['CONTENT_MATCHES'])  ? intval($row['CONTENT_MATCHES']) : 0;
-    $collabCount     = isset($row['COLLAB_COUNT'])     ? intval($row['COLLAB_COUNT']) : 0;
-    $debugMaxCo      = isset($row['DEBUG_MAX_CO'])     ? intval($row['DEBUG_MAX_CO']) : 0;
+    // Now build final job objects in one pass, using batched data
+    foreach ($rows as $row) {
+      $jobId = isset($row['ID']) ? (string)$row['ID'] : '0';
 
-    $jobs[] = [
-        'id'                    => $jobId,
-        'company_name'          => $row['COMPANY_NAME'] ?? null,
-        'job_role'              => $row['JOB_ROLE'] ?? null,
-        'description'           => $row['JOB_DESCRIPTION'] ?? '',
-        'address'               => $row['ADDRESS'] ?? null,
-        'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),
-        // prefer JOB_PROFILE aggregated values, else use JOB table WORKING_ENVIRONMENT
-        'job_profile_workplace' => $row['JOB_PROFILE_WORKPLACE'] ?? null,
-        'work_environment'      => !empty($workplaces) ? implode(', ', $workplaces) : ($row['JOB_PROFILE_WORKPLACE'] ?? ($row['WORKING_ENVIRONMENT'] ?? null)),
-        'skills'                => $skills,
-      'comp_req'              => !empty($compReqs) ? implode(', ', $compReqs) : ($row['COMP_REQ'] ?? null),
-      'sensor_req'            => !empty($sensorReqs) ? implode(', ', $sensorReqs) : ($row['SENSOR_REQ'] ?? null),
-      'cog_lvl_req'           => !empty($cogLvlReqs) ? implode(', ', $cogLvlReqs) : ($row['COG_LVL_REQ'] ?? null),
-      'accom_avail'           => !empty($accomAvail) ? implode(', ', $accomAvail) : ($row['ACCOM_AVAIL'] ?? null),
-      'openings'              => $row['EMPLOYEE_CAPACITY'] ?? null,
-      'apply_before'          => isset($row['APPLY_BEFORE']) ? $row['APPLY_BEFORE'] : null,
-        'logo'                  => $logoSrc,
-        // hybrid signals (guaranteed numeric)
-        'content_score'         => round($contentScoreRaw * 100, 2),
-        'collab_score'          => round(min(1.0, $collabScoreRaw) * 100, 2),
-        'computed_score'        => $computedScore,
-        'access_matches'        => $access_matches_php,
-        'access_score_raw'      => round($accessScoreRaw, 3),
-        // debug fields (guaranteed numeric)
-        'debug_content_matches' => $contentMatches,
-        'debug_collab_count'    => $collabCount,
-        'debug_max_co'          => $debugMaxCo
-        ,
-        // explicit application counts for frontend
-        'applied'               => $appliedCount,
-        'applied_count'         => $appliedCount
-    ];
+        $skills = []; $jobTypes = []; $workplaces = []; $compReqs = []; $sensorReqs = []; $cogLvlReqs = []; $accomAvail = [];
+        if (!empty($profilesByJob[$jobId])) {
+          foreach ($profilesByJob[$jobId] as $p) {
+                $type = strtolower($p['TYPE'] ?? '');
+                if (strpos($type, 'role') !== false || $type === 'job-position') $jobTypes[] = $p['VALUE'];
+                elseif ($type === 'skills') $skills[] = $p['VALUE'];
+                elseif (strpos($type, 'work') !== false || strpos($type, 'workplace') !== false || strpos($type, 'job_preference') !== false || strpos($type,'job_positions') !== false) $workplaces[] = $p['VALUE'];
+                elseif ($type === 'comp_req') $compReqs[] = $p['VALUE'];
+                elseif ($type === 'sensor_req') $sensorReqs[] = $p['VALUE'];
+                elseif ($type === 'cog_lvl_req') $cogLvlReqs[] = $p['VALUE'];
+                elseif ($type === 'accom_avail') $accomAvail[] = $p['VALUE'];
+            }
+        }
+
+        $logoSrc = isset($logos[$jobId]) ? $logos[$jobId] : (isset($logos[(string)$jobId]) ? $logos[(string)$jobId] : "https://via.placeholder.com/150?text=Logo");
+
+        // ensure numeric non-null values by explicit casts/fallbacks
+        $contentScoreRaw = isset($row['CONTENT_SCORE_RAW']) ? floatval($row['CONTENT_SCORE_RAW']) : 0.0;
+        $collabScoreRaw  = isset($row['COLLAB_SCORE_RAW'])  ? floatval($row['COLLAB_SCORE_RAW'])  : 0.0;
+        $contentMatches  = isset($row['CONTENT_MATCHES'])  ? intval($row['CONTENT_MATCHES']) : 0;
+        $collabCount     = isset($row['COLLAB_COUNT'])     ? intval($row['COLLAB_COUNT']) : 0;
+        $debugMaxCo      = isset($row['DEBUG_MAX_CO'])     ? intval($row['DEBUG_MAX_CO']) : 0;
+
+        // --- PHP-side accessibility matching (normalization + synonyms)
+        $access_matches_php = 0;
+        $job_access_fields = [];
+        if (!empty($row['COMP_REQ'])) $job_access_fields[] = $row['COMP_REQ'];
+        if (!empty($row['SENSOR_REQ'])) $job_access_fields[] = $row['SENSOR_REQ'];
+        if (!empty($row['COG_LVL_REQ'])) $job_access_fields[] = $row['COG_LVL_REQ'];
+        if (!empty($row['ACCOM_AVAIL'])) $job_access_fields[] = $row['ACCOM_AVAIL'];
+
+        // Augment job access fields using job role keywords
+        $roleText = mb_strtolower((string)($row['JOB_ROLE'] ?? ''));
+        if ($roleText !== '') {
+            foreach ($JOB_ROLE_REQUIREMENTS as $kw => $reqs) {
+                if (mb_stripos($roleText, $kw) !== false) foreach ($reqs as $r) $job_access_fields[] = $r;
+            }
+        }
+
+        // Augment from JOB_PROFILE aggregated workplace string and WORKING_ENVIRONMENT
+        $envCandidates = [];
+        if (!empty($row['JOB_PROFILE_WORKPLACE'])) $envCandidates[] = $row['JOB_PROFILE_WORKPLACE'];
+        if (!empty($row['WORKING_ENVIRONMENT'])) $envCandidates[] = $row['WORKING_ENVIRONMENT'];
+        if (!empty($workplaces)) $envCandidates = array_merge($envCandidates, $workplaces);
+        foreach ($envCandidates as $ec) {
+            $ecn = mb_strtolower((string)$ec);
+            foreach ($WORK_ENV_REQUIREMENTS as $kw => $reqs) if (mb_stripos($ecn, $kw) !== false) foreach ($reqs as $r) $job_access_fields[] = $r;
+        }
+
+        $job_access_fields = array_values(array_unique(array_filter($job_access_fields)));
+        $job_tokens = [];
+        foreach ($job_access_fields as $jf) {
+            $t = normalize_token($jf);
+            if ($t === '') continue;
+            $job_tokens[] = map_synonym($t, $SYNONYMS);
+            $job_tokens[] = $t;
+        }
+        $job_tokens = array_values(array_unique($job_tokens));
+
+        // If user has disabilities, exclude jobs that appear incompatible
+        if (!empty($user_conditions)) {
+            $hay = mb_strtolower(
+                ($row['JOB_ROLE'] ?? '') . ' ' . ($row['JOB_DESCRIPTION'] ?? '') . ' ' . ($row['JOB_PROFILE_WORKPLACE'] ?? '') . ' ' .
+                implode(' ', $job_access_fields) . ' ' . ($row['COMP_REQ'] ?? '') . ' ' . ($row['SENSOR_REQ'] ?? '') . ' ' . ($row['COG_LVL_REQ'] ?? '') . ' ' . ($row['ACCOM_AVAIL'] ?? '')
+            );
+            $exclude = false;
+            foreach ($user_conditions as $cond) {
+                if (!isset($DISABILITY_INCOMPAT[$cond])) continue;
+                foreach ($DISABILITY_INCOMPAT[$cond] as $phrase) {
+                    if ($phrase === '') continue;
+                    if (mb_stripos($hay, $phrase) !== false) { $exclude = true; break 2; }
+                }
+            }
+            if ($exclude) continue; // skip this job entirely
+        }
+
+        if (!empty($user_profile_tokens) && !empty($job_tokens)) {
+            foreach ($user_profile_tokens as $ut) {
+                if ($ut === '') continue;
+                foreach ($job_tokens as $jt) {
+                    if (mb_stripos($ut, $jt) !== false || mb_stripos($jt, $ut) !== false) $access_matches_php += 2;
+                }
+            }
+        }
+
+        $appliedCount = isset($appliedCounts[$jobId]) ? $appliedCounts[$jobId] : 0;
+
+        // Blend: 65% content, 25% accessibility, 10% collaborative (align with SQL side)
+        $accessScoreRaw = min(1.0, $access_matches_php / 4.0);
+        $computedScore = round((0.65 * $contentScoreRaw + 0.25 * $accessScoreRaw + 0.1 * $collabScoreRaw) * 100, 2);
+
+        $jobs[] = [
+            'id'                    => $jobId,
+            'company_name'          => $row['COMPANY_NAME'] ?? null,
+            'job_role'              => $row['JOB_ROLE'] ?? null,
+            'description'           => $row['JOB_DESCRIPTION'] ?? '',
+            'address'               => $row['ADDRESS'] ?? null,
+            'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),
+            'job_profile_workplace' => $row['JOB_PROFILE_WORKPLACE'] ?? null,
+            'work_environment'      => !empty($workplaces) ? implode(', ', $workplaces) : ($row['JOB_PROFILE_WORKPLACE'] ?? ($row['WORKING_ENVIRONMENT'] ?? null)),
+            'skills'                => $skills,
+            'comp_req'              => !empty($compReqs) ? implode(', ', $compReqs) : ($row['COMP_REQ'] ?? null),
+            'sensor_req'            => !empty($sensorReqs) ? implode(', ', $sensorReqs) : ($row['SENSOR_REQ'] ?? null),
+            'cog_lvl_req'           => !empty($cogLvlReqs) ? implode(', ', $cogLvlReqs) : ($row['COG_LVL_REQ'] ?? null),
+            'accom_avail'           => !empty($accomAvail) ? implode(', ', $accomAvail) : ($row['ACCOM_AVAIL'] ?? null),
+            'openings'              => $row['EMPLOYEE_CAPACITY'] ?? null,
+            'apply_before'          => isset($row['APPLY_BEFORE']) ? $row['APPLY_BEFORE'] : null,
+            'logo'                  => $logoSrc,
+            // compatibility fallbacks used by various views
+            'company_image_data_uri' => $logoSrc,
+            'company'               => [ 'logo' => $logoSrc, 'company_image' => $logoSrc ],
+            'content_score'         => round($contentScoreRaw * 100, 2),
+            'collab_score'          => round(min(1.0, $collabScoreRaw) * 100, 2),
+            'computed_score'        => $computedScore,
+            'access_matches'        => $access_matches_php,
+            'access_score_raw'      => round($accessScoreRaw, 3),
+            'debug_content_matches' => $contentMatches,
+            'debug_collab_count'    => $collabCount,
+            'debug_max_co'          => $debugMaxCo,
+            'applied'               => intval($appliedCount),
+            'applied_count'         => intval($appliedCount)
+        ];
+    }
 }
-
-
-oci_free_statement($stid);
 oci_close($conn);
 
 // --- NEW: compute simple evaluation metrics for the requesting guardian
@@ -587,7 +610,8 @@ $appliedIds = [];
 $conn2 = getOracleConnection();
 if ($conn2) {
   // Applications
-  $sqlA = "SELECT DISTINCT JOB_POSTING_ID AS JOB_ID FROM MVSG.APPLICATIONS WHERE JOB_POSTING_ID IS NOT NULL";
+  // collect applied job ids from both possible columns
+  $sqlA = "SELECT DISTINCT NVL(JOB_POSTING_ID, JOB_ID) AS JOB_ID FROM MVSG.APPLICATIONS WHERE NVL(JOB_POSTING_ID, JOB_ID) IS NOT NULL";
   $stidA = oci_parse($conn2, $sqlA);
   @oci_execute($stidA);
   while ($ar = oci_fetch_assoc($stidA)) {
@@ -596,7 +620,7 @@ if ($conn2) {
   @oci_free_statement($stidA);
 
   // Saved jobs (some schemas use JOB_ID)
-  $sqlS = "SELECT DISTINCT JOB_ID AS JOB_ID FROM MVSG.SAVED_JOBS WHERE JOB_ID IS NOT NULL";
+  $sqlS = "SELECT DISTINCT NVL(JOB_ID, JOB_POSTING_ID) AS JOB_ID FROM MVSG.SAVED_JOBS WHERE NVL(JOB_ID, JOB_POSTING_ID) IS NOT NULL";
   $stidS = oci_parse($conn2, $sqlS);
   @oci_execute($stidS);
   while ($sr = oci_fetch_assoc($stidS)) {
@@ -668,11 +692,24 @@ try {
 }
 
 // echo response including eval metrics
-echo json_encode([
-    'success' => true,
-    'user_id' => $user_id,
-    'jobs' => $jobs,
-    'eval_metrics' => $eval_metrics
-]);
+$responseData = [
+  'success' => true,
+  'user_id' => $user_id,
+  'jobs' => $jobs,
+  'eval_metrics' => $eval_metrics
+];
+
+$out = json_encode($responseData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+// store short-lived cache
+if ($out !== false) {
+  if (function_exists('apcu_store')) {
+    @apcu_store($cacheKey, $out, $cacheTtl);
+  } else {
+    $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'getjobs_' . md5($cacheKey) . '.json';
+    @file_put_contents($cacheFile, $out);
+  }
+}
+
+echo $out;
 
 ?>

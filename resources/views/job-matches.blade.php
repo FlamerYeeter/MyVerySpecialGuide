@@ -926,15 +926,24 @@ function loadJobs() {
             result.jobs.forEach(job => {
                 // override job.user_applied from fresh applications data (clear when not present)
                 try { job.user_applied = appliedSet.has(String(job.id)); } catch (e) { /* ignore */ }
-                
-            const progress = job.openings > 0 ? (job.applied / job.openings) * 100 : 0;
+                // compute logo with sensible fallbacks (some APIs return different keys)
+                const logoSrc = job.logo || job.company_image_data_uri || (job.company && (job.company.logo || job.company.company_image)) || 'https://via.placeholder.com/150?text=Logo';
+
+            let appliedVal = (job.applied !== undefined && job.applied !== null) ? Number(job.applied) : ((job.applied_count !== undefined && job.applied_count !== null) ? Number(job.applied_count) : 0);
+            // fallback to collaborative count (saved+applied) when available and appliedVal is zero
+            if ((!appliedVal || appliedVal === 0) && (job.debug_collab_count !== undefined && job.debug_collab_count !== null)) {
+                const collab = Number(job.debug_collab_count);
+                if (!isNaN(collab) && collab > appliedVal) appliedVal = collab;
+            }
+            const openingsVal = (job.openings !== undefined && job.openings !== null) ? Number(job.openings) : 0;
+            const progress = openingsVal > 0 ? (appliedVal / openingsVal) * 100 : 0;
             // determine whether Apply should be disabled
             const now = new Date();
             let applyBefore = null;
             try { if (job.apply_before) applyBefore = new Date(job.apply_before); } catch (e) { applyBefore = null; }
             const isPastDeadline = applyBefore instanceof Date && !isNaN(applyBefore) && applyBefore.getTime() < now.getTime();
-            const openingsNum = job.openings ? Number(job.openings) : 0;
-            const appliedNum = job.applied ? Number(job.applied) : 0;
+            const openingsNum = openingsVal;
+            const appliedNum = appliedVal;
             // Disable Apply only when the requesting user already applied for this job.
             const userApplied = !!job.user_applied;
             const applyDisabled = userApplied;
@@ -947,7 +956,7 @@ function loadJobs() {
                 <div class="flex flex-col lg:flex-row justify-between items-start gap-4 sm:gap-6 lg:gap-10">
                     <div class="flex items-start gap-4 sm:gap-6">
                         <div class="w-20 h-20 sm:w-24 sm:h-24 lg:w-36 lg:h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
-                            <img src="${escapeHtml(job.logo)}" alt="${escapeHtml(job.company_name)} logo" class="w-full h-full object-cover">
+                            <img src="${escapeHtml(logoSrc)}" alt="${escapeHtml(job.company_name)} logo" class="w-full h-full object-cover">
                         </div>
                         <div>
                             <h2 class="text-xl sm:text-2xl lg:text-4xl font-extrabold text-gray-900 mb-2">${escapeHtml(job.job_role)}</h2>
@@ -993,7 +1002,7 @@ function loadJobs() {
                         <div class="h-full bg-[#88BF02]" style="width: ${progress}%;"></div>
                     </div>
                     <p class="text-base sm:text-lg text-gray-700 mt-2 text-center">
-                        <strong>${job.applied} applied</strong> out of ${job.openings} openings
+                        <strong>${appliedNum} applied</strong> out of ${openingsNum} openings
                     </p>
                 </div>
 
