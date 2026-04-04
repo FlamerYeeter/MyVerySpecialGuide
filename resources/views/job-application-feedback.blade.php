@@ -29,7 +29,7 @@
             $jid = $application['JOB_POSTING_ID'] ?? null;
             $uid = $application['GUARDIAN_ID'] ?? null;
             if (!empty($jid) && !empty($uid)) {
-              $q2 = "SELECT STATUS, ROLE, CATEGORY_LEVEL, FINAL_RECOMMENDATION, HR_DECISION, UPDATED_AT FROM MVSG.JOB_CAPACITY WHERE JOB_POSTING_ID = :jid AND USER_ID = :uid";
+              $q2 = "SELECT STATUS, ROLE, CATEGORY_LEVEL, HR_DECISION, OVERALL_SUMMARY, UPDATED_AT FROM MVSG.JOB_CAPACITY WHERE JOB_POSTING_ID = :jid AND USER_ID = :uid";
               $s2 = oci_parse($conn, $q2);
               oci_bind_by_name($s2, ':jid', $jid);
               oci_bind_by_name($s2, ':uid', $uid);
@@ -39,7 +39,7 @@
               if ($fb) $feedback = $fb;
               // Fallback: if no user-specific row found, try to get latest FINAL_RECOMMENDATION for the job
               if (empty($feedback) && !empty($jid)) {
-                $q3 = "SELECT STATUS, ROLE, CATEGORY_LEVEL, FINAL_RECOMMENDATION, HR_DECISION, UPDATED_AT FROM (SELECT * FROM MVSG.JOB_CAPACITY WHERE JOB_POSTING_ID = :jid2 AND FINAL_RECOMMENDATION IS NOT NULL ORDER BY UPDATED_AT DESC) WHERE ROWNUM = 1";
+                $q3 = "SELECT STATUS, ROLE, CATEGORY_LEVEL, HR_DECISION, OVERALL_SUMMARY, UPDATED_AT FROM (SELECT * FROM MVSG.JOB_CAPACITY WHERE JOB_POSTING_ID = :jid2 AND (OVERALL_SUMMARY IS NOT NULL OR HR_DECISION IS NOT NULL) ORDER BY UPDATED_AT DESC) WHERE ROWNUM = 1";
                 $s3 = oci_parse($conn, $q3);
                 // bind as string/number depending on type
                 oci_bind_by_name($s3, ':jid2', $jid);
@@ -116,23 +116,31 @@
   </p>
 
   <!-- Message -->
-  @if ($feedback && (trim(($feedback['HR_DECISION'] ?? '') . ($feedback['FINAL_RECOMMENDATION'] ?? '')) !== ''))
-    <p class="text-2xl text-gray-700 leading-loose mb-6">
-      Thank you for applying for the <strong>{{ $application['JOB_ROLE'] ?? 'the position' }}</strong> at
-      <strong>{{ $application['COMPANY_NAME'] ?? '' }}</strong>.
-    </p>
-
-    @if (!empty($feedback['HR_DECISION']))
+  @if ($feedback && (trim(($feedback['HR_DECISION'] ?? '') . ($feedback['OVERALL_SUMMARY'] ?? '')) !== ''))
+    @if (!empty($feedback['OVERALL_SUMMARY']))
+      <!-- When the company provided an overall summary, display the message body inline (no box).
+           Keep the "Hello NAME" greeting above and the main closing below. -->
+      <div class="mb-6">
+        <div class="text-2xl text-gray-700 leading-loose whitespace-pre-line mb-6">{{ $feedback['OVERALL_SUMMARY'] }}</div>
+      </div>
+    @else
       <p class="text-2xl text-gray-700 leading-loose mb-6">
-        We reviewed your application carefully. Decision: <strong>{{ $feedback['HR_DECISION'] }}</strong>.
+        Thank you for applying for the <strong>{{ $application['JOB_ROLE'] ?? 'the position' }}</strong> at
+        <strong>{{ $application['COMPANY_NAME'] ?? '' }}</strong>.
       </p>
-    @endif
 
-    @if (!empty($feedback['ROLE']))
-      <p class="text-2xl text-gray-700 leading-loose mb-6">Role noted: <strong>{{ $feedback['ROLE'] }}</strong></p>
-    @endif
+      @if (!empty($feedback['HR_DECISION']))
+        <p class="text-2xl text-gray-700 leading-loose mb-6">
+          We reviewed your application carefully. Decision: <strong>{{ $feedback['HR_DECISION'] }}</strong>.
+        </p>
+      @endif
 
-    <p class="text-2xl text-gray-700 leading-loose mb-8">Thank you for applying. We will contact you with next steps if applicable.</p>
+      @if (!empty($feedback['ROLE']))
+        <p class="text-2xl text-gray-700 leading-loose mb-6">Role noted: <strong>{{ $feedback['ROLE'] }}</strong></p>
+      @endif
+
+      <p class="text-2xl text-gray-700 leading-loose mb-8">Thank you for applying. We will contact you with next steps if applicable.</p>
+    @endif
   @else
     <p class="text-2xl text-gray-700 leading-loose mb-6">Feedback has not been provided by the company yet. Please check back later.</p>
   @endif
