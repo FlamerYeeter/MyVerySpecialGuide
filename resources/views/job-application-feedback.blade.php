@@ -110,11 +110,6 @@
 
   </div>
 
-  <!-- Greeting -->
-  <p class="font-semibold text-gray-800 text-2xl mb-6">
-    Hello {{ $application['FIRST_NAME'] ?? 'Applicant' }},
-  </p>
-
   <!-- Message -->
   @if ($feedback && (trim(($feedback['HR_DECISION'] ?? '') . ($feedback['OVERALL_SUMMARY'] ?? '')) !== ''))
     @if (!empty($feedback['OVERALL_SUMMARY']))
@@ -145,13 +140,7 @@
     <p class="text-2xl text-gray-700 leading-loose mb-6">Feedback has not been provided by the company yet. Please check back later.</p>
   @endif
 
-  <!-- Closing -->
-  <p class="text-2xl text-gray-800 font-medium mt-10">
-    Kind regards,<br>
-    <span class="font-semibold text-blue-800">
-      {{ $application['COMPANY_NAME'] ?? $application['COMPANY_NAME'] ?? 'Hiring Team' }} Hiring Team
-    </span>
-  </p>
+  <!-- Closing and greeting removed per user request -->
 </div>
 
 
