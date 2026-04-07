@@ -853,6 +853,14 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
        <!--Job Card -->
        <div id="job-container" class="space-y-10"></div>
 
+       <!-- Loading Modal (shown while jobs are fetched) -->
+       <div id="jobLoadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+           <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
+               <div class="border-4 border-blue-500 border-t-transparent rounded-full w-14 h-14 animate-spin mb-4"></div>
+               <p id="jobLoadingMessage" class="text-gray-800 font-medium">Loading jobs, please wait...</p>
+           </div>
+       </div>
+
        <style>
        /* Saved button styling: gray background and disable hover change */
        .save-btn.saved {
@@ -884,6 +892,10 @@ function escapeHtml(text) {
 
 // Function to load jobs based on current filters
 function loadJobs() {
+    // show loading modal
+    const jobLoadingModal = document.getElementById('jobLoadingModal');
+    if (jobLoadingModal) jobLoadingModal.classList.remove('hidden');
+
     const data = {
         // prefer server-side authenticated id when available (immediate after register/login)
         user_id: (typeof window !== 'undefined' && window.LARAVEL_USER_ID) ? String(window.LARAVEL_USER_ID) : localStorage.getItem('user_id'),
@@ -1078,9 +1090,13 @@ function loadJobs() {
         } catch (e) {
             console.debug('Error updating metrics', e);
         }
+        // hide loading modal after successful render
+        if (jobLoadingModal) jobLoadingModal.classList.add('hidden');
     })
     .catch(err => {
-    debugger;
+        // hide modal on error as well
+        if (jobLoadingModal) jobLoadingModal.classList.add('hidden');
+        debugger;
         console.error('Error loading jobs:', err);
         document.getElementById('job-container').innerHTML = '<p class="text-center text-red-600 text-2xl">Failed to load jobs. Please try again later.</p>';
     });
