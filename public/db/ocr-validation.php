@@ -136,67 +136,84 @@ if (!in_array($ocrtype, ['certificate_proof', 'membership_proof', 'pwd_id', 'med
 $base64_data = $data['ocr_data'] ?? null;
 if (!$base64_data) response(false, "No file data provided");
 
-if (strpos($base64_data, ',') !== false) {
-    $base64_data = explode(',', $base64_data)[1];
-}
-
-$fileData = base64_decode($base64_data);
-if (!$fileData) response(false, "Invalid Base64 file");
-if (strlen($base64_data) > MAX_BASE64) response(false, "File too large");
-
-// ================================
-// 3. DETECT FILE TYPE
-// ================================
-
-$ext = null;
-if (str_starts_with($data['ocr_data'], 'data:image/jpeg')) $ext = '.jpg';
-elseif (str_starts_with($data['ocr_data'], 'data:image/png')) $ext = '.png';
-elseif (str_starts_with($data['ocr_data'], 'data:application/pdf')) $ext = '.pdf';
-
-if (!$ext) {
-    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-    $mime  = finfo_buffer($finfo, $fileData);
-    finfo_close($finfo);
-    $extMap = ['image/jpeg' => '.jpg', 'image/png' => '.png', 'application/pdf' => '.pdf'];
-    $ext = $extMap[$mime] ?? null;
-}
-
-if (!$ext) response(false, "Unsupported file type");
-
-// ================================
-// 4. CREATE TEMP FILE
-// ================================
-
 $tmpDir = getenv('TEMP') ?: getenv('TMP');
+if (!$tmpDir) $tmpDir = sys_get_temp_dir();
 
-if (!$tmpDir) {
-    $tmpDir = sys_get_temp_dir();
+$images = []; // will hold one or more image file paths (after PDF conversion)
+$tmpFilesCreated = [];
+
+// Helper to create temp file from base64 string and detect extension
+function createTempFromBase64($raw, $tmpDir, &$tmpFilesCreated) {
+    if (strpos($raw, ',') !== false) $parts = explode(',', $raw, 2); else $parts = [null, $raw];
+    $prefix = $parts[0] ?? null; $b64 = $parts[1] ?? $parts[0];
+    $fileData = base64_decode($b64);
+    if (!$fileData) return [null, null];
+    if (strlen($b64) > MAX_BASE64) return [null, null];
+
+    $ext = null;
+    if ($prefix !== null) {
+        if (str_starts_with($prefix, 'data:image/jpeg')) $ext = '.jpg';
+        elseif (str_starts_with($prefix, 'data:image/png')) $ext = '.png';
+        elseif (str_starts_with($prefix, 'data:application/pdf')) $ext = '.pdf';
+    }
+    if (!$ext) {
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime  = finfo_buffer($finfo, $fileData);
+        finfo_close($finfo);
+        $extMap = ['image/jpeg' => '.jpg', 'image/png' => '.png', 'application/pdf' => '.pdf'];
+        $ext = $extMap[$mime] ?? null;
+    }
+    if (!$ext) return [null, null];
+
+    $tmp = tempnam($tmpDir, 'ocr_');
+    $tmpFile = $tmp . $ext;
+    rename($tmp, $tmpFile);
+    file_put_contents($tmpFile, $fileData);
+    $tmpFilesCreated[] = $tmpFile;
+    return [$tmpFile, $ext];
 }
 
-$tmp = tempnam($tmpDir, 'ocr_');
-$tmpFile = $tmp . $ext;
-rename($tmp, $tmpFile);
-file_put_contents($tmpFile, $fileData);
-
-// ================================
-// 5. PDF → IMAGE
-// ================================
-
-$images = [];
-if ($ext === '.pdf') {
-    $out = $tmp . '_img';
-    shell_exec("pdftoppm -png " . escapeshellarg($tmpFile) . " " . escapeshellarg($out));
-    $page = 1;
-    while (file_exists($out . "-$page.png")) {
-        $images[] = $out . "-$page.png";
-        $page++;
+if (is_array($base64_data)) {
+    foreach ($base64_data as $raw) {
+        list($tmpFile, $ext) = createTempFromBase64($raw, $tmpDir, $tmpFilesCreated);
+        if (!$tmpFile) continue;
+        // PDF conversion
+        if ($ext === '.pdf') {
+            $out = $tmpFile . '_img';
+            shell_exec("pdftoppm -png " . escapeshellarg($tmpFile) . " " . escapeshellarg($out));
+            $page = 1;
+            while (file_exists($out . "-$page.png")) {
+                $images[] = $out . "-$page.png";
+                $page++;
+            }
+            if (empty($images)) {
+                cleanup(array_merge($tmpFilesCreated));
+                response(false, "PDF conversion failed");
+            }
+        } else {
+            $images[] = $tmpFile;
+        }
     }
-    if (empty($images)) {
-        cleanup([$tmpFile]);
-        response(false, "PDF conversion failed");
-    }
+    if (empty($images)) response(false, "No valid images in payload");
 } else {
-    $images[] = $tmpFile;
+    list($tmpFile, $ext) = createTempFromBase64($base64_data, $tmpDir, $tmpFilesCreated);
+    if (!$tmpFile) response(false, "Invalid Base64 file");
+    // PDF conversion for single file
+    if ($ext === '.pdf') {
+        $out = $tmpFile . '_img';
+        shell_exec("pdftoppm -png " . escapeshellarg($tmpFile) . " " . escapeshellarg($out));
+        $page = 1;
+        while (file_exists($out . "-$page.png")) {
+            $images[] = $out . "-$page.png";
+            $page++;
+        }
+        if (empty($images)) {
+            cleanup(array_merge([$tmpFile]));
+            response(false, "PDF conversion failed");
+        }
+    } else {
+        $images[] = $tmpFile;
+    }
 }
 
 // ================================

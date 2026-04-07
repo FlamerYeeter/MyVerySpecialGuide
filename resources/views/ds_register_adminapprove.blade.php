@@ -1638,13 +1638,41 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 `;
                 display.appendChild(loadingDiv);
 
-                // Prepare and send to backend
-                const payload = {
-                    type: ocrtype,
-                    ocr_name: file.name,
-                    ocr_data: dataUrl,
-                    ocr_type: ext
-                };
+                // Prepare and send to backend. If user selected multiple files (front+back),
+                // send both images in a single payload so the OCR can consider them together.
+                const filesAll = Array.from(fileInput.files || []);
+                let payload;
+                if (filesAll.length > 1) {
+                    // read second file synchronously so we can send both in one request
+                    const file2 = filesAll[1];
+                    const dataUrl2 = await new Promise((resolve, reject) => {
+                        const reader2 = new FileReader();
+                        reader2.onload = () => resolve(reader2.result);
+                        reader2.onerror = () => reject(reader2.error || new Error('FileReader failed'));
+                        reader2.readAsDataURL(file2);
+                    });
+
+                    payload = {
+                        type: ocrtype,
+                        ocr_name: [file.name, file2.name],
+                        ocr_data: [dataUrl, dataUrl2],
+                        ocr_type: [ext, (file2.name.split('.').pop()||'').toLowerCase()]
+                    };
+
+                    // store arrays into localStorage for multi-file uploads
+                    try {
+                        localStorage.setItem(nameKey, JSON.stringify([file.name, file2.name]));
+                        localStorage.setItem(dataKey, JSON.stringify([dataUrl, dataUrl2]));
+                        localStorage.setItem(typeKey, JSON.stringify([ext, (file2.name.split('.').pop()||'').toLowerCase()]));
+                    } catch(e){ console.warn('storing multi-file upload failed', e); }
+                } else {
+                    payload = {
+                        type: ocrtype,
+                        ocr_name: file.name,
+                        ocr_data: dataUrl,
+                        ocr_type: ext
+                    };
+                }
 
                 // If this is the BACK side of a PWD ID upload and the front side
                 // already detected a disability, include that info so the server
@@ -1922,71 +1950,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     alert(`Error ${response.status}: ${result.message || 'Unknown server error'}`);
                 }
 
-                // If a second file was selected (merged front/back upload), process it as well
-                try {
-                    const filesAll = Array.from(fileInput.files || []);
-                    if (filesAll.length > 1) {
-                        const file2 = filesAll[1];
-                        if (file2) {
-                            // read second file data
-                            const dataUrl2 = await new Promise((resolve, reject) => {
-                                const reader2 = new FileReader();
-                                reader2.onload = () => resolve(reader2.result);
-                                reader2.onerror = () => reject(reader2.error || new Error('FileReader failed'));
-                                reader2.readAsDataURL(file2);
-                            });
-
-                            const ext2 = (file2.name.split('.').pop()||'').toLowerCase();
-
-                            // Convert existing single-value storage into arrays if needed, then append
-                            try {
-                                const prevName = localStorage.getItem(nameKey);
-                                const prevData = localStorage.getItem(dataKey);
-                                const prevType = localStorage.getItem(typeKey);
-                                let names = [], datas = [], types = [];
-                                try { names = JSON.parse(prevName); } catch(e){ if (prevName) names = [prevName]; }
-                                try { datas = JSON.parse(prevData); } catch(e){ if (prevData) datas = [prevData]; }
-                                try { types = JSON.parse(prevType); } catch(e){ if (prevType) types = [prevType]; }
-
-                                names.push(file2.name);
-                                datas.push(dataUrl2);
-                                types.push(ext2);
-
-                                localStorage.setItem(nameKey, JSON.stringify(names));
-                                localStorage.setItem(dataKey, JSON.stringify(datas));
-                                localStorage.setItem(typeKey, JSON.stringify(types));
-                            } catch(e) { console.warn('updating storage for second file failed', e); }
-
-                            // send OCR request for second file
-                            const payload2 = { type: ocrtype, ocr_name: file2.name, ocr_data: dataUrl2, ocr_type: ext2 };
-                            try {
-                                if (ocrtype === 'pwd_id' && /\bback|backside|rear|_b\b|\-b\b/i.test(file2.name)) {
-                                    const stored = localStorage.getItem('admin_uploaded_pwd_detected');
-                                    if (stored) { payload2.previous_disability = stored; payload2.previous_disability_source = 'front'; }
-                                }
-                            } catch(e){}
-
-                            try {
-                                const resp2 = await fetch('db/ocr-validation.php', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload2) });
-                                const resJson2 = await resp2.json().catch(()=>({ message: 'Invalid JSON' }));
-                                if (resp2.ok) {
-                                    console.log('OCR Result (file 2):', resJson2);
-                                    const detectedType2 = resJson2.data?.ocrtype;
-                                    const aiData2 = resJson2.data?.ai_data || {};
-                                    if (detectedType2 === 'pwd_id' && aiData2.type_of_disability) {
-                                        const pd = document.getElementById('pwdidDisplay');
-                                        const txt2 = String(aiData2.type_of_disability || '').trim();
-                                        if (pd) pd.insertAdjacentHTML('beforeend', `<div class="ocr-summary mt-2 text-sm text-gray-700">Detected Disability (2nd image): ${txt2}</div>`);
-                                        try { localStorage.setItem('admin_uploaded_pwd_detected', txt2); } catch(e){}
-                                    }
-                                    try { applyOcrDataToForm(aiData2, detectedType2, ocrtype); } catch(e){}
-                                } else {
-                                    console.warn('OCR failed for second file', resJson2);
-                                }
-                            } catch(e) { console.warn('fetch for second file failed', e); }
-                        }
-                    }
-                } catch(e) { console.warn('second-file OCR flow failed', e); }
+                // Multi-file uploads are handled earlier (sent together in one request).
 
                 // Attach button listeners (only once per file selection)
                 const viewBtn = display.querySelector('.viewBtn');
