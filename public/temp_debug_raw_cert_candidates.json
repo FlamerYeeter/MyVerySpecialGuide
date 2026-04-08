@@ -1,0 +1,17 @@
+{
+    "count": 7,
+    "types": [
+        "NULL",
+        "NULL",
+        "NULL",
+        "NULL",
+        "NULL",
+        "NULL",
+        "NULL"
+    ],
+    "sample_keys": [
+        "email",
+        "username"
+    ],
+    "time": "2026-04-08T10:39:29+02:00"
+}

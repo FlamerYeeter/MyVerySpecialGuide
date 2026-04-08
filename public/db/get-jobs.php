@@ -374,18 +374,31 @@ oci_bind_by_name($stid, ':work_env', $work_env, -1);
 oci_bind_by_name($stid, ':work_env_like', $work_env_like, -1);
 oci_bind_by_name($stid, ':job_type', $job_type, -1);
 oci_bind_by_name($stid, ':job_type_like', $job_type_like, -1);
+$cachedOut = false;
 // Simple short-lived caching to reduce repeated identical requests (APCu preferred, file fallback)
 $cacheKey = 'getjobs:' . md5(json_encode(['user_id'=>$user_id,'title'=>$title,'location'=>$location,'work_env'=>$work_env,'job_type'=>$job_type]));
 $cacheTtl = 10; // seconds
 $cachedOut = false;
 if (function_exists('apcu_fetch')) {
   $c = apcu_fetch($cacheKey);
-  if ($c !== false) { header('X-Cache: HIT'); echo $c; oci_free_statement($stid); oci_close($conn); exit; }
+  // ensure cached payload is non-empty and valid JSON before returning
+  if ($c !== false && is_string($c) && trim($c) !== '') {
+    $decoded = json_decode($c, true);
+    if (json_last_error() === JSON_ERROR_NONE && isset($decoded['success'])) {
+      header('X-Cache: HIT'); echo $c; oci_free_statement($stid); oci_close($conn); exit;
+    }
+    // otherwise treat as cache miss and continue
+  }
 } else {
   $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'getjobs_' . md5($cacheKey) . '.json';
   if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
     $c = @file_get_contents($cacheFile);
-    if ($c !== false) { header('X-Cache: HIT'); echo $c; oci_free_statement($stid); oci_close($conn); exit; }
+    if ($c !== false && is_string($c) && trim($c) !== '') {
+      $decoded = json_decode($c, true);
+      if (json_last_error() === JSON_ERROR_NONE && isset($decoded['success'])) {
+        header('X-Cache: HIT'); echo $c; oci_free_statement($stid); oci_close($conn); exit;
+      }
+    }
   }
 }
 
@@ -700,13 +713,18 @@ $responseData = [
 ];
 
 $out = json_encode($responseData, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-// store short-lived cache
-if ($out !== false) {
-  if (function_exists('apcu_store')) {
-    @apcu_store($cacheKey, $out, $cacheTtl);
-  } else {
-    $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'getjobs_' . md5($cacheKey) . '.json';
-    @file_put_contents($cacheFile, $out);
+// store short-lived cache (only valid JSON; file writes are atomic)
+if ($out !== false && is_string($out) && trim($out) !== '') {
+  $decoded_out = json_decode($out, true);
+  if (json_last_error() === JSON_ERROR_NONE && isset($decoded_out['success'])) {
+    if (function_exists('apcu_store')) {
+      @apcu_store($cacheKey, $out, $cacheTtl);
+    } else {
+      $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'getjobs_' . md5($cacheKey) . '.json';
+      $tmp = $cacheFile . '.tmp';
+      @file_put_contents($tmp, $out);
+      @rename($tmp, $cacheFile);
+    }
   }
 }
 

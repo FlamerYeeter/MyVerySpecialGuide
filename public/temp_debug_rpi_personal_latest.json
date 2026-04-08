@@ -1,0 +1,15 @@
+{
+    "received_at": "2026-04-08T10:39:27+02:00",
+    "top_level_keys": [
+        "email",
+        "username"
+    ],
+    "has_rpi_personal": false,
+    "has_rpi_personal1": false,
+    "user_info_keys": [],
+    "sample_values": {
+        "g_phone": null,
+        "guardian_phone": null,
+        "GUARDIAN_CELL_NUMBER": null
+    }
+}

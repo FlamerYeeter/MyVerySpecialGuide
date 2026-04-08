@@ -1,7 +1,8 @@
 {
-    "received_at": "2026-03-09T17:53:29+01:00",
-    "raw_json": "{\"rpi_personal\":\"{\\\"spouse_relationship\\\":\\\"Spouse\\\",\\\"guardian_middle\\\":\\\"M\\\",\\\"firstName\\\":\\\"Test\\\",\\\"spouse_first\\\":\\\"John\\\",\\\"spouse_middle\\\":\\\"K\\\",\\\"username\\\":\\\"testuser1773104009.30069\\\",\\\"address\\\":\\\"123 Street\\\",\\\"spouse_work_phone\\\":\\\"+6329996666\\\",\\\"spouse_last\\\":\\\"Doe\\\",\\\"spouse_birthdate\\\":\\\"1988-07-07\\\",\\\"spouse_home_phone\\\":\\\"+6328887777\\\",\\\"spouse_email\\\":\\\"john1773104009.30069@example.com\\\",\\\"g_birthdate\\\":\\\"1970-05-05\\\",\\\"lastName\\\":\\\"User\\\",\\\"guardian_home_phone\\\":\\\"+6321234567\\\",\\\"guardian_first\\\":\\\"Jane\\\",\\\"email\\\":\\\"test1773104009.30069@example.com\\\",\\\"g_work_address\\\":\\\"Company Addr\\\",\\\"guardian_email\\\":\\\"jane.guardian@example.com\\\",\\\"birthdate\\\":\\\"1990-01-01\\\",\\\"guardian_last\\\":\\\"Doe\\\",\\\"spouse_phone\\\":\\\"+639189000111\\\",\\\"password\\\":\\\"TempPass1\\\",\\\"phone\\\":\\\"+639171234567\\\",\\\"guardian_work_phone\\\":\\\"+6327654321\\\",\\\"guardian_relationship\\\":\\\"Mother\\\",\\\"spouse_work_address\\\":\\\"Work Addr\\\",\\\"guardian_phone\\\":\\\"+639188776655\\\"}\"}",
+    "received_at": "2026-04-08T10:39:27+02:00",
+    "raw_json": "{\r\n  \"email\": \"user20260408-163901@test.com\",\r\n  \"username\": \"user3554\"\r\n}",
     "decoded_keys": [
-        "rpi_personal"
+        "email",
+        "username"
     ]
 }
