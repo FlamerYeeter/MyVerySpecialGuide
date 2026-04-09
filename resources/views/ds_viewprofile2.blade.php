@@ -395,20 +395,31 @@
                 <p class="mt-1 text-[13px] text-gray-600 italic">(Walang mabigat na buhat at pharmacy tasks)</p>
             </div>
 
-            <!-- OTHER 
-            <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
-                        hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center"
-                 data-value="other">
+                 <!-- OTHER -->
+                 <div class="bg-white p-5 rounded-2xl cursor-pointer workplace-option shadow-md 
+                       hover:shadow-xl hover:-translate-y-1 transition-all duration-300 text-center"
+                   data-value="other">
 
-                <h3 class="text-blue-700 font-bold text-lg mb-2">Other</h3>
-                <p class="text-sm">Type your answer if not in the choices</p>
-                <p class="text-xs italic text-gray-600">(Isulat ang sagot kung wala sa mga pagpipilian)</p>
+                  <h3 class="text-blue-700 font-bold text-lg mb-2">Other</h3>
+                  <p class="text-sm">Type your answer if not in the choices</p>
+                  <p class="text-xs italic text-gray-600">(Isulat ang sagot kung wala sa mga pagpipilian)</p>
 
-                <input id="workplace_other_input"
-                       type="text"
-                       class="mt-3 w-full border border-gray-300 rounded-lg p-2 text-sm"
-                       placeholder="Type here...">
-            </div>-->
+                  <input id="workplace_other_input"
+                      list="workplace_other_suggestions"
+                      type="text"
+                      class="mt-3 w-full border border-gray-300 rounded-lg p-2 text-sm"
+                      placeholder="Type here...">
+            <datalist id="workplace_other_suggestions">
+                        <option value="Calm and low-noise space"></option>
+                        <option value="Work tasks with visual guides"></option>
+                        <option value="Short breaks and gentle pacing"></option>
+                        <option value="Step-by-step checklists"></option>
+                        <option value="One task at a time"></option>
+                        <option value="Extra time for learning new tasks"></option>
+                        <option value="Visual schedule board"></option>
+                        <option value="A patient coach or buddy"></option>
+            </datalist>
+                 </div>
         </div>
 
         <!-- Buttons -->
@@ -1697,10 +1708,21 @@ document.addEventListener('DOMContentLoaded', () => {
     const reviewWorkplaceList = document.getElementById('review_workplace_list');
 
     function collectSelectedWorkplace() {
-        return workplaceOptions()
+        const vals = workplaceOptions()
             .filter(c => c.classList.contains('selected') || c.classList.contains('selected-card'))
-            .map(c => (c.dataset.value || c.querySelector('h3')?.textContent || '').toString().trim())
+            .map(c => ({ el: c, val: (c.dataset.value || c.querySelector('h3')?.textContent || '').toString().trim() }))
             .filter(Boolean);
+        const out = [];
+        vals.forEach(item => {
+            if (String(item.val).toLowerCase() === 'other') {
+                const inp = item.el.querySelector('input[type="text"], #workplace_other_input') || document.getElementById('workplace_other_input');
+                const v = inp && inp.value ? String(inp.value).trim() : '';
+                if (v) out.push(v); else out.push('Other');
+            } else {
+                out.push(item.val);
+            }
+        });
+        return out;
     }
 
     function renderWorkplacePills(vals) {
@@ -1779,6 +1801,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 const val = ((c.dataset.value||c.querySelector('h3')?.textContent)||'').toString().trim().toLowerCase();
                 if (pills.includes(val)) c.classList.add('selected','selected-card'); else c.classList.remove('selected','selected-card');
             });
+            // if there are pills that didn't match existing cards, populate the Other input
+            const matched = workplaceOptions().map(c => ((c.dataset.value||c.querySelector('h3')?.textContent)||'').toString().trim().toLowerCase());
+            const unmatched = pills.filter(p => !matched.includes(p));
+            if (unmatched.length) {
+                try {
+                    const otherCard = workplaceOptions().find(c => (c.dataset.value||'').toLowerCase()==='other' || (c.querySelector('h3')?.textContent||'').toLowerCase()==='other');
+                    if (otherCard) {
+                        otherCard.classList.add('selected','selected-card');
+                        const inp = otherCard.querySelector('input[type="text"], #workplace_other_input') || document.getElementById('workplace_other_input');
+                        if (inp) inp.value = unmatched.join(', ');
+                    }
+                } catch(e){}
+            } else {
+                // If no pills, try reading localStorage/register draft keys used by register pages
+                try {
+                    const raw = localStorage.getItem('workplace_choices') || localStorage.getItem('workplace') || null;
+                    if (raw) {
+                        let arr = null;
+                        try { arr = JSON.parse(raw); } catch(e) { arr = Array.isArray(raw) ? raw : [raw]; }
+                        if (arr && arr.length) {
+                            // mark matching cards and populate other if present
+                            arr = Array.isArray(arr) ? arr.map(x=>String(x||'').trim()) : [String(arr)];
+                            arr.forEach(a => {
+                                const lc = String(a||'').toLowerCase();
+                                const c = workplaceOptions().find(cc => ((cc.dataset.value||cc.querySelector('h3')?.textContent)||'').toString().trim().toLowerCase() === lc);
+                                if (c) c.classList.add('selected','selected-card');
+                                else {
+                                    const otherCard = workplaceOptions().find(cc => (cc.dataset.value||'').toLowerCase()==='other' || (cc.querySelector('h3')?.textContent||'').toLowerCase()==='other');
+                                    if (otherCard) {
+                                        otherCard.classList.add('selected','selected-card');
+                                        const inp = otherCard.querySelector('input[type="text"], #workplace_other_input') || document.getElementById('workplace_other_input');
+                                        if (inp) inp.value = arr.filter(x=> !matched.includes(String(x||'').toLowerCase())).join(', ');
+                                    }
+                                }
+                            });
+                        }
+                    }
+                } catch(e){}
+            }
+            // dynamic population of the workplace datalist removed to avoid duplicate entries
         } catch(e){}
     };
     const editWorkplaceBtn = document.getElementById('editWorkplaceBtn');
@@ -1793,6 +1855,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // dynamic population of the workplace datalist on load removed to avoid duplicates; datalist is now static.
 });
 </script>
     </main>
