@@ -1080,7 +1080,7 @@
                         <!-- Checkbox -->
                         <div class="flex justify-end mt-3">
                             <label class="flex items-center gap-2 text-sm cursor-pointer">
-                                <input type="checkbox" id="copyGuardianAddressFromPersonal" class="h-4 w-4 accent-blue-600" />
+                                <input type="checkbox" id="copySpouseAddressFromPersonal" class="h-4 w-4 accent-blue-600" />
                                 <span class="text-gray-700">Same address from personal information</span>
                             </label>
                         </div>
@@ -1410,6 +1410,25 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         }
 
+        // Middle name / initial: accept several keys and also try to extract from full name
+        try {
+            const midVal = aiData.middle_name || aiData.middle || aiData.mname || aiData.mi || aiData.middle_initial || aiData.m_i || aiData.m;
+            const midEl = document.getElementById('middle_name');
+            if (midVal && midEl && !midEl.value) {
+                midEl.value = String(midVal).trim();
+            } else if (!midVal && aiData.name && midEl && !midEl.value) {
+                // try to infer middle initial from full name (e.g. "Juan B. Dela Cruz" or "Juan B Dela Cruz")
+                const full = String(aiData.name).trim();
+                const parts = full.split(/\s+/).filter(Boolean);
+                if (parts.length >= 3) {
+                    const candidate = parts[1].replace(/\./g, '');
+                    if (/^[A-Za-z]$/.test(candidate)) {
+                        midEl.value = candidate;
+                    }
+                }
+            }
+        } catch (e) { /* non-fatal */ }
+
         // Email autofill from OCR is intentionally disabled for privacy.
         // (Do not populate email fields from OCR results.)
 
@@ -1449,10 +1468,28 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
                 const barangay = parts.length > 2 ? parts[parts.length - 2] : '';
 
                 const streetEl = document.getElementById('street') || document.getElementById('address_street') || document.querySelector('[name="street"]') || null;
-                const barangayEl = document.getElementById('barangay') || document.querySelector('[name="barangay"]') || null;
-                const cityEl = document.getElementById('city') || document.getElementById('municipality') || document.querySelector('[name="city"]') || null;
+                const barangayEl = document.getElementById('barangay') || document.getElementById('address_barangay') || document.querySelector('[name="barangay"]') || null;
+                const cityEl = document.getElementById('city') || document.getElementById('address_city') || document.getElementById('municipality') || document.querySelector('[name="city"]') || null;
+                const numberEl = document.getElementById('address_number') || document.querySelector('[name="address_number"]') || null;
 
-                if (streetEl && streetEl.value === '') streetEl.value = street;
+                // If street contains a leading house/lot number (including alphanumeric tokens like "B27"), split to number + street
+                if (streetEl && streetEl.value === '') {
+                    const streetTrim = String(street || '').trim();
+                    const tokens = streetTrim.split(/\s+/).filter(Boolean);
+                    if (tokens.length > 1) {
+                        const first = tokens[0];
+                        // heuristics: treat first token as number/unit when it contains any digit
+                        // or is short (like 'B27', '327', '#12')
+                        if (/[0-9]/.test(first) || /^[#\-A-Za-z0-9]{1,4}$/.test(first)) {
+                            if (numberEl && !numberEl.value) numberEl.value = first;
+                            streetEl.value = tokens.slice(1).join(' ');
+                        } else {
+                            streetEl.value = streetTrim;
+                        }
+                    } else {
+                        streetEl.value = streetTrim;
+                    }
+                }
                 if (barangayEl && barangayEl.value === '') barangayEl.value = barangay;
                 if (cityEl && cityEl.value === '') cityEl.value = city;
             }
@@ -1997,6 +2034,49 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
                         const isMatch = matchesSelected(detectedDisability);
 
+                        // --- New: detect whether this PWD image is the front or back side ---
+                        function detectPwdSide(ai, meta) {
+                            try {
+                                // Strong indicators for front side: name, dob, id/pwd number
+                                const frontKeys = ['first_name','last_name','date_of_birth','dob','birthdate','id_number','pwd_number','idno','idno'];
+                                for (const k of frontKeys) {
+                                    if (ai && ai[k]) return 'front';
+                                }
+
+                                // Server-side hints (if provided)
+                                if (meta && (meta.contains_qr_code || meta.contains_barcode || meta.detected_qr || meta.detected_barcode)) return 'back';
+
+                                // Back-side hints: membership, issuer, expiry, card-specific fields
+                                const backKeys = ['is_membership','issuer','issuing_authority','expiry_date','valid_until','membership_no','membership_number'];
+                                for (const k of backKeys) {
+                                    if (ai && (typeof ai[k] !== 'undefined')) return 'back';
+                                }
+
+                                // Fallback: if OCR text contains words like 'issued by', 'valid until', 'member', treat as back
+                                const txt = (JSON.stringify(ai) + ' ' + JSON.stringify(meta || {})).toLowerCase();
+                                if (/issued by|valid until|valid thru|member(ship)?|authority|expiry|expiration|issuer/.test(txt)) return 'back';
+
+                                return 'unknown';
+                            } catch (e) { return 'unknown'; }
+                        }
+
+                        const pwdSide = detectPwdSide(aiData, result.data);
+                        // show a small badge in the PWD display area and persist the side
+                        try {
+                            if (pwdDisplayEl) {
+                                let badge = pwdDisplayEl.querySelector('.pwd-side-badge');
+                                if (!badge) {
+                                    badge = document.createElement('div');
+                                    badge.className = 'pwd-side-badge mt-2 inline-block px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700';
+                                    pwdDisplayEl.appendChild(badge);
+                                }
+                                badge.textContent = pwdSide === 'front' ? 'Front' : (pwdSide === 'back' ? 'Back' : 'Side: Unknown');
+                            }
+                            if (typeof nameKey !== 'undefined' && nameKey) {
+                                try { localStorage.setItem(nameKey + '_side', pwdSide); } catch(e){}
+                            }
+                        } catch (e) {}
+
                         if (!isMatch) {
                             // Don't block the upload for missing/mismatched disability — treat as a bonus.
                             let warnMsg;
@@ -2188,6 +2268,25 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 if (viewBtn) {
                     viewBtn.addEventListener('click', (ev) => {
                         ev.preventDefault();
+                        // prefer any stored data (supports multi-file arrays); fall back to object URL
+                        try {
+                            const stored = localStorage.getItem(dataKey);
+                            const storedType = localStorage.getItem(typeKey);
+                            if (stored) {
+                                // if stored is JSON array, pass array and parsed types
+                                try {
+                                    const parsed = JSON.parse(stored);
+                                    if (Array.isArray(parsed)) {
+                                        let parsedTypes = [];
+                                        try { parsedTypes = JSON.parse(storedType || '[]'); } catch(e) { parsedTypes = [] }
+                                        openModal(parsed, parsedTypes.length ? parsedTypes : parsed.map(() => ext));
+                                        return;
+                                    }
+                                } catch(e) {}
+                                openModal(stored, storedType || ext);
+                                return;
+                            }
+                        } catch(e){}
                         openModal(currentFileURL, ext);
                     });
                 }
@@ -2237,29 +2336,84 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     }
     
   // Modal preview
-  function openModal(url, ext) {
-    modal.classList.remove('hidden');
-    modalContent.innerHTML = '';
+    function openModal(urlOrArray, extOrArray) {
+        // urlOrArray: string (data URL or object URL) or Array of strings or JSON array string
+        // extOrArray: string ext or Array of ext strings (parallel to urls)
+        let items = [];
+        try {
+            if (!urlOrArray) return;
+            if (Array.isArray(urlOrArray)) items = urlOrArray.slice();
+            else if (typeof urlOrArray === 'string' && /^\s*\[/.test(urlOrArray)) {
+                // JSON array string
+                try { items = JSON.parse(urlOrArray); } catch (e) { items = [urlOrArray]; }
+            } else {
+                items = [urlOrArray];
+            }
+        } catch (e) { items = [urlOrArray]; }
 
-    if (['jpg', 'jpeg', 'png'].includes(ext)) {
-      modalContent.innerHTML = `<img src="${url}" class="max-h-[80vh] mx-auto rounded-lg">`;
-    } else if (ext === 'pdf') {
-      modalContent.innerHTML = `<iframe src="${url}" class="w-full h-[80vh] rounded-lg border-0"></iframe>`;
-    } else {
-      modalContent.innerHTML = `<p class="text-gray-700 text-center">This file type cannot be previewed.<br>(Hindi maaaring i-preview ang file na ito.)</p>`;
+        let exts = [];
+        try {
+            if (Array.isArray(extOrArray)) exts = extOrArray.slice();
+            else if (typeof extOrArray === 'string' && /^\s*\[/.test(extOrArray)) exts = JSON.parse(extOrArray);
+            else exts = [extOrArray];
+        } catch (e) { exts = [extOrArray]; }
+
+        // normalize lengths
+        while (exts.length < items.length) exts.push(exts[0] || '');
+
+        let idx = 0;
+
+        function render() {
+            const url = items[idx];
+            const ext = (exts[idx] || '').toLowerCase();
+            let inner = '';
+            if (['jpg','jpeg','png'].includes(ext) || (typeof url === 'string' && url.startsWith('data:image'))) {
+                inner = `<img src="${url}" class="max-h-[80vh] mx-auto rounded-lg">`;
+            } else if (ext === 'pdf' || (typeof url === 'string' && url.endsWith('.pdf'))) {
+                inner = `<iframe src="${url}" class="w-full h-[80vh] rounded-lg border-0"></iframe>`;
+            } else {
+                inner = `<p class="text-gray-700 text-center">This file type cannot be previewed.<br>(Hindi maaaring i-preview ang file na ito.)</p>`;
+            }
+
+            modalContent.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                    <div class="text-sm text-slate-600">${idx+1} / ${items.length}</div>
+                    <div class="flex gap-2">
+                        <button id="modalPrev" class="px-3 py-1 rounded bg-slate-100">Prev</button>
+                        <button id="modalNext" class="px-3 py-1 rounded bg-slate-100">Next</button>
+                    </div>
+                </div>
+                <div class="modal-body">${inner}</div>
+            `;
+
+            // disable buttons when single
+            try {
+                const prev = document.getElementById('modalPrev');
+                const next = document.getElementById('modalNext');
+                if (prev) prev.disabled = items.length <= 1;
+                if (next) next.disabled = items.length <= 1;
+                if (prev) prev.onclick = (e) => { e.preventDefault(); idx = (idx - 1 + items.length) % items.length; render(); };
+                if (next) next.onclick = (e) => { e.preventDefault(); idx = (idx + 1) % items.length; render(); };
+            } catch (e) {}
+        }
+
+        modal.classList.remove('hidden');
+        render();
+        document.body.classList.add('overflow-hidden');
     }
-  }
 
   closeModalBtn.addEventListener('click', (e) => {
     e.preventDefault();
     modal.classList.add('hidden');
     modalContent.innerHTML = '';
+        document.body.classList.remove('overflow-hidden');
   });
 
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       modal.classList.add('hidden');
       modalContent.innerHTML = '';
+            document.body.classList.remove('overflow-hidden');
     }
   });
 
@@ -2580,6 +2734,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 applied = setIf('phone', phone) || applied;
             applied = setIf('birthdate', birthdate) || applied;
                 applied = setIf('address', address) || applied;
+                try {
+                    // If a combined hidden address was applied, also populate the address subfields
+                    if (address && typeof splitAddressToFields === 'function') {
+                        splitAddressToFields(address);
+                    }
+                    // ensure hidden combined is consistent with subfields
+                    if (typeof combineAddressFields === 'function') combineAddressFields();
+                } catch(e) { console.warn('address applySync failed', e); }
                 applied = setIf('username', username) || applied;
 
                 // Guardian fields (if present in draft)

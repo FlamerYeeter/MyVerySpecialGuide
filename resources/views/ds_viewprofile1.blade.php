@@ -193,7 +193,7 @@
                         </div>
 
                         <div class="mt-4">
-                            <label for="g_work_address" class="block text-lg font-semibold mb-2">Guardian Work Address</label>
+                            <label for="g_work_address" class="block text-lg font-semibold mb-2">Guardian Home Address</label>
                             <input id="g_work_address" type="text" disabled
                                 class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
                         </div>
@@ -254,7 +254,7 @@
                                     <input id="spouse_work_number" type="tel" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
                                 </div>
                                 <div>
-                                    <label for="spouse_work_address" class="block text-lg font-semibold mb-2">Work Address</label>
+                                    <label for="spouse_work_address" class="block text-lg font-semibold mb-2">Home Address</label>
                                     <input id="spouse_work_address" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
                                 </div>
                             </div>
