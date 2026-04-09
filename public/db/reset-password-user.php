@@ -20,10 +20,44 @@ try {
     $to = trim($input['email']);
 
     // Default user-facing reset URL (can be overridden via `reset_url` param)
-    $resetBaseUrl = !empty($input['reset_url'])
-        ? trim($input['reset_url'])
-        // default to the public forgot-password page
-        : '/forgotpassword';
+    // Use absolute URL so email clients receive a valid link. Prefer APP_URL or server host when available.
+    if (!empty($input['reset_url'])) {
+        $resetBaseUrl = trim($input['reset_url']);
+    } elseif (!empty($_ENV['APP_URL']) || !empty(getenv('APP_URL'))) {
+        $appUrl = !empty($_ENV['APP_URL']) ? rtrim($_ENV['APP_URL'], '/') : rtrim(getenv('APP_URL'), '/');
+        $resetBaseUrl = $appUrl . '/forgotpassword';
+    } elseif (!empty($_SERVER['HTTP_HOST'])) {
+        $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+        $resetBaseUrl = $scheme . '://' . $_SERVER['HTTP_HOST'] . '/forgotpassword';
+    } else {
+        // fallback to your new production domain
+        $resetBaseUrl = 'https://empwrpath.com/forgotpassword';
+    }
+
+    // Normalize provided reset URL: if caller passed a relative path (e.g. '/forgotpassword')
+    // or a value without scheme, convert it to an absolute URL using APP_URL, server host,
+    // or the production fallback to avoid mail clients converting it to invalid hosts.
+    $hasScheme = preg_match('#^https?://#i', $resetBaseUrl);
+    if (!$hasScheme) {
+        // determine preferred base
+        if (!empty($appUrl)) {
+            $preferredBase = rtrim($appUrl, '/');
+        } elseif (!empty($_ENV['APP_URL']) || !empty(getenv('APP_URL'))) {
+            $preferredBase = rtrim(!empty($_ENV['APP_URL']) ? $_ENV['APP_URL'] : getenv('APP_URL'), '/');
+        } elseif (!empty($_SERVER['HTTP_HOST'])) {
+            $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+            $preferredBase = $scheme . '://' . $_SERVER['HTTP_HOST'];
+        } else {
+            $preferredBase = 'https://empwrpath.com';
+        }
+
+        // If resetBaseUrl is a path, join cleanly; otherwise prefix the preferred base
+        if (strpos($resetBaseUrl, '/') === 0) {
+            $resetBaseUrl = $preferredBase . $resetBaseUrl;
+        } else {
+            $resetBaseUrl = $preferredBase . '/' . ltrim($resetBaseUrl, '/');
+        }
+    }
 
     $subject = "Password Reset Request";
 
@@ -47,10 +81,10 @@ try {
         }
     }
 
-    // Payload contains email and expiry
+    // Payload contains email and expiry (1 hour to match email copy)
     $payload = [
         'email' => $to,
-        'exp' => time() + 86400 // 24 hours
+        'exp' => time() + 3600 // 1 hour
     ];
     $payloadJson = json_encode($payload);
 
