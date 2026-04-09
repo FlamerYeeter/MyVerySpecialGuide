@@ -643,9 +643,122 @@
                                         if(form){
                                             form.addEventListener('submit', function(ev){
                                                 combineAddressFields();
+                                                combineGuardianAddressFields();
+                                                combineSpouseAddressFields();
                                             });
                                         }
                                     }catch(e){console.warn('address init failed', e);} 
+                                });
+                            })();
+                            
+                            // Helper functions for guardian and spouse addresses
+                            (function(){
+                                function combineGuardianAddressFields(){
+                                    try{
+                                        const parts = [];
+                                        const n = document.getElementById('guardian_address_number');
+                                        const s = document.getElementById('guardian_address_street');
+                                        const b = document.getElementById('guardian_address_barangay');
+                                        const c = document.getElementById('guardian_address_city');
+                                        if(n && n.value.trim()) parts.push(n.value.trim());
+                                        if(s && s.value.trim()) parts.push(s.value.trim());
+                                        if(b && b.value.trim()) parts.push(b.value.trim());
+                                        if(c && c.value.trim()) parts.push(c.value.trim());
+                                        const combined = parts.join(' ');
+                                        const hidden = document.getElementById('guardian_home_address');
+                                        if(hidden) hidden.value = combined;
+                                        return combined;
+                                    }catch(e){ console.warn('combineGuardianAddressFields error', e); return ''; }
+                                }
+
+                                function combineSpouseAddressFields(){
+                                    try{
+                                        const parts = [];
+                                        const n = document.getElementById('spouse_address_number');
+                                        const s = document.getElementById('spouse_address_street');
+                                        const b = document.getElementById('spouse_address_barangay');
+                                        const c = document.getElementById('spouse_address_city');
+                                        if(n && n.value.trim()) parts.push(n.value.trim());
+                                        if(s && s.value.trim()) parts.push(s.value.trim());
+                                        if(b && b.value.trim()) parts.push(b.value.trim());
+                                        if(c && c.value.trim()) parts.push(c.value.trim());
+                                        const combined = parts.join(' ');
+                                        const hidden = document.getElementById('spouse_home_address');
+                                        if(hidden) hidden.value = combined;
+                                        return combined;
+                                    }catch(e){ console.warn('combineSpouseAddressFields error', e); return ''; }
+                                }
+
+                                document.addEventListener('DOMContentLoaded', function(){
+                                    try{
+                                        // Guardian address: update hidden whenever any component changes
+                                        ['guardian_address_number','guardian_address_street','guardian_address_barangay','guardian_address_city'].forEach(id=>{
+                                            const el = document.getElementById(id);
+                                            if(!el) return;
+                                            el.addEventListener('input', combineGuardianAddressFields);
+                                        });
+
+                                        // Spouse address: update hidden whenever any component changes
+                                        ['spouse_address_number','spouse_address_street','spouse_address_barangay','spouse_address_city'].forEach(id=>{
+                                            const el = document.getElementById(id);
+                                            if(!el) return;
+                                            el.addEventListener('input', combineSpouseAddressFields);
+                                        });
+                                        
+                                        // Copy address from Personal Information checkbox handler for Guardian
+                                        const copyGuardianCheckbox = document.getElementById('copyGuardianAddressFromPersonal');
+                                        if(copyGuardianCheckbox){
+                                            copyGuardianCheckbox.addEventListener('change', function(){
+                                                if(this.checked){
+                                                    // Copy personal address to guardian address
+                                                    const pNum = document.getElementById('address_number')?.value || '';
+                                                    const pStr = document.getElementById('address_street')?.value || '';
+                                                    const pBar = document.getElementById('address_barangay')?.value || '';
+                                                    const pCit = document.getElementById('address_city')?.value || '';
+                                                    
+                                                    document.getElementById('guardian_address_number').value = pNum;
+                                                    document.getElementById('guardian_address_street').value = pStr;
+                                                    document.getElementById('guardian_address_barangay').value = pBar;
+                                                    document.getElementById('guardian_address_city').value = pCit;
+                                                    combineGuardianAddressFields();
+                                                } else {
+                                                    // Clear guardian address when unchecked
+                                                    document.getElementById('guardian_address_number').value = '';
+                                                    document.getElementById('guardian_address_street').value = '';
+                                                    document.getElementById('guardian_address_barangay').value = '';
+                                                    document.getElementById('guardian_address_city').value = '';
+                                                    combineGuardianAddressFields();
+                                                }
+                                            });
+                                        }
+                                        
+                                        // Copy address from Personal Information checkbox handler for Spouse
+                                        const copySpouseCheckbox = document.getElementById('copySpouseAddressFromPersonal');
+                                        if(copySpouseCheckbox){
+                                            copySpouseCheckbox.addEventListener('change', function(){
+                                                if(this.checked){
+                                                    // Copy personal address to spouse address
+                                                    const pNum = document.getElementById('address_number')?.value || '';
+                                                    const pStr = document.getElementById('address_street')?.value || '';
+                                                    const pBar = document.getElementById('address_barangay')?.value || '';
+                                                    const pCit = document.getElementById('address_city')?.value || '';
+                                                    
+                                                    document.getElementById('spouse_address_number').value = pNum;
+                                                    document.getElementById('spouse_address_street').value = pStr;
+                                                    document.getElementById('spouse_address_barangay').value = pBar;
+                                                    document.getElementById('spouse_address_city').value = pCit;
+                                                    combineSpouseAddressFields();
+                                                } else {
+                                                    // Clear spouse address when unchecked
+                                                    document.getElementById('spouse_address_number').value = '';
+                                                    document.getElementById('spouse_address_street').value = '';
+                                                    document.getElementById('spouse_address_barangay').value = '';
+                                                    document.getElementById('spouse_address_city').value = '';
+                                                    combineSpouseAddressFields();
+                                                }
+                                            });
+                                        }
+                                    }catch(e){console.warn('guardian/spouse address init failed', e);} 
                                 });
                             })();
                             </script>
@@ -813,12 +926,41 @@
 
                 </div>
 
-                <!-- Work Address -->
-                <div class="mt-6">
-                    <label class="font-semibold flex items-center gap-1">Work Address</label>
-                    <p class="text-gray-500 flex italic text-sm mt-1">Adress ng Trabaho</p>
-                    <input id="guardian_work_address" name="g_work_address" type="text" placeholder="Work Address"
-                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                <!-- Home Address -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="font-semibold flex items-center gap-1">
+                           Home Address
+                        </label>
+                    </div>
+
+                    <p class="text-gray-500 italic flex text-sm mt-1">
+                        Tirahan (No./Blk/Lot, Street, Barangay, City)
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+
+                        <input id="guardian_address_number" type="text" placeholder="No./Blk/Lot"
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
+                        <input id="guardian_address_street" type="text" placeholder="Street"
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
+                        <input id="guardian_address_barangay" type="text" placeholder="Barangay"
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
+                        <input id="guardian_address_city" type="text" placeholder="City / Municipality"
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
+                    </div>
+                        <!-- Checkbox -->
+                        <div class="flex justify-end mt-3">
+                            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="checkbox" id="copyGuardianAddressFromPersonal" class="h-4 w-4 accent-blue-600" />
+                                <span class="text-gray-700">Same address from personal information</span>
+                            </label>
+                        </div>
+                        <input id="guardian_home_address" name="g_home_address" type="hidden"/>
                 </div>
 
                 <!-- Divider -->
@@ -911,12 +1053,38 @@
 
                 </div>
 
-                <!-- Work Address -->
-                <div class="mt-6">
-                    <label class="font-semibold flex items-center gap-1">Work Address</label>
-                    <p class="text-gray-500 flex italic text-sm mt-1">Adress ng Trabaho</p>
-                    <input id="spouse_work_address" name="spouse_work_address" type="text" placeholder="Work Address"
-                        class="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none">
+                <!-- Home Address -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="font-semibold flex items-center gap-1">Home Address</label>
+                    </div>
+                    <p class="text-gray-500 italic flex text-sm mt-1">
+                        Tirahan (No./Blk/Lot, Street, Barangay, City)
+                    </p>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-2">
+
+                        <input id="spouse_address_number" type="text" placeholder="No./Blk/Lot"
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
+                        <input id="spouse_address_street" type="text" placeholder="Street"
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
+                        <input id="spouse_address_barangay" type="text" placeholder="Barangay"
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
+                        <input id="spouse_address_city" type="text" placeholder="City / Municipality"
+                            class="border border-gray-300 rounded-lg px-3 py-2 focus:ring focus:ring-blue-200 focus:outline-none"/>
+
+                    </div>
+                        <!-- Checkbox -->
+                        <div class="flex justify-end mt-3">
+                            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="checkbox" id="copyGuardianAddressFromPersonal" class="h-4 w-4 accent-blue-600" />
+                                <span class="text-gray-700">Same address from personal information</span>
+                            </label>
+                        </div>
+                        <input id="spouse_home_address" name="spouse_home_address" type="hidden"/>
                 </div>
 
             </div>
@@ -942,7 +1110,7 @@
                     </div>
 
                     <!-- Create Password -->
-                    <div>
+                    <div class="relative">
                         <label for="password" class="font-semibold flex items-center gap-1">Create Password
                             <span>⭐</span></label>
                         <input   id="password" 
@@ -951,14 +1119,13 @@
                                     placeholder="Enter your password"
                                     pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$"
                                     title="Password must have at least 1 uppercase letter, 1 lowercase letter, 1 number, and be 8+ characters long."
-                                    class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+                                    class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-10 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+                            <button type="button" id="showCreatePassword"
+                                class="toggle-password absolute right-2 top-9 bg-transparent text-sm text-gray-600 px-3 py-1 rounded"
+                                data-target="password" aria-pressed="false">Show</button>
                             <p id="passwordMessage" class="mt-1 text-sm text-red-500 italic hidden">
                                 Password must have at least 1 uppercase, 1 lowercase, 1 number, and be 8+ characters long.
                             </p>
-                            <label class="flex gap-2 text-sm text-gray-700 cursor-pointer mt-2">
-                                <input id="showCreatePassword" type="checkbox" class="h-4 w-4" />
-                                <span>Show password</span>
-                            </label>
                             <div id="passwordSuccess" class="mt-1 text-sm text-green-600 hidden">✅ Strong password. Ready to go!</div>
                     </div>
                 </div>
@@ -1006,16 +1173,15 @@
                 </div>
 
                 <!-- Confirm Password -->
-                <div class="mt-6">
+                <div class="mt-6 relative">
                     <label for="confirmPassword" class="font-semibold text-base flex items-center gap-1">Confirm
                         Password <span>⭐</span></label>
                     <input id="confirmPassword" name="confirmPassword" type="password"
                         placeholder="Re-enter your password"
-                        class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
-                    <label class="flex gap-2 text-sm text-gray-700 cursor-pointer mt-2">
-                        <input id="showConfirmPassword" type="checkbox" class="h-4 w-4" />
-                        <span>Show password</span>
-                    </label>
+                        class="mt-2 w-full border border-gray-300 rounded-lg px-4 py-2.5 pr-10 focus:ring-2 focus:ring-blue-300 focus:outline-none shadow-sm transition" />
+                    <button type="button" id="showConfirmPassword"
+                        class="toggle-password absolute right-2 top-9 bg-transparent text-sm text-gray-600 px-3 py-1 rounded"
+                        data-target="confirmPassword" aria-pressed="false">Show</button>
                 </div>
                   <p id="confirmMessage" class="mt-1 text-sm text-red-500 italic hidden">
                     Passwords do not match.
@@ -1103,20 +1269,24 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
     setupUpload('fitFile', 'fitDisplay', 'fitLabel', 'fitHint');
     try {
-        const createToggle = document.getElementById('showCreatePassword');
-        if (createToggle) {
-            createToggle.addEventListener('change', function(e){
-                const show = !!e.target.checked;
-                try { const el = document.getElementById('password'); if (el) el.type = show ? 'text' : 'password'; } catch(e){}
+        // Password toggle handlers (Show/Hide text buttons)
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-target');
+                const input = document.getElementById(targetId);
+                if (!input) return;
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    this.textContent = 'Hide';
+                    this.setAttribute('aria-pressed', 'true');
+                } else {
+                    input.type = 'password';
+                    this.textContent = 'Show';
+                    this.setAttribute('aria-pressed', 'false');
+                }
             });
-        }
-        const confirmToggle = document.getElementById('showConfirmPassword');
-        if (confirmToggle) {
-            confirmToggle.addEventListener('change', function(e){
-                const show = !!e.target.checked;
-                try { const el = document.getElementById('confirmPassword'); if (el) el.type = show ? 'text' : 'password'; } catch(e){}
-            });
-        }
+        });
     } catch(e) { console.warn('showPassword init failed', e); }
     // password strength hint
     try {
@@ -1725,7 +1895,13 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     const loading = document.getElementById(`ocr-loading-${inputId}`);
                     if (loading) loading.remove();
                     console.error('[upload] Fetch failed:', fetchErr);
-                    alert('Network error: Failed to connect to OCR service');
+                    showOcrModal({
+                        type: 'error',
+                        title: 'Scan Failed',
+                        message: 'Network error: Failed to connect to OCR service.',
+                        note: 'Please try again.',
+                        showRetry: true
+                    });
                     isProcessing = false;
                     return;
                 }
@@ -1845,7 +2021,17 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             const _e = pwdDisplayEl.querySelector('.ocr-error');
                             if (_e) _e.textContent = '';
                         }
-                        alert(`Disability: ${aiData.type_of_disability || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                        showOcrModal({
+                            type: 'success',
+                            title: 'Scan Successful',
+                            message: 'We’ve successfully processed the uploaded PWD ID.',
+                            details: [
+                                { label: 'Disability', value: aiData.type_of_disability || 'Unknown' },
+                                { label: 'OCR Type', value: detectedType }
+                            ],
+                            note: 'Please review the information for accuracy.',
+                            confirmText: 'Confirm & Continue'
+                        });
                     } else if (detectedType === 'fit_to_work' && ocrtype === 'fit_to_work') {
                         // Fit-To-Work specific handling: require explicit fit-to-work text/statement
                         let fitDisplayEl = document.getElementById('fitDisplay') || document.getElementById('medDisplay');
@@ -3273,6 +3459,124 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 }
             });
             </script>
+
+<script>
+(function(){
+    function setModalVisibility(modal, visible) {
+        const panel = modal.querySelector('[data-modal-panel]');
+        if (!panel) return;
+        if (visible) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                panel.classList.remove('opacity-0','scale-95');
+                panel.classList.add('opacity-100','scale-100');
+            }, 10);
+            document.body.classList.add('overflow-hidden');
+        } else {
+            panel.classList.remove('opacity-100','scale-100');
+            panel.classList.add('opacity-0','scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+            document.body.classList.remove('overflow-hidden');
+        }
+    }
+
+    window.showOcrModal = function(opts) {
+        const modal = document.getElementById('ocrResultModal');
+        if (!modal) return;
+        const titleEl = document.getElementById('ocrModalTitle');
+        const messageEl = document.getElementById('ocrModalMessage');
+        const detailsEl = document.getElementById('ocrModalDetails');
+        const noteEl = document.getElementById('ocrModalNote');
+        const iconEl = document.getElementById('ocrModalIcon');
+        const primaryBtn = document.getElementById('ocrModalPrimaryBtn');
+
+        const type = opts && opts.type === 'error' ? 'error' : 'success';
+        const colorClasses = type === 'error'
+            ? ['bg-red-100','text-red-700']
+            : ['bg-emerald-100','text-emerald-700'];
+
+        iconEl.className = `mb-4 flex h-14 w-14 items-center justify-center rounded-full ${colorClasses.join(' ')}`;
+        iconEl.innerHTML = type === 'error'
+            ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-7 w-7"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zm.75 6.75a.75.75 0 10-1.5 0v4.5a.75.75 0 001.5 0V9zm0 7.5a.75.75 0 10-1.5 0 .75.75 0 001.5 0z" clip-rule="evenodd"/></svg>'
+            : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-7 w-7"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zm4.03 7.03a.75.75 0 00-1.06-1.06L10.5 12.69l-1.47-1.47a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z" clip-rule="evenodd"/></svg>';
+
+        titleEl.textContent = opts.title || (type === 'error' ? 'Scan Failed' : 'Scan Successful');
+        messageEl.textContent = opts.message || (type === 'error' ? 'We couldn’t complete the scan.' : 'We’ve successfully processed the uploaded PWD ID.');
+
+        if (Array.isArray(opts.details) && opts.details.length) {
+            detailsEl.innerHTML = opts.details.map(detail => `
+                <div class="rounded-2xl bg-slate-50 p-3">
+                    <div class="text-xs uppercase tracking-wide text-slate-500">${detail.label}</div>
+                    <div class="mt-1 text-sm font-medium text-slate-900">${detail.value}</div>
+                </div>
+            `).join('');
+            detailsEl.classList.remove('hidden');
+        } else {
+            detailsEl.classList.add('hidden');
+            detailsEl.innerHTML = '';
+        }
+
+        noteEl.textContent = opts.note || 'Please review the information for accuracy.';
+        primaryBtn.textContent = opts.confirmText || (opts.showRetry ? 'Try Again' : 'Confirm & Continue');
+        primaryBtn.dataset.action = opts.showRetry ? 'retry' : 'confirm';
+
+        setModalVisibility(modal, true);
+    };
+
+    window.closeOcrModal = function() {
+        const modal = document.getElementById('ocrResultModal');
+        if (!modal) return;
+        setModalVisibility(modal, false);
+    };
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = document.getElementById('ocrResultModal');
+        if (!modal) return;
+
+        modal.addEventListener('click', function(event) {
+            if (event.target === modal) {
+                closeOcrModal();
+            }
+        });
+
+        const closeBtn = document.getElementById('ocrModalCloseBtn');
+        if (closeBtn) closeBtn.addEventListener('click', closeOcrModal);
+
+        const primaryBtn = document.getElementById('ocrModalPrimaryBtn');
+        if (primaryBtn) {
+            primaryBtn.addEventListener('click', function() {
+                const action = this.dataset.action;
+                closeOcrModal();
+                if (action === 'retry') {
+                    document.dispatchEvent(new CustomEvent('ocrRetryRequested'));
+                }
+            });
+        }
+    });
+})();
+</script>
+
+<div id="ocrResultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+    <div data-modal-panel class="w-full max-w-lg transform overflow-hidden rounded-3xl bg-white p-6 shadow-2xl transition duration-200 ease-out opacity-0 scale-95">
+        <button id="ocrModalCloseBtn" type="button" class="absolute right-4 top-4 text-gray-400 hover:text-gray-700">
+            <span class="sr-only">Close</span>×
+        </button>
+        <div id="ocrModalIcon" class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-7 w-7">
+                <path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zm4.03 7.03a.75.75 0 00-1.06-1.06L10.5 12.69l-1.47-1.47a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <h2 id="ocrModalTitle" class="text-2xl font-semibold text-gray-900 mb-2">Scan Successful</h2>
+        <p id="ocrModalMessage" class="text-gray-600 mb-4">We’ve successfully processed the uploaded PWD ID.</p>
+        <div id="ocrModalDetails" class="space-y-2 text-sm text-gray-700 mb-4"></div>
+        <p id="ocrModalNote" class="text-sm text-gray-500 mb-6">Please review the information for accuracy.</p>
+        <div class="flex justify-end">
+            <button id="ocrModalPrimaryBtn" type="button" data-action="confirm" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition">Confirm & Continue</button>
+        </div>
+    </div>
+</div>
 
 </body>
 
