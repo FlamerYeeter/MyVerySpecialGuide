@@ -226,11 +226,7 @@
                     <div id="skills-container" class="flex flex-wrap gap-4"></div>
                 </div>
 
-                <!-- Job Positions -->
-                <div id="box-positions" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-lg  font-bold text-black mb-3">Job Positions</h4>
-                    <p id="job-positions" class="text-left text-gray-800 font-semibold">No Job Position Provided</p>
-                </div>
+                <!-- Job Positions removed per request -->
 
                 <!-- Job Program -->
                 <div id="box-program" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
@@ -240,16 +236,17 @@
 
                 <div id="box-hiring-manager" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
                     <h4 class="text-lg  font-bold text-black mb-3">Hiring Manager</h4>
-                    <div class="flex items-center gap-3">
-                        <div id="manager-avatar" class="w-12 h-12 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
-                            <i class="ri-user-line text-gray-400 text-2xl"></i>
-                        </div>
 
-                        <!-- Name and Title -->
-                        <div class="flex flex-col">
-                            <p id="manager-name" class="font-medium text-base text-gray-800">Juan Dela Cruz</p>
-                            <p id="manager-role" class="text-gray-500 text-xs">Human Resources Manager</p>
-                        </div>
+                    <!-- Managers list: only show names -->
+                    <div id="managers-list-container">
+                        <ul id="managers-list" class="list-none p-0 m-0">
+                            <li class="flex items-center gap-3 py-2">
+                                <div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">
+                                    <i class="ri-user-line text-gray-400 text-xl"></i>
+                                </div>
+                                <span id="manager-name" class="font-medium text-base text-gray-800">No manager assigned</span>
+                            </li>
+                        </ul>
                     </div>
                 </div>
 
@@ -545,34 +542,53 @@
                     skillsContainer.innerHTML = '<span class="text-gray-500">No skills listed</span>';
                 }
 
-                // Job positions
+                // Job positions (element may be removed)
                 const posEl = document.getElementById('job-positions');
-                if (j.job_positions && j.job_positions.length) {
-                    posEl.textContent = j.job_positions.join(', ');
-                } else {
-                    posEl.textContent = 'No Job Position Input';
+                if (posEl) {
+                    if (j.job_positions && j.job_positions.length) {
+                        posEl.textContent = j.job_positions.join(', ');
+                    } else {
+                        posEl.textContent = 'No Job Position Input';
+                    }
                 }
 
-                // Hiring manager: prefer first in managers array, else check payload.manager
-                let mgr = null;
-                if (Array.isArray(j.managers) && j.managers.length) {
-                    mgr = j.managers[0];
-                } else if (payload.manager) {
-                    mgr = payload.manager;
+                // Managers: show names-only list (prefer array `j.managers`)
+                function escapeHtml(s) {
+                    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
                 }
-                if (mgr) {
-                    const fullName = mgr.full_name ?? ((mgr.first_name || '') + ' ' + (mgr.last_name || '')) ?? mgr.FIRST_NAME ?? '';
-                    document.getElementById('manager-name').textContent = safeText(fullName, 'Hiring Manager');
-                    document.getElementById('manager-role').textContent = safeText(mgr.role ?? mgr.ROLE ?? '', '');
-                    if (mgr.avatar || mgr.avatar_url || mgr.avatarUrl) {
-                        const img = document.createElement('img');
-                        img.src = mgr.avatar || mgr.avatar_url || mgr.avatarUrl;
-                        img.alt = 'Manager';
-                        img.className = 'w-full h-full object-cover';
-                        const avatarHolder = document.getElementById('manager-avatar');
-                        avatarHolder.innerHTML = '';
-                        avatarHolder.appendChild(img);
-                    }
+
+                const managersListEl = document.getElementById('managers-list');
+                if (Array.isArray(j.managers) && j.managers.length) {
+                    managersListEl.innerHTML = j.managers.map(m => {
+                        const full = (m.full_name ?? ((m.first_name || '') + ' ' + (m.last_name || ''))).trim() || m.FIRST_NAME || '';
+                        return '<li class="flex items-center gap-3 py-2">' +
+                            '<div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">' +
+                                '<i class="ri-user-line text-gray-400 text-xl"></i>' +
+                            '</div>' +
+                            '<span class="font-medium text-base text-gray-800">' + escapeHtml(full) + '</span>' +
+                        '</li>';
+                    }).join('\n');
+
+                    // keep first manager in #manager-name for backward compatibility
+                    const first = j.managers[0];
+                    const firstFull = (first.full_name ?? ((first.first_name || '') + ' ' + (first.last_name || ''))).trim() || first.FIRST_NAME || '';
+                    const mgrNameEl = document.getElementById('manager-name');
+                    if (mgrNameEl) mgrNameEl.textContent = safeText(firstFull, 'Hiring Manager');
+                    const mgrRoleEl = document.getElementById('manager-role');
+                    if (mgrRoleEl) mgrRoleEl.textContent = '';
+                } else if (payload.manager) {
+                    const m = payload.manager;
+                    const full = (typeof m === 'string') ? m : ((m.full_name ?? ((m.first_name || '') + ' ' + (m.last_name || ''))).trim() || m.FIRST_NAME || '');
+                    if (managersListEl) managersListEl.innerHTML = '<li class="flex items-center gap-3 py-2">' +
+                        '<div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden">' +
+                            '<i class="ri-user-line text-gray-400 text-xl"></i>' +
+                        '</div>' +
+                        '<span class="font-medium text-base text-gray-800">' + escapeHtml(full) + '</span>' +
+                    '</li>';
+                    const mgrNameEl = document.getElementById('manager-name');
+                    if (mgrNameEl) mgrNameEl.textContent = safeText(full, 'Hiring Manager');
+                    const mgrRoleEl = document.getElementById('manager-role');
+                    if (mgrRoleEl) mgrRoleEl.textContent = '';
                 }
 
                 // Contact details

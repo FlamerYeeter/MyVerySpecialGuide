@@ -1238,8 +1238,8 @@
                         fileInput.addEventListener('change', async function(){
                             const f = this.files && this.files[0]; if (!f) return;
                             const ext = String((f.name||'').split('.').pop()||'').toLowerCase();
-                            if (!['jpg','jpeg','png','pdf'].includes(ext)) { alert('Invalid file type'); this.value=''; return; }
-                            if (f.size > 5*1024*1024) { alert('File too large'); this.value=''; return; }
+                            if (!['jpg','jpeg','png','pdf'].includes(ext)) { try{ showOcrModal({ type: 'error', title: 'Invalid file', message: 'Invalid file type. Only JPG, PNG, or PDF allowed.', details: [], confirmText: 'OK' }); }catch(e){ alert('Invalid file type'); } this.value=''; return; }
+                            if (f.size > 5*1024*1024) { try{ showOcrModal({ type: 'error', title: 'File too large', message: 'File too large. Max 5MB.', details: [], confirmText: 'OK' }); }catch(e){ alert('File too large'); } this.value=''; return; }
                             try {
                                 const r = new FileReader();
                                 r.onload = async function(evt) {
@@ -1306,6 +1306,20 @@
                                                         }
                                                     }
                                                     syncHiddenFromUI();
+                                                        // Show OCR result modal summarizing detected fields
+                                                        try {
+                                                            showOcrModal({
+                                                                type: 'success',
+                                                                title: 'Scan Successful',
+                                                                message: 'We\'ve successfully processed the uploaded document.',
+                                                                details: [
+                                                                    { label: 'Certificate', value: title || '' },
+                                                                    { label: 'Issuer', value: issuer || '' },
+                                                                    { label: 'Detected', value: dateCompleted || '' }
+                                                                ],
+                                                                confirmText: 'Confirm & Continue'
+                                                            });
+                                                        } catch (e) { /* ignore */ }
                                                 } catch (e) { console.warn('apply ocr mapping failed', e); }
                                             }
                                         } catch (e) {
@@ -1600,6 +1614,71 @@
 </body>
 
 </html>
+
+<script>
+(function(){
+    function setModalVisibility(modal, visible) {
+        const panel = modal.querySelector('[data-modal-panel]'); if (!panel) return;
+        if (visible) { modal.classList.remove('hidden'); setTimeout(()=>{ panel.classList.remove('opacity-0','scale-95'); panel.classList.add('opacity-100','scale-100'); },10); document.body.classList.add('overflow-hidden'); }
+        else { panel.classList.remove('opacity-100','scale-100'); panel.classList.add('opacity-0','scale-95'); setTimeout(()=>{ modal.classList.add('hidden'); },200); document.body.classList.remove('overflow-hidden'); }
+    }
+
+    window.showOcrModal = function(opts) {
+        console.debug('showOcrModal called', opts);
+        const modal = document.getElementById('ocrResultModal');
+        if (!modal) { console.warn('showOcrModal: modal element not found'); return; }
+        const titleEl = document.getElementById('ocrModalTitle');
+        const messageEl = document.getElementById('ocrModalMessage');
+        const detailsEl = document.getElementById('ocrModalDetails');
+        const noteEl = document.getElementById('ocrModalNote');
+        const iconEl = document.getElementById('ocrModalIcon');
+        const primaryBtn = document.getElementById('ocrModalPrimaryBtn');
+        const type = opts && opts.type === 'error' ? 'error' : 'success';
+        const colorClasses = type === 'error' ? ['bg-red-100','text-red-700'] : ['bg-emerald-100','text-emerald-700'];
+        if (iconEl) { iconEl.className = `mb-4 flex h-14 w-14 items-center justify-center rounded-full ${colorClasses.join(' ')}`;
+            iconEl.innerHTML = type === 'error'
+                ? '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-7 w-7"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zm.75 6.75a.75.75 0 10-1.5 0v4.5a.75.75 0 001.5 0V9zm0 7.5a.75.75 0 10-1.5 0 .75.75 0 001.5 0z" clip-rule="evenodd"/></svg>'
+                : '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-7 w-7"><path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zm4.03 7.03a.75.75 0 00-1.06-1.06L10.5 12.69l-1.47-1.47a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z" clip-rule="evenodd"/></svg>';
+        }
+        if (titleEl) titleEl.textContent = opts.title || (type === 'error' ? 'Scan Failed' : 'Scan Successful');
+        if (messageEl) messageEl.textContent = opts.message || (type === 'error' ? 'We couldn’t complete the scan.' : 'We’ve successfully processed the uploaded document.');
+        if (detailsEl) {
+            if (Array.isArray(opts.details) && opts.details.length) {
+                detailsEl.innerHTML = opts.details.map(detail => `\n                <div class="rounded-2xl bg-slate-50 p-3">\n                    <div class="text-xs uppercase tracking-wide text-slate-500">${detail.label}</div>\n                    <div class="mt-1 text-sm font-medium text-slate-900">${detail.value}</div>\n                </div>\n            `).join('');
+                detailsEl.classList.remove('hidden');
+            } else { detailsEl.classList.add('hidden'); detailsEl.innerHTML = ''; }
+        }
+        if (noteEl) noteEl.textContent = opts.note || 'Please review the information for accuracy.';
+        if (primaryBtn) { primaryBtn.textContent = opts.confirmText || (opts.showRetry ? 'Try Again' : 'Confirm & Continue'); primaryBtn.dataset.action = opts.showRetry ? 'retry' : 'confirm'; }
+        setModalVisibility(modal, true);
+        console.debug('showOcrModal: modal shown');
+    };
+
+    window.closeOcrModal = function(){ const modal = document.getElementById('ocrResultModal'); if (!modal) return; setModalVisibility(modal, false); };
+
+    document.addEventListener('DOMContentLoaded', function(){ const modal = document.getElementById('ocrResultModal'); if(!modal) return; modal.addEventListener('click', function(e){ if(e.target===modal) closeOcrModal(); }); const closeBtn = document.getElementById('ocrModalCloseBtn'); if(closeBtn) closeBtn.addEventListener('click', closeOcrModal); const primaryBtn = document.getElementById('ocrModalPrimaryBtn'); if(primaryBtn) primaryBtn.addEventListener('click', function(){ const action = this.dataset.action; closeOcrModal(); if(action==='retry') document.dispatchEvent(new CustomEvent('ocrRetryRequested')); }); });
+})();
+</script>
+
+<div id="ocrResultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+    <div data-modal-panel class="w-full max-w-lg transform overflow-hidden rounded-3xl bg-white p-6 shadow-2xl transition duration-200 ease-out opacity-0 scale-95">
+        <button id="ocrModalCloseBtn" type="button" class="absolute right-4 top-4 text-gray-400 hover:text-gray-700">
+            <span class="sr-only">Close</span>×
+        </button>
+        <div id="ocrModalIcon" class="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-7 w-7">
+                <path fill-rule="evenodd" d="M12 2.25a9.75 9.75 0 100 19.5 9.75 9.75 0 000-19.5zm4.03 7.03a.75.75 0 00-1.06-1.06L10.5 12.69l-1.47-1.47a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+        </div>
+        <h2 id="ocrModalTitle" class="text-2xl font-semibold text-gray-900 mb-2">Scan Successful</h2>
+        <p id="ocrModalMessage" class="text-gray-600 mb-4">We’ve successfully processed the uploaded PWD ID.</p>
+        <div id="ocrModalDetails" class="space-y-2 text-sm text-gray-700 mb-4"></div>
+        <p id="ocrModalNote" class="text-sm text-gray-500 mb-6">Please review the information for accuracy.</p>
+        <div class="flex justify-end">
+            <button id="ocrModalPrimaryBtn" type="button" data-action="confirm" class="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700 transition">Confirm & Continue</button>
+        </div>
+    </div>
+</div>
 
 <script>
 // Restore work experience form state when user returns to this page.

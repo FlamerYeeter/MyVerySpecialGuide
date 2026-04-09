@@ -154,6 +154,26 @@ while ($m = oci_fetch_array($stid2, OCI_ASSOC+OCI_RETURN_NULLS)) {
     $managers[] = $m;
 }
 
+// normalize managers for frontend convenience (lowercase keys + full_name)
+$managers_normalized = [];
+foreach ($managers as $m) {
+    $first = $m['FIRST_NAME'] ?? null;
+    $middle = $m['MIDDLE_NAME'] ?? null;
+    $last = $m['LAST_NAME'] ?? null;
+    $full = trim(($first ? $first : '') . ' ' . ($middle ? $middle : '') . ' ' . ($last ? $last : ''));
+    $managers_normalized[] = [
+        'id' => isset($m['ID']) ? $m['ID'] : null,
+        'job_posting_id' => $m['JOB_POSTING_ID'] ?? null,
+        'first_name' => $first,
+        'middle_name' => $middle,
+        'last_name' => $last,
+        'role' => $m['ROLE'] ?? null,
+        'created_at' => $m['CREATED_AT'] ?? null,
+        'updated_at' => $m['UPDATED_AT'] ?? null,
+        'full_name' => $full
+    ];
+}
+
 // --- NEW: fetch JOB_PROFILE entries and group by TYPE
 $profiles = [];
 $id_cond_profile = id_condition_sql('JOB_PROFILE.JOB_POSTING_ID', $use_to_char_match);
@@ -244,6 +264,7 @@ $response = [
         // convenience aliases for frontend
         'openings' => isset($row['EMPLOYEE_CAPACITY']) ? $row['EMPLOYEE_CAPACITY'] : null,
         'applied' => $appliedCount,
+        'managers' => $managers_normalized,
         'applied_count' => $appliedCount,
     ],
     'company' => [

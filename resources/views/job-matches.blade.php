@@ -907,18 +907,42 @@ function loadJobs() {
 
     fetch('/db/get-jobs.php', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify(data)
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.json();
+    })
     .then(result => {
         const container = document.getElementById('job-container');
         const count_matches = document.getElementById('all-matches');
         container.innerHTML = '';
 
-        if (!result.success || !result.jobs.length) {
-            count_matches.innerHTML = 'All Matches (0)';
+        // Validate shape of response robustly
+        if (!result || typeof result !== 'object' || result.success !== true || !Array.isArray(result.jobs)) {
+            console.warn('get-jobs: unexpected response shape', result);
+            // allow one automatic retry per page load to handle race conditions during auth/cookie establishment
+            const retryKey = 'getjobs_retry_' + window.location.pathname;
+            if (!sessionStorage.getItem(retryKey)) {
+                sessionStorage.setItem(retryKey, '1');
+                setTimeout(() => {
+                    if (jobLoadingModal) jobLoadingModal.classList.remove('hidden');
+                    loadJobs();
+                }, 700);
+                return;
+            }
+            if (count_matches) count_matches.innerHTML = 'All Matches (0)';
             container.innerHTML = '<p class="text-center text-xl sm:text-2xl lg:text-3xl text-gray-600">No job postings available at the moment.</p>';
+            if (jobLoadingModal) jobLoadingModal.classList.add('hidden');
+            return;
+        }
+
+        if (result.jobs.length === 0) {
+            if (count_matches) count_matches.innerHTML = 'All Matches (0)';
+            container.innerHTML = '<p class="text-center text-xl sm:text-2xl lg:text-3xl text-gray-600">No job postings available at the moment.</p>';
+            if (jobLoadingModal) jobLoadingModal.classList.add('hidden');
             return;
         }
 
@@ -1096,9 +1120,9 @@ function loadJobs() {
     .catch(err => {
         // hide modal on error as well
         if (jobLoadingModal) jobLoadingModal.classList.add('hidden');
-        debugger;
         console.error('Error loading jobs:', err);
-        document.getElementById('job-container').innerHTML = '<p class="text-center text-red-600 text-2xl">Failed to load jobs. Please try again later.</p>';
+        const jobContainer = document.getElementById('job-container');
+        if (jobContainer) jobContainer.innerHTML = '<p class="text-center text-red-600 text-2xl">Failed to load jobs. Please try again later.</p>';
     });
 }
 

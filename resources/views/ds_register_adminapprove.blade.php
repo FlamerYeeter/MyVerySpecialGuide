@@ -2026,8 +2026,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             title: 'Scan Successful',
                             message: 'We’ve successfully processed the uploaded PWD ID.',
                             details: [
-                                { label: 'Disability', value: aiData.type_of_disability || 'Unknown' },
-                                { label: 'OCR Type', value: detectedType }
+                                { label: 'Disability', value: aiData.type_of_disability || 'Unknown' }
                             ],
                             note: 'Please review the information for accuracy.',
                             confirmText: 'Confirm & Continue'
@@ -2078,7 +2077,6 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                                 title: 'Fit-To-Work Processed',
                                 message: `Fit-To-Work (${fname}) has been processed.`,
                                 details: [
-                                    { label: 'OCR Type', value: detectedType },
                                     { label: 'Contains Fit Statement', value: result.data?.contains_fit_to_work ? 'Yes' : 'No' },
                                     { label: 'Parsed Summary', value: aiData.summary || aiData.result || 'N/A' }
                                 ],
@@ -2090,7 +2088,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                                 type: 'success',
                                 title: 'Fit-To-Work Processed',
                                 message: 'Fit-To-Work document processed successfully.',
-                                details: [ { label: 'OCR Type', value: detectedType } ],
+                                details: [],
                                 confirmText: 'Confirm & Continue'
                             });
                         }
@@ -2127,8 +2125,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                                 title: 'Medical Certificate Accepted',
                                 message: 'The uploaded medical certificate is within the acceptable 3-month window.',
                                 details: [
-                                    { label: 'Medical Date', value: aiData.date || '?' },
-                                    { label: 'OCR Type', value: detectedType }
+                                    { label: 'Medical Date', value: aiData.date || '?' }
                                 ],
                                 note: 'Please review the extracted date and information for accuracy.',
                                 confirmText: 'Confirm & Continue'
@@ -2142,7 +2139,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                                 type: 'error',
                                 title: 'Medical Certificate Rejected',
                                 message: `Detected medical date ${aiData.date || '?'} is older than 3 months and cannot be accepted.`,
-                                details: [ { label: 'Detected Date', value: aiData.date || 'Unknown' }, { label: 'OCR Type', value: detectedType } ],
+                                details: [ { label: 'Detected Date', value: aiData.date || 'Unknown' } ],
                                 note: 'Please upload a valid medical certificate dated within the last 3 months.',
                                 confirmText: 'OK'
                             });
@@ -2150,18 +2147,30 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
-                        // Remove loading indicator
+                        // Remove loading indicator and show result modal (membership)
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
-                        alert(`Is Member of DSAPI: ${aiData.is_membership || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                        showOcrModal({
+                            type: 'success',
+                            title: 'Membership Proof Processed',
+                            message: `Membership proof has been processed.`,
+                            details: [ { label: 'Is Member', value: aiData.is_membership || '?' } ],
+                            confirmText: 'Confirm & Continue'
+                        });
                     } else {
                         // generic autofill attempt
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
-                        // Remove loading indicator
+                        // Remove loading indicator and show generic result modal (no OCR Type)
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
-                        alert(`OCR Type: ${detectedType || ocrtype} processed successfully.`);
+                        showOcrModal({
+                            type: 'success',
+                            title: 'Document Processed',
+                            message: 'The uploaded document was processed successfully.',
+                            details: [],
+                            confirmText: 'Confirm & Continue'
+                        });
                     }
                 } else {
                     // Remove loading indicator on error

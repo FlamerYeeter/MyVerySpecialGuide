@@ -27,7 +27,7 @@
                 </h1>
                 <a href="{{ route('login') }}"
                     class="inline-block bg-[#2563EB] hover:bg-blue-600 text-white px-8 sm:px-10 py-3 sm:py-4 rounded-xl text-base sm:text-lg font-semibold shadow-lg transition-transform transform hover:scale-105">
-                    Get Started
+                    Login
                 </a>
             </div>
 

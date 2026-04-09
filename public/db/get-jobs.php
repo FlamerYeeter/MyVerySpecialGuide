@@ -9,6 +9,13 @@ $raw = file_get_contents('php://input');
 $data = json_decode($raw, true);
 if (!is_array($data)) $data = [];
 
+// Optional client-provided limit (body or GET); default to 50, cap to 200
+$limit = 50;
+if (!empty($data['limit'])) $limit = intval($data['limit']);
+if (!empty($_GET['limit'])) $limit = intval($_GET['limit']);
+if ($limit <= 0) $limit = 50;
+if ($limit > 200) $limit = 200;
+
 // allow user id from JSON, GET param, or session (guardian_id == user id)
 $user_id = null;
 if (!empty($data['user_id'])) {
@@ -23,10 +30,14 @@ if ($user_id === '') $user_id = null;
 
 // --- Fallback: if no user_id from request/session, try to read Laravel's file sessions
 if ($user_id === null) {
-  // look for a cookie name that contains 'session' (e.g. laravel-session)
+  // look for Laravel session cookie - prefer explicit 'laravel_session', otherwise any cookie containing 'session'
   $candidate = null;
-  foreach ($_COOKIE as $k => $v) {
-    if (stripos($k, 'session') !== false) { $candidate = $v; break; }
+  if (!empty($_COOKIE['laravel_session'])) {
+    $candidate = $_COOKIE['laravel_session'];
+  } else {
+    foreach ($_COOKIE as $k => $v) {
+      if (stripos($k, 'session') !== false) { $candidate = $v; break; }
+    }
   }
   if ($candidate) {
     // session files live in storage/framework/sessions relative to project root
@@ -78,6 +89,81 @@ if (!$conn) {
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'DB connection failed']);
     exit;
+}
+
+// Fast path for anonymous users: return a lightweight, cached global job list
+if ($user_id === null) {
+  $globalCacheKey = 'getjobs:global:' . $limit;
+  $cached = false;
+  if (function_exists('apcu_fetch')) {
+    $c = apcu_fetch($globalCacheKey);
+    if ($c !== false && is_string($c) && trim($c) !== '') {
+      $decoded = json_decode($c, true);
+      if (json_last_error() === JSON_ERROR_NONE && isset($decoded['success'])) {
+        header('X-Cache: HIT'); echo $c; oci_close($conn); exit;
+      }
+    }
+  } else {
+    $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'getjobs_global_' . $limit . '.json';
+    if (file_exists($cacheFile) && (time() - filemtime($cacheFile) < $cacheTtl)) {
+      $c = @file_get_contents($cacheFile);
+      if ($c !== false && trim($c) !== '') {
+        $decoded = json_decode($c, true);
+        if (json_last_error() === JSON_ERROR_NONE && isset($decoded['success'])) {
+          header('X-Cache: HIT'); echo $c; oci_close($conn); exit;
+        }
+      }
+    }
+  }
+
+  // Build a lightweight global list (no heavy joins, no blob loads)
+  $lightSql = "SELECT ID, COMPANY_NAME, JOB_ROLE, JOB_DESCRIPTION, ADDRESS, JOB_TYPE, EMPLOYEE_CAPACITY, APPLY_BEFORE, JOB_POST_DATE FROM MVSG.JOB_POSTINGS WHERE ROWNUM <= :limit ORDER BY JOB_POST_DATE DESC";
+  $lst = oci_parse($conn, $lightSql);
+  oci_bind_by_name($lst, ':limit', $limit, -1);
+  if (@oci_execute($lst)) {
+    $gjobs = [];
+    while ($r = oci_fetch_assoc($lst)) {
+      $jid = isset($r['ID']) ? (string)$r['ID'] : '0';
+      $gjobs[] = [
+        'id' => $jid,
+        'company_name' => $r['COMPANY_NAME'] ?? null,
+        'job_role' => $r['JOB_ROLE'] ?? null,
+        'description' => $r['JOB_DESCRIPTION'] ?? '',
+        'address' => $r['ADDRESS'] ?? null,
+        'job_type' => $r['JOB_TYPE'] ?? null,
+        'openings' => isset($r['EMPLOYEE_CAPACITY']) ? intval($r['EMPLOYEE_CAPACITY']) : null,
+        'apply_before' => isset($r['APPLY_BEFORE']) ? $r['APPLY_BEFORE'] : null,
+        'logo' => 'https://via.placeholder.com/150?text=Logo',
+        'company_image_data_uri' => 'https://via.placeholder.com/150?text=Logo',
+        'company' => ['logo' => 'https://via.placeholder.com/150?text=Logo'],
+        'content_score' => 0,
+        'collab_score' => 0,
+        'computed_score' => 0,
+        'access_matches' => 0,
+        'access_score_raw' => 0,
+        'debug_content_matches' => 0,
+        'debug_collab_count' => 0,
+        'debug_max_co' => 0,
+        'applied' => 0,
+        'applied_count' => 0,
+      ];
+    }
+    oci_free_statement($lst);
+
+    $resp = json_encode(['success' => true, 'user_id' => null, 'jobs' => $gjobs, 'eval_metrics' => []], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    if ($resp !== false) {
+      if (function_exists('apcu_store')) {
+        @apcu_store($globalCacheKey, $resp, $cacheTtl);
+      } else {
+        $cacheFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'getjobs_global_' . $limit . '.json';
+        $tmp = $cacheFile . '.tmp';
+        @file_put_contents($tmp, $resp);
+        @rename($tmp, $cacheFile);
+      }
+      header('X-Cache: MISS'); echo $resp; oci_close($conn); exit;
+    }
+  }
+  // if the lightweight path failed, continue to full path below
 }
 
 // --- Normalization + synonym mapping helpers (improves accessibility matching)
@@ -356,10 +442,13 @@ AND (:location IS NULL OR LOWER(bj.ADDRESS) LIKE :location_like)
 AND (:work_env IS NULL OR LOWER(NVL(bj.WORKING_ENVIRONMENT,'')) LIKE :work_env_like OR LOWER(bj.JOB_ROLE) LIKE :work_env_like)
 AND (:job_type IS NULL OR LOWER(bj.JOB_TYPE) LIKE :job_type_like)
 ORDER BY bj.PRIORITY, bj.JOB_POST_DATE DESC
+FETCH FIRST :limit ROWS ONLY
 ";
 
 $stid = oci_parse($conn, $sql);
 oci_bind_by_name($stid, ':user_id', $user_id, -1);
+// bind limit for FETCH FIRST
+oci_bind_by_name($stid, ':limit', $limit, -1);
 // Prepare and bind filter values (use lowercase LIKE patterns)
 $title_like = $title !== null && $title !== '' ? '%' . strtolower($title) . '%' : null;
 $location_like = $location !== null && $location !== '' ? '%' . strtolower($location) . '%' : null;
@@ -376,8 +465,9 @@ oci_bind_by_name($stid, ':job_type', $job_type, -1);
 oci_bind_by_name($stid, ':job_type_like', $job_type_like, -1);
 $cachedOut = false;
 // Simple short-lived caching to reduce repeated identical requests (APCu preferred, file fallback)
-$cacheKey = 'getjobs:' . md5(json_encode(['user_id'=>$user_id,'title'=>$title,'location'=>$location,'work_env'=>$work_env,'job_type'=>$job_type]));
-$cacheTtl = 10; // seconds
+$cacheKey = 'getjobs:' . md5(json_encode(['user_id'=>$user_id,'title'=>$title,'location'=>$location,'work_env'=>$work_env,'job_type'=>$job_type,'limit'=>$limit]));
+// Slightly longer cache to smooth bursts; still short-lived
+$cacheTtl = 30; // seconds
 $cachedOut = false;
 if (function_exists('apcu_fetch')) {
   $c = apcu_fetch($cacheKey);
