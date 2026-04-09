@@ -1258,7 +1258,7 @@ function validateMedicalCertificateDate(dateString, errorContainer, label) {
     } 
     else {
         if (errorContainer) errorContainer.textContent = "";
-        alert(`${label} is valid!`);
+        // Success: no intrusive alert — caller will show confirmation via modal
         return true; 
     }
 }
@@ -2069,13 +2069,30 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         if (fitDisplayEl) {
                             const _e = fitDisplayEl.querySelector('.ocr-error'); if (_e) _e.textContent = '';
                         }
-                        // Show a clearer valid message including the uploaded filename when possible
+                        // Show modal with parsed details instead of a simple alert
                         try {
                             const storedName = localStorage.getItem(nameKey) || null;
                             const fname = storedName || (fileInput && fileInput.files && fileInput.files[0] && fileInput.files[0].name) || 'uploaded document';
-                            alert(`Fit-To-Work (${fname}) is valid.`);
+                            showOcrModal({
+                                type: 'success',
+                                title: 'Fit-To-Work Processed',
+                                message: `Fit-To-Work (${fname}) has been processed.`,
+                                details: [
+                                    { label: 'OCR Type', value: detectedType },
+                                    { label: 'Contains Fit Statement', value: result.data?.contains_fit_to_work ? 'Yes' : 'No' },
+                                    { label: 'Parsed Summary', value: aiData.summary || aiData.result || 'N/A' }
+                                ],
+                                note: 'Please review the extracted information for accuracy.',
+                                confirmText: 'Confirm & Continue'
+                            });
                         } catch(e) {
-                            alert('Fit-To-Work document processed successfully.');
+                            showOcrModal({
+                                type: 'success',
+                                title: 'Fit-To-Work Processed',
+                                message: 'Fit-To-Work document processed successfully.',
+                                details: [ { label: 'OCR Type', value: detectedType } ],
+                                confirmText: 'Confirm & Continue'
+                            });
                         }
 
                     } else if (detectedType === 'medical_certificate' && ocrtype === 'medical_certificate') {
@@ -2105,13 +2122,30 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         if (loading) loading.remove();
                         
                         if (isValid) {
-                            alert(`Medical Date: ${aiData.date || '?'}  OCR Type: ${detectedType} processed successfully.`);
+                            showOcrModal({
+                                type: 'success',
+                                title: 'Medical Certificate Accepted',
+                                message: 'The uploaded medical certificate is within the acceptable 3-month window.',
+                                details: [
+                                    { label: 'Medical Date', value: aiData.date || '?' },
+                                    { label: 'OCR Type', value: detectedType }
+                                ],
+                                note: 'Please review the extracted date and information for accuracy.',
+                                confirmText: 'Confirm & Continue'
+                            });
                         } else {
                             // Enforce strict 3-month rule: do not accept expired medical certificates.
                             if (errorBox && errorBox.textContent) {
                                 console.warn('Rejected medical certificate date (older than 3 months):', aiData.date);
                             }
-                            alert(`Detected medical date ${aiData.date || '?'} is older than 3 months and cannot be accepted. Please upload a valid medical certificate within 3 months.`);
+                            showOcrModal({
+                                type: 'error',
+                                title: 'Medical Certificate Rejected',
+                                message: `Detected medical date ${aiData.date || '?'} is older than 3 months and cannot be accepted.`,
+                                details: [ { label: 'Detected Date', value: aiData.date || 'Unknown' }, { label: 'OCR Type', value: detectedType } ],
+                                note: 'Please upload a valid medical certificate dated within the last 3 months.',
+                                confirmText: 'OK'
+                            });
                         }
                     } else if (detectedType === 'membership_proof' && ocrtype === 'membership_proof') {
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
