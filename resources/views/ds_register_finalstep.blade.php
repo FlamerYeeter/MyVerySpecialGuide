@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Final Step - Agreement</title>
+    <title>Final Step</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       @keyframes float {
@@ -77,14 +77,24 @@
   <div
     class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
-    <!-- Header -->
-    <div class="text-center mt-2 sm:mt-4 px-2">
-      <h1
-        class="text-2xl sm:text-4xl md:text-5xl font-extrabold text-blue-700 mb-3 drop-shadow-md leading-snug break-words">
-        Final Step: Agreement
-      </h1>
-      <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-28 md:w-36 mb-5">
-    </div>
+        <!-- Header -->
+        <div class="text-center mt-4">
+            <h1
+                class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">
+                Final Step</h1>
+            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
+            <h2
+                class="relative flex flex-wrap items-center justify-center gap-3 text-xl sm:text-2xl md:text-3xl text-blue-600 font-bold">
+                <span class="block mx-auto max-w-[82%] sm:max-w-none md:max-w-[85%] text-center md:pr-2 ">You’re almost there—just one more step!</span>
+                <button type="button" class="ml-2 md:ml-3 text-sm sm:text-2xl bg-[#1E40AF] text-white p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-105 transition-transform duration-200 focus:outline-none tts-btn md:absolute md:right-3 md:top-1/2 md:-translate-y-1/2"
+                    data-tts-en="You’re almost there—just one more step!" data-tts-tl="Malapit ka na—isang hakbang na lang!"
+                    aria-label="Play audio for header">🔊</button>
+            </h2>
+            <p
+                class="mt-2 sm:mt-3 text-gray-700 italic text-base sm:text-lg border-b-4 border-blue-500 inline-block pb-2 px-2">
+                (Malapit ka na—isang hakbang na lang!)
+            </p>
+        </div>
 
      <!-- Information Section -->
         <div
@@ -95,7 +105,7 @@
                     class="hidden sm:block absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
                          text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
                             focus:ring-2 focus:ring-blue-400 tts-btn"
-                            data-tts-en=" Please check all the boxes below if you agree to the terms of this agreement."
+                            data-tts-en=" Please check all the boxes below if you agree to the terms of agreement."
                             data-tts-tl="Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito.">
                             🔊
                 </button>
@@ -111,7 +121,7 @@
                 <!-- Text Content -->
                 <div class="flex-1 text-center sm:text-left">
                     <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
-                    Please check all the boxes below if you agree to the terms of this agreement.
+                    Please check all the boxes below if you agree to the terms of agreement.
                     </p>
                     <p class="text-gray-700 italic text-sm sm:text-base mt-2">
                         (Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito.)
@@ -123,7 +133,7 @@
                         <button type="button" aria-label="Play audio for info section"
                             class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
                             transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-                            data-tts-en="Please check all the boxes below if you agree to the terms of this agreement."
+                            data-tts-en="Please check all the boxes below if you agree to the terms of agreement."
                             data-tts-tl="Paki-check ang mga kahon sa ibaba kung ikaw ay sumasang-ayon sa kasunduang ito.">
                             🔊
                     </button>
@@ -141,7 +151,7 @@
 
       <!-- Agreement 1 -->
       <label
-        class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-blue-50 p-4 rounded-xl border border-blue-200 hover:bg-blue-100 transition mb-4 cursor-pointer">
+        class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-blue-50 p-4 rounded-xl border-2 sm:border-4 border-blue-200 hover:bg-blue-100 transition mb-4 cursor-pointer">
         <div class="flex items-start gap-3 w-full">
           <input id="agree1" type="checkbox"
             class="w-6 h-6 mt-[2px] accent-[#2E2EFF] border-2 border-gray-400 rounded-md flex-shrink-0" />
@@ -165,7 +175,7 @@
 
       <!-- Agreement 2 -->
       <label
-        class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-blue-50 p-4 rounded-xl border border-blue-200 hover:bg-blue-100 transition cursor-pointer">
+        class="flex flex-col sm:flex-row items-start sm:items-center gap-4 bg-blue-50 p-4 rounded-xl border-2 sm:border-4 border-blue-200 hover:bg-blue-100 transition cursor-pointer">
         <div class="flex items-start gap-3 w-full">
           <input id="agree2" type="checkbox"
             class="w-6 h-6 mt-[2px] accent-[#2E2EFF] border-2 border-gray-400 rounded-md flex-shrink-0" />
@@ -191,19 +201,19 @@
     </div>
 
     <!-- Info Box -->
-    <div class="bg-green-50 border border-green-400 rounded-lg px-4 sm:px-6 py-4 mt-6 shadow-sm">
+    <div class="bg-green-50 border-2 sm:border-4 border-green-200 rounded-xl px-4 sm:px-6 py-4 mt-6 shadow-sm">
       <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-        <p class="text-sm sm:text-[15px] text-black leading-relaxed flex-1">
-          By creating an account, you confirm that all information provided is accurate and truthful. You agree to use this platform responsibly and comply with all applicable laws and regulations. We are committed to protecting your privacy and data security.
+        <p class="font-semibold text-base sm:text-lg text-gray-700 leading-relaxed flex-1">
+          By creating an account, you confirm your information is accurate and agree to use the platform responsibly. Your privacy is protected.
         </p>
         <button type="button"
           class="tts-btn bg-[#1E40AF] text-white text-lg leading-none p-2 sm:p-3 rounded-full shadow-md hover:bg-blue-700 hover:scale-110 transition-transform self-center"
-          data-tts-en="By creating an account, you confirm that all information provided is accurate and truthful. You agree to use this platform responsibly and comply with all applicable laws and regulations. We are committed to protecting your privacy and data security."
-          data-tts-tl="Sa paglikha ng account, pinapatunayan mong lahat ng impormasyong ibinigay ay tumpak at totoo. Sumasang-ayon ka na gamitin ang platform na ito nang responsable at sumunod sa lahat ng naaangkop na batas at regulasyon. Kami ay nakatuon sa pagprotekta sa iyong privacy at seguridad ng data."
+          data-tts-en="By creating an account, you confirm your information is accurate and agree to use the platform responsibly. Your privacy is protected."
+          data-tts-tl="Sa paggawa ng account, kinukumpirma mong tama ang iyong impormasyon at sumasang-ayon kang gamitin ang platform nang responsable. Pinoprotektahan namin ang iyong privacy."
           aria-label="Read info aloud in English then Filipino" title="Play Audio">🔊</button>
       </div>
-      <p class="mt-2 italic text-gray-700 text-xs sm:text-[13px] leading-relaxed">
-        (Sa paglikha ng account, pinapatunayan mong lahat ng impormasyong ibinigay ay tumpak at totoo. Sumusunod ka sa lahat ng batas at regulasyon. Kami ay nakatuon sa pagprotekta sa iyong privacy at seguridad ng data.)
+      <p class="mt-2 italic text-gray-700 text-base sm:text-md leading-relaxed">
+        (Sa paggawa ng account, kinukumpirma mong tama ang iyong impormasyon at sumasang-ayon kang gamitin ang platform nang responsable. Pinoprotektahan namin ang iyong privacy.)
     </div>
 
     <!-- Buttons -->
@@ -211,19 +221,16 @@
   <button
     type="button"
     id="createAccountBtn"
-    class="w-full sm:w-[530px] bg-[#2E2EFF] hover:bg-blue-600 text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm transition-all duration-300"
-  >
+    class="w-full sm:w-[530px] bg-[#2E2EFF] hover:bg-blue-600 text-white text-sm sm:text-base font-semibold py-3 sm:py-4 rounded-md shadow-sm transition-all duration-300">
     Create Account
   </button>
 </div>
 
 
     <!-- Helper Text -->
-    <p class="text-gray-700 text-xs sm:text-sm mt-4 text-center">
-      Click <span class="text-[#1E40AF] font-medium">“Create Account”</span> to complete your registration
-    </p>
-    <p class="text-gray-600 italic text-[12px] sm:text-[13px] text-center">
-      (Pindutin ang “Create Account” upang tapusin ang iyong pagpaparehistro)
+    <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-2 text-center leading-relaxed px-4 sm:px-0">
+      Click <span class="text-[#1E40AF] font-medium">“Create Account”</span> to complete your registration <br>
+      <span class="mt-2 italic text-[#4B4F58] block sm:inline">(Pindutin ang “Create Account” upang tapusin ang iyong pagpaparehistro)</span>
     </p>
     </div>
   </div>
