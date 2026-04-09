@@ -85,7 +85,10 @@ class OracleAuthController extends Controller
 
             // use a stable session uid for Laravel codepaths
             $sessionUid = 'oracle_' . (string)$rid;
-            session(['firebase_uid' => $sessionUid]);
+            // store both the firebase-style uid and numeric guardian id so
+            // legacy scripts like public/db/get-jobs.php can detect the
+            // newly-registered user without requiring a page reload.
+            session(['firebase_uid' => $sessionUid, 'user_id' => $rid, 'guardian_id' => $rid]);
 
             return response()->json(['ok' => true, 'uid' => $sessionUid, 'id' => $rid]);
         } catch (\Throwable $e) {
@@ -129,9 +132,10 @@ class OracleAuthController extends Controller
                 return response()->json(['ok' => false, 'error' => 'invalid_credentials'], 401);
             }
 
-            // set session key so RecommendationController will pick it up
+            // set session keys so RecommendationController and legacy
+            // scripts will pick up the logged-in guardian immediately
             $sessionUid = 'oracle_' . (string)$id;
-            session(['firebase_uid' => $sessionUid]);
+            session(['firebase_uid' => $sessionUid, 'user_id' => $id, 'guardian_id' => $id]);
 
             return response()->json(['ok' => true, 'uid' => $sessionUid, 'email_verified' => $verified, 'approval_status' => $approval]);
         } catch (\Throwable $e) {
