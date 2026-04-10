@@ -15,9 +15,9 @@
     <div class="bg-yellow-400 w-full py-6 px-6 sm:px-10 lg:px-24">
         <div class="flex justify-start items-center space-x-3 max-w-[1600px] mx-auto">
             <a href="{{ route('job.matches') }}"
-                class="flex items-center space-x-3 text-[#1E40AF] font-bold text-xl sm:text-3xl hover:underline focus:outline-none transition-all">
+                class="flex items-center space-x-3 text-[#1E40AF] font-bold text-lg sm:text-xl lg:text-3xl hover:underline focus:outline-none transition-all">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
-                    stroke="currentColor" class="w-10 h-10 sm:w-8 sm:h-8">
+                    stroke="currentColor" class="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
                 </svg>
                 <span>Back to Jobs</span>
@@ -32,12 +32,12 @@
                 class="w-8 h-8 sm:w-12 sm:h-12 object-contain flex-shrink-0">
 
             <!-- Text Section -->
-            <div class="flex flex-col justify-center leading-snug">
-                <p class="text-2xl sm:text-2xl font-semibold text-black">
+            <div id="green-note-content" class="flex flex-col justify-center leading-snug">
+                <p class="text-lg sm:text-xl lg:text-2xl font-semibold text-black">
                     The content shown here gives more detailed information about the job.
                 </p>
-                <p class="mt-2 italic text-gray-700 text-xl">
-                    (Ang nakikitang nilalaman dito ay mas detalyadong impormasyon tungkol sa trabaho.)
+                <p class="mt-2 italic text-gray-700 text-base sm:text-lg lg:text-xl">
+                    (Ang nakikitang nilalaman dito ay mas detalyadong impormasyon tungkol sa trabaho.) <button class="tts-btn ml-1 bg-[#1E40AF] text-white rounded-full px-1 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="green-note-content">🔊</button>
                 </p>
             </div>
         </div>
@@ -50,13 +50,13 @@
             <i class="ri-information-line text-[#1E40AF] text-[2.8rem] sm:text-[2.8rem] flex-shrink-0"></i>
 
             <!-- Text Content -->
-            <div class="flex flex-col justify-center leading-snug">
-                <p class="text-2xl sm:text-2xl text-black font-semibold">
-                    Click the <span class="text-blue-600 font-bold">“Back to Jobs”</span> button to go back to the 
+            <div id="apply-note-content" class="flex flex-col justify-center leading-snug">
+                <p class="text-lg sm:text-xl lg:text-2xl text-black font-semibold">
+                    Click the <span class="text-blue-600 font-bold">Back to Jobs</span> button to go back to the 
                     displayed hiring jobs.
                 </p>
-                <p class="mt-2 italic text-gray-700 text-xl">
-                    (Pindutin ang Back to Jobs button upang bumalik muli at makita ang mga hiring na trabaho.)
+                <p class="mt-2 italic text-gray-700 text-base sm:text-lg lg:text-xl">
+                    (Pindutin ang Back to Jobs button upang bumalik muli at makita ang mga hiring na trabaho.) <button class="tts-btn ml-1 bg-[#1E40AF] text-white rounded-full px-1 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="apply-note-content">🔊</button>
                 </p>
             </div>
         </div>
@@ -64,7 +64,7 @@
 
     <!-- JOB DETAILS SECTION -->
     <div class="mt-16 mx-4 sm:mx-10 my-8">
-        <h2 class="text-5xl font-extrabold text-[#1E40AF] mb-6 text-center">Job Details</h2>
+        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1E40AF] mb-6 text-center">Job Details</h2>
 
         <!-- Job Header -->
         <div
@@ -86,8 +86,8 @@
 
             <!-- Job Information -->
             <div class="flex flex-col items-center sm:items-start text-center sm:text-left flex-grow">
-                <h3 id="job-title" class="text-2xl sm:text-3xl font-bold text-black">Job title not specified</h3>
-               <p id="job-location" class="mt-4 flex items-center text-xl text-gray-700 gap-2">
+                <h3 id="job-title" class="text-xl sm:text-2xl lg:text-3xl font-bold text-black">Job title not specified</h3>
+               <p id="job-location" class="mt-4 flex items-center text-lg sm:text-xl text-gray-700 gap-2">
                             <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
                             Not specified
                         </p>
@@ -109,42 +109,42 @@
             <!-- LEFT CONTENT -->
             <div class="col-span-2 space-y-6">
                 <div id="box-job-description" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Job Description</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Job Description <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="job-description-content">🔊</button></h4>
                     <div id="job-description-content" class="text-gray-700">
                         <p class="text-gray-500 italic">No information provided.</p>
                     </div>
                 </div>
 
                 <div id="box-why-join" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Why Join Us?</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Why Join Us? <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="why-join-content">🔊</button></h4>
                     <div id="why-join-content" class="text-gray-700">
                         <p class="text-gray-500 italic">No information provided.</p>
                     </div>
                 </div>
 
                 <div id="box-key-resp" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Key Responsibilities</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Key Responsibilities <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="key-responsibilities-content">🔊</button></h4>
                     <div id="key-responsibilities-content" class="text-gray-700">
                         <p class="text-gray-500 italic">No information provided.</p>
                     </div>
                 </div>
 
                 <div id="box-looking-for" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Who We Are Looking For</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Who We Are Looking For <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="looking-for-content">🔊</button></h4>
                     <div id="looking-for-content" class="text-gray-700">
                         <p class="text-gray-500 italic">No information provided.</p>
                     </div>
                 </div>
 
                 <div id="box-working-env" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Working Environment</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Working Environment <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="working-environment-content">🔊</button></h4>
                     <div id="working-environment-content" class="text-gray-700">
                         <p class="text-gray-500 italic">No information provided.</p>
                     </div>
                 </div>
 
                 <div id="box-accessibility" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Accessibility & Support Requirements</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Accessibility & Support Requirements <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-accessibility">🔊</button></h4>
                         <!-- Section Description -->
                         <p class="text-sm text-gray-600 mb-4">
                             This section helps you understand the workplace conditions, communication methods, and available support 
@@ -185,7 +185,7 @@
                     </div>
 
                 <div id="box-qualifications" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-2">Qualifications</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Qualifications <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="qualifications-content">🔊</button></h4>
                     <div id="qualifications-content" class="text-gray-700">
                         <p class="text-gray-500 italic">No information provided.</p>
                     </div>
@@ -199,7 +199,7 @@
 
                 <!-- About this role -->
                 <div id="box-about-role" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-xl font-bold text-black mb-3">About this Role</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">About this Role <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-about-role">🔊</button></h4>
                     <div class="h-5 bg-gray-200 mb-2">
                         <div id="capacity-bar" class="h-5 bg-[#88BF02] w-0"></div>
                     </div>
@@ -222,7 +222,7 @@
 
                 <!-- Required Skills -->
                 <div id="box-skills" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-lg font-bold text-black mb-3">Required Skills</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Required Skills <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-skills">🔊</button></h4>
                     <div id="skills-container" class="flex flex-wrap gap-4"></div>
                 </div>
 
@@ -230,12 +230,12 @@
 
                 <!-- Job Program -->
                 <div id="box-program" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-lg  font-bold text-black mb-3">Job Program</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Job Program <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-program">🔊</button></h4>
                     <p class="text-[#88BF02] border border-[#88BF02] px-3 py-1 rounded-md font-semibold inline-block">No Job Program</p>
                 </div>
 
                 <div id="box-hiring-manager" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-lg  font-bold text-black mb-3">Hiring Manager</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Hiring Manager <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-hiring-manager">🔊</button></h4>
 
                     <!-- Managers list: only show names -->
                     <div id="managers-list-container">
@@ -252,7 +252,7 @@
 
                 <!-- Contact Details -->
                                 <div id="box-contact" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-lg  font-bold text-black mb-3">Contact Details</h4>
+                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Contact Details <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-contact">🔊</button></h4>
                     <p id="contact-address" class="text-sm font-regular text-gray-600 flex items-start gap-4">
                         <i class="ri-map-pin-line text-black text-lg"></i>
                         Not yet provided
@@ -668,4 +668,33 @@
             }
         })();
     </script> --}}
+<script>
+function speakText(text) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        speechSynthesis.speak(utterance);
+    } else {
+        alert('TTS not supported in this browser');
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.tts-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            let text = '';
+            if (this.dataset.target) {
+                const target = document.getElementById(this.dataset.target);
+                if (target) {
+                    text = target.textContent || target.innerText || '';
+                }
+            } else if (this.dataset.text) {
+                text = this.dataset.text;
+            }
+            if (text.trim()) {
+                speakText(text.trim());
+            }
+        });
+    });
+});
+</script>
 @endsection

@@ -34,11 +34,11 @@
 
             <!-- Text + Button -->
             <div class="text-center sm:text-left flex-1">
-                <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-700 mb-2 sm:mb-3 tracking-wide">
-                    Your Saved Jobs
+                <h2 id="saved-jobs-title" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-700 mb-2 sm:mb-3 tracking-wide">
+                    Your Saved Jobs <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="saved-jobs-title">🔊</button>
                 </h2>
-                <p class="text-base sm:text-lg lg:text-lg text-gray-700 mb-4 sm:mb-6 leading-relaxed">
-                    These are the jobs you’ve saved for later. You can look at them again and apply when you’re ready!
+                <p id="saved-jobs-description" class="text-base sm:text-lg lg:text-lg text-gray-700 mb-4 sm:mb-6 leading-relaxed">
+                    These are the jobs you’ve saved for later. You can look at them again and apply when you’re ready! <button class="tts-btn ml-1 bg-[#1E40AF] text-white rounded-full px-1 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="saved-jobs-description">🔊</button>
                 </p>
 
                 <div class="flex justify-center sm:justify-start">
@@ -304,6 +304,37 @@
             alert('Failed to remove saved job. Try again.');
         });
     }
+    </script>
+
+    <!-- TTS Functionality -->
+    <script>
+    function speakText(text) {
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            speechSynthesis.speak(utterance);
+        } else {
+            alert('TTS not supported in this browser');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.tts-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                let text = '';
+                if (this.dataset.target) {
+                    const target = document.getElementById(this.dataset.target);
+                    if (target) {
+                        text = target.textContent || target.innerText || '';
+                    }
+                } else if (this.dataset.text) {
+                    text = this.dataset.text;
+                }
+                if (text.trim()) {
+                    speakText(text.trim());
+                }
+            });
+        });
+    });
     </script>
 
 
