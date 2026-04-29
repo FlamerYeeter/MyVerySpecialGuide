@@ -1019,6 +1019,18 @@
         });
 
         // expose helper for form submit
+        // expose helper so other scripts (e.g. autofill) can inject dataURLs into the uploader
+        window.uploaderAssignFromData = function (key, originalName, dataUrl, type) {
+          try {
+            stored[key] = { name: originalName, rawName: originalName, url: dataUrl, type: type || guessTypeFromFilename(originalName), rawFile: undefined };
+            persistEntry(key);
+            renderSlots();
+            updateBigUploadContentVisibility();
+            const chk = document.getElementById('chk_' + key);
+            if (chk) chk.checked = true;
+          } catch (e) { console.warn('uploaderAssignFromData failed', e); }
+        };
+
         window.getRequiredUploads = function () {
           const out = {};
           defs.forEach(d => { out[d.key] = stored[d.key] ? stored[d.key].rawFile || stored[d.key] : undefined; });
@@ -1177,6 +1189,92 @@
             setField('date_of_birth', pick(u, fieldMap.birthdate));
             setField('phone', pick(u, fieldMap.phone));
             setField('address', pick(u, fieldMap.address));
+
+              // ====== Attempt to autofill required documents from profile ======
+              async function resolveToDataUrl(item) {
+                if (!item) return null;
+                // if already a data: URI
+                if (typeof item === 'string' && item.startsWith('data:')) return item;
+                // if object with data + filename
+                if (typeof item === 'object') {
+                  if (item.data && typeof item.data === 'string') {
+                    if (item.data.startsWith('data:')) return item.data;
+                    // assume base64 without prefix -> try image/png
+                    return 'data:' + (item.type || 'application/octet-stream') + ';base64,' + item.data;
+                  }
+                  if (item.url && typeof item.url === 'string') item = item.url;
+                  else if (item.file && typeof item.file === 'string') item = item.file;
+                }
+                // if URL: fetch and convert to dataURL
+                if (typeof item === 'string' && /^https?:\/\//i.test(item)) {
+                  try {
+                    const res = await fetch(item, { credentials: 'same-origin' });
+                    const blob = await res.blob();
+                    return await new Promise((resolve) => {
+                      const r = new FileReader();
+                      r.onload = (ev) => resolve(ev.target.result);
+                      r.readAsDataURL(blob);
+                    });
+                  } catch (e) {
+                    return null;
+                  }
+                }
+                // if short base64-like string, try to wrap as png
+                if (typeof item === 'string' && /^(?:[A-Za-z0-9+/=\n\\r]+)$/m.test(item) && item.length > 200) {
+                  return 'data:image/png;base64,' + item.replace(/\s+/g, '');
+                }
+                return null;
+              }
+
+              function pickDoc(u, variants) {
+                for (const k of variants) {
+                  if (u[k] !== undefined && u[k] !== null && u[k] !== '') return u[k];
+                }
+                return null;
+              }
+
+              async function tryAssignDoc(key, variants) {
+                try {
+                  const raw = pickDoc(u, variants);
+                  if (!raw) return;
+                  const dataUrl = await resolveToDataUrl(raw);
+                  // determine filename and type
+                  let filename = null;
+                  let type = '';
+                  if (typeof raw === 'object') {
+                    filename = raw.name || raw.filename || raw.fileName || raw.file || (key + '.bin');
+                    type = raw.type || raw.mime || '';
+                  } else if (typeof raw === 'string') {
+                    // try to extract name from URL
+                    const m = raw.match(/[^\/\\?#]+(?:\.[a-zA-Z0-9]{1,6})?$/);
+                    filename = m ? m[0] : (key + '.bin');
+                  }
+
+                  // prefer exposing uploader helper if available (updates UI immediately)
+                  if (window.uploaderAssignFromData && dataUrl) {
+                    window.uploaderAssignFromData(key, filename || (key + '.bin'), dataUrl, type);
+                    const chk = document.getElementById('chk_' + key);
+                    if (chk) chk.checked = true;
+                  } else if (dataUrl) {
+                    // fallback: persist to localStorage so uploader can pick it up on reload
+                    const prefix = 'jobreq_' + key + '_';
+                    try {
+                      localStorage.setItem(prefix + 'name', filename || (key + '.bin'));
+                      localStorage.setItem(prefix + 'data', dataUrl);
+                      localStorage.setItem(prefix + 'type', type || '');
+                    } catch (e) { /* ignore */ }
+                    const chk = document.getElementById('chk_' + key);
+                    if (chk) chk.checked = true;
+                  }
+                } catch (e) {
+                  console.warn('autofill doc failed', key, e);
+                }
+              }
+
+              // candidates — server may return various keys
+              await tryAssignDoc('medical', ['MEDICAL_CERT', 'med_cert', 'medical', 'medicalCertificate', 'medical_cert', 'medical_certificate', 'medical_cert_url', 'medical_url', 'medical_cert_data']);
+              await tryAssignDoc('resume', ['RESUME', 'resume', 'cv', 'resume_url', 'resume_data']);
+              await tryAssignDoc('pwd', ['PWD_ID', 'pwd_id', 'pwd', 'pwd_id_url', 'pwd_data']);
 
           } catch (err) {
             console.error('Autofill failed', err);

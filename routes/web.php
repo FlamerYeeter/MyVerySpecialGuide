@@ -570,7 +570,26 @@ Route::get('/company.login', function () {
 // Logout route used by header sign-out forms
 Route::post('/logout', function (Request $request) {
     try {
+        // Log out the default guard and ensure common session keys are removed
         Auth::logout();
+
+        // Remove server-side session keys that can persist external auth state
+        try {
+            $request->session()->forget(['firebase_uid', 'user_id', 'guardian_id']);
+        } catch (\Throwable $__e) {
+            // ignore
+        }
+
+        // Attempt to clear the remember-me cookie (recaller)
+        try {
+            $recaller = Auth::getRecallerName();
+            if (!empty($recaller)) {
+                \Illuminate\Support\Facades\Cookie::queue(\Illuminate\Support\Facades\Cookie::forget($recaller));
+            }
+        } catch (\Throwable $__e) {
+            // ignore
+        }
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
     } catch (\Throwable $e) {
