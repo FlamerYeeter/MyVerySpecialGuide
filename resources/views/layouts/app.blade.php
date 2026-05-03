@@ -8,13 +8,17 @@
 
     <script src="https://cdn.tailwindcss.com"></script>
 
-    @php
+      @php
+        // guard Vite manifest so missing build doesn't throw a 500
         $manifestPath = public_path('build/manifest.json');
     @endphp
 
     @if (file_exists($manifestPath))
+        {{-- Use Vite when the build manifest is present (normal production / built dev) --}}
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     @else
+        {{-- Manifest missing — fallback to static assets to avoid server error.
+        Run `npm install && npm run build` later to restore Vite-managed assets. --}}
         <link rel="stylesheet" href="{{ asset('css/app.css') }}">
         <script src="{{ asset('js/app.js') }}" defer></script>
     @endif
@@ -180,7 +184,7 @@
     @yield('content')
 </main>
 
-<!-- FOOTER (unchanged) -->
+<!-- FOOTER -->
 <footer class="bg-white border-t mt-12">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8 text-center md:text-left">
 
@@ -209,7 +213,7 @@
     </div>
 
     <div class="bg-blue-600 text-white text-center py-3 text-sm">
-        © 2025 EmpowerPath
+         © 2025 EmpowerPath. All rights reserved.
     </div>
 </footer>
 
