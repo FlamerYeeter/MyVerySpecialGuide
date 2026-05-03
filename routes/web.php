@@ -34,6 +34,10 @@ Route::get('/register', function () {
     return view('ds_register_1');
 })->name('register');
 
+Route::get('/hiringjobs', function () {
+    return view('hiring-jobs');
+})->name('hiringjobs');
+
 
 /*
 Route::get('/applyassessment', function () {
