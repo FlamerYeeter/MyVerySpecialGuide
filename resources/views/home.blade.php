@@ -1,7 +1,13 @@
 @extends('layouts.app')
 
 @section('content')
-<main role="main" class="overflow-x-hidden">
+<div id="page-loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-white/95 transition-opacity duration-300">
+    <div class="text-center">
+        <div class="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-700 animate-spin mx-auto" aria-hidden="true"></div>
+        <p class="mt-4 text-base font-semibold text-slate-900">Loading content…</p>
+    </div>
+</div>
+<main role="main" class="overflow-x-hidden flex flex-col flex-1 min-h-0">
 <section class="bg-sky-50" role="region" aria-labelledby="hero-heading">
     <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 py-12 sm:py-16">
         <div class="grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:items-center">
@@ -235,9 +241,9 @@
     </div>
 </section>
 
-<section class="bg-blue-800 py-14 sm:py-16" role="region" aria-labelledby="employer-cta-heading">
-    <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
-        <div class="rounded-[2rem] bg-white/10 p-6 shadow-2xl ring-1 ring-white/10 sm:p-10 backdrop-blur-md">
+<section class="bg-blue-800 flex-1" role="region" aria-labelledby="employer-cta-heading">
+    <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 h-full flex items-center py-14 sm:py-16">
+        <div class="rounded-[2rem] bg-white/10 p-6 shadow-2xl ring-1 ring-white/10 sm:p-10 backdrop-blur-md w-full">
             <div class="flex flex-col items-center justify-center text-center">
                 <div class="space-y-4 text-white max-w-2xl">
                     <p class="text-base font-bold uppercase tracking-widest text-sky-200">For employers</p>
@@ -254,4 +260,21 @@
     </div>
 </section>
 </main>
+<script>
+    const loadingOverlay = document.getElementById('page-loading-overlay');
+    const removeOverlay = () => {
+        if (!loadingOverlay) return;
+        loadingOverlay.classList.add('opacity-0');
+        loadingOverlay.style.pointerEvents = 'none';
+        window.setTimeout(() => {
+            loadingOverlay.remove();
+        }, 300);
+    };
+
+    if (document.readyState === 'complete') {
+        removeOverlay();
+    } else {
+        window.addEventListener('load', removeOverlay);
+    }
+</script>
 @endsection

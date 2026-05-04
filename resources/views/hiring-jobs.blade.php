@@ -2,7 +2,14 @@
 
 @section('content')
 
-<main class="bg-slate-50 min-h-screen overflow-x-hidden">
+<div id="page-loading-overlay" class="fixed inset-0 z-50 flex items-center justify-center bg-white/95 transition-opacity duration-300">
+    <div class="text-center">
+        <div class="h-14 w-14 rounded-full border-4 border-blue-200 border-t-blue-700 animate-spin mx-auto" aria-hidden="true"></div>
+        <p class="mt-4 text-base font-semibold text-slate-900">Loading content…</p>
+    </div>
+</div>
+
+<div class="bg-slate-50 flex flex-col flex-1 min-h-0">
 
 <!-- HERO SEARCH -->
 <section class="bg-sky-50 py-12 sm:py-16 border-b border-sky-100">
@@ -19,7 +26,7 @@
         </div>
 
         <!-- SEARCH CARD -->
-        <form class="rounded-[2rem] bg-white border border-sky-200 shadow-sm p-6 sm:p-10 space-y-6">
+        <form id="job-search-form" class="rounded-[2rem] bg-white border border-sky-200 shadow-sm p-6 sm:p-10 space-y-6">
 
             <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
 
@@ -99,8 +106,16 @@
 
         </form>
 
+        <div id="search-tags" class="hidden max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 mt-6">
+            <div class="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-sm">
+                <p class="text-sm font-semibold uppercase tracking-widest text-slate-500 mb-3">Search tags</p>
+                <div id="search-tags-list" class="flex flex-wrap gap-2"></div>
+            </div>
+        </div>
+
         <script>
             const suggestionFields = [
+
                 {
                     input: document.getElementById('job-title'),
                     container: document.getElementById('job-title-suggestions'),
@@ -151,13 +166,66 @@
                     });
                 });
             });
+
+            const searchForm = document.getElementById('job-search-form');
+            const searchTagsContainer = document.getElementById('search-tags');
+            const searchTagsList = document.getElementById('search-tags-list');
+            const searchFields = [
+                { id: 'job-title', label: 'Job' },
+                { id: 'location', label: 'Location' },
+                { id: 'work-type', label: 'Work type' },
+                { id: 'environment', label: 'Environment' },
+            ];
+
+            function renderSearchTags() {
+                searchTagsList.innerHTML = '';
+                const tags = searchFields
+                    .map(field => ({
+                        input: document.getElementById(field.id),
+                        label: field.label,
+                    }))
+                    .filter(({ input }) => input && input.value.trim().length > 0)
+                    .map(({ input, label }) => ({
+                        value: input.value.trim(),
+                        label,
+                        input,
+                    }));
+
+                if (tags.length === 0) {
+                    searchTagsContainer.classList.add('hidden');
+                    return;
+                }
+
+                tags.forEach(tag => {
+                    const pill = document.createElement('button');
+                    pill.type = 'button';
+                    pill.className = 'inline-flex items-center gap-2 rounded-full bg-blue-100 px-4 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-200';
+                    pill.innerHTML = `<span>${tag.label}: ${tag.value}</span><span aria-hidden="true">×</span>`;
+                    pill.addEventListener('click', () => {
+                        tag.input.value = '';
+                        renderSearchTags();
+                    });
+                    searchTagsList.appendChild(pill);
+                });
+
+                searchTagsContainer.classList.remove('hidden');
+            }
+
+            searchForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                renderSearchTags();
+                const jobListSection = document.querySelector('#job-search + section, section.py-12');
+                if (jobListSection) {
+                    jobListSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
         </script>
 
     </div>
 </section>
 
 <!-- JOB LIST -->
-<section class="py-12 sm:py-16">
+<section class="py-12 sm:py-16 pb-0">
     <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
 
         @php
@@ -268,6 +336,26 @@
     </div>
 </section>
 
-</main>
+    <section class="bg-blue-800 flex-1"></section>
+
+</div>
+
+<script>
+    const loadingOverlay = document.getElementById('page-loading-overlay');
+    const removeOverlay = () => {
+        if (!loadingOverlay) return;
+        loadingOverlay.classList.add('opacity-0');
+        loadingOverlay.style.pointerEvents = 'none';
+        window.setTimeout(() => {
+            loadingOverlay.remove();
+        }, 300);
+    };
+
+    if (document.readyState === 'complete') {
+        removeOverlay();
+    } else {
+        window.addEventListener('load', removeOverlay);
+    }
+</script>
 
 @endsection
