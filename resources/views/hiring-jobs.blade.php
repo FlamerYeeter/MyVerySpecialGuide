@@ -229,7 +229,7 @@
                 if (work_environment) qs.set('work_environment', work_environment);
 
                 try {
-                    const res = await fetch('/db/get-jobs.php?' + qs.toString(), { credentials: 'same-origin' });
+                    const res = await fetch('/db/get-jobs-public.php?' + qs.toString(), { credentials: 'same-origin' });
                     const data = await res.json();
                     if (!data || !data.success || !Array.isArray(data.jobs)) {
                         container.innerHTML = '<div class="py-8 text-center col-span-3 text-slate-600">No jobs found.</div>';

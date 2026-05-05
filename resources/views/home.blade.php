@@ -272,7 +272,7 @@
                     if (params.location) qs.set('location', params.location);
 
                     try {
-                        const res = await fetch('/db/get-jobs.php?' + qs.toString(), { credentials: 'same-origin' });
+                        const res = await fetch('/db/get-jobs-public.php?' + qs.toString(), { credentials: 'same-origin' });
                         const data = await res.json();
                         if (data && data.success && Array.isArray(data.jobs)) {
                             renderJobs(data.jobs);

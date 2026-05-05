@@ -45,12 +45,13 @@
                     <!-- LOGO -->
                     <div class="flex-shrink-0">
                         <img id="job-logo-img"
-                             class="w-20 h-20 rounded-xl border border-slate-300 object-cover hidden"
-                             alt="Company logo">
+                             src=""
+                             alt="Company Logo"
+                             class="w-24 h-24 rounded-xl border border-gray-300 object-cover hidden">
 
                         <div id="job-logo-fallback"
-                             class="w-20 h-20 bg-sky-100 rounded-xl flex items-center justify-center border border-slate-200">
-                            <img src="https://img.icons8.com/fluency/48/organization.png" alt="Organization icon" aria-hidden="true"/>
+                             class="w-24 h-24 flex items-center justify-center rounded-xl border-4 border-gray-300 bg-gray-50">
+                            <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
                         </div>
                     </div>
 
@@ -407,6 +408,42 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
+    // Date parsing/formatting helpers (format as "Month Day, Year")
+    function tryParseDate(v){
+        if (!v) return null;
+        let d = new Date(v);
+        if (!isNaN(d.getTime())) return d;
+        const m = String(v).match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+        if (m){
+            return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        }
+        const m2 = String(v).match(/^(\d{1,2})[-\/ ]([A-Za-z]{3,})[-\/ ](\d{2,4})/);
+        if (m2){
+            const day = Number(m2[1]);
+            const mon = m2[2].toLowerCase().slice(0,3);
+            const monthMap = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+            const rawYear = Number(m2[3]);
+            const year = rawYear < 100 ? (2000 + rawYear) : rawYear;
+            const monthIdx = monthMap[mon] !== undefined ? monthMap[mon] : 0;
+            return new Date(year, monthIdx, day);
+        }
+        return null;
+    }
+
+    function formatNiceDate(v){
+        if (!v) return '-';
+        const d = (v instanceof Date) ? v : tryParseDate(v);
+        if (!d) return String(v);
+        const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+    }
+
+    function formatNiceDateOrOriginal(v){
+        if (!v) return '-';
+        const d = tryParseDate(v);
+        return d ? formatNiceDate(d) : String(v);
+    }
+
     function addSkill(skill) {
         const skillsContainerEl = document.getElementById("skills-container");
         if (!skillsContainerEl) return;
@@ -450,7 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const locEl = document.getElementById('job-location');
             if (locEl) locEl.textContent = job.address || company.address || 'Location';
             const postDateEl = document.getElementById('job-post-date');
-            if (postDateEl) postDateEl.textContent = job.job_post_date || job.job_post_date || '';
+            if (postDateEl) postDateEl.textContent = formatNiceDateOrOriginal(job.job_post_date || '');
             const typeEl = document.getElementById('job-type');
             if (typeEl) typeEl.textContent = job.job_type || 'Work type';
 
@@ -497,9 +534,9 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const applyBeforeEl = document.getElementById('apply-before');
-            if (applyBeforeEl) applyBeforeEl.textContent = job.apply_before || '—';
+            if (applyBeforeEl) applyBeforeEl.textContent = job.apply_before ? formatNiceDateOrOriginal(job.apply_before) : '—';
             const jobPostedDateSidebar = document.getElementById('job-posted-date');
-            if (jobPostedDateSidebar) jobPostedDateSidebar.textContent = job.job_post_date || '—';
+            if (jobPostedDateSidebar) jobPostedDateSidebar.textContent = job.job_post_date ? formatNiceDateOrOriginal(job.job_post_date) : '—';
             const jobTypeSidebar = document.getElementById('job-type-sidebar');
             if (jobTypeSidebar) jobTypeSidebar.textContent = job.job_type || '—';
 
