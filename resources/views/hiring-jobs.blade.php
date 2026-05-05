@@ -211,9 +211,103 @@
                 searchTagsContainer.classList.remove('hidden');
             }
 
+            async function fetchAndRenderJobs(params = {}) {
+                const container = document.getElementById('job-results-list');
+                const countEl = document.getElementById('results-count');
+                const loadMoreBtn = document.getElementById('load-more-btn');
+                if (!container) return;
+                container.innerHTML = '<div class="py-8 text-center col-span-3">Loading jobs…</div>';
+                const qs = new URLSearchParams();
+                qs.set('limit', params.limit || 10);
+                const title = params.title !== undefined ? params.title : (document.getElementById('job-title')||{}).value || '';
+                const location = params.location !== undefined ? params.location : (document.getElementById('location')||{}).value || '';
+                const job_type = params.job_type !== undefined ? params.job_type : (document.getElementById('work-type')||{}).value || '';
+                const work_environment = params.work_environment !== undefined ? params.work_environment : (document.getElementById('environment')||{}).value || '';
+                if (title) qs.set('title', title);
+                if (location) qs.set('location', location);
+                if (job_type) qs.set('job_type', job_type);
+                if (work_environment) qs.set('work_environment', work_environment);
+
+                try {
+                    const res = await fetch('/db/get-jobs.php?' + qs.toString(), { credentials: 'same-origin' });
+                    const data = await res.json();
+                    if (!data || !data.success || !Array.isArray(data.jobs)) {
+                        container.innerHTML = '<div class="py-8 text-center col-span-3 text-slate-600">No jobs found.</div>';
+                        if (countEl) countEl.textContent = 'Showing 0 of 0 results';
+                        return;
+                    }
+                    const jobs = data.jobs;
+                    container.innerHTML = '';
+                    if (jobs.length === 0) {
+                        container.innerHTML = '<div class="py-8 text-center col-span-3 text-slate-600">No jobs match your search.</div>';
+                    } else {
+                        jobs.forEach(job => {
+                            const art = document.createElement('article');
+                            art.className = 'group rounded-[1.75rem] bg-white border-2 border-slate-200 p-7 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-6 transition duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-blue-400 hover:bg-blue-50 cursor-pointer';
+
+                            const left = document.createElement('div');
+                            left.className = 'flex items-center gap-5 flex-1';
+
+                            const logoWrap = document.createElement('div');
+                            logoWrap.className = 'rounded-2xl bg-blue-50 p-4 shadow-sm';
+                            const logo = document.createElement('img');
+                            logo.src = job.logo || job.company_image_data_uri || 'https://via.placeholder.com/150?text=Logo';
+                            logo.alt = job.company_name || 'Company logo';
+                            logo.className = 'w-16 h-16 rounded-2xl object-cover';
+                            logoWrap.appendChild(logo);
+
+                            const info = document.createElement('div');
+                            const h3 = document.createElement('h3');
+                            h3.className = 'text-3xl font-bold text-slate-900';
+                            h3.textContent = job.job_role || 'Job Role';
+                            const pmeta = document.createElement('p');
+                            pmeta.className = 'text-lg text-slate-700 font-medium mt-2';
+                            pmeta.textContent = (job.company_name || 'Company') + ' • ' + (job.address || 'Location');
+                            const pdate = document.createElement('p');
+                            pdate.className = 'text-sm text-slate-500 mt-2';
+                            pdate.textContent = job.apply_before ? ('Apply by ' + job.apply_before) : (job.posted_date ? job.posted_date : '');
+                            info.appendChild(h3); info.appendChild(pmeta); info.appendChild(pdate);
+
+                            left.appendChild(logoWrap); left.appendChild(info);
+
+                            const right = document.createElement('div');
+                            right.className = 'flex flex-col sm:flex-row sm:items-center gap-4 md:flex-shrink-0';
+                            const type = document.createElement('span');
+                            type.className = 'rounded-full bg-blue-100 px-5 py-3 text-base font-bold text-blue-700 text-center';
+                            type.textContent = job.job_type || 'Work type';
+                            const view = document.createElement('a');
+                            view.className = 'inline-flex items-center justify-center rounded-full bg-blue-700 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-blue-800 hover:shadow-xl active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600';
+                            view.href = '/job-details' + (job.id ? ('?job_id=' + encodeURIComponent(job.id)) : '');
+                            view.textContent = 'View job';
+                            right.appendChild(type); right.appendChild(view);
+
+                            art.appendChild(left); art.appendChild(right);
+                            container.appendChild(art);
+                        });
+                    }
+                    if (countEl) countEl.textContent = 'Showing ' + jobs.length + ' of ' + jobs.length + ' results';
+                    // show load more if more likely available
+                    if (loadMoreBtn) loadMoreBtn.style.display = 'inline-flex';
+                } catch (err) {
+                    console.error(err);
+                    container.innerHTML = '<div class="py-8 text-center col-span-3 text-red-600">Error loading jobs.</div>';
+                }
+            }
+
             searchForm.addEventListener('submit', (event) => {
                 event.preventDefault();
                 renderSearchTags();
+                const title = (document.getElementById('job-title') || {}).value || '';
+                const location = (document.getElementById('location') || {}).value || '';
+                const workType = (document.getElementById('work-type') || {}).value || '';
+                const environment = (document.getElementById('environment') || {}).value || '';
+                const url = new URL(window.location);
+                if (title) url.searchParams.set('title', title); else url.searchParams.delete('title');
+                if (location) url.searchParams.set('location', location); else url.searchParams.delete('location');
+                if (workType) url.searchParams.set('job_type', workType); else url.searchParams.delete('job_type');
+                if (environment) url.searchParams.set('work_environment', environment); else url.searchParams.delete('work_environment');
+                history.pushState({}, '', url);
+                fetchAndRenderJobs({ limit: 10, title: title, location: location, job_type: workType, work_environment: environment });
                 const jobListSection = document.querySelector('#job-search + section, section.py-12');
                 if (jobListSection) {
                     jobListSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -228,21 +322,6 @@
 <section class="py-12 sm:py-16 pb-0">
     <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
 
-        @php
-            $jobs = [
-                ['Job Role','Company','Location','Date','Work type','image/logo1.png'],
-                ['Job Role','Company','Location','Date','Work type','image/logo2.png'],
-                ['Job Role','Company','Location','Date','Work type','image/logo1.png'],
-            ];
-            $currentPage = 1;
-            $perPage = 3;
-            $totalJobs = count($jobs);
-            $totalPages = max(1, (int) ceil($totalJobs / $perPage));
-            $hasNextPage = $currentPage < $totalPages;
-            $startJob = ($currentPage - 1) * $perPage + 1;
-            $endJob = min($totalJobs, $currentPage * $perPage);
-        @endphp
-
         <!-- HEADER -->
         <div class="flex justify-between items-end mb-8">
             <div class="space-y-4">
@@ -252,85 +331,20 @@
                 <h2 class="text-4xl sm:text-5xl font-bold text-slate-900">Available jobs</h2>
             </div>
 
-            <p class="text-lg text-slate-700 font-medium">
-                Showing {{ count($jobs) }} of {{ count($jobs) }} results
-            </p>
+            <p id="results-count" class="text-lg text-slate-700 font-medium">Showing 0 of 0 results</p>
         </div>
 
-        <!-- JOB CARDS -->
+        <!-- JOB CARDS (loaded via JS) -->
         <div class="space-y-5">
-
-            @foreach($jobs as $job)
-
-            <article
-                class="group rounded-[1.75rem] bg-white border-2 border-slate-200 p-7 shadow-md
-                       flex flex-col md:flex-row md:items-center justify-between gap-6
-                       transition duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-blue-400 hover:bg-blue-50 cursor-pointer">
-
-                <!-- LEFT -->
-                <div class="flex items-center gap-5 flex-1">
-
-                    <div class="rounded-2xl bg-blue-50 p-4 shadow-sm">
-                        <img src="https://img.icons8.com/fluency/48/organization.png"
-                             alt="Company icon"
-                             class="w-16 h-16 rounded-2xl object-cover">
-                    </div>
-
-                    <div>
-                        <h3 class="text-3xl font-bold text-slate-900">
-                            {{ $job[0] }}
-                        </h3>
-
-                        <p class="text-lg text-slate-700 font-medium mt-2">
-                            {{ $job[1] }} • {{ $job[2] }}
-                        </p>
-
-                        <p class="text-sm text-slate-500 mt-2">
-                            Posted {{ $job[3] }}
-                        </p>
-                    </div>
-
-                </div>
-
-                <!-- RIGHT -->
-                <div class="flex flex-col sm:flex-row sm:items-center gap-4 md:flex-shrink-0">
-
-                    <span class="rounded-full bg-blue-100 px-5 py-3 text-base font-bold text-blue-700 text-center">
-                        {{ $job[4] }}
-                    </span>
-
-                    <a href="#"
-                       class="inline-flex items-center justify-center rounded-full bg-blue-700 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-blue-800 hover:shadow-xl active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
-                        View job
-                    </a>
-
-                </div>
-
-            </article>
-
-            @endforeach
-
+            <div id="job-results-list" class="space-y-5">
+                <div class="py-8 text-center col-span-3">Loading jobs…</div>
+            </div>
         </div>
 
-        <!-- PAGINATION -->
+        <!-- SIMPLE PAGINATION / LOAD MORE -->
         <div class="text-center mt-12 space-y-6">
-
-            <p class="text-xl text-slate-800 font-medium">
-                Page {{ $currentPage }} of {{ $totalPages }}
-            </p>
-
-            @if($hasNextPage)
-                <button type="button"
-                    class="rounded-full bg-blue-700 px-10 py-4 text-lg text-white font-semibold
-                           hover:bg-blue-800 focus:ring-2 focus:ring-blue-600 transition">
-                    View next jobs
-                </button>
-            @else
-                <p class="text-base text-slate-600">
-                    You’re viewing the last page of available jobs.
-                </p>
-            @endif
-
+            <p class="text-xl text-slate-800 font-medium">&nbsp;</p>
+            <button id="load-more-btn" type="button" class="rounded-full bg-blue-700 px-10 py-4 text-lg text-white font-semibold hover:bg-blue-800 focus:ring-2 focus:ring-blue-600 transition" style="display:none">Load more jobs</button>
         </div>
 
     </div>
@@ -339,6 +353,33 @@
     <section class="bg-blue-800 flex-1"></section>
 
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get('title') || '';
+    const location = params.get('location') || '';
+    const job_type = params.get('job_type') || '';
+    const work_environment = params.get('work_environment') || '';
+    if (title && document.getElementById('job-title')) document.getElementById('job-title').value = title;
+    if (location && document.getElementById('location')) document.getElementById('location').value = location;
+    if (job_type && document.getElementById('work-type')) document.getElementById('work-type').value = job_type;
+    if (work_environment && document.getElementById('environment')) document.getElementById('environment').value = work_environment;
+
+    if (typeof fetchAndRenderJobs === 'function') {
+        fetchAndRenderJobs({ limit: 10, title: title, location: location, job_type: job_type, work_environment: work_environment });
+    }
+
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    if (loadMoreBtn) {
+        let currentLimit = 10;
+        loadMoreBtn.addEventListener('click', function() {
+            currentLimit += 10;
+            fetchAndRenderJobs({ limit: currentLimit, title: title, location: location, job_type: job_type, work_environment: work_environment });
+        });
+    }
+});
+</script>
 
 <script>
     const loadingOverlay = document.getElementById('page-loading-overlay');

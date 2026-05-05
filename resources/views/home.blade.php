@@ -56,7 +56,7 @@
                         </ol>
                     </div>
 
-                    <form method="GET" action="{{ route('home') }}" class="space-y-5" novalidate>
+                    <form id="home-job-search-form" method="GET" action="{{ route('home') }}" class="space-y-5" novalidate>
                         <div class="space-y-3">
                             <label for="job-title" class="block text-lg font-bold text-slate-900">What job do you want?</label>
                             <div class="relative">
@@ -188,56 +188,121 @@
                 Show more jobs
             </a>
         </div>
-        <div class="mt-8 grid gap-6 lg:grid-cols-3" role="list">
-            <a href="#" class="block rounded-[1.75rem] border-2 border-slate-200 bg-white p-7 shadow-md cursor-pointer transition duration-300 hover:shadow-xl hover:bg-blue-50 hover:border-blue-400 hover:-translate-y-2">
-                <div class="flex items-center gap-5">
-                    <div class="rounded-2xl bg-blue-50 p-4 shadow-sm">
-                        <img src="https://img.icons8.com/fluency/48/organization.png" alt="Company icon" class="h-12 w-12">
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-slate-900">Job Role</h3>
-                        <p class="text-base text-slate-600">Company • Location</p>
-                    </div>
-                </div>
-                <div class="mt-6 flex items-center justify-between">
-                    <span class="rounded-full bg-blue-100 px-5 py-2.5 text-base font-bold text-blue-700">Work type</span>
-                    <!-- Time posted -->
-                    <span class="text-sm text-slate-600">Posted date</span>
-                </div>
-            </a>
-            <a href="#" class="block rounded-[1.75rem] border-2 border-slate-200 bg-white p-7 shadow-md cursor-pointer transition duration-300 hover:shadow-xl hover:bg-blue-50 hover:border-blue-400 hover:-translate-y-2">
-                <div class="flex items-center gap-5">
-                    <div class="rounded-2xl bg-blue-50 p-4 shadow-sm">
-                        <img src="https://img.icons8.com/fluency/48/organization.png" alt="Company icon" class="h-12 w-12">
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-slate-900">Job Role</h3>
-                        <p class="text-base text-slate-600">Company • Location</p>
-                    </div>
-                </div>
-                <div class="mt-6 flex items-center justify-between">
-                    <span class="rounded-full bg-blue-100 px-5 py-2.5 text-base font-bold text-blue-700">Work type</span>
-                    <!-- Time posted -->
-                    <span class="text-sm text-slate-600">Posted date</span>
-                </div>
-            </a>
-            <a href="#" class="block rounded-[1.75rem] border-2 border-slate-200 bg-white p-7 shadow-md cursor-pointer transition duration-300 hover:shadow-xl hover:bg-blue-50 hover:border-blue-400 hover:-translate-y-2">
-                <div class="flex items-center gap-5">
-                    <div class="rounded-2xl bg-blue-50 p-4 shadow-sm">
-                        <img src="https://img.icons8.com/fluency/48/organization.png" alt="Company icon" class="h-12 w-12">
-                    </div>
-                    <div>
-                        <h3 class="text-2xl font-bold text-slate-900">Job Role</h3>
-                        <p class="text-base text-slate-600">Company • Location</p>
-                    </div>
-                </div>
-                <div class="mt-6 flex items-center justify-between">
-                    <span class="rounded-full bg-blue-100 px-5 py-2.5 text-base font-bold text-blue-700">Work type</span>
-                    <!-- Time posted -->
-                    <span class="text-sm text-slate-600">Posted date</span>
-                </div>
-            </a>
+        <div class="mt-8 grid gap-6 lg:grid-cols-3" role="list" id="featured-jobs-list">
+            <!-- Jobs will be injected here by JS -->
+            <div class="col-span-3 text-center py-8" id="featured-jobs-loading">
+                <div class="inline-flex items-center gap-3 bg-white/80 px-6 py-4 rounded-2xl shadow">Loading jobs…</div>
+            </div>
         </div>
+        <script>
+            (function(){
+                const featuredList = document.getElementById('featured-jobs-list');
+                const loadingEl = document.getElementById('featured-jobs-loading');
+                const searchForm = document.getElementById('home-job-search-form');
+                const showMoreBtn = document.querySelector('a[href="{{ route('hiringjobs') }}"]');
+
+                function makeCard(job) {
+                    const a = document.createElement('a');
+                    a.href = '#';
+                    a.className = 'block rounded-[1.75rem] border-2 border-slate-200 bg-white p-7 shadow-md cursor-pointer transition duration-300 hover:shadow-xl hover:bg-blue-50 hover:border-blue-400 hover:-translate-y-2';
+
+                    const left = document.createElement('div');
+                    left.className = 'flex items-center gap-5';
+
+                    const logoWrap = document.createElement('div');
+                    logoWrap.className = 'rounded-2xl bg-blue-50 p-4 shadow-sm';
+                    const img = document.createElement('img');
+                    img.src = job.logo || job.company_image_data_uri || 'https://via.placeholder.com/150?text=Logo';
+                    img.alt = job.company_name || 'Company logo';
+                    img.className = 'h-12 w-12';
+                    logoWrap.appendChild(img);
+
+                    const info = document.createElement('div');
+                    const title = document.createElement('h3');
+                    title.className = 'text-2xl font-bold text-slate-900';
+                    title.textContent = job.job_role || 'Job Role';
+                    const subtitle = document.createElement('p');
+                    subtitle.className = 'text-base text-slate-600';
+                    const company = job.company_name || 'Company';
+                    const address = job.address || 'Location';
+                    subtitle.textContent = company + ' • ' + address;
+                    info.appendChild(title);
+                    info.appendChild(subtitle);
+
+                    left.appendChild(logoWrap);
+                    left.appendChild(info);
+
+                    const bottom = document.createElement('div');
+                    bottom.className = 'mt-6 flex items-center justify-between';
+                    const type = document.createElement('span');
+                    type.className = 'rounded-full bg-blue-100 px-5 py-2.5 text-base font-bold text-blue-700';
+                    type.textContent = job.job_type || 'Work type';
+                    const posted = document.createElement('span');
+                    posted.className = 'text-sm text-slate-600';
+                    // use apply_before or job_post_date if available
+                    posted.textContent = job.apply_before ? ('Apply by ' + job.apply_before) : (job.posted_date || 'Posted date');
+
+                    bottom.appendChild(type);
+                    bottom.appendChild(posted);
+
+                    a.appendChild(left);
+                    a.appendChild(bottom);
+                    return a;
+                }
+
+                function renderJobs(jobs) {
+                    // clear
+                    featuredList.innerHTML = '';
+                    if (!jobs || jobs.length === 0) {
+                        featuredList.innerHTML = '<p class="col-span-3 text-slate-600 text-center py-8">No jobs found.</p>';
+                        return;
+                    }
+                    jobs.slice(0,3).forEach(j => {
+                        const card = makeCard(j);
+                        featuredList.appendChild(card);
+                    });
+                }
+
+                async function fetchJobs(params={}){
+                    const qs = new URLSearchParams();
+                    qs.set('limit', params.limit || 6);
+                    if (params.title) qs.set('title', params.title);
+                    if (params.location) qs.set('location', params.location);
+
+                    try {
+                        const res = await fetch('/db/get-jobs.php?' + qs.toString(), { credentials: 'same-origin' });
+                        const data = await res.json();
+                        if (data && data.success && Array.isArray(data.jobs)) {
+                            renderJobs(data.jobs);
+                            // update Show more link to preserve filters
+                            if (showMoreBtn) {
+                                const href = new URL(showMoreBtn.href, window.location.origin);
+                                if (params.title) href.searchParams.set('title', params.title);
+                                if (params.location) href.searchParams.set('location', params.location);
+                                showMoreBtn.href = href.pathname + href.search;
+                            }
+                        } else {
+                            featuredList.innerHTML = '<p class="col-span-3 text-slate-600 text-center py-8">Unable to load jobs.</p>';
+                        }
+                    } catch (e) {
+                        featuredList.innerHTML = '<p class="col-span-3 text-slate-600 text-center py-8">Error loading jobs.</p>';
+                        console.error(e);
+                    }
+                }
+
+                // initial load
+                fetchJobs({ limit: 3 });
+
+                if (searchForm) {
+                    searchForm.addEventListener('submit', function(ev){
+                        ev.preventDefault();
+                        const title = (document.getElementById('job-title') || {}).value || '';
+                        const location = (document.getElementById('location') || {}).value || '';
+                        fetchJobs({ limit: 6, title: title, location: location });
+                    });
+                }
+            })();
+        </script>
     </div>
 </section>
 
