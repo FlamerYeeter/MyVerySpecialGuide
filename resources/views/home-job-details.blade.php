@@ -360,16 +360,16 @@
                     <p class="text-gray-600">To apply for this position, you need to be logged in to your account.</p>
                 </div>
 
-                <!-- Login Button -->
-                <a href="{{ route('login') }}?redirect={{ urlencode(request()->fullUrl()) }}"
-                   class="w-full inline-flex items-center justify-center gap-3 bg-blue-700 text-white px-6 py-4 rounded-2xl font-semibold text-lg hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 shadow-md transition">
+                            <!-- Login Button -->
+                            <a href="{{ route('login') }}?redirect={{ urlencode(url('/job-application-1') . '?job_id=' . $job_id) }}"
+                               class="w-full inline-flex items-center justify-center gap-3 bg-blue-700 text-white px-6 py-4 rounded-2xl font-semibold text-lg hover:bg-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 shadow-md transition">
                     <img src="https://img.icons8.com/fluency/24/ffffff/login-rounded-right.png" alt="" aria-hidden="true"/>
                     <span>Log In</span>
                 </a>
 
                 <!-- Sign Up Button -->
-                <a href="{{ route('register') }}?redirect={{ urlencode(request()->fullUrl()) }}"
-                   class="w-full inline-flex items-center justify-center gap-3 bg-green-600 text-white px-6 py-4 rounded-2xl font-semibold text-lg hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 shadow-md transition">
+                            <a href="{{ route('register') }}?redirect={{ urlencode(url('/job-application-1') . '?job_id=' . $job_id) }}"
+                               class="w-full inline-flex items-center justify-center gap-3 bg-green-600 text-white px-6 py-4 rounded-2xl font-semibold text-lg hover:bg-green-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green-600 shadow-md transition">
                     <img src="https://img.icons8.com/fluency/24/ffffff/add-user-male.png" alt="" aria-hidden="true"/>
                     <span>Create Account</span>
                 </a>

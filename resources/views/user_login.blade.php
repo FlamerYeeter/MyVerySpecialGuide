@@ -107,11 +107,22 @@
         localStorage.setItem('user_id', data.user.id);
         localStorage.setItem('user_email', data.user.email);
 
-        // ✅ simulate loading delay for nice UX
+        // Determine desired redirect: URL query `redirect` takes precedence,
+        // then the hidden input `redirect`, then a sensible default.
+        const params = new URLSearchParams(window.location.search || '');
+        const queryRedirect = params.get('redirect');
+        const formRedirectInput = document.querySelector('input[name="redirect"]')?.value || '';
+        const redirectDest = queryRedirect || formRedirectInput || '/navigationbuttons';
+
+        // ✅ simulate loading delay for nice UX then navigate to redirect
         setTimeout(() => {
           loadingModal.classList.add('hidden');
-          window.location.href = '/navigationbuttons';
-        }, 1000);
+          try {
+            window.location.href = redirectDest;
+          } catch (e) {
+            window.location.href = '/navigationbuttons';
+          }
+        }, 700);
       } else {
         loadingModal.classList.add('hidden');
         errorDiv.textContent = data.message || 'Login failed.';
