@@ -22,7 +22,7 @@
     <!-- BACK BUTTON -->
     <nav class="bg-sky-50 border-b border-sky-100 py-4 px-6 sm:px-10 lg:px-12">
         <div class="max-w-7xl mx-auto">
-            <a href="{{ route('job.matches') }}"
+                <a href="{{ route('hiringjobs') }}"
                class="inline-flex items-center gap-3 text-blue-700 font-semibold text-base sm:text-lg hover:text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                aria-label="Go back to job listings">
                 <img src="https://img.icons8.com/ios-filled/24/1E40AF/left.png" alt="" aria-hidden="true"/>
@@ -531,6 +531,17 @@ document.addEventListener("DOMContentLoaded", () => {
                 const pct = openings > 0 ? Math.min(100, Math.round((applied / openings) * 100)) : (applied > 0 ? 100 : 0);
                 capacityBar.style.width = pct + '%';
                 capacityBar.setAttribute('aria-valuenow', String(pct));
+            }
+
+            // Hide or show the primary Apply button when positions are full
+            const applyBtn = document.getElementById('apply-now-btn');
+            if (applyBtn) {
+                // If openings is positive and applied count is greater or equal, hide the button
+                if (openings > 0 && applied >= openings) {
+                    applyBtn.style.display = 'none';
+                } else {
+                    applyBtn.style.display = 'inline-flex';
+                }
             }
 
             const applyBeforeEl = document.getElementById('apply-before');

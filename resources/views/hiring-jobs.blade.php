@@ -114,6 +114,42 @@
         </div>
 
         <script>
+            // Date parsing/formatting helpers (format as "Month Day, Year")
+            function tryParseDate(v){
+                if (!v) return null;
+                let d = new Date(v);
+                if (!isNaN(d.getTime())) return d;
+                const m = String(v).match(/(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+                if (m){
+                    return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+                }
+                const m2 = String(v).match(/^(\d{1,2})[-\/ ]([A-Za-z]{3,})[-\/ ](\d{2,4})/);
+                if (m2){
+                    const day = Number(m2[1]);
+                    const mon = m2[2].toLowerCase().slice(0,3);
+                    const monthMap = { jan:0, feb:1, mar:2, apr:3, may:4, jun:5, jul:6, aug:7, sep:8, oct:9, nov:10, dec:11 };
+                    const rawYear = Number(m2[3]);
+                    const year = rawYear < 100 ? (2000 + rawYear) : rawYear;
+                    const monthIdx = monthMap[mon] !== undefined ? monthMap[mon] : 0;
+                    return new Date(year, monthIdx, day);
+                }
+                return null;
+            }
+
+            function formatNiceDate(v){
+                if (!v) return '-';
+                const d = (v instanceof Date) ? v : tryParseDate(v);
+                if (!d) return String(v);
+                const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+                return months[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear();
+            }
+
+            function formatNiceDateOrOriginal(v){
+                if (!v) return '-';
+                const d = tryParseDate(v);
+                return d ? formatNiceDate(d) : String(v);
+            }
+
             const suggestionFields = [
 
                 {
@@ -265,7 +301,7 @@
                             pmeta.textContent = (job.company_name || 'Company') + ' • ' + (job.address || 'Location');
                             const pdate = document.createElement('p');
                             pdate.className = 'text-sm text-slate-500 mt-2';
-                            pdate.textContent = job.apply_before ? ('Apply by ' + job.apply_before) : (job.posted_date ? job.posted_date : '');
+                            pdate.textContent = job.apply_before ? ('Apply by ' + formatNiceDateOrOriginal(job.apply_before)) : (job.posted_date ? formatNiceDateOrOriginal(job.posted_date) : '');
                             info.appendChild(h3); info.appendChild(pmeta); info.appendChild(pdate);
 
                             left.appendChild(logoWrap); left.appendChild(info);
