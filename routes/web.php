@@ -38,6 +38,10 @@ Route::get('/hiringjobs', function () {
     return view('hiring-jobs');
 })->name('hiringjobs');
 
+Route::get('/viewjobdetails', function () {
+    return view('home-job-details');
+})->name('viewjobdetails');
+
 
 /*
 Route::get('/applyassessment', function () {
