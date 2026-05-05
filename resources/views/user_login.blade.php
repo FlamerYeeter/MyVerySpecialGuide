@@ -114,13 +114,54 @@
         const formRedirectInput = document.querySelector('input[name="redirect"]')?.value || '';
         const redirectDest = queryRedirect || formRedirectInput || '/navigationbuttons';
 
-        // ✅ simulate loading delay for nice UX then navigate to redirect
-        setTimeout(() => {
+        // ✅ simulate loading delay for nice UX then verify redirect before navigating
+        setTimeout(async () => {
           loadingModal.classList.add('hidden');
           try {
-            window.location.href = redirectDest;
+            // Try a lightweight request to ensure the target exists on the same origin.
+            const resolveTarget = async (target) => {
+              try {
+                const url = new URL(target, window.location.origin).toString();
+                const resp = await fetch(url, { method: 'GET', credentials: 'same-origin' });
+                return resp && resp.ok;
+              } catch (e) {
+                return false;
+              }
+            };
+
+            const ok = await resolveTarget(redirectDest);
+            if (ok) {
+              window.location.href = redirectDest;
+              return;
+            }
+
+            // If the redirect contained a job_id, prefer sending the user to the job application page.
+            try {
+              const parsed = new URL(redirectDest, window.location.origin);
+              const jid = parsed.searchParams.get('job_id');
+              if (jid) {
+                window.location.href = '/job-application-1?job_id=' + encodeURIComponent(jid);
+                return;
+              }
+            } catch (e) {
+              // ignore parsing errors
+            }
+
+            // Fallback safe pages
+            if (await resolveTarget('/hiringjobs')) {
+              window.location.href = '/hiringjobs';
+            } else if (await resolveTarget('/')) {
+              window.location.href = '/';
+            } else {
+              // Last resort: go to navigation buttons if available, else home
+              try {
+                window.location.href = '/navigationbuttons';
+              } catch (e) {
+                window.location.href = '/';
+              }
+            }
           } catch (e) {
-            window.location.href = '/navigationbuttons';
+            window.location.href = '/';
           }
         }, 700);
       } else {

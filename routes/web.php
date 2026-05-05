@@ -54,6 +54,11 @@ Route::get('/navigationbuttons', function () {
     return view('navigation-buttons');
 })->name('navigationbuttons');
 
+// Backwards-compatible: accept hyphenated URL and redirect to canonical route
+Route::get('/navigation-buttons', function () {
+    return redirect()->route('navigationbuttons');
+});
+
 // Endpoint for client-side logs (lightweight, accepts JSON {level, message, meta})
 Route::post('/client-log', function (\Illuminate\Http\Request $req) {
     $data = $req->json()->all();

@@ -1121,6 +1121,19 @@ function loadJobs() {
         // hide modal on error as well
         if (jobLoadingModal) jobLoadingModal.classList.add('hidden');
         console.error('Error loading jobs:', err);
+
+        // allow one automatic retry per page load to handle transient failures
+        const retryKey = 'getjobs_retry_' + window.location.pathname;
+        if (!sessionStorage.getItem(retryKey)) {
+            sessionStorage.setItem(retryKey, '1');
+            console.info('get-jobs fetch failed, retrying once after short delay');
+            setTimeout(() => {
+                if (jobLoadingModal) jobLoadingModal.classList.remove('hidden');
+                loadJobs();
+            }, 700);
+            return;
+        }
+
         const jobContainer = document.getElementById('job-container');
         if (jobContainer) jobContainer.innerHTML = '<p class="text-center text-red-600 text-2xl">Failed to load jobs. Please try again later.</p>';
     });
