@@ -56,7 +56,7 @@
                         </ol>
                     </div>
 
-                    <form id="home-job-search-form" method="GET" action="{{ route('home') }}" class="space-y-5" novalidate>
+                    <form id="home-job-search-form" method="GET" action="{{ route('hiringjobs') }}" class="space-y-5" novalidate>
                         <div class="space-y-3">
                             <label for="job-title" class="block text-lg font-bold text-slate-900">What job do you want?</label>
                             <div class="relative">
@@ -203,7 +203,9 @@
 
                 function makeCard(job) {
                     const a = document.createElement('a');
-                    a.href = '#';
+                    // Link to the job details view with job_id param (fallbacks for different id keys)
+                    const jid = job.id || job.ID || job.job_id || job.jobId || '';
+                    a.href = '{{ route('viewjobdetails') }}' + (jid ? ('?job_id=' + encodeURIComponent(jid)) : '');
                     a.className = 'block rounded-[1.75rem] border-2 border-slate-200 bg-white p-7 shadow-md cursor-pointer transition duration-300 hover:shadow-xl hover:bg-blue-50 hover:border-blue-400 hover:-translate-y-2';
 
                     const left = document.createElement('div');
@@ -295,10 +297,20 @@
 
                 if (searchForm) {
                     searchForm.addEventListener('submit', function(ev){
+                        // Let the form submit navigate to the hiring jobs page with query params
+                        // (action is set to the hiringjobs route). No AJAX here.
+                        // This keeps behavior consistent and lets the hiring-jobs page fetch results.
+                        // Allow normal submission — but ensure query params exist on GET
+                        // by setting form action explicitly to include params.
                         ev.preventDefault();
-                        const title = (document.getElementById('job-title') || {}).value || '';
-                        const location = (document.getElementById('location') || {}).value || '';
-                        fetchJobs({ limit: 6, title: title, location: location });
+                        const title = encodeURIComponent((document.getElementById('job-title') || {}).value || '');
+                        const location = encodeURIComponent((document.getElementById('location') || {}).value || '');
+                        const base = '{{ route('hiringjobs') }}';
+                        const qs = [];
+                        if (title) qs.push('title=' + title);
+                        if (location) qs.push('location=' + location);
+                        const url = base + (qs.length ? ('?' + qs.join('&')) : '');
+                        window.location.href = url;
                     });
                 }
             })();

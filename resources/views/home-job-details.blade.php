@@ -426,7 +426,196 @@ document.addEventListener("DOMContentLoaded", () => {
         skillsContainer.setAttribute('role', 'list');
     }
 
-    hideLoadingOverlay();
+    // Try to load job details from query param or injected server variable
+    const injectedJobId = @json($job_id);
+    async function loadJobDetails(jobId) {
+        if (!jobId) return;
+        try {
+            const res = await fetch('/db/get-job-details.php?job_id=' + encodeURIComponent(jobId), { credentials: 'same-origin' });
+            const data = await res.json();
+            if (!data || !data.success) {
+                console.warn('No job data returned', data);
+                return;
+            }
+            const job = data.job || {};
+            const company = data.company || {};
+
+            // Header
+            const titleEl = document.getElementById('job-title');
+            if (titleEl && job.job_role) titleEl.textContent = job.job_role;
+            const companyEl = document.getElementById('company-name');
+            if (companyEl) companyEl.textContent = company.official_name || job.company_name_from_job || 'Company';
+
+            // Meta
+            const locEl = document.getElementById('job-location');
+            if (locEl) locEl.textContent = job.address || company.address || 'Location';
+            const postDateEl = document.getElementById('job-post-date');
+            if (postDateEl) postDateEl.textContent = job.job_post_date || job.job_post_date || '';
+            const typeEl = document.getElementById('job-type');
+            if (typeEl) typeEl.textContent = job.job_type || 'Work type';
+
+            // Description-like fields (may be arrays or text)
+            function renderRich(targetId, value) {
+                const el = document.getElementById(targetId);
+                if (!el) return;
+                el.innerHTML = '';
+                if (!value) {
+                    el.innerHTML = '<p class="text-gray-500 italic">No information provided yet.</p>';
+                    return;
+                }
+                if (Array.isArray(value)) {
+                    value.forEach(item => {
+                        const p = document.createElement('p');
+                        p.innerHTML = item;
+                        el.appendChild(p);
+                    });
+                } else {
+                    const p = document.createElement('p');
+                    p.innerHTML = value;
+                    el.appendChild(p);
+                }
+            }
+
+            renderRich('job-description-content', job.job_description || job.job_description_html || '');
+            renderRich('why-join-content', job.why_join_us || '');
+            renderRich('key-responsibilities-content', job.key_responsibilities || '');
+            renderRich('working-environment-content', job.working_environment || '');
+            renderRich('qualifications-content', job.qualifications || '');
+
+            // Sidebar details
+            const appliedCountEl = document.getElementById('applied-count');
+            const openingsEl = document.getElementById('openings-count');
+            const capacityBar = document.getElementById('capacity-bar');
+            const applied = (job.applied_count || job.applied || 0);
+            const openings = (job.openings || job.employee_capacity || 0) || 0;
+            if (appliedCountEl) appliedCountEl.textContent = String(applied);
+            if (openingsEl) openingsEl.textContent = String(openings || 0);
+            if (capacityBar) {
+                const pct = openings > 0 ? Math.min(100, Math.round((applied / openings) * 100)) : (applied > 0 ? 100 : 0);
+                capacityBar.style.width = pct + '%';
+                capacityBar.setAttribute('aria-valuenow', String(pct));
+            }
+
+            const applyBeforeEl = document.getElementById('apply-before');
+            if (applyBeforeEl) applyBeforeEl.textContent = job.apply_before || '—';
+            const jobPostedDateSidebar = document.getElementById('job-posted-date');
+            if (jobPostedDateSidebar) jobPostedDateSidebar.textContent = job.job_post_date || '—';
+            const jobTypeSidebar = document.getElementById('job-type-sidebar');
+            if (jobTypeSidebar) jobTypeSidebar.textContent = job.job_type || '—';
+
+            // Skills
+            const skillsContainerEl = document.getElementById('skills-container');
+            if (skillsContainerEl) {
+                skillsContainerEl.innerHTML = '';
+                const skills = job.skills || job.skills_list || job.skills || [];
+                if (Array.isArray(skills) && skills.length) {
+                    skills.forEach(s => {
+                        const span = document.createElement('span');
+                        span.className = 'inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 text-base font-semibold rounded-full whitespace-nowrap';
+                        span.textContent = s;
+                        span.setAttribute('role', 'listitem');
+                        skillsContainerEl.appendChild(span);
+                    });
+                } else {
+                    const placeholder = document.createElement('span');
+                    placeholder.id = 'skills-placeholder';
+                    placeholder.className = 'text-gray-500 italic';
+                    placeholder.textContent = 'No skills available yet.';
+                    skillsContainerEl.appendChild(placeholder);
+                }
+            }
+
+            // Managers
+            const managersList = document.getElementById('managers-list');
+            if (managersList) {
+                managersList.innerHTML = '';
+                const managers = job.managers || [];
+                if (Array.isArray(managers) && managers.length) {
+                    managers.forEach(m => {
+                        const li = document.createElement('li');
+                        li.className = 'flex items-center gap-3 py-2';
+                        li.innerHTML = `<div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden"><i class="ri-user-line text-gray-400 text-xl"></i></div><span class="font-medium text-base text-gray-800">${m.full_name || (m.FIRST_NAME ? (m.FIRST_NAME + ' ' + (m.LAST_NAME||'')) : 'Manager')}</span>`;
+                        managersList.appendChild(li);
+                    });
+                } else {
+                    managersList.innerHTML = `<li class="flex items-center gap-3 py-2"><div class="w-10 h-10 rounded-full bg-gray-100 border border-gray-300 flex items-center justify-center overflow-hidden"><i class="ri-user-line text-gray-400 text-xl"></i></div><span class="font-medium text-base text-gray-800">No manager assigned</span></li>`;
+                }
+            }
+
+            // Contact / company info
+            const contactAddress = document.getElementById('contact-address');
+            if (contactAddress) contactAddress.textContent = job.address || company.address || 'Location not provided';
+            const contactPhone = document.getElementById('contact-phone');
+            if (contactPhone) {
+                if (job.phone || company.contact_number) {
+                    contactPhone.href = 'tel:' + encodeURIComponent(job.phone || company.contact_number);
+                    contactPhone.textContent = job.phone || company.contact_number;
+                } else {
+                    contactPhone.href = 'tel:';
+                    contactPhone.textContent = 'Not available';
+                }
+            }
+            const contactEmail = document.getElementById('contact-email');
+            if (contactEmail) {
+                if (job.email || company.email) {
+                    contactEmail.href = 'mailto:' + (job.email || company.email);
+                    contactEmail.textContent = job.email || company.email;
+                } else {
+                    contactEmail.href = 'mailto:';
+                    contactEmail.textContent = 'No email';
+                }
+            }
+            const contactIndustry = document.getElementById('contact-industry');
+            if (contactIndustry) contactIndustry.textContent = company.industry || 'Not specified';
+
+            const websiteLink = document.getElementById('company-website');
+            const websiteText = document.getElementById('company-website-text');
+            if (websiteLink && websiteText) {
+                if (job.website_link) {
+                    websiteLink.href = job.website_link;
+                    websiteText.textContent = job.website_link;
+                } else if (company.official_name && company.website) {
+                    websiteLink.href = company.website;
+                    websiteText.textContent = company.website;
+                } else {
+                    websiteLink.href = '#';
+                    websiteText.textContent = 'No website available';
+                }
+            }
+
+            const mapLink = document.getElementById('company-map');
+            const mapText = document.getElementById('company-map-text');
+            if (mapLink && mapText) {
+                if (job.map_link) {
+                    mapLink.href = job.map_link;
+                    mapText.textContent = 'Google Maps';
+                } else {
+                    mapLink.href = '#';
+                    mapText.textContent = 'Google Maps';
+                }
+            }
+
+            // Logo
+            const logoImg = document.getElementById('job-logo-img');
+            const logoFallback = document.getElementById('job-logo-fallback');
+            const logoSrc = company.logo || job.company_image_data_uri || null;
+            if (logoImg && logoSrc) {
+                logoImg.src = logoSrc;
+                logoImg.classList.remove('hidden');
+                if (logoFallback) logoFallback.classList.add('hidden');
+            }
+
+        } catch (err) {
+            console.error('Failed to load job details', err);
+        }
+    }
+
+    // prefer server-injected job id, fallback to URL param
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobIdFromUrl = urlParams.get('job_id') || urlParams.get('id') || '';
+    const effectiveJobId = injectedJobId || jobIdFromUrl || '';
+    if (effectiveJobId) loadJobDetails(effectiveJobId).finally(() => hideLoadingOverlay());
+    else hideLoadingOverlay();
 
 });
 

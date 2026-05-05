@@ -277,7 +277,7 @@
                             type.textContent = job.job_type || 'Work type';
                             const view = document.createElement('a');
                             view.className = 'inline-flex items-center justify-center rounded-full bg-blue-700 px-8 py-4 text-lg font-bold text-white shadow-lg transition hover:bg-blue-800 hover:shadow-xl active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600';
-                            view.href = '/job-details' + (job.id ? ('?job_id=' + encodeURIComponent(job.id)) : '');
+                            view.href = '{{ route('viewjobdetails') }}' + (job.id ? ('?job_id=' + encodeURIComponent(job.id)) : '');
                             view.textContent = 'View job';
                             right.appendChild(type); right.appendChild(view);
 
