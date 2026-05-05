@@ -42,7 +42,9 @@ function buildOcrPrompt($fields, $imagePaths, $ocrtype)
         $extraHint = "This is a certificate proof of training — look for organization name, date, and participant details. if this is not Certificate of Training then return error else if it contains Certificate of Training then its good. \n";   
     } elseif ($ocrtype === 'fit_to_work') {
         $extraHint = "This is a Fit-To-Work certificate — look specifically for explicit statements like 'fit to work', 'cleared for work', 'medically fit', and the examining doctor's name. If such statements are not present, return parsed fields but set contains_fit_to_work=false.\n";
-    }          
+    } elseif ($ocrtype === 'company_registration') {
+        $extraHint = "This is a company registration document. Look for the company name, address, registration number, and identification ID, as this will be used to extract personal details.\n";
+    }            
 
     return <<<PROMPT
 You are an expert at reading Philippine identity documents and medical certificates from images.
@@ -129,7 +131,7 @@ $ocrtype = $data['type'] ?? null;
 // 2. HANDLE BASE64 INPUT
 // ================================
 
-if (!in_array($ocrtype, ['certificate_proof', 'membership_proof', 'pwd_id', 'medical_certificate', 'fit_to_work'])) {
+if (!in_array($ocrtype, ['certificate_proof', 'membership_proof', 'pwd_id', 'medical_certificate', 'fit_to_work, ','company_registration'])) {
     response(false, "Invalid OCR type");
 }
 
@@ -288,6 +290,15 @@ if ($ocrtype === 'pwd_id') {
         "cert_name" => "Name of the Certificate",
         "issued_by" => "Issuing Organization",
         "date_completed" => "YYYY-MM-DD"
+    ]);
+} elseif ($ocrtype === 'company_registration') {
+    $fields = array_merge($common, [
+        "middle_name" => "Middle name (if any)",
+        "company_name" => "Registered company name",
+        "company_email" => "Company email address (if any)",
+        "position" => "Position or role of the individual in the company (if any)",
+        "is_valid_id" => "true or false - whether this identification card is a valid",
+        "identification_id" => "Personal identification number (if any)"
     ]);
 } else {
     $fields = array_merge($common, ["summary" => "short summary of document content"]);
