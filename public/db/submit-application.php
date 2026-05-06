@@ -239,9 +239,9 @@ try {
             // If numeric id is longer than Oracle NUMBER precision, use TO_CHAR matching
             $use_to_char = strlen($cap_job_id_str) > 38;
             if ($use_to_char) {
-                $jsql = "SELECT JOB_TITLE, JOB_ROLE, ROLE FROM MVSG.JOB_POSTINGS WHERE TO_CHAR(ID) = :jid_str";
+                $jsql = "SELECT JOB_TITLE, ROLE FROM MVSG.JOB_POSTINGS WHERE TO_CHAR(ID) = :jid_str";
             } else {
-                $jsql = "SELECT JOB_TITLE, JOB_ROLE, ROLE FROM MVSG.JOB_POSTINGS WHERE ID = TO_NUMBER(:jid_str)";
+                $jsql = "SELECT JOB_TITLE, ROLE FROM MVSG.JOB_POSTINGS WHERE ID = TO_NUMBER(:jid_str)";
             }
             $jst = @oci_parse($conn, $jsql);
             if ($jst) {

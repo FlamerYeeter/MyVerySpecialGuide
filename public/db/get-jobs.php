@@ -117,7 +117,7 @@ if ($user_id === null) {
   }
 
   // Build a lightweight global list (no heavy joins, no blob loads)
-  $lightSql = "SELECT ID, COMPANY_NAME, JOB_ROLE, JOB_DESCRIPTION, ADDRESS, JOB_TYPE, EMPLOYEE_CAPACITY, APPLY_BEFORE, JOB_POST_DATE FROM MVSG.JOB_POSTINGS WHERE ROWNUM <= :limit ORDER BY JOB_POST_DATE DESC";
+  $lightSql = "SELECT ID, COMPANY_NAME, JOB_DESCRIPTION, ADDRESS, JOB_TYPE, EMPLOYEE_CAPACITY, APPLY_BEFORE, JOB_POST_DATE FROM MVSG.JOB_POSTINGS WHERE ROWNUM <= :limit ORDER BY JOB_POST_DATE DESC";
   $lst = oci_parse($conn, $lightSql);
   oci_bind_by_name($lst, ':limit', $limit, -1);
   if (@oci_execute($lst)) {
@@ -127,7 +127,8 @@ if ($user_id === null) {
       $gjobs[] = [
         'id' => $jid,
         'company_name' => $r['COMPANY_NAME'] ?? null,
-        'job_role' => $r['JOB_ROLE'] ?? null,
+        // removed job_role (column no longer exists)
+        'job_type' => $r['JOB_TYPE'] ?? null,
         'description' => $r['JOB_DESCRIPTION'] ?? '',
         'address' => $r['ADDRESS'] ?? null,
         'job_type' => $r['JOB_TYPE'] ?? null,
@@ -387,7 +388,7 @@ WITH
       SELECT 
         jp.ID,
         jp.COMPANY_NAME,
-        jp.JOB_ROLE,
+        /* JOB_ROLE removed */
         jp.JOB_DESCRIPTION,
           jp.ADDRESS,
           jp.JOB_TYPE,
@@ -408,7 +409,7 @@ WITH
       SELECT 
         jp.ID,
         jp.COMPANY_NAME,
-        jp.JOB_ROLE,
+        /* JOB_ROLE removed */
         jp.JOB_DESCRIPTION,
           jp.ADDRESS,
           jp.JOB_TYPE,
@@ -437,9 +438,9 @@ LEFT JOIN content_match cm ON cm.job_id = bj.ID
 LEFT JOIN co_counts cc ON cc.job_id = bj.ID
 LEFT JOIN max_co mc ON 1=1
 WHERE bj.rn = 1
-AND (:title IS NULL OR (LOWER(bj.JOB_ROLE) LIKE :title_like OR LOWER(bj.JOB_DESCRIPTION) LIKE :title_like))
+AND (:title IS NULL OR (LOWER(NVL(bj.JOB_TYPE,'')) LIKE :title_like OR LOWER(bj.JOB_DESCRIPTION) LIKE :title_like))
 AND (:location IS NULL OR LOWER(bj.ADDRESS) LIKE :location_like)
-AND (:work_env IS NULL OR LOWER(NVL(bj.WORKING_ENVIRONMENT,'')) LIKE :work_env_like OR LOWER(bj.JOB_ROLE) LIKE :work_env_like)
+AND (:work_env IS NULL OR LOWER(NVL(bj.WORKING_ENVIRONMENT,'')) LIKE :work_env_like OR LOWER(NVL(bj.JOB_TYPE,'')) LIKE :work_env_like)
 AND (:job_type IS NULL OR LOWER(bj.JOB_TYPE) LIKE :job_type_like)
 ORDER BY bj.PRIORITY, bj.JOB_POST_DATE DESC
 FETCH FIRST :limit ROWS ONLY
@@ -610,8 +611,11 @@ if (count($rows) > 0) {
         if (!empty($row['COG_LVL_REQ'])) $job_access_fields[] = $row['COG_LVL_REQ'];
         if (!empty($row['ACCOM_AVAIL'])) $job_access_fields[] = $row['ACCOM_AVAIL'];
 
-        // Augment job access fields using job role keywords
-        $roleText = mb_strtolower((string)($row['JOB_ROLE'] ?? ''));
+        // Augment job access fields using job role keywords — `JOB_ROLE` removed,
+        // fall back to JOB_TYPE or the first JOB_PROFILE-derived jobType
+        $roleText = '';
+        if (!empty($jobTypes)) $roleText = mb_strtolower((string)$jobTypes[0]);
+        else $roleText = mb_strtolower((string)($row['JOB_TYPE'] ?? ''));
         if ($roleText !== '') {
             foreach ($JOB_ROLE_REQUIREMENTS as $kw => $reqs) {
                 if (mb_stripos($roleText, $kw) !== false) foreach ($reqs as $r) $job_access_fields[] = $r;
@@ -641,8 +645,8 @@ if (count($rows) > 0) {
         // If user has disabilities, exclude jobs that appear incompatible
         if (!empty($user_conditions)) {
             $hay = mb_strtolower(
-                ($row['JOB_ROLE'] ?? '') . ' ' . ($row['JOB_DESCRIPTION'] ?? '') . ' ' . ($row['JOB_PROFILE_WORKPLACE'] ?? '') . ' ' .
-                implode(' ', $job_access_fields) . ' ' . ($row['COMP_REQ'] ?? '') . ' ' . ($row['SENSOR_REQ'] ?? '') . ' ' . ($row['COG_LVL_REQ'] ?? '') . ' ' . ($row['ACCOM_AVAIL'] ?? '')
+              ($row['JOB_TYPE'] ?? '') . ' ' . ($row['JOB_DESCRIPTION'] ?? '') . ' ' . ($row['JOB_PROFILE_WORKPLACE'] ?? '') . ' ' .
+              implode(' ', $job_access_fields) . ' ' . ($row['COMP_REQ'] ?? '') . ' ' . ($row['SENSOR_REQ'] ?? '') . ' ' . ($row['COG_LVL_REQ'] ?? '') . ' ' . ($row['ACCOM_AVAIL'] ?? '')
             );
             $exclude = false;
             foreach ($user_conditions as $cond) {
@@ -673,7 +677,8 @@ if (count($rows) > 0) {
         $jobs[] = [
             'id'                    => $jobId,
             'company_name'          => $row['COMPANY_NAME'] ?? null,
-            'job_role'              => $row['JOB_ROLE'] ?? null,
+            // `job_role` removed — use job_type
+            'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),
             'description'           => $row['JOB_DESCRIPTION'] ?? '',
             'address'               => $row['ADDRESS'] ?? null,
             'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),

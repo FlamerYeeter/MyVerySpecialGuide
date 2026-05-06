@@ -675,6 +675,9 @@
                     if (hidden) hidden.value = JSON.stringify(arr);
                     console.log('Saved job preferences to localStorage:', arr);
 
+                    // debug: log selection and availability of preview function
+                    console.debug('jobpref1Next clicked — selections:', arr, 'fetchPreviewFor:', typeof window.fetchPreviewFor, 'populateReview:', typeof window.populateReview, '__mvsg_debugRun:', typeof window.__mvsg_debugRun);
+
                     // Allow register.js to handle navigation and saving if present
                     if (typeof window.populateReview === 'function' || typeof window.__mvsg_debugRun === 'function') {
                         return; // defer to register.js
@@ -682,7 +685,11 @@
 
                     // If preview function is available, fetch preview and show modal (user-triggered)
                     if (typeof window.fetchPreviewFor === 'function') {
-                        try { window.fetchPreviewFor(arr); } catch(e) { console.warn('fetchPreviewFor failed', e); }
+                        try {
+                            // call and log promise resolution for easier debugging
+                            const p = window.fetchPreviewFor(arr);
+                            if (p && typeof p.then === 'function') p.then(() => console.debug('fetchPreviewFor resolved')).catch(err => console.warn('fetchPreviewFor rejected', err));
+                        } catch(e) { console.warn('fetchPreviewFor failed', e); }
                         return;
                     }
 
@@ -758,16 +765,21 @@
                     // only attach profile if it contains any keys
                     if (Object.keys(profile).length) bodyPayload.profile = profile;
 
+                    console.debug('fetchPreviewFor: sending preview request', { prefs: prefs, profile: profile, bodyPayload: bodyPayload });
                     const res = await fetch('/db/get-jobs-preview.php', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(bodyPayload)
                     });
-                    const data = await res.json();
+                    let data = null;
+                    try { data = await res.json(); } catch(e) { console.warn('fetchPreviewFor: failed to parse JSON response', e); }
+                    console.debug('fetchPreviewFor: response', { status: res.status, ok: res.ok, data });
                     if (data && data.success && Array.isArray(data.recommendations)) {
                         renderRecommendations(data.recommendations, data.preview_based_on || prefs);
                         // show the modal
                         openModal();
+                    } else {
+                        console.warn('fetchPreviewFor: no recommendations in response', data);
                     }
                 } catch (err) {
                     console.warn('Preview fetch failed', err);
@@ -793,15 +805,11 @@
                     const company = document.createElement('div');
                     company.className = 'text-sm text-gray-600';
                     company.textContent = item.company_name || '';
-                    const score = document.createElement('div');
-                    score.className = 'text-xs text-gray-500 mt-1';
-                    score.textContent = 'Match: ' + (item.computed_score !== undefined ? item.computed_score + '%' : (item.content_score ? item.content_score + '%' : '—'));
                     const desc = document.createElement('div');
                     desc.className = 'text-sm text-gray-700 mt-1';
                     desc.textContent = (item.description || '').slice(0, 140) + ((item.description || '').length > 140 ? '…' : '');
                     body.appendChild(title);
                     body.appendChild(company);
-                    body.appendChild(score);
                     body.appendChild(desc);
                     div.appendChild(img);
                     div.appendChild(body);

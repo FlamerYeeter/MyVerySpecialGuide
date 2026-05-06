@@ -1,6 +1,42 @@
 <?php
 session_start();
-header('Content-Type: application/json');
+// suppress direct HTML error pages and capture any stray output
+ini_set('display_errors', '0');
+error_reporting(E_ALL);
+ob_start();
+
+function output_json_and_exit($arr, $status = 200) {
+  http_response_code($status);
+  $buf = ob_get_clean();
+  if (!isset($arr['success'])) $arr['success'] = false;
+  if ($buf !== '') $arr['debug_output'] = trim($buf);
+  header('Content-Type: application/json');
+  $json = json_encode($arr, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+  if ($json === false) {
+    // attempt to utf8-clean the payload
+    function __utf8ize($mixed) {
+      if (is_array($mixed)) {
+        $out = [];
+        foreach ($mixed as $k => $v) $out[$k] = __utf8ize($v);
+        return $out;
+      } elseif (is_string($mixed)) {
+        $enc = mb_detect_encoding($mixed, ['UTF-8','ISO-8859-1','WINDOWS-1252','ASCII'], true);
+        if ($enc !== 'UTF-8') return mb_convert_encoding($mixed, 'UTF-8', $enc ?: 'UTF-8');
+        return mb_convert_encoding($mixed, 'UTF-8', 'UTF-8');
+      } else {
+        return $mixed;
+      }
+    }
+    $arr2 = __utf8ize($arr);
+    $json = json_encode($arr2, JSON_UNESCAPED_SLASHES|JSON_UNESCAPED_UNICODE);
+    if ($json === false) {
+      $jem = json_last_error_msg();
+      $json = json_encode(['success'=>false,'error'=>'json_encode_failed','json_error' => $jem, 'response_preview'=>array_keys($arr)]);
+    }
+  }
+  echo $json;
+  exit;
+}
 
 require_once 'oracledb.php'; // contains getOracleConnection()
 
@@ -64,6 +100,16 @@ function map_synonym($val, $synonyms) {
     }
   }
   return $val;
+}
+
+// Safely convert possible OCILob or other types to string
+function safe_db_string($v) {
+  if ($v === null) return '';
+  if (is_object($v) && method_exists($v, 'load')) {
+    $res = $v->load();
+    return $res === false || $res === null ? '' : (string)$res;
+  }
+  return (string)$v;
 }
 
 // small synonyms map (copied + simplified from get-jobs.php)
@@ -145,9 +191,7 @@ $input_tokens = array_values(array_unique(array_filter($input_tokens)));
 
 $conn = getOracleConnection();
 if (!$conn) {
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'DB connection failed']);
-    exit;
+  output_json_and_exit(['error' => 'DB connection failed'], 500);
 }
 
 // fetch collaborative counts (saved + applications)
@@ -176,21 +220,28 @@ if (@oci_execute($stid)) {
 oci_free_statement($stid);
 
 // Fetch job postings (aggregate job_profile text for basic matching)
-$sql = "SELECT jp.ID, jp.COMPANY_NAME, jp.JOB_ROLE, jp.JOB_DESCRIPTION, jp.ADDRESS, jp.JOB_TYPE, jp.WORKING_ENVIRONMENT, jp.COMPANY_IMAGE, jp.EMPLOYEE_CAPACITY, jp.APPLY_BEFORE, jp.JOB_POST_DATE, jp.COMP_REQ, jp.SENSOR_REQ, jp.COG_LVL_REQ, jp.ACCOM_AVAIL, (SELECT LISTAGG(LOWER(VALUE),' ') WITHIN GROUP (ORDER BY ID) FROM MVSG.JOB_PROFILE jp2 WHERE jp2.JOB_POSTING_ID = jp.ID AND jp2.VALUE IS NOT NULL) AS JOB_PROFILE_TEXT FROM MVSG.JOB_POSTINGS jp";
+$sql = "SELECT jp.ID, jp.COMPANY_NAME, jp.JOB_DESCRIPTION, jp.ADDRESS, jp.JOB_TYPE, jp.WORKING_ENVIRONMENT, jp.COMPANY_IMAGE, jp.EMPLOYEE_CAPACITY, jp.APPLY_BEFORE, jp.JOB_POST_DATE, jp.COMP_REQ, jp.SENSOR_REQ, jp.COG_LVL_REQ, jp.ACCOM_AVAIL, " .
+  "(SELECT RTRIM(XMLAGG(XMLELEMENT(e, LOWER(jp2.VALUE) || ' ') ORDER BY jp2.ID).getClobVal(), ' ') " .
+  "  FROM MVSG.JOB_PROFILE jp2 WHERE jp2.JOB_POSTING_ID = jp.ID AND jp2.VALUE IS NOT NULL) AS JOB_PROFILE_TEXT " .
+  "FROM MVSG.JOB_POSTINGS jp";
 $stid = oci_parse($conn, $sql);
 if (!@oci_execute($stid)) {
-    $e = oci_error($stid) ?: oci_error($conn);
-    http_response_code(500);
-    echo json_encode(['success' => false, 'error' => 'Query failed', 'oci' => $e]);
-    exit;
+  $e = oci_error($stid) ?: oci_error($conn);
+  // write a debug dump for easier inspection
+  try {
+    $dbg = [ 'time' => date('c'), 'sql' => $sql, 'oci' => $e ];
+    @file_put_contents(__DIR__ . '/temp_debug_get_jobs_preview_error.json', json_encode($dbg, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+  } catch (Exception $ee) { /* ignore debug write errors */ }
+  output_json_and_exit(['error' => 'Query failed', 'oci' => $e], 500);
 }
 
 $jobs = [];
-while ($row = oci_fetch_assoc($stid)) {
+while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_LOBS)) {
     $jobId = $row['ID'];
-    $job_profile_text = mb_strtolower((string)($row['JOB_PROFILE_TEXT'] ?? ''));
-    $role = mb_strtolower((string)($row['JOB_ROLE'] ?? ''));
-    $desc = mb_strtolower((string)($row['JOB_DESCRIPTION'] ?? ''));
+    $job_profile_text = mb_strtolower(safe_db_string($row['JOB_PROFILE_TEXT'] ?? ''));
+    // `JOB_ROLE` column removed; use `JOB_TYPE` as the canonical short label instead
+    $role = mb_strtolower(safe_db_string($row['JOB_TYPE'] ?? ''));
+    $desc = mb_strtolower(safe_db_string($row['JOB_DESCRIPTION'] ?? ''));
     $fields_text = $job_profile_text . ' ' . $role . ' ' . $desc . ' ' . mb_strtolower((string)($row['WORKING_ENVIRONMENT'] ?? ''));
 
     // content matches: count how many input tokens appear in fields
@@ -276,17 +327,42 @@ while ($row = oci_fetch_assoc($stid)) {
 
     $computedScore = round((0.65 * $contentScoreRaw + 0.25 * $accessScoreRaw + 0.1 * $collabScoreRaw) * 100, 2);
 
-    // logo handling: if COMPANY_IMAGE is a BLOB, attempt to load; otherwise fallback
+    // logo handling: accept either OCI-Lob objects or returned LOB strings; fallback to placeholder
     $logoSrc = "https://via.placeholder.com/150?text=Logo";
-    if (!empty($row['COMPANY_IMAGE']) && is_object($row['COMPANY_IMAGE'])) {
-      try { $blob = $row['COMPANY_IMAGE']; $imageContent = $blob->load(); if ($imageContent !== false) $logoSrc = "data:image/png;base64," . base64_encode($imageContent); } catch (Exception $e) {}
+    try {
+      $imageContent = null;
+      if (!empty($row['COMPANY_IMAGE'])) {
+        if (is_object($row['COMPANY_IMAGE']) && method_exists($row['COMPANY_IMAGE'], 'load')) {
+          $imageContent = $row['COMPANY_IMAGE']->load();
+        } else {
+          // OCI_RETURN_LOBS returns string content directly
+          $imageContent = $row['COMPANY_IMAGE'];
+        }
+      }
+      if ($imageContent !== null && $imageContent !== false && $imageContent !== '') {
+        $mime = null;
+        if (function_exists('finfo_open')) {
+          $f = finfo_open(FILEINFO_MIME_TYPE);
+          if ($f !== false) {
+            $m = finfo_buffer($f, $imageContent);
+            if ($m) $mime = $m;
+            finfo_close($f);
+          }
+        }
+        if (!$mime) $mime = 'image/png';
+        $logoSrc = 'data:' . $mime . ';base64,' . base64_encode($imageContent);
+      }
+    } catch (Exception $e) {
+      // ignore and keep placeholder
     }
 
     $jobs[] = [
       'id' => $jobId,
       'company_name' => $row['COMPANY_NAME'] ?? null,
-      'job_role' => $row['JOB_ROLE'] ?? null,
+      // Provide job title (compatibility with frontend expectations). Use first part of description if no explicit title column.
+      'job_role' => mb_substr($desc,0,120) ?: null,
       'description' => $row['JOB_DESCRIPTION'] ?? '',
+      'job_type' => $row['JOB_TYPE'] ?? null,
       'address' => $row['ADDRESS'] ?? null,
       'job_type' => $row['JOB_TYPE'] ?? null,
       'job_profile_text' => $row['JOB_PROFILE_TEXT'] ?? null,
@@ -323,6 +399,6 @@ if (!empty($profile)) {
   $preview_based_on = array_values(array_unique(array_slice(extract_profile_tokens($profile), 0, 8)));
 }
 
-echo json_encode(['success' => true, 'preview_based_on' => $preview_based_on, 'recommendations' => $top]);
+output_json_and_exit(['success' => true, 'preview_based_on' => $preview_based_on, 'recommendations' => $top], 200);
 
 ?>

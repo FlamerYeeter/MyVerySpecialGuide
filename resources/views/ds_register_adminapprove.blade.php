@@ -286,6 +286,8 @@
 
             </div>
 
+
+
 <!-- Personal Information -->
 <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
 
@@ -1360,9 +1362,22 @@
                         <p class="text-gray-700 text-sm sm:text-base mb-3">
                             Please upload your certificates or training documents to help verify your qualifications.
                         </p>
-                        <label class="block text-sm font-semibold text-gray-800 mb-2">Upload Certificate / Training Document</label>
-                        <input id="education_cert_file" name="education_cert_file" type="file" class="w-full text-gray-700" accept=".pdf,.jpg,.jpeg,.png" />
-                        <p class="text-gray-500 italic text-xs mt-2">Supported formats: PDF, JPG, JPEG, PNG.</p>
+
+                        <div class="flex items-center justify-between gap-4 mb-2">
+                            <div class="text-sm font-semibold text-gray-800">Upload Certificate / Training Document</div>
+                            <div class="flex-shrink-0">
+                                <label id="educationCertLabel" for="education_cert_file" class="cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition inline-flex items-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="w-4 h-4 sm:w-5 sm:h-5 mr-2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    <span>Choose File</span>
+                                </label>
+                                <input id="education_cert_file" name="education_cert_file" type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png" />
+                            </div>
+                        </div>
+
+                        <div id="educationCertDisplay" class="mt-3"></div>
+                        <p id="educationCertHint" class="text-gray-500 italic text-xs mt-2">Supported formats: PDF, JPG, JPEG, PNG.</p>
                     </div>
                 </div>
 
@@ -1918,7 +1933,6 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
     setupUpload('fitFile', 'fitDisplay', 'fitLabel', 'fitHint');
     setupUpload('guardianIdFile', 'guardianIdDisplay', 'guardianIdLabel', 'guardianIdHint');
-    setupUpload('resumeFile', 'resumeDisplay', 'resumeLabel', 'resumeHint');
     try {
         // Password toggle handlers (Show/Hide text buttons)
         document.querySelectorAll('.toggle-password').forEach(btn => {
@@ -2008,33 +2022,121 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         } catch (e) { /* ignore and proceed only if values are present */ }
 
-        // Name -> first / last (accept either `name` or separate `first_name`/`last_name`)
-        if (aiData.first_name || aiData.last_name) {
+        // Name -> first / last / middle (accept many possible keys)
+        try {
             const firstEl = document.getElementById('first_name');
             const lastEl = document.getElementById('last_name');
-            if (firstEl && aiData.first_name) firstEl.value = String(aiData.first_name).trim();
-            if (lastEl && aiData.last_name) lastEl.value = String(aiData.last_name).trim();
-            // if full name is provided too, only fill missing pieces
-            if ((firstEl && !firstEl.value) || (lastEl && !lastEl.value)) {
-                if (aiData.name) {
-                    const full = String(aiData.name).trim();
-                    const parts = full.split(/\s+/);
-                    if (parts.length) {
-                        if (firstEl && !firstEl.value) firstEl.value = parts[0] || '';
-                        if (lastEl && !lastEl.value) lastEl.value = parts.slice(1).join(' ') || '';
+            const midEl = document.getElementById('middle_name');
+
+            // possible name keys returned by various OCR heuristics/models
+            const firstKeys = ['first_name','given_name','givenName','forename','firstname'];
+            const lastKeys = ['last_name','family_name','familyName','surname','lastname'];
+            const fullKeys = ['name','full_name','fullname','fullName','candidate_name','applicant_name'];
+            const middleKeys = ['middle_name','middle','mname','middle_initial','mi'];
+
+            // helper to pick first present key
+            const pick = (keys) => { for (const k of keys) if (aiData[k]) return aiData[k]; return null; };
+
+            // heuristic to detect and reject section-heading-like strings (e.g. SUMMARY, CAREER)
+            const STOP_WORDS = ['summary','career','objective','profile','experience','education','skills','references','contact','contacts','email','phone','address'];
+            const isLikelyName = (s) => {
+                if (!s) return false;
+                const raw = String(s).trim();
+                if (!raw) return false;
+                const low = raw.toLowerCase();
+                // reject if contains any stopword as a whole token
+                for (const w of STOP_WORDS) if (new RegExp('\\b'+w+'\\b').test(low)) return false;
+                // If the text is ALL UPPERCASE it may be either a heading or a name in uppercase.
+                // Accept uppercase when it looks like a multi-word person name (e.g. "JOHN A DOE").
+                if (raw === raw.toUpperCase()) {
+                    const parts = raw.split(/\s+/).filter(Boolean);
+                    // require at least two words and alphabetic-like tokens to accept as a name
+                    const allAlpha = parts.length >= 2 && parts.every(p => /^[A-Z][A-Z'\-]+$/.test(p));
+                    if (!allAlpha) return false;
+                }
+                // otherwise accept (basic check: at least one alphabetic char)
+                return /[A-Za-z]/.test(raw);
+            };
+
+            const fvalRaw = pick(firstKeys);
+            const lvalRaw = pick(lastKeys);
+            const mvalRaw = pick(middleKeys);
+            const fullRaw = pick(fullKeys) || aiData.name || null;
+
+            let fval = fvalRaw ? String(fvalRaw).trim() : null;
+            let lval = lvalRaw ? String(lvalRaw).trim() : null;
+            let mval = mvalRaw ? String(mvalRaw).trim() : null;
+            let full = fullRaw ? String(fullRaw).trim() : null;
+
+            // If OCR returned an address-like value as `name`, treat it as invalid and
+            // attempt to extract a proper person-name from raw_text/pages instead.
+            try {
+                if (full && /\b(brgy|barangay|street|road|lane|blk|lot|philippines|province|municipality)\b/i.test(full)) {
+                    full = null;
+                }
+            } catch (e) {}
+
+            // Fallback: search raw_text or page texts for an UPPERCASE name line (common OCR pattern)
+            if (!full) {
+                try {
+                    const rawText = (aiData.raw_text || (Array.isArray(aiData.pages) ? aiData.pages.map(p=>p.text||'').join('\n') : '')) || '';
+                    if (rawText) {
+                        const lines = rawText.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
+                        for (const ln of lines) {
+                            if (/\b(brgy|barangay|street|philippine|philippines|phone:|email:)/i.test(ln)) continue;
+                            // pick lines that are ALL CAPS, alphabetic tokens and 2-4 words long
+                            if (ln === ln.toUpperCase() && !/[0-9@]/.test(ln)) {
+                                const parts = ln.split(/\s+/).filter(Boolean);
+                                if (parts.length >= 2 && parts.length <= 4 && parts.every(p => /^[A-Z'\-\u2019]+$/.test(p))) {
+                                    full = ln;
+                                    break;
+                                }
+                            }
+                        }
                     }
+                } catch(e) {}
+            }
+
+            // Validate candidates (reject likely headings)
+            if (fval && !isLikelyName(fval)) fval = null;
+            if (lval && !isLikelyName(lval)) lval = null;
+            if (mval && !isLikelyName(mval)) mval = null;
+            if (full && !isLikelyName(full)) full = null;
+
+            if (fval && firstEl) firstEl.value = fval;
+            if (lval && lastEl) lastEl.value = lval;
+            if (mval && midEl && !midEl.value) midEl.value = mval;
+
+            // If we still lack parts, try to split full name (if full looks valid)
+            if ((full && ( (firstEl && !firstEl.value) || (lastEl && !lastEl.value) || (midEl && !midEl.value) ))) {
+                const parts = full.split(/\s+/).filter(Boolean);
+                if (parts.length === 1) {
+                    if (firstEl && !firstEl.value) firstEl.value = parts[0];
+                } else if (parts.length === 2) {
+                    if (firstEl && !firstEl.value) firstEl.value = parts[0];
+                    if (lastEl && !lastEl.value) lastEl.value = parts[1];
+                } else if (parts.length >= 3) {
+                    if (firstEl && !firstEl.value) firstEl.value = parts[0];
+                    if (midEl && !midEl.value) midEl.value = parts.slice(1, parts.length-1).join(' ');
+                    if (lastEl && !lastEl.value) lastEl.value = parts[parts.length-1];
                 }
             }
-        } else if (aiData.name) {
-            const full = String(aiData.name).trim();
-            const parts = full.split(/\s+/);
-            if (parts.length) {
-                const firstEl = document.getElementById('first_name');
-                const lastEl = document.getElementById('last_name');
-                if (firstEl) firstEl.value = parts[0] || '';
-                if (lastEl) lastEl.value = parts.slice(1).join(' ') || '';
+
+            // If still no plausible name, try inferring from email local-part (e.g. john.doe@example.com)
+            if ((!firstEl.value || !lastEl.value) && aiData.email) {
+                try {
+                    const e = String(aiData.email || '').trim();
+                    const local = e.split('@')[0];
+                    if (local) {
+                        const tokens = local.split(/[\.\-_\+]/).map(s=>s.trim()).filter(Boolean);
+                        if (tokens.length >= 2) {
+                            if (firstEl && !firstEl.value) firstEl.value = tokens[0].charAt(0).toUpperCase() + tokens[0].slice(1);
+                            if (lastEl && !lastEl.value) lastEl.value = tokens.slice(1).join(' ').replace(/\d+/g,'');
+                        }
+                    }
+                } catch(e){}
             }
-        }
+        } catch (e) { /* non-fatal */ }
 
         // Date of birth -> birthdate input (try multiple keys)
         const dob = aiData.date_of_birth || aiData.birthdate || aiData.dob || aiData.birthday;
@@ -2049,16 +2151,34 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         }
 
-        // Phone
-        const phone = aiData.phone || aiData.mobile || aiData.contact;
-        if (phone) {
-            const el = document.getElementById('phone');
-            if (el) {
-                // naive normalization: keep digits and leading +
-                const normalized = String(phone).replace(/[^\d+]/g, '');
-                el.value = normalized;
+        // Phone: prefer mobile numbers (starts with 09 or +63) when multiple phones present
+        try {
+            let phone = null;
+            if (Array.isArray(aiData.phones) && aiData.phones.length) {
+                const cleanPhones = aiData.phones.map(p => String(p||'').trim()).filter(Boolean);
+                const preferred = cleanPhones.find(p => /^\+?63|^09/.test(p.replace(/[\s\-\.\(\)]/g, '')));
+                phone = preferred || cleanPhones[0];
+            } else {
+                phone = aiData.phone || aiData.mobile || aiData.contact || aiData.tel || aiData.phone_number || null;
             }
-        }
+            if (phone) {
+                const el = document.getElementById('phone');
+                if (el) {
+                    const normalized = String(phone).replace(/[^\d+]/g, '');
+                    el.value = normalized;
+                }
+            }
+        } catch(e) { /* non-fatal */ }
+
+        // Email: populate only if empty to avoid overwriting user input
+        try {
+            const emailsArr = aiData.emails || aiData.email || aiData.emails_list || null;
+            const firstEmail = Array.isArray(emailsArr) && emailsArr.length ? emailsArr[0] : (typeof emailsArr === 'string' ? emailsArr : null);
+            if (firstEmail) {
+                const emailEl = document.getElementById('email') || document.querySelector('input[name="email"]');
+                if (emailEl && !emailEl.value) emailEl.value = String(firstEmail).trim();
+            }
+        } catch(e) { /* non-fatal */ }
 
         // Middle name / initial: accept several keys and also try to extract from full name
         try {
@@ -2102,9 +2222,11 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
             }
         }
 
-        // Address → try to fill common address inputs (address, street, barangay, city)
-        if (aiData.address) {
-            const raw = String(aiData.address).trim();
+        // Address → try to fill common address inputs (address, street, barangay, city).
+        // Accept many possible address keys returned by resume OCR.
+        const rawAddress = aiData.address || aiData.home_address || aiData.contact_address || aiData.location || aiData.address_line || aiData.street_address || aiData.homeAddress || aiData.mailing_address || null;
+        if (rawAddress) {
+            const raw = String(rawAddress).trim();
             // primary full address field
             const fullEl = document.getElementById('address') || document.querySelector('[name="address"]');
             if (fullEl) fullEl.value = raw;
@@ -2144,6 +2266,72 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
                 if (cityEl && cityEl.value === '') cityEl.value = city;
             }
         }
+
+        // --- Resume-specific structured fields ---
+        try {
+            // Education: populate first education entry if present
+            if (Array.isArray(aiData.education) && aiData.education.length) {
+                // ensure at least one education block exists
+                try { if (typeof window.addEducation === 'function') window.addEducation(); } catch(e){}
+                const eduContainer = document.getElementById('educationContainer');
+                if (eduContainer) {
+                    // target first set of inputs
+                    const levelEl = eduContainer.querySelector('select[name="education_level[]"]');
+                    const schoolEl = eduContainer.querySelector('input[name="education_school[]"]');
+                    const programEl = eduContainer.querySelector('input[name="education_program[]"]');
+                    const startEl = eduContainer.querySelector('input[name="education_start[]"]');
+                    const endEl = eduContainer.querySelector('input[name="education_end[]"]');
+                    const e0 = String(aiData.education[0] || '').trim();
+                    if (schoolEl && !schoolEl.value) schoolEl.value = e0;
+                    // try to infer level from text
+                    if (levelEl && !levelEl.value) {
+                        const s = e0.toLowerCase();
+                        if (s.includes('bachelor') || s.includes('bsc') || s.includes('ba') || s.includes('college')) levelEl.value = 'College';
+                        else if (s.includes('high') || s.includes('secondary')) levelEl.value = 'Highschool';
+                        else if (s.includes('vocational') || s.includes('training')) levelEl.value = 'Vocational / Training';
+                    }
+                    // optionally split year tokens
+                    const yMatch = e0.match(/(19|20)\d{2}/g);
+                    if (yMatch && yMatch.length) {
+                        if (startEl && !startEl.value) startEl.value = yMatch[0];
+                        if (endEl && !endEl.value && yMatch[1]) endEl.value = yMatch[1];
+                    }
+                    if (programEl && !programEl.value) programEl.value = aiData.certifications && aiData.certifications[0] ? aiData.certifications[0] : '';
+                }
+            }
+
+            // Work experience: populate first job entry
+            if (Array.isArray(aiData.work_experience) && aiData.work_experience.length) {
+                try { if (typeof window.addJobExperience === 'function') window.addJobExperience(); } catch(e){}
+                const jobContainer = document.getElementById('job_experiences_container');
+                if (jobContainer) {
+                    const first = jobContainer.querySelector('.job_exp_item') || jobContainer.firstElementChild;
+                    if (first) {
+                        const titleEl = first.querySelector('input[name="job_title[]"]') || first.querySelector('.job_title');
+                        const companyEl = first.querySelector('input[name="company_name[]"]') || first.querySelector('.company_name');
+                        const locEl = first.querySelector('input[name="company_location[]"]') || first.querySelector('.company_location');
+                        const descEl = first.querySelector('textarea[name="job_description[]"]') || first.querySelector('.job_description');
+                        const w0 = String(aiData.work_experience[0] || '').trim();
+                        if (titleEl && !titleEl.value) {
+                            // try to extract a short job title from the line (first 4 words)
+                            const parts = w0.split(/[,\-\n]/)[0].split(/\s+/).slice(0,4).join(' ');
+                            titleEl.value = parts;
+                        }
+                        if (companyEl && !companyEl.value) companyEl.value = aiData.company_name || '';
+                        if (descEl && !descEl.value) descEl.value = w0;
+                    }
+                }
+            }
+
+            // Certifications: show summary in the certificate display elements (can't set file inputs)
+            if (Array.isArray(aiData.certifications) && aiData.certifications.length) {
+                const certs = aiData.certifications.map(c => String(c).trim()).filter(Boolean).slice(0,5).join(' • ');
+                const eduDisp = document.getElementById('educationCertDisplay');
+                if (eduDisp && !eduDisp.textContent) eduDisp.textContent = certs;
+                const jobCertDisp = document.querySelector('.job_cert_display');
+                if (jobCertDisp && !jobCertDisp.textContent) jobCertDisp.textContent = certs;
+            }
+        } catch(e) { console.warn('resume-field-mapping failed', e); }
 
         // Disability -> intelligent mapping:
         // - If AI mentions Down syndrome (trisomy/mosaic/translocation), map to `dsType` select
@@ -2240,6 +2428,88 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
     }
 }
 
+// Map OCR data specifically into Parent/Guardian fields
+function applyOcrDataToGuardianForm(aiData) {
+    try {
+        if (!aiData || typeof aiData !== 'object') return;
+
+        // Name mapping
+        try {
+            const lastEl = document.getElementById('guardian_last');
+            const firstEl = document.getElementById('guardian_first');
+            const midEl = document.getElementById('guardian_middle');
+
+            const full = aiData.name || aiData.full_name || aiData.fullName || null;
+            const first = aiData.first_name || aiData.given_name || aiData.givenName || aiData.firstname || null;
+            const last = aiData.last_name || aiData.family_name || aiData.familyName || aiData.surname || null;
+            const middle = aiData.middle_name || aiData.middle || aiData.mname || aiData.mi || null;
+
+            if (first && firstEl) firstEl.value = String(first).trim();
+            if (last && lastEl) lastEl.value = String(last).trim();
+            if (middle && midEl && !midEl.value) midEl.value = String(middle).trim();
+
+            if (full && (!firstEl.value || !lastEl.value)) {
+                const parts = String(full).trim().split(/\s+/).filter(Boolean);
+                if (parts.length === 1) {
+                    if (firstEl && !firstEl.value) firstEl.value = parts[0];
+                } else if (parts.length === 2) {
+                    if (firstEl && !firstEl.value) firstEl.value = parts[0];
+                    if (lastEl && !lastEl.value) lastEl.value = parts[1];
+                } else if (parts.length >= 3) {
+                    if (firstEl && !firstEl.value) firstEl.value = parts[0];
+                    if (midEl && !midEl.value) midEl.value = parts.slice(1, parts.length-1).join(' ');
+                    if (lastEl && !lastEl.value) lastEl.value = parts[parts.length-1];
+                }
+            }
+        } catch (e) { console.warn('guardian name mapping failed', e); }
+
+        // Email
+        try {
+            const emailEl = document.getElementById('guardian_email');
+            const email = (aiData.emails && aiData.emails.length) ? aiData.emails[0] : (aiData.email || aiData.email_address || aiData.emailAddress || null);
+            if (emailEl && !emailEl.value && email) emailEl.value = String(email).trim();
+        } catch(e){}
+
+        // Phone
+        try {
+            const phoneEl = document.getElementById('guardian_phone');
+            let phone = null;
+            if (Array.isArray(aiData.phones) && aiData.phones.length) phone = aiData.phones[0];
+            else phone = aiData.phone || aiData.mobile || aiData.contact || null;
+            if (phone && phoneEl) phoneEl.value = String(phone).replace(/[^\d+]/g, '');
+        } catch(e){}
+
+        // Address: fill guardian address hidden and split into components
+        try {
+            const rawAddr = aiData.address || aiData.home_address || aiData.mailing_address || aiData.location || null;
+            if (rawAddr) {
+                const hidden = document.getElementById('guardian_home_address');
+                if (hidden) hidden.value = String(rawAddr).trim();
+                // try to split into components using existing helper logic: populate guardian_address_* fields
+                const n = document.getElementById('guardian_address_number');
+                const s = document.getElementById('guardian_address_street');
+                const b = document.getElementById('guardian_address_barangay');
+                const c = document.getElementById('guardian_address_city');
+                const raw = String(rawAddr).trim();
+                if (raw.indexOf(',') !== -1) {
+                    const parts = raw.split(',').map(s=>s.trim()).filter(Boolean);
+                    if (parts.length===1){ if(c) c.value = parts[0]; }
+                    else if (parts.length===2){ if(b) b.value = parts[0]; if(c) c.value = parts[1]; }
+                    else if (parts.length===3){ if(s) s.value = parts[0]; if(b) b.value = parts[1]; if(c) c.value = parts[2]; }
+                    else { if(n) n.value = parts[0]; if(s) s.value = parts[1]; if(b) b.value = parts[2]; if(c) c.value = parts.slice(3).join(', '); }
+                } else {
+                    const words = raw.split(/\s+/).filter(Boolean);
+                    if (words.length<=1){ if(c) c.value = raw; }
+                    else if (words.length<=4){ if(n) n.value = words[0]||''; if(s) s.value = words[1]||''; if(b) b.value = words[2]||''; if(c) c.value = words[3]||''; }
+                    else { if(n) n.value = words[0]; if(c) c.value = words[words.length-1]; const middle = words.slice(1, words.length-1); if(middle.length<=1){ if(s) s.value = middle.join(' '); } else if (middle.length===2){ if(s) s.value = middle[0]; if(b) b.value = middle[1]; } else { if(s) s.value = middle.slice(0, middle.length-1).join(' '); if(b) b.value = middle.slice(-1)[0]; } }
+                }
+                try { combineGuardianAddressFields(); } catch(e){}
+            }
+        } catch(e){}
+
+    } catch (e) { console.warn('applyOcrDataToGuardianForm failed', e); }
+}
+
 function setupUpload(inputId, displayId, labelId, hintId) {
   const fileInput = document.getElementById(inputId);
   const display = document.getElementById(displayId);
@@ -2252,6 +2522,20 @@ function setupUpload(inputId, displayId, labelId, hintId) {
   let fileURL = null;
 
   if (!fileInput) return;
+
+    // Determine if this input should skip OCR (education/work-experience certificates)
+    const _lcInputId = String(inputId || '').toLowerCase();
+    const skipOcr = _lcInputId.includes('education_cert') || _lcInputId.startsWith('jobcertfile_') || _lcInputId.includes('jobcert') || _lcInputId.includes('workexp') || _lcInputId.includes('work_cert');
+
+    // If label exists for education certificate, make it the blue upload button style
+    try {
+        if (labelEl && _lcInputId.includes('education_cert')) {
+                labelEl.setAttribute('for', inputId);
+                labelEl.classList.add('inline-flex','items-center','justify-center','bg-[#2E2EFF]','hover:bg-blue-700','text-white','text-sm','sm:text-base','font-medium','px-4','py-2','sm:px-6','sm:py-3','rounded-lg','transition','shadow-md','cursor-pointer');
+                // ensure input is hidden (button handles file selection)
+                try { fileInput.classList.add('hidden'); } catch(e){}
+        }
+    } catch(e){}
 
         // remember original label text so resetDisplay can restore it
         try { if (labelEl && typeof labelEl.dataset !== 'undefined') labelEl.dataset.original = labelEl.textContent || labelEl.dataset.original || 'Upload File'; } catch(e){}
@@ -2389,8 +2673,19 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         try { if (el) el.textContent = txt; } catch (e) { console.warn('safeSetText failed', e); }
     }
 
-    if (!fileInput.dataset.changeListenerAttached) {
+    // Use a non-dataset flag to track whether we've attached the generic listener.
+    // This avoids accidental collisions with other code that may touch `dataset`.
+    if (!fileInput._ocr_listener_attached) {
         fileInput.addEventListener('change', async function (e) {
+            // If this is the resume input, let the dedicated resume handler manage it.
+            if (String(inputId).toLowerCase().includes('resume')) {
+                console.log('[upload] Generic handler ignoring resume input; resume-specific handler will run');
+                return;
+            }
+            
+            // existing handler body follows
+            
+            
             const now = Date.now();
 
             // ── Guard 1: already processing ────────────────────────────────
@@ -2462,6 +2757,17 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     dataKey = 'admin_uploaded_fit_data';
                     typeKey = 'admin_uploaded_fit_type';
                     ocrtype = 'fit_to_work';
+                } else if (String(inputId).toLowerCase().includes('guardian')) {
+                    nameKey = 'admin_uploaded_guardian_name';
+                    dataKey = 'admin_uploaded_guardian_data';
+                    typeKey = 'admin_uploaded_guardian_type';
+                    // Treat guardian ID uploads as their own OCR type to avoid medical 3-month rules
+                    ocrtype = 'guardian_id';
+                } else if (String(inputId).toLowerCase().includes('resume')) {
+                    nameKey = 'admin_uploaded_resume_name';
+                    dataKey = 'admin_uploaded_resume_data';
+                    typeKey = 'admin_uploaded_resume_type';
+                    ocrtype = 'resume';
                 } else {
                     nameKey = 'admin_uploaded_med_name';
                     dataKey = 'admin_uploaded_med_data';
@@ -2485,15 +2791,18 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 localStorage.setItem(typeKey, ext);
                 console.info('[adminapprove] saved upload to localStorage', nameKey);
 
-                // Create and show loading indicator
-                const loadingDiv = document.createElement('div');
-                loadingDiv.className = 'ocr-loading-container';
-                loadingDiv.id = `ocr-loading-${inputId}`;
-                loadingDiv.innerHTML = `
-                    <div class="ocr-spinner"></div>
-                    <span class="ocr-loading-text">Processing OCR... Please wait</span>
-                `;
-                display.appendChild(loadingDiv);
+                // Create and show loading indicator (skip for resume and for skipOcr inputs)
+                let loadingDiv = null;
+                if (!skipOcr && ocrtype !== 'resume') {
+                    loadingDiv = document.createElement('div');
+                    loadingDiv.className = 'ocr-loading-container';
+                    loadingDiv.id = `ocr-loading-${inputId}`;
+                    loadingDiv.innerHTML = `
+                        <div class="ocr-spinner"></div>
+                        <span class="ocr-loading-text">Processing OCR... Please wait</span>
+                    `;
+                    display.appendChild(loadingDiv);
+                }
 
                 // Prepare and send to backend. If user selected multiple files (front+back),
                 // send both images in a single payload so the OCR can consider them together.
@@ -2567,48 +2876,50 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     }
                 } catch (e) { console.warn('previous_disability attach failed', e); }
 
-                console.log("[upload] Sending OCR request for:", file.name);
-                // debugger;   // ← keep if you need to inspect payload
+                // Only send to the generic OCR validator for non-resume uploads and when OCR is enabled for this input.
+                if (!skipOcr && ocrtype !== 'resume') {
+                    console.log("[upload] Sending OCR request for:", file.name);
+                    // debugger;   // ← keep if you need to inspect payload
 
-                let response;
-                try {
-                    response = await fetch('db/ocr-validation.php', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                } catch (fetchErr) {
-                    // Remove loading indicator on network error
-                    const loading = document.getElementById(`ocr-loading-${inputId}`);
-                    if (loading) loading.remove();
-                    console.error('[upload] Fetch failed:', fetchErr);
-                    showOcrModal({
-                        type: 'error',
-                        title: 'Scan Failed',
-                        message: 'Network error: Failed to connect to OCR service.',
-                        note: 'Please try again.',
-                        showRetry: true
-                    });
-                    isProcessing = false;
-                    return;
-                }
+                    let response;
+                    try {
+                        response = await fetch('db/ocr-validation.php', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    } catch (fetchErr) {
+                        // Remove loading indicator on network error
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
+                        console.error('[upload] Fetch failed:', fetchErr);
+                        showOcrModal({
+                            type: 'error',
+                            title: 'Scan Failed',
+                            message: 'Network error: Failed to connect to OCR service.',
+                            note: 'Please try again.',
+                            showRetry: true
+                        });
+                        isProcessing = false;
+                        return;
+                    }
 
-                let result;
-                try {
-                    result = await response.json();
-                } catch (jsonErr) {
-                    // Remove loading indicator on JSON parse error
-                    const loading = document.getElementById(`ocr-loading-${inputId}`);
-                    if (loading) loading.remove();
-                    console.warn("Invalid JSON from server", jsonErr);
-                    result = { message: 'Invalid response format' };
-                }
+                    let result;
+                    try {
+                        result = await response.json();
+                    } catch (jsonErr) {
+                        // Remove loading indicator on JSON parse error
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
+                        console.warn("Invalid JSON from server", jsonErr);
+                        result = { message: 'Invalid response format' };
+                    }
 
-                if (response.ok) {
-                    console.log('OCR Result:', result);
+                    if (response.ok) {
+                        console.log('OCR Result:', result);
 
-                    const detectedType = result.data?.ocrtype;
-                    const aiData = result.data?.ai_data || {};
+                        const detectedType = result.data?.ocrtype;
+                        const aiData = result.data?.ai_data || {};
 
                     if (detectedType === 'pwd_id' && ocrtype === 'pwd_id') {
                         // Validate detected disability against selected form values.
@@ -2761,6 +3072,30 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             note: 'Please review the information for accuracy.',
                             confirmText: 'Confirm & Continue'
                         });
+                    
+                    // Parent / Guardian ID: treat as its own OCR type and show a guardian-specific modal
+                    } else if (detectedType === 'guardian_id' && ocrtype === 'guardian_id') {
+                        try {
+                            applyOcrDataToGuardianForm(aiData);
+                            try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        } catch(e) { console.warn('guardian-id mapping failed', e); }
+                        const loadingGuardian = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loadingGuardian) loadingGuardian.remove();
+                        try {
+                            showOcrModal({
+                                type: 'success',
+                                title: 'Parent / Guardian ID Processed',
+                                message: 'We’ve successfully processed the uploaded Parent / Guardian ID.',
+                                details: [
+                                    { label: 'Name', value: aiData.name || [aiData.first_name, aiData.last_name].filter(Boolean).join(' ') || 'Unknown' }
+                                ],
+                                note: 'Please review the extracted information for accuracy.',
+                                confirmText: 'Confirm & Continue'
+                            });
+                        } catch(e) {
+                            showOcrModal({ type: 'success', title: 'Parent / Guardian ID Processed', message: 'Document processed.', confirmText: 'Confirm & Continue' });
+                        }
+
                     } else if (detectedType === 'fit_to_work' && ocrtype === 'fit_to_work') {
                         // Fit-To-Work specific handling: require explicit fit-to-work text/statement
                         let fitDisplayEl = document.getElementById('fitDisplay') || document.getElementById('medDisplay');
@@ -2790,9 +3125,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             return;
                         }
 
-                        // Autofill and persist but do not enforce date strictness here
-                        applyOcrDataToForm(aiData, detectedType, ocrtype);
-                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        // Do NOT autofill form fields from Fit-To-Work OCR results.
+                        // Keep validation and modal feedback, but avoid applying parsed data to user fields.
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
                         if (fitDisplayEl) {
@@ -2839,9 +3173,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             errorBox = { textContent: '' };
                         }
 
-                        // autofill where possible
-                        applyOcrDataToForm(aiData, detectedType, ocrtype);
-                        try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
+                        // Do NOT autofill form fields from Medical Certificate OCR results.
+                        // Keep validation and modal feedback, but avoid applying parsed data to user fields.
 
                         // For pure medical certificates we enforce the 3-month date rule
                         const isValid = validateMedicalCertificateDate(aiData.date, errorBox, 'Medical certificate');
@@ -2902,11 +3235,21 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             confirmText: 'Confirm & Continue'
                         });
                     }
-                } else {
-                    // Remove loading indicator on error
+                    } else {
+                        // Remove loading indicator on error
+                        const loading = document.getElementById(`ocr-loading-${inputId}`);
+                        if (loading) loading.remove();
+                        alert(`Error ${response.status}: ${result.message || 'Unknown server error'}`);
+                    }
+                } else if (skipOcr) {
+                    // This input intentionally skips OCR (education/work-experience certificates).
+                    console.log('[upload] Skipping OCR for input:', inputId);
+                    // remove any loading indicator (if any) and continue to attach View/Remove behavior
                     const loading = document.getElementById(`ocr-loading-${inputId}`);
                     if (loading) loading.remove();
-                    alert(`Error ${response.status}: ${result.message || 'Unknown server error'}`);
+                } else {
+                    // For resume uploads we do not send to db/ocr-validation here.
+                    console.log('[upload] Resume upload: skipping generic OCR validator; resume-specific handler will run.');
                 }
 
                 // Multi-file uploads are handled earlier (sent together in one request).
@@ -2979,10 +3322,10 @@ function setupUpload(inputId, displayId, labelId, hintId) {
             }
         });
 
-        fileInput.dataset.changeListenerAttached = 'true';
-        console.log("[upload] Change listener attached (one-time)");
+        fileInput._ocr_listener_attached = true;
+        console.log("[upload] Generic change listener attached (one-time)");
     } else {
-        console.log("[upload] Change listener already attached – skipped re-attachment");
+        console.log("[upload] Generic change listener already attached – skipped re-attachment");
     }
     
   // Modal preview
@@ -3073,6 +3416,96 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         if (hintEl) hintEl.style.display = '';
   }
 }
+</script>
+
+<script>
+// Ensure certificate file inputs show filenames and work with dynamic entries
+document.addEventListener('DOMContentLoaded', function() {
+    // Education certificate (single file input) — use setupUpload to get consistent UI
+    const eduInput = document.getElementById('education_cert_file');
+    if (eduInput) {
+        // ensure a display container exists
+        let disp = document.getElementById('educationCertDisplay');
+        if (!disp) {
+            disp = document.createElement('div');
+            disp.id = 'educationCertDisplay';
+            eduInput.parentNode.insertBefore(disp, eduInput.nextSibling);
+        }
+        // attach setupUpload (safe to call multiple times)
+        try { if (typeof setupUpload === 'function') setupUpload('education_cert_file','educationCertDisplay','educationCertLabel','educationCertHint'); } catch(e) { console.warn('setupUpload not available for education_cert_file', e); }
+    }
+
+    // Job certificates inside work experiences (multiple dynamic inputs)
+    function jobCertChangeHandler(e) {
+        const input = e.target;
+        if (!input || !input.classList || !input.classList.contains('job_cert_file')) return;
+        // find closest display container in the same experience block
+        let display = null;
+        const block = input.closest('.job_exp_item');
+        if (block) display = block.querySelector('.job_cert_display');
+        if (!display) display = input.closest('label')?.parentNode?.querySelector('.job_cert_display') || document.querySelector('.job_cert_display');
+        const names = Array.from(input.files || []).map(f => f.name).join(', ');
+        if (display) display.textContent = names || '';
+    }
+
+    // For job experience certificate inputs, wire each input into setupUpload so they show the same card UI.
+    let jobCounter = 0;
+    function wireJobCertInput(inp) {
+        if (!inp || inp._job_cert_wired) return;
+        // ensure it has an id
+        if (!inp.id) inp.id = 'jobCertFile_' + (jobCounter++);
+        const idx = inp.id.replace(/[^a-z0-9_\-]/gi, '');
+        const dispId = 'jobCertDisplay_' + idx;
+        const labelId = 'jobCertLabel_' + idx;
+        const hintId = 'jobCertHint_' + idx;
+
+        // create display container if missing — place it inside the nearest upload/info box (blue area) when possible
+        const wrapper = inp.closest('.job_exp_item') || inp.parentNode;
+        // prefer to place preview inside a surrounding upload/info card (blue box)
+        const preferredContainer = inp.closest('.bg-blue-50, .section-card, .info-card, .resume-card, .pwdid-card, .medical-card, .fit-card');
+        const container = preferredContainer || wrapper;
+        if (!document.getElementById(dispId)) {
+            const d = document.createElement('div'); d.id = dispId; d.className = 'job_cert_display mt-2 text-sm text-gray-700';
+            try { container.appendChild(d); } catch(e) { inp.parentNode.insertBefore(d, inp.nextSibling); }
+        }
+
+        // try to find an adjacent label to attach an id, else create a hidden label anchor
+        let lab = inp.closest('label') || inp.previousElementSibling;
+        if (lab && lab.tagName && lab.tagName.toLowerCase() === 'label') {
+            lab.id = lab.id || labelId;
+        } else {
+            // create a small invisible label anchor to satisfy setupUpload signature
+            if (!document.getElementById(labelId)) {
+                const anchor = document.createElement('div'); anchor.id = labelId; anchor.style.display = 'none';
+                try { container.appendChild(anchor); } catch(e) { inp.parentNode.insertBefore(anchor, inp); }
+            }
+        }
+
+        // create hint element if missing
+        if (!document.getElementById(hintId)) {
+            const hn = document.createElement('div'); hn.id = hintId; hn.style.display = 'none';
+            try { container.appendChild(hn); } catch(e) { inp.parentNode.insertBefore(hn, inp.nextSibling); }
+        }
+
+        try { if (typeof setupUpload === 'function') setupUpload(inp.id, dispId, labelId, hintId); } catch(e) { console.warn('setupUpload failed for job cert', inp.id, e); }
+        inp._job_cert_wired = true;
+    }
+
+    // Wire existing inputs
+    document.querySelectorAll('.job_cert_file').forEach(inp => wireJobCertInput(inp));
+
+    // Also wire inputs when new job experiences are added
+    if (typeof window.addJobExperience === 'function') {
+        const orig = window.addJobExperience;
+        window.addJobExperience = function() {
+            orig();
+            // wire any newly-added inputs inside the job_experiences_container
+            const container = document.getElementById('job_experiences_container');
+            if (!container) return;
+            container.querySelectorAll('.job_cert_file').forEach(inp => wireJobCertInput(inp));
+        };
+    }
+});
 </script>
             
             <!-- Submit Button -->
@@ -3329,7 +3762,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
     <!-- 🔹 Modal (Shared for both uploads) -->
     <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
     <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
-        <button id="closeModalBtn" type="button" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
+        <button id="closeModalBtn" type="button" style="z-index:100001;pointer-events:auto;" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
         <div id="modalContent" class="p-2 text-center"></div>
     </div>
     </div>
@@ -4173,6 +4606,55 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     };
 
                 try {
+                    // Collect Education entries from the Education section and include in draft
+                    try {
+                        const eduContainer = document.getElementById('educationContainer');
+                        const educationArr = [];
+                        if (eduContainer) {
+                            const items = Array.from(eduContainer.querySelectorAll('.education-item'));
+                            items.forEach(it => {
+                                try {
+                                    const level = (it.querySelector('select[name="education_level[]"]') || {}).value || '';
+                                    const school = (it.querySelector('input[name="education_school[]"]') || {}).value || '';
+                                    const program = (it.querySelector('input[name="education_program[]"]') || {}).value || '';
+                                    const start = (it.querySelector('input[name="education_start[]"]') || {}).value || '';
+                                    const end = (it.querySelector('input[name="education_end[]"]') || {}).value || '';
+                                    // only include entries with some content
+                                    if (level || school || program || start || end) {
+                                        educationArr.push({ level, school, program, start, end });
+                                    }
+                                } catch(e){}
+                            });
+                        }
+                        if (educationArr.length) draft.education = JSON.stringify(educationArr);
+                    } catch(e) { console.warn('collect education failed', e); }
+
+                    // Collect Work Experience entries and include in draft
+                    try {
+                        const jobContainer = document.getElementById('job_experiences_container');
+                        const workArr = [];
+                        if (jobContainer) {
+                            const items = Array.from(jobContainer.querySelectorAll('.job_exp_item'));
+                            items.forEach(it => {
+                                try {
+                                    const title = (it.querySelector('input[name="job_title[]"]') || {}).value || '';
+                                    const company = (it.querySelector('input[name="company_name[]"]') || {}).value || '';
+                                    const location = (it.querySelector('input[name="company_location[]"]') || {}).value || '';
+                                    const start_month = (it.querySelector('select[name="job_start_month[]"]') || {}).value || '';
+                                    const start_year = (it.querySelector('input[name="job_start_year[]"]') || {}).value || '';
+                                    const end_month = (it.querySelector('select[name="job_end_month[]"]') || {}).value || '';
+                                    const end_year = (it.querySelector('input[name="job_end_year[]"]') || {}).value || '';
+                                    const description = (it.querySelector('textarea[name="job_description[]"]') || {}).value || '';
+                                    // job cert files are optional; we don't inline binaries here
+                                    if (title || company || location || start_month || start_year || end_month || end_year || description) {
+                                        workArr.push({ title, company, location, start_month, start_year, end_month, end_year, description });
+                                    }
+                                } catch(e){}
+                            });
+                        }
+                        if (workArr.length) draft.job_experiences = JSON.stringify(workArr);
+                    } catch(e) { console.warn('collect work experience failed', e); }
+
                     localStorage.setItem('rpi_personal1', JSON.stringify(draft));
                 } catch (err) {
                     console.warn('Could not save rpi_personal1', err);
@@ -4189,7 +4671,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     }));
                 } catch (e) {}
 
-               window.location.href = '{{ route("registereducation") }}';
+               window.location.href = '{{ route("registerworkplace") }}';
             } catch (err) {
                 console.error('[adminapprove] submit failed', err);
                 btn.classList.remove('opacity-60');
@@ -4219,9 +4701,229 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 } catch(e){}
 
                 // re-run upload initializers to render stored uploads (this is safe; setupUpload checks storage on init)
-                try { if (typeof setupUpload === 'function') { setupUpload('proofFile','proofDisplay','proofLabel','proofHint'); setupUpload('pwdidFile','pwdidDisplay','pwdidLabel','pwdidHint'); setupUpload('medFile','medDisplay','medLabel','medHint'); setupUpload('fitFile','fitDisplay','fitLabel','fitHint'); } } catch(e){}
+                try {
+                    if (typeof setupUpload === 'function') {
+                        setupUpload('proofFile','proofDisplay','proofLabel','proofHint');
+                        setupUpload('pwdidFile','pwdidDisplay','pwdidLabel','pwdidHint');
+                        setupUpload('medFile','medDisplay','medLabel','medHint');
+                        setupUpload('fitFile','fitDisplay','fitLabel','fitHint');
+                        setupUpload('guardianIdFile','guardianIdDisplay','guardianIdLabel','guardianIdHint');
+                        setupUpload('resumeFile','resumeDisplay','resumeLabel','resumeHint');
+                    }
+                } catch(e){}
             });
             </script>
+
+<script>
+// Resume OCR hookup: on resume file change, POST to server OCR endpoint and autofill fields
+document.addEventListener('DOMContentLoaded', function() {
+    const resumeInput = document.getElementById('resumeFile');
+    const resumeDisplay = document.getElementById('resumeDisplay');
+    if (!resumeInput) return;
+
+    resumeInput.addEventListener('change', async function (evt) {
+        const file = (this.files && this.files[0]) ? this.files[0] : null;
+        if (!file) return;
+        try {
+            const ext = (file.name.split('.').pop() || '').toLowerCase();
+            const storedNameKey = 'admin_uploaded_resume_name';
+            const storedDataKey = 'admin_uploaded_resume_data';
+            const storedTypeKey = 'admin_uploaded_resume_type';
+
+            // Ensure file card exists (create if missing) and persist the file data
+            if (resumeDisplay && !resumeDisplay.querySelector('.filename')) {
+                const icon = ['jpg','jpeg','png'].includes(ext) ? '🖼️' : (ext === 'pdf' ? '📄' : '📁');
+                resumeDisplay.innerHTML = `
+                    <div class="w-full bg-white border border-gray-200 rounded-lg px-3 py-3 shadow-sm mt-3">
+                        <div class="flex items-start gap-4">
+                            <div class="thumb">${['jpg','jpeg','png'].includes(ext) ? `<img src="" alt="thumb" class="max-w-[110px] max-h-[88px] rounded-md object-cover">` : `<div class="pdf-icon inline-flex items-center justify-center w-[80px] h-[64px] bg-[#eff6ff] text-[#1e40af] font-bold rounded-md">PDF</div>`}</div>
+                            <div class="flex-1 min-w-0">
+                                <div class="filename text-sm text-gray-700 break-words truncate">${file.name}</div>
+                                <div class="ocr-summary-small mt-1 text-sm text-gray-600"></div>
+                            </div>
+                            <div class="flex-shrink-0 flex flex-col items-center gap-2">
+                                <button type="button" class="viewBtn bg-[#2E2EFF] hover:bg-blue-600 text-white text-xs px-3 py-1 rounded-md">View / Tingnan</button>
+                                <button type="button" class="removeBtn bg-[#D20103] hover:bg-red-600 text-white text-xs px-3 py-1 rounded-md">Remove / Alisin</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // attach view/remove handlers (prefer stored data URL like other uploads)
+                const viewBtn = resumeDisplay.querySelector('.viewBtn');
+                const removeBtn = resumeDisplay.querySelector('.removeBtn');
+                if (viewBtn) viewBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    try {
+                        const modalEl = document.getElementById('fileModal');
+                        const modalContentEl = document.getElementById('modalContent');
+                        if (!modalEl || !modalContentEl) {
+                            // fallback to open in new tab
+                            const objUrl = URL.createObjectURL(file);
+                            window.open(objUrl, '_blank');
+                            return;
+                        }
+
+                        const stored = localStorage.getItem(storedDataKey);
+                        const storedType = localStorage.getItem(storedTypeKey) || ext;
+
+                        let url = null;
+                        let fileExt = (storedType || '').toLowerCase();
+
+                        if (stored) {
+                            try {
+                                const parsed = JSON.parse(stored);
+                                if (Array.isArray(parsed) && parsed.length) {
+                                    url = parsed[0];
+                                    fileExt = (Array.isArray(JSON.parse(storedType || '[]')) ? (JSON.parse(storedType || '[]')[0] || ext) : ext);
+                                } else if (typeof parsed === 'string') {
+                                    url = parsed;
+                                }
+                            } catch(e) {
+                                url = stored;
+                            }
+                        }
+
+                        if (!url) url = URL.createObjectURL(file);
+
+                        let inner = '';
+                        if (['jpg','jpeg','png'].includes(fileExt) || (typeof url === 'string' && url.startsWith('data:image'))) {
+                            inner = `<img src="${url}" class="max-h-[80vh] mx-auto rounded-lg">`;
+                        } else if (fileExt === 'pdf' || (typeof url === 'string' && url.endsWith('.pdf')) || (typeof url === 'string' && url.startsWith('data:application/pdf')) ) {
+                            inner = `<iframe src="${url}" class="w-full h-[80vh] rounded-lg border-0"></iframe>`;
+                        } else {
+                            inner = `<p class="text-gray-700 text-center">This file type cannot be previewed.<br>(Hindi maaaring i-preview ang file na ito.)</p>`;
+                        }
+
+                        modalContentEl.innerHTML = `
+                            <div class="flex items-center justify-between mb-2">
+                                <div class="text-sm text-slate-600">1 / 1</div>
+                            </div>
+                            <div class="modal-body">${inner}</div>
+                        `;
+                        modalEl.classList.remove('hidden');
+                        document.body.classList.add('overflow-hidden');
+                        return;
+                    } catch (err) {
+                        console.warn('resume view failed', err);
+                        try { const objUrl = URL.createObjectURL(file); window.open(objUrl, '_blank'); } catch(e){}
+                    }
+                });
+
+                if (removeBtn) removeBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    try { resetDisplay(); } catch(e) { resumeDisplay.innerHTML = ''; }
+                    try { resumeInput.value = ''; } catch(e) {}
+                    try { localStorage.removeItem(storedNameKey); localStorage.removeItem(storedDataKey); localStorage.removeItem(storedTypeKey); } catch(e) {}
+                    try { cleanupUploadedFileByName(file.name); } catch(e) {}
+                });
+
+                // persist data URL for reload/restore and populate thumb if image
+                const rdr = new FileReader();
+                rdr.onload = function(ev) {
+                    try {
+                        localStorage.setItem(storedNameKey, file.name);
+                        localStorage.setItem(storedDataKey, ev.target.result);
+                        localStorage.setItem(storedTypeKey, ext);
+                        const img = resumeDisplay.querySelector('.thumb img');
+                        if (img && ev.target && ev.target.result && ['jpg','jpeg','png'].includes(ext)) img.src = ev.target.result;
+                    } catch(e) { console.warn('persist resume data failed', e); }
+                };
+                rdr.readAsDataURL(file);
+            }
+
+            // show inline loading inside the card (or fallback text)
+            if (resumeDisplay) {
+                const fnameEl = resumeDisplay.querySelector && resumeDisplay.querySelector('.filename');
+                if (fnameEl) {
+                    let loading = resumeDisplay.querySelector('.ocr-loading-container');
+                    if (!loading) {
+                        loading = document.createElement('div');
+                        loading.className = 'ocr-loading-container mt-2 text-sm text-gray-500';
+                        loading.innerHTML = `<span class="ocr-loading-text">Processing resume (OCR)...</span>`;
+                        fnameEl.parentNode.appendChild(loading);
+                    } else {
+                        const txtEl = loading.querySelector('.ocr-loading-text'); if (txtEl) txtEl.textContent = 'Processing resume (OCR)...';
+                        loading.style.display = '';
+                    }
+                } else {
+                    resumeDisplay.textContent = 'Processing resume (OCR)...';
+                }
+            }
+
+            const fd = new FormData(); fd.append('file', file);
+            try { const uid = (typeof window !== 'undefined' && window.LARAVEL_USER_ID) ? String(window.LARAVEL_USER_ID) : (localStorage.getItem('user_id') || ''); if (uid) fd.append('user_id', uid); } catch(e){}
+
+            const res = await fetch('/db/resume-ocr.php', { method: 'POST', credentials: 'same-origin', body: fd });
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            const json = await res.json();
+            if (!json || json.success !== true) throw new Error(json && json.message ? json.message : 'OCR failed');
+
+            const aiData = json.data || json.structured || null;
+            if (aiData && typeof applyOcrDataToForm === 'function') {
+                try { applyOcrDataToForm(aiData, 'resume', 'resume'); } catch (e) { console.warn('applyOcrDataToForm failed', e); }
+            }
+
+            // append summary into the card and hide loading
+            if (resumeDisplay) {
+                let summary = '';
+                if (aiData) {
+                    if (aiData.name) summary += aiData.name + ' ';
+                    if (Array.isArray(aiData.emails) && aiData.emails[0]) summary += ' • ' + aiData.emails[0];
+                    if (Array.isArray(aiData.phones) && aiData.phones[0]) summary += ' • ' + aiData.phones[0];
+                }
+                const txt = summary.trim() || 'OCR completed — fields populated where possible.';
+                try {
+                    const fnameEl = resumeDisplay.querySelector && resumeDisplay.querySelector('.filename');
+                    if (fnameEl) {
+                        let note = resumeDisplay.querySelector('.ocr-summary-small');
+                        if (!note) {
+                            note = document.createElement('div');
+                            note.className = 'ocr-summary-small mt-1 text-sm text-gray-600';
+                            fnameEl.parentNode.appendChild(note);
+                        }
+                        note.textContent = txt;
+                        const loading = resumeDisplay.querySelector('.ocr-loading-container'); if (loading) loading.style.display = 'none';
+                    } else {
+                        const loading = resumeDisplay.querySelector && resumeDisplay.querySelector('.ocr-loading-container'); if (loading) loading.style.display = 'none';
+                        resumeDisplay.textContent = txt;
+                    }
+                } catch(e) { resumeDisplay.textContent = txt; }
+
+                // show confirmation modal
+                try {
+                    showOcrModal({
+                        type: 'success',
+                        title: 'Resume Processed',
+                        message: 'Your resume was scanned and information was applied to the form where possible.',
+                        details: [
+                            { label: 'Name', value: aiData.name || '' },
+                            { label: 'Email', value: (Array.isArray(aiData.emails) && aiData.emails[0]) || '' }
+                        ],
+                        note: 'Please review and adjust any fields as needed.',
+                        confirmText: 'OK'
+                    });
+                } catch(e) { console.warn('showOcrModal failed for resume', e); }
+            }
+
+        } catch (err) {
+            console.error('Resume OCR error', err);
+            if (resumeDisplay) {
+                const fnameEl = resumeDisplay.querySelector && resumeDisplay.querySelector('.filename');
+                const loading = resumeDisplay.querySelector && resumeDisplay.querySelector('.ocr-loading-container');
+                if (loading) loading.style.display = 'none';
+                if (fnameEl) {
+                    let errEl = resumeDisplay.querySelector('.ocr-error');
+                    if (!errEl) { errEl = document.createElement('div'); errEl.className = 'ocr-error mt-1 text-sm text-red-600'; fnameEl.parentNode.appendChild(errEl); }
+                    errEl.textContent = 'Resume OCR failed. Please try again.';
+                } else {
+                    resumeDisplay.textContent = 'Resume OCR failed. Please try again.';
+                }
+            }
+        }
+    });
+});
+</script>
 
             <!-- Comprehensive restore: fill all form fields from saved draft/localStorage -->
             <script>
@@ -4411,6 +5113,21 @@ function setupUpload(inputId, displayId, labelId, hintId) {
         }
     });
 })();
+</script>
+
+<script>
+// Global close handler for file preview modal (covers cases where iframe/pdf steals pointer events)
+document.addEventListener('DOMContentLoaded', function(){
+    try {
+        const btn = document.getElementById('closeModalBtn');
+        const fileModal = document.getElementById('fileModal');
+        const modalContent = document.getElementById('modalContent');
+        if (btn && fileModal && modalContent && !btn._global_wired) {
+            btn.addEventListener('click', function(e){ e.preventDefault(); try{ fileModal.classList.add('hidden'); modalContent.innerHTML = ''; document.body.classList.remove('overflow-hidden'); }catch(e){} });
+            btn._global_wired = true;
+        }
+    } catch(e) { console.warn('global close handler attach failed', e); }
+});
 </script>
 
 <div id="ocrResultModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">

@@ -428,6 +428,29 @@
       // replace previous data variable in outer scope by attaching to window for the fetch below
       window.__mvsg_registration_payload = data;
 
+      // Merge `rpi_personal1` draft into top-level payload so server receives
+      // `education` and `job_experiences` regardless of where the client saved them.
+      try {
+        const draftRaw = localStorage.getItem('rpi_personal1') || sessionStorage.getItem('rpi_personal1');
+        if (draftRaw) {
+          const draft = JSON.parse(draftRaw);
+          if (draft) {
+            // education: accept string or object/array in draft
+            if ((!window.__mvsg_registration_payload.education || window.__mvsg_registration_payload.education === 'null') && typeof draft.education !== 'undefined' && draft.education !== null) {
+              window.__mvsg_registration_payload.education = typeof draft.education === 'string' ? draft.education : JSON.stringify(draft.education);
+            }
+            // job_experiences: ensure top-level key is present (stringified array/object)
+            if ((!window.__mvsg_registration_payload.job_experiences || window.__mvsg_registration_payload.job_experiences === 'null') && typeof draft.job_experiences !== 'undefined' && draft.job_experiences !== null) {
+              window.__mvsg_registration_payload.job_experiences = typeof draft.job_experiences === 'string' ? draft.job_experiences : JSON.stringify(draft.job_experiences);
+            }
+            // also accept draft.education_profile -> education_profile when missing
+            if ((!window.__mvsg_registration_payload.education_profile || window.__mvsg_registration_payload.education_profile === 'null') && typeof draft.education_profile !== 'undefined' && draft.education_profile !== null) {
+              window.__mvsg_registration_payload.education_profile = typeof draft.education_profile === 'string' ? draft.education_profile : JSON.stringify(draft.education_profile);
+            }
+          }
+        }
+      } catch (e) { console.warn('merge rpi_personal1 into payload failed', e); }
+
       // Ensure each certificate entry includes the canonical text fields the server expects
       // (certificate_name, issued_by, date_completed). We keep certificate_name defaulted
       // to 'Uploaded Certificate' when missing, but require the user to supply issued_by

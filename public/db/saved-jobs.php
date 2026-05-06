@@ -21,7 +21,7 @@ try {
       SELECT sj.JOB_ID,
              sj.CREATED_AT,
              jp.ID                AS JP_ID,
-             jp.JOB_ROLE          AS JOB_TITLE,
+             NVL(jp.JOB_TITLE, jp.JOB_DESCRIPTION) AS JOB_TITLE,
              jp.COMPANY_NAME      AS COMPANY_NAME,
              jp.ADDRESS           AS LOCATION,
                          jp.JOB_DESCRIPTION   AS DESCRIPTION,

@@ -194,22 +194,105 @@ function extract_phones($text) {
 }
 
 function extract_name_candidate($text) {
-    // look for explicit 'Name:' or first lines with capitalized words
-    if (preg_match('/\bName\s*[:\-]\s*([A-Z][A-Za-z\'\-]+(?:\s+[A-Z][A-Za-z\'\-]+){0,2})/i', $text, $m)) {
+    // Improved name extraction heuristics:
+    // 1. If explicit 'Name:' label exists, use it.
+    // 2. Prefer lines immediately above an email/phone block (common layout).
+    // 3. Scan for likely name lines: 2-4 word tokens, alphabetic, not a section heading.
+    // 4. Reject common section headings like 'CAREER SUMMARY', 'PROJECTS', etc.
+
+    $stop_headings = [
+        'career summary','summary','objective','profile','projects','experience','education','skills','certificates','certifications','contact','language','languages','references'
+    ];
+
+    // 1) explicit 'Name:' pattern
+    if (preg_match('/\bName\s*[:\-]\s*([A-Z][A-Za-z\'\-]+(?:\s+[A-Z][A-Za-z\'\-]+){0,3})/i', $text, $m)) {
         return trim($m[1]);
     }
-    // take first non-empty line that looks like a name (2 words, letters only)
-    $lines = preg_split('/\r?\n/', $text);
-    foreach ($lines as $i => $line) {
-        $line = trim($line);
-        if ($line === '' || strlen($line) > 60) continue;
-        // skip lines that contain @ or digits (likely contact)
-        if (preg_match('/[@\d]/', $line)) continue;
-        // candidate: 2-3 words, each starting with uppercase letter
-        if (preg_match('/^[A-Z][A-Za-z\'\-]+(?:\s+[A-Z][A-Za-z\'\-]+){1,2}$/', $line)) {
-            return $line;
+
+    // Helper: validate a candidate string as a probable person name
+    $is_valid_name = function($s) use ($stop_headings) {
+        if (!$s) return false;
+        $s = trim($s);
+        if (strlen($s) < 3 || strlen($s) > 80) return false;
+        // reject if contains digits or excessive punctuation
+        if (preg_match('/[0-9]/', $s)) return false;
+        // normalize for checks
+        $low = strtolower($s);
+        // reject if matches any stop heading tokens
+        foreach ($stop_headings as $h) {
+            if (preg_match('/\b' . preg_quote($h, '/') . '\b/i', $low)) return false;
+        }
+        // require at least two words
+        $parts = preg_split('/\s+/', $s);
+        if (count($parts) < 2) return false;
+        // each word should be alphabetic or single initial
+        $okCount = 0;
+        foreach ($parts as $p) {
+            $p = trim($p, ".,\-\'");
+            if ($p === '') continue;
+            if (preg_match('/^[A-Za-z]$/', $p) || preg_match('/^[A-Za-z][A-Za-z\'\-]{1,}$/', $p)) $okCount++; 
+        }
+        return $okCount >= 2;
+    };
+
+    // 2) Prefer name just above email/phone lines
+    if (preg_match_all('/^.*@[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/m', $text, $_emails) || preg_match_all('/@/', $text)) {
+        // find email positions
+        if (preg_match_all('/^.*[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}.*$/m', $text, $emMatches, PREG_OFFSET_CAPTURE)) {
+            foreach ($emMatches[0] as $em) {
+                $pos = $em[1];
+                // take up to 3 lines before this position
+                $prefix = substr($text, 0, $pos);
+                $lines = preg_split('/\r?\n/', trim($prefix));
+                for ($i = count($lines)-1; $i >= 0 && $i >= count($lines)-5; $i--) {
+                    $cand = trim($lines[$i]);
+                    if ($cand === '') continue;
+                    // If the line contains both name and role (e.g. 'THOMAS ADRIAN M. NAGUIT BACKEND DEVELOPER'), remove common role tokens
+                    $cleanCand = $cand;
+                    $roleTokens = ['developer','backend','frontend','engineer','officer','manager','intern','lead','consultant','analyst','designer','administrator','teacher','assistant','coordinator'];
+                    // remove trailing role phrases
+                    $parts = preg_split('/\s{2,}|\s-\s|\s—\s|\s–\s|,\s*/', $cleanCand);
+                    $maybe = $parts[0];
+                    // also try trimming trailing role words from single-line candidates
+                    $words = preg_split('/\s+/', $maybe);
+                    while (count($words) > 1 && in_array(strtolower(end($words)), $roleTokens)) { array_pop($words); }
+                    $maybe2 = trim(implode(' ', $words));
+                    if ($is_valid_name($maybe2)) return $maybe2;
+                    if ($is_valid_name($cand)) return $cand;
+                    // sometimes name appears with role on same line, try extracting uppercase portion
+                    if (preg_match('/([A-Z][A-Za-z\'\-]+(?:\s+[A-Z][A-Za-z\'\-]+){1,3})/', $cand, $m)) {
+                        $c2 = trim($m[1]);
+                        if ($is_valid_name($c2)) return $c2;
+                    }
+                }
+            }
         }
     }
+
+    // 3) Scan all lines for name-like candidates, prefer those near the end or centered around contact block
+    $lines = preg_split('/\r?\n/', $text);
+    // scan bottom-up (names often near top of contact block but sometimes at top; scanning both)
+    for ($pass = 0; $pass < 2; $pass++) {
+        if ($pass === 0) $range = range(count($lines)-1, 0); else $range = range(0, count($lines)-1);
+        foreach ($range as $idx) {
+            $line = trim($lines[$idx]);
+            if ($line === '' || strlen($line) > 80) continue;
+            // skip obvious headings
+            $low = strtolower($line);
+            $skip = false;
+            foreach ($stop_headings as $h) if (strpos($low, $h) !== false) { $skip = true; break; }
+            if ($skip) continue;
+            // skip lines with colon or '—' that are section lines
+            if (preg_match('/[:|\-]{1}/', $line) && !preg_match('/\b[A-Z][a-z]+\b/', $line)) continue;
+            if ($is_valid_name($line)) return $line;
+            // allow extraction from lines with role beneath name: e.g. 'THOMAS ADRIAN M. NAGUIT BACKEND DEVELOPER' -> extract name portion
+            if (preg_match('/([A-Z][A-Za-z\'\-]+(?:\s+[A-Z](?:\.|)\s*)?(?:\s+[A-Z][A-Za-z\'\-]+){1,3})/i', $line, $m)) {
+                $cand = trim($m[1]);
+                if ($is_valid_name($cand)) return $cand;
+            }
+        }
+    }
+
     return null;
 }
 

@@ -123,14 +123,72 @@ $json = file_get_contents('php://input');
 $data = json_decode($json, true);
 if (!$data) response(false, 'Invalid JSON');
 
-$ocrtype = $data['type'] ?? null;
+// Accept multiple incoming field names for type to be tolerant of clients
+$ocrtype = $data['type'] ?? $data['ocrtype'] ?? $data['ocr_type'] ?? null;
+if (is_string($ocrtype)) {
+    // Robust normalization for client-provided type strings:
+    // - convert camelCase to snake_case
+    // - replace non-alphanumeric chars with underscores
+    // - collapse multiple underscores, trim
+    $ocrtype = trim($ocrtype);
+    $ocrtype = preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', $ocrtype); // camelCase -> snake_case
+    $ocrtype = preg_replace('/[^A-Za-z0-9_]+/', '_', $ocrtype); // spaces, hyphens -> underscore
+    $ocrtype = strtolower($ocrtype);
+    $ocrtype = preg_replace('/_+/', '_', $ocrtype);
+    $ocrtype = trim($ocrtype, '_');
+
+    // Map common synonym variants to canonical types
+    $map = [
+        'guardian' => 'guardian_id',
+        'guardianid' => 'guardian_id',
+        'guardian_id' => 'guardian_id',
+        'fit' => 'fit_to_work',
+        'fittowork' => 'fit_to_work',
+        'fit_to_work' => 'fit_to_work',
+        'medical' => 'medical_certificate',
+        'medical_certificate' => 'medical_certificate',
+        'pwd' => 'pwd_id',
+        'pwdid' => 'pwd_id',
+        'pwd_id' => 'pwd_id',
+        'membership_proof' => 'membership_proof',
+        'certificate_proof' => 'certificate_proof',
+        'resume' => 'resume'
+    ];
+    if (isset($map[$ocrtype])) $ocrtype = $map[$ocrtype];
+}
 
 // ================================
 // 2. HANDLE BASE64 INPUT
 // ================================
 
-if (!in_array($ocrtype, ['certificate_proof', 'membership_proof', 'pwd_id', 'medical_certificate', 'fit_to_work, ','company_registration'])) {
-    response(false, "Invalid OCR type");
+// Accept a broad set of canonical types; if the normalized value isn't one of them,
+// try a last-resort substring-based mapping to be tolerant of client variants.
+$allowed_types = ['certificate_proof', 'membership_proof', 'pwd_id', 'medical_certificate', 'fit_to_work', 'guardian_id', 'resume'];
+if (!in_array($ocrtype, $allowed_types)) {
+    $ocr_lc = is_string($ocrtype) ? strtolower($ocrtype) : '';
+    if (strpos($ocr_lc, 'fit') !== false || strpos($ocr_lc, 'fitto') !== false || strpos($ocr_lc, 'fit_to') !== false) {
+        $ocrtype = 'fit_to_work';
+    } elseif (strpos($ocr_lc, 'guardian') !== false || strpos($ocr_lc, 'parent') !== false) {
+        $ocrtype = 'guardian_id';
+    } elseif (strpos($ocr_lc, 'pwd') !== false || strpos($ocr_lc, 'person_with_disab') !== false) {
+        $ocrtype = 'pwd_id';
+    } elseif (strpos($ocr_lc, 'medical') !== false || strpos($ocr_lc, 'med') !== false) {
+        $ocrtype = 'medical_certificate';
+    } elseif (strpos($ocr_lc, 'member') !== false || strpos($ocr_lc, 'membership') !== false) {
+        $ocrtype = 'membership_proof';
+    } elseif (strpos($ocr_lc, 'resume') !== false || strpos($ocr_lc, 'cv') !== false) {
+        $ocrtype = 'resume';
+    } elseif (strpos($ocr_lc, 'cert') !== false || strpos($ocr_lc, 'training') !== false) {
+        $ocrtype = 'certificate_proof';
+    }
+
+    // Final check — if still not allowed, reject with helpful message and include received payload for debugging
+    if (!in_array($ocrtype, $allowed_types)) {
+        try {
+            @file_put_contents(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_ocr_type.json', json_encode(['time'=>date('c'),'received'=>$data], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        } catch (Exception $e) { /* ignore */ }
+        response(false, "Invalid OCR type", ['received_type' => ($data['type'] ?? $data['ocrtype'] ?? $data['ocr_type'] ?? null), 'payload' => $data]);
+    }
 }
 
 $base64_data = $data['ocr_data'] ?? null;
@@ -289,14 +347,14 @@ if ($ocrtype === 'pwd_id') {
         "issued_by" => "Issuing Organization",
         "date_completed" => "YYYY-MM-DD"
     ]);
-} elseif ($ocrtype === 'company_registration') {
+} elseif ($ocrtype === 'resume') {
+    // Resume: extract contact, summary, work, education, skills
     $fields = array_merge($common, [
-        "middle_name" => "Middle name (if any)",
-        "company_name" => "Registered company name",
-        "company_email" => "Company email address (if any)",
-        "position" => "Position or role of the individual in the company (if any)",
-        "is_valid_id" => "true or false - whether this identification card is a valid",
-        "identification_id" => "Personal identification number (if any)"
+        "summary" => "Short professional summary or objective",
+        "work_experience" => "Work experience entries (company, role, dates)",
+        "education" => "Education entries (degree, school, dates)",
+        "skills" => "List of skills or competencies",
+        "certifications" => "Relevant certifications"
     ]);
 } else {
     $fields = array_merge($common, ["summary" => "short summary of document content"]);

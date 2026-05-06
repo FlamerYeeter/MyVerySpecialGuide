@@ -111,7 +111,7 @@ $job_title = null;
 $job_description = null;
 $job_looking_for = null;
 $job_cond2 = id_condition_sql('ID', $use_to_char_job);
-$sql = "SELECT JOB_ROLE, JOB_DESCRIPTION, WHAT_WE_ARE_LOOKING_FOR, QUALIFICATIONS FROM MVSG.JOB_POSTINGS WHERE $job_cond2";
+$sql = "SELECT NVL(JOB_TITLE, JOB_DESCRIPTION) AS JOB_ROLE, JOB_DESCRIPTION, WHAT_WE_ARE_LOOKING_FOR, QUALIFICATIONS FROM MVSG.JOB_POSTINGS WHERE $job_cond2";
 $stid = oci_parse($conn, $sql);
 oci_bind_by_name($stid, ':id_str', $job_id, -1);
 if (@oci_execute($stid)) {

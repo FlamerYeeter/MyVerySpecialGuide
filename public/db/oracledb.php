@@ -11,11 +11,12 @@ function getOracleConnection() {
 
     if (!$conn) {
         // Add OCI_SYSDBA here
-        $conn = oci_connect(DB_USER, DB_PASS, DB_CONN);
-
+        // suppress direct PHP warnings; return null on failure and let callers handle errors
+        $conn = @oci_connect(DB_USER, DB_PASS, DB_CONN);
         if (!$conn) {
             $e = oci_error();
-            die("Oracle connection failed: " . $e['message']);
+            error_log('Oracle connection failed: ' . ($e['message'] ?? json_encode($e)));
+            return null;
         }
     }
 
