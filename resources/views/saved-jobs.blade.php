@@ -5,50 +5,63 @@
     <!-- Icon link -->
     <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 
+    <main role="main" class="overflow-x-hidden flex flex-col flex-1 min-h-0">
 
-    <!--PAAYOS NLANG DIN UNG ITSURA AND BACK END GOIZZZ-->
-    <!-- Back Button -->
-    <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
-        <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
+<!-- HERO STYLE HEADER -->
+<section class="bg-sky-50 py-12 sm:py-16" role="region" aria-labelledby="hero-heading">
+    <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 text-center">
+
+        <p class="text-base font-bold uppercase tracking-widest text-blue-700">
+            Your jobs
+        </p>
+
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 mt-2" id="hero-heading">
+            Saved Jobs
+        </h1>
+
+        <div class="mx-auto max-w-2xl">
+            <p class="text-lg sm:text-xl text-slate-700 mt-4">
+                These are the jobs you saved. You can come back anytime and apply when you're ready.
+            </p>
+            <div class="mt-6 inline-flex items-center justify-center gap-3">
+                <button type="button"
+                class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                aria-label="Read hero section aloud"
+                onclick="speakText(document.getElementById('tts-hero').textContent)">
+
+                <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                Listen
+            </button>
+            </div>
+        </div>
+
+        <!-- COUNT BUTTON -->
+        <div class="mt-6">
+            <button type="button" id="savedJobsCountBtn"
+                aria-label="Saved jobs count"
+                class="inline-flex items-center justify-center gap-3 rounded-full bg-blue-700 px-8 py-4 text-white text-lg font-bold shadow-lg hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+                <img src="https://img.icons8.com/fluency/48/bookmark-ribbon.png" class="w-6 h-6" alt="" aria-hidden="true">
+                <span id="savedJobsCountText" role="status" aria-live="polite">Loading...</span>
+            </button>
+        </div>
+
+        <div class="pt-6">
             <a href="/job-matches"
-                class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
-                    stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                <span>Back to Jobs</span>
+                class="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-white px-6 py-3 text-blue-700 font-semibold shadow-sm transition hover:bg-blue-50 hover:border-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+
+                <!-- Icons8 Back Icon -->
+                <img src="https://img.icons8.com/ios-filled/24/1E40AF/left.png"
+                    alt=""
+                    aria-hidden="true"
+                    class="w-5 h-5">
+
+                <span>Back to jobs</span>
             </a>
         </div>
+
     </div>
-
-    <!-- Saved Jobs Overview -->
-    <section class="max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-12 px-4 sm:px-6 lg:px-8">
-
-        <!-- Overview Card -->
-        <div class="border-4 border-blue-300 bg-blue-50 rounded-3xl shadow-md p-6 sm:p-8 lg:p-10 flex flex-col sm:flex-row items-center sm:items-start gap-6 sm:gap-8">
-
-            <!-- Icon -->
-            <div class="flex items-center justify-center bg-yellow-200 border-2 border-yellow-300 p-4 sm:p-5 lg:p-6 rounded-2xl shadow-sm flex-shrink-0">
-                <img src="image/savedicon.png" alt="Saved Jobs Icon" class="h-14 sm:h-16 lg:h-20 w-14 sm:w-16 lg:w-20">
-            </div>
-
-            <!-- Text + Button -->
-            <div class="text-center sm:text-left flex-1">
-                <h2 id="saved-jobs-title" class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-blue-700 mb-2 sm:mb-3 tracking-wide">
-                    Your Saved Jobs <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="saved-jobs-title">🔊</button>
-                </h2>
-                <p id="saved-jobs-description" class="text-base sm:text-lg lg:text-lg text-gray-700 mb-4 sm:mb-6 leading-relaxed">
-                    These are the jobs you’ve saved for later. You can look at them again and apply when you’re ready! <button class="tts-btn ml-1 bg-[#1E40AF] text-white rounded-full px-1 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="saved-jobs-description">🔊</button>
-                </p>
-
-                <div class="flex justify-center sm:justify-start">
-                    <button id="savedJobsCountBtn" class="flex items-center justify-center gap-2 sm:gap-3 bg-green-600 hover:bg-green-700 text-white text-base sm:text-lg lg:text-xl font-bold px-6 sm:px-8 lg:px-10 py-3 sm:py-4 lg:py-4 rounded-2xl shadow-lg transition-all duration-200 focus:ring-4 focus:ring-green-400 focus:outline-none">
-                        <img src="https://img.icons8.com/fluency/48/bookmark-ribbon.png" alt="Saved Jobs Icon" class="h-6 sm:h-7 lg:h-8 w-6 sm:w-7 lg:w-8">
-                        <span id="savedJobsCountText">No Saved Jobs Yet</span>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <div id="tts-hero" class="sr-only">Your jobs. Saved Jobs. These are the jobs you saved. You can come back anytime and apply when you’re ready.</div>
+</section>
 
        {{--<!-- Job List Container -->
         <div class="mt-10 space-y-8">
@@ -139,9 +152,29 @@
 
 
     <!-- Job Cards -->
-    <div id="saved-jobs-list" class="max-w-6xl mx-auto mt-8 sm:mt-10 lg:mt-12 mb-12 sm:mb-16 lg:mb-20 px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
-        <p class="text-center text-gray-600 text-sm sm:text-base">Loading saved jobs…</p>
-    </div>
+    <section class="bg-white py-12 sm:py-16" id="saved-jobs" role="region" aria-labelledby="saved-jobs-heading">
+        <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+            <div>
+                <h2 id="saved-jobs-heading" class="text-2xl sm:text-3xl font-bold text-slate-900">Saved jobs</h2>
+                <p class="mt-2 text-sm sm:text-base text-slate-600">Review the jobs you have saved and apply when you’re ready.</p>
+            </div>
+             <button type="button"
+            class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+            aria-label="Read saved jobs section aloud"
+            onclick="speakText(
+                document.getElementById('saved-jobs-heading').textContent + '. ' + 
+                document.getElementById('saved-jobs-description').textContent
+            )">
+
+            <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+            Listen
+        </button>
+        </div>
+        <div id="saved-jobs-list" class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 grid gap-10 lg:grid-cols-2">
+            <p class="col-span-2 text-center text-slate-600 text-base">Loading saved jobs…</p>
+        </div>
+        <div id="tts-saved-jobs" class="sr-only">Saved Jobs section. Review the jobs you have saved and apply when you’re ready.</div>
+    </section>
 
     <script>
     (function(){
@@ -156,15 +189,19 @@
                         const savedArr = (json && Array.isArray(json.saved)) ? json.saved : [];
                         const totalSaved = savedArr.length;
                         if (btnTextEl) {
-                                if (totalSaved === 0) btnTextEl.textContent = 'No Saved Jobs Yet';
+                                if (totalSaved === 0) btnTextEl.textContent = 'No saved jobs yet';
                                 else btnTextEl.textContent = `${totalSaved} Saved Job${totalSaved !== 1 ? 's' : ''}`;
                         }
 
                         if (!json || !json.success || !Array.isArray(json.saved) || json.saved.length === 0) {
                                 container.innerHTML = `
-                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 sm:p-8 text-center text-gray-700">
-                                        <p class="text-lg sm:text-xl font-semibold mb-2">No Saved Jobs Yet</p>
-                                        <p class="text-sm sm:text-base">Save jobs from the Jobs page and they'll appear here.</p>
+                                    <div class="col-span-2 bg-blue-50 border-2 border-blue-200 rounded-2xl p-8 sm:p-12 text-center">
+                                        <div class="mb-4 text-5xl" aria-hidden="true">📋</div>
+                                        <p class="text-lg sm:text-xl font-bold text-gray-900 mb-2">No saved jobs yet</p>
+                                        <p class="text-sm sm:text-base text-gray-600 mb-6">Save jobs from the Jobs page and they'll appear here.</p>
+                                        <a href="/job-matches" class="inline-flex items-center gap-2 bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-800 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+                                            Browse Jobs
+                                        </a>
                                     </div>`;
                                 return;
                         }
@@ -188,6 +225,7 @@
                         fetchApps.then(() => {
                             container.innerHTML = rows.map(j => {
                                 const jid = esc(j.job_id || j.JP_ID || '');
+                                const safeJid = jid.replace(/[^a-zA-Z0-9_-]/g, '_');
                                 const title = esc(j.job_role || 'Untitled Job');
                                 const company = esc(j.company_name || '');
                                 const loc = esc(j.address || '');
@@ -207,29 +245,48 @@
                                 const applyBtnText = applyDisabled ? '🚫 Applied' : '🚀 Apply Now';
 
                                 return `
-                                    <div data-job-id="${jid}" class="job-card bg-white border border-gray-200 rounded-2xl shadow-md p-4 sm:p-5 lg:p-6 flex flex-col sm:flex-row justify-between gap-4 sm:gap-5 lg:gap-6 transition-transform hover:shadow-lg hover:scale-[1.01]">
-                                        <div class="flex items-start gap-3 sm:gap-4 lg:gap-6 flex-1 min-w-0">
-                                            <div class="w-20 sm:w-24 lg:w-28 h-20 sm:h-24 lg:h-28 rounded-xl overflow-hidden flex-shrink-0 border border-gray-300 bg-gray-50">
-                                                <img src="${logo}" alt="${title} logo" class="w-full h-full object-cover">
-                                            </div>
-                                            <div class="min-w-0 flex-1">
-                                                <h3 class="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 leading-tight truncate">${title}</h3>
-                                                ${ company ? `<p class="text-base sm:text-lg text-gray-700 mt-1 truncate">${company}</p>` : '' }
-                                                ${ loc ? `<p class="text-xs sm:text-sm text-gray-600 mt-2 flex items-center gap-2"><img src='https://img.icons8.com/color/48/marker--v1.png' class='w-4 h-4 flex-shrink-0'> <span class='truncate'>${loc}</span></p>` : '' }
+                                    <div data-job-id="${jid}" class="job-card rounded-2xl border border-slate-200 bg-white shadow-md transition hover:shadow-lg hover:border-slate-300 overflow-hidden flex flex-col h-full">
+                                        <!-- Header with Logo and Info -->
+                                        <div class="p-6 pb-4">
+                                            <div class="flex items-start gap-4">
+                                                <!-- Logo -->
+                                                <div class="flex-shrink-0 rounded-xl bg-blue-50 p-2 shadow-sm">
+                                                    <img src="${logo}" alt="${title} logo" class="h-14 w-14 object-cover rounded-lg">
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <h3 class="text-lg sm:text-xl font-bold text-gray-900 leading-tight">${title}</h3>
+                                                    ${ company ? `<p class="text-sm sm:text-base text-gray-600 mt-1">${company}</p>` : '' }
+                                                    ${ loc ? `<p class="text-xs sm:text-sm text-gray-500 mt-2 flex items-center gap-2"><img src='https://img.icons8.com/color/48/marker--v1.png' class='w-4 h-4 flex-shrink-0' alt='' aria-hidden='true'> <span>${loc}</span></p>` : '' }
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="flex flex-col gap-3 sm:flex-wrap sm:justify-end sm:gap-2 lg:flex-row lg:gap-3 lg:items-center">
+
+                                        <!-- Description -->
+                                        ${ desc ? `<div class="px-6 pb-4"><p class="text-sm text-gray-600 line-clamp-2">${desc}...</p></div>` : '' }
+
+                                        <!-- Hidden audio text -->
+                                        <div id="tts-${safeJid}" class="sr-only">${title}${company ? '. ' + company : ''}${loc ? '. ' + loc : ''}${desc ? '. ' + desc : ''}</div>
+
+                                        <!-- Divider -->
+                                        <div class="border-t border-slate-100"></div>
+
+                                        <!-- Action Buttons -->
+                                        <div class="p-6 pt-4 flex flex-col gap-2 sm:flex-row sm:gap-2 lg:gap-3">
+                                            <button type="button" data-target="tts-${safeJid}" class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" aria-label="Read saved job details aloud">
+                                                🔊
+                                            </button>
+
                                             <a href="/job-details?job_id=${encodeURIComponent(jid)}"
-                                            class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base bg-[#55BEBB] text-white rounded-md shadow-md hover:bg-[#47a4a1] font-semibold transition-all text-center whitespace-nowrap">
+                                            class="flex-1 px-3 py-2 text-xs sm:text-sm font-semibold text-center rounded-lg bg-[#55BEBB] text-white shadow-sm hover:bg-[#47a4a1] transition-all whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
                                             📝 Details
                                             </a>
 
-                                            <button ${applyBtnAttr} class="${applyBtnClass}" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
+                                            <button ${applyBtnAttr} class="flex-1 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-all whitespace-nowrap ${applyBtnClass} focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
                                             ${applyBtnText}
                                             </button>
 
                                             <button onclick="removeSavedJob('${esc(jid)}', this)"
-                                            class="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm lg:text-base bg-[#FF2400] text-white rounded-md shadow-sm hover:bg-[#C41E3A] font-semibold transition-all whitespace-nowrap">
+                                            class="flex-1 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-red-500 text-white shadow-sm hover:bg-red-600 transition-all whitespace-nowrap focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-300">
                                             🗑️ Remove
                                             </button>
                                         </div>
@@ -252,16 +309,27 @@
             const remaining = listContainer ? listContainer.querySelectorAll('.job-card').length : 0;
 
             if (btnTextEl) {
-                if (remaining === 0) btnTextEl.textContent = 'No Saved Jobs Yet';
-                else btnTextEl.textContent = `${remaining} Saved Job${remaining !== 1 ? 's' : ''}`;
+                if (remaining === 0) {
+                    btnTextEl.textContent = 'No saved jobs yet';
+                    btnEl.disabled = true;
+                    btnEl.classList.add('opacity-60', 'cursor-not-allowed');
+                } else {
+                    btnTextEl.textContent = `${remaining} Saved Job${remaining !== 1 ? 's' : ''}`;
+                    btnEl.disabled = false;
+                    btnEl.classList.remove('opacity-60', 'cursor-not-allowed');
+                }
             }
 
             // if no jobs left, show the empty placeholder
             if (listContainer && remaining === 0) {
                 listContainer.innerHTML = `
-                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6 sm:p-8 text-center text-gray-700">
-                        <p class="text-lg sm:text-xl font-semibold mb-2">No Saved Jobs Yet</p>
-                        <p class="text-sm sm:text-base">Save jobs from the Jobs page and they'll appear here.</p>
+                    <div class="col-span-2 bg-blue-50 border-2 border-blue-200 rounded-2xl p-8 sm:p-12 text-center">
+                        <div class="mb-4 text-5xl" aria-hidden="true">📋</div>
+                        <p class="text-lg sm:text-xl font-bold text-gray-900 mb-2">No saved jobs yet</p>
+                        <p class="text-sm sm:text-base text-gray-600 mb-6">Save jobs from the Jobs page and they'll appear here.</p>
+                        <a href="/job-matches" class="inline-flex items-center gap-2 bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-800 transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+                            Browse Jobs
+                        </a>
                     </div>`;
             }
         } catch (e) { /* ignore */ }

@@ -2,166 +2,219 @@
 
 @section('content')
 
-    <!-- Icon link -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 
     @php
         $job = null;
         $job_id = request('job_id') ?? request('id') ?? '';
     @endphp
 
+<!-- Skip to main content link -->
+<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50 focus:outline-none focus:ring-2 focus:ring-blue-300">Skip to main content</a>
 
-    <!-- Back Button -->
-    <div class="bg-yellow-400 w-full py-6 px-6 sm:px-10 lg:px-24">
-        <div class="flex justify-start items-center space-x-3 max-w-[1600px] mx-auto">
+<div class="bg-slate-50 flex flex-col flex-1 min-h-0">
+
+    <!-- BACK BUTTON -->
+    <nav class="bg-sky-50 border-b border-sky-100 py-4 px-6 sm:px-10 lg:px-12">
+        <div class="max-w-7xl mx-auto">
             <a href="{{ route('job.matches') }}"
-                class="flex items-center space-x-3 text-[#1E40AF] font-bold text-lg sm:text-xl lg:text-3xl hover:underline focus:outline-none transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
-                    stroke="currentColor" class="w-8 h-8 sm:w-9 sm:h-9 lg:w-10 lg:h-10">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                <span>Back to Jobs</span>
+               class="inline-flex items-center gap-3 text-blue-700 font-semibold text-base sm:text-lg hover:text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+               aria-label="Go back to jobs">
+                <img src="https://img.icons8.com/ios-filled/24/1E40AF/left.png" alt="" aria-hidden="true"/>
+                <span>Back to jobs</span>
             </a>
         </div>
-    </div>
+    </nav>
 
-    <!-- GREEN NOTE -->
-    <div class="bg-green-100 border-[4px] border-green-400 rounded-lg p-5 mt-14 mx-4 sm:mx-10">
-        <div class="flex items-center gap-6">
-            <img src="{{ asset('image/bulb.png') }}" alt="Lightbulb Icon"
-                class="w-8 h-8 sm:w-12 sm:h-12 object-contain flex-shrink-0">
+    <!-- JOB HEADER -->
+    <main id="main-content" class="max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
 
-            <!-- Text Section -->
-            <div id="green-note-content" class="flex flex-col justify-center leading-snug">
-                <p class="text-lg sm:text-xl lg:text-2xl font-semibold text-black">
-                    The content shown here gives more detailed information about the job.
-                </p>
-                <p class="mt-2 italic text-gray-700 text-base sm:text-lg lg:text-xl">
-                    (Ang nakikitang nilalaman dito ay mas detalyadong impormasyon tungkol sa trabaho.) <button class="tts-btn ml-1 bg-[#1E40AF] text-white rounded-full px-1 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="green-note-content">🔊</button>
-                </p>
-            </div>
-        </div>
-    </div>
+        <!-- HEADER CARD -->
+        <article class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm mb-8">
 
-    <!-- APPLY NOTE -->
-    <div class="bg-gray-50 border-[4px] border-gray-300 rounded-lg p-5 mt-8 mx-4 sm:mx-10">
-        <div class="flex items-center gap-6">
-            <!-- Info Icon -->
-            <i class="ri-information-line text-[#1E40AF] text-[2.8rem] sm:text-[2.8rem] flex-shrink-0"></i>
+            <div class="flex flex-col lg:flex-row justify-between gap-8 items-start lg:items-center">
 
-            <!-- Text Content -->
-            <div id="apply-note-content" class="flex flex-col justify-center leading-snug">
-                <p class="text-lg sm:text-xl lg:text-2xl text-black font-semibold">
-                    Click the <span class="text-blue-600 font-bold">Back to Jobs</span> button to go back to the 
-                    displayed hiring jobs.
-                </p>
-                <p class="mt-2 italic text-gray-700 text-base sm:text-lg lg:text-xl">
-                    (Pindutin ang Back to Jobs button upang bumalik muli at makita ang mga hiring na trabaho.) <button class="tts-btn ml-1 bg-[#1E40AF] text-white rounded-full px-1 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="apply-note-content">🔊</button>
-                </p>
-            </div>
-        </div>
-    </div>
 
-    <!-- JOB DETAILS SECTION -->
-    <div class="mt-16 mx-4 sm:mx-10 my-8">
-        <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1E40AF] mb-6 text-center">Job Details</h2>
+                <!-- COMPANY & JOB INFO -->
+                <div class="flex items-start gap-5 flex-1">
 
-        <!-- Job Header -->
-        <div
-            class="mt-12 bg-[#F0F9FF] border-[2px] border-[#1E40AF] rounded-xl p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-10 bg-white shadow-sm">
+                    <!-- LOGO -->
+                    <div class="flex-shrink-0">
+                        <img id="job-logo-img"
+                             src=""
+                             alt="Company Logo"
+                             class="w-24 h-24 rounded-xl border border-gray-300 object-cover hidden">
 
-            <!-- Company Logo -->
-            <div class="flex items-center justify-center sm:justify-start w-full sm:w-auto">
-                {{-- Always render both; server may provide a URL but client fetch will override with blob/data-uri --}}
-                <img id="job-logo-img"
-                     src="{{ !empty($company->logo) ? asset('storage/' . $company->logo) : '' }}"
-                     alt="Company Logo"
-                     class="w-24 h-24 rounded-xl border border-gray-300 object-cover {{ empty($company->logo) ? 'hidden' : '' }}">
-
-                <div id="job-logo-fallback"
-                     class="w-24 h-24 flex items-center justify-center rounded-xl border-4 border-gray-300 bg-gray-50 {{ empty($company->logo) ? '' : 'hidden' }}">
-                    <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
-                </div>
-            </div>
-
-            <!-- Job Information -->
-            <div class="flex flex-col items-center sm:items-start text-center sm:text-left flex-grow">
-                <h3 id="job-title" class="text-xl sm:text-2xl lg:text-3xl font-bold text-black">Job title not specified</h3>
-               <p id="job-location" class="mt-4 flex items-center text-lg sm:text-xl text-gray-700 gap-2">
-                            <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-6 h-6">
-                            Not specified
-                        </p>
+                        <div id="job-logo-fallback"
+                             class="w-24 h-24 flex items-center justify-center rounded-xl border-4 border-gray-300 bg-gray-50">
+                            <i class="ri-building-4-fill text-[#1E40AF] text-6xl"></i>
                         </div>
+                    </div>
 
-            <!-- Apply Now Button -->
-            <div class="flex items-center justify-center sm:justify-end w-full sm:w-auto">
-                <a id="apply-now-btn" href="{{ url('/job-application-1') . '?job_id=' . urlencode($job_id) }}"
-                   class="inline-flex items-center gap-3 bg-[#1E40AF] text-white px-6 py-3 rounded-lg shadow-md hover:bg-blue-900 transition font-semibold"
-                   aria-label="Apply Now">
-                    <span>🚀 Apply Now</span>
-                </a>
+                    <!-- JOB DETAILS -->
+                    <div class="flex-1 min-w-0">
+                        <h1 id="job-title" class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 leading-tight">
+                            Job Role
+                        </h1>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2 text-lg text-slate-700">
+                                <span class="font-semibold" id="company-name">Company</span>
+                            </div>
+
+                            <div class="flex flex-wrap gap-4 text-lg text-slate-600">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://img.icons8.com/color/24/marker.png" alt="" aria-hidden="true" class="w-6 h-6"/>
+                                    <span id="job-location">Location</span>
+                                </div>
+
+                                <div class="flex items-center gap-2">
+                                    <img src="https://img.icons8.com/color/24/time.png" alt="" aria-hidden="true" class="w-6 h-6"/>
+                                    <span id="job-post-date">Posted date</span>
+                                </div>
+
+                                <div class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full font-semibold text-base" id="job-type">
+                                    Work type
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ACTION BUTTONS -->
+                <div class="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
+                    <button id="apply-now-btn" href="{{ url('/job-application-1') . '?job_id=' . urlencode($job_id) }}"
+                       class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-800 text-white px-10 py-5 rounded-2xl font-bold text-2xl hover:from-blue-700 hover:to-blue-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 ring-4 ring-blue-300 ring-opacity-30"
+                       aria-label="Apply Now - Main Action">
+                        <img src="https://img.icons8.com/fluency/32/ffffff/rocket.png" alt="" aria-hidden="true"/>
+                        <span>Apply Now</span>
+                    </button>
+
+                    <button onclick="saveJob('{{ $job_id }}', this)" type="button" data-job-id="{{ $job_id }}" class="inline-flex items-center justify-center gap-3 rounded-full border border-blue-700 bg-transparent px-8 py-4 text-lg font-bold text-blue-700 shadow-lg transition hover:bg-blue-700 hover:text-white hover:shadow-xl active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                            aria-label="Save this job">
+                        <img src="https://img.icons8.com/fluency/24/1E40AF/bookmark-ribbon.png" alt="" aria-hidden="true"/>
+                        <span>Save job</span>
+                    </button>
+                </div>
+
             </div>
-        </div>
+        </article>
 
-        <!-- JOB INFO GRID -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-10">
+        <!-- CONTENT GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-            <!-- LEFT CONTENT -->
-            <div class="col-span-2 space-y-6">
-                <div id="box-job-description" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Job Description <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="job-description-content">🔊</button></h4>
-                    <div id="job-description-content" class="text-gray-700">
-                        <p class="text-gray-500 italic">No information provided.</p>
+            <!-- LEFT COLUMN - MAIN CONTENT -->
+            <div class="lg:col-span-2 space-y-8">
+
+                <!-- JOB DESCRIPTION -->
+                <section id="box-job-desc" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h2 class="text-2xl font-bold text-slate-900">Job description</h2>
+                         <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('job-description-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
-                </div>
-
-                <div id="box-why-join" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Why Join Us? <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="why-join-content">🔊</button></h4>
-                    <div id="why-join-content" class="text-gray-700">
-                        <p class="text-gray-500 italic">No information provided.</p>
+                    <div id="job-description-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-a:text-blue-700 prose-a:underline">
+                        <p class="text-gray-500 italic">No job description provided yet.</p>
                     </div>
-                </div>
+                </section>
 
-                <div id="box-key-resp" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Key Responsibilities <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="key-responsibilities-content">🔊</button></h4>
-                    <div id="key-responsibilities-content" class="text-gray-700">
-                        <p class="text-gray-500 italic">No information provided.</p>
+                <!-- WHY JOIN US -->
+                <section id="box-why-join" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h2 class="text-2xl font-bold text-slate-900">Why join us?</h2>
+                         <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('why-join-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
-                </div>
-
-                <div id="box-looking-for" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Who We Are Looking For <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="looking-for-content">🔊</button></h4>
-                    <div id="looking-for-content" class="text-gray-700">
-                        <p class="text-gray-500 italic">No information provided.</p>
+                    <div id="why-join-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-a:text-blue-700 prose-a:underline">
+                        <p class="text-gray-500 italic">No information provided yet.</p>
                     </div>
-                </div>
+                </section>
 
-                <div id="box-working-env" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Working Environment <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="working-environment-content">🔊</button></h4>
-                    <div id="working-environment-content" class="text-gray-700">
-                        <p class="text-gray-500 italic">No information provided.</p>
+                <!-- KEY RESPONSIBILITIES -->
+                <section id="box-key-resp" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h2 class="text-2xl font-bold text-slate-900">Key responsibilities</h2>
+                          <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('key-responsibilities-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
-                </div>
+                    <div id="key-responsibilities-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-li:text-base">
+                        <p class="text-gray-500 italic">No responsibilities listed yet.</p>
+                    </div>
+                </section>
 
-                <div id="box-accessibility" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Accessibility & Support Requirements <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-accessibility">🔊</button></h4>
+                <!-- WHO WE ARE LOOKING FOR -->
+                <section id="box-looking-for" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h2 class="text-2xl font-bold text-slate-900">Who we are looking for</h2>
+                          <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('looking-for-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+                    </div>
+                    <div id="looking-for-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-li:text-base">
+                        <p class="text-gray-500 italic">No information provided yet.</p>
+                    </div>
+                </section>
+
+                <!-- WORKING ENVIRONMENT -->
+                <section id="box-working-env" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h2 class="text-2xl font-bold text-slate-900">Working environment</h2>
+                          <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('working-environment-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+                    </div>
+                    <div id="working-environment-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold">
+                        <p class="text-gray-500 italic">No working environment details provided yet.</p>
+                    </div>
+                </section>
+
+                <!-- Accessibility & Support Requirements  -->
+                <section id="box-accessibility" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h2 class="text-2xl font-bold text-slate-900">Accessibility & support requirements</h2>
+                       <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('accessibility-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+                    </div>
+                    <div class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-li:text-base">
                         <!-- Section Description -->
                         <p class="text-sm text-gray-600 mb-4">
                             This section helps you understand the workplace conditions, communication methods, and available support 
                             to determine if the job is suitable for your needs.
                         </p>
-                        <div id="accessibility-content" class="text-gray-700"></div>
+    
                         <!-- Communication Requirements -->
                         <div>
-                        <h5 class="font-semibold text-black mb-2">Communication Requirements</h5>
-                        <ul id="communication-list" class="list-disc list-inside space-y-1">
-                            <li class="text-gray-700 italic">No information provided.</li>
-                        </ul>
-                    </div>
+                            <h5 class="font-semibold text-black mb-2">Communication requirements</h5>
+                            <ul id="communication-list" class="list-disc list-inside space-y-1">
+                                <li class="text-gray-700 italic">No information provided.</li>
+                            </ul>
+                        </div>
 
                         <!-- Sensory Requirements -->
                         <div>
-                            <h5 class="font-semibold text-black mb-2">Sensory Requirements</h5>
+                            <h5 class="font-semibold text-black mb-2">Sensory requirements</h5>
                             <ul id="sensory-list" class="list-disc list-inside space-y-1">
                                 <li class="text-gray-700 italic">No information provided.</li>
                             </ul>
@@ -169,7 +222,7 @@
 
                         <!-- Cognitive Level Requirements -->
                         <div>
-                            <h5 class="font-semibold text-black mb-2">Cognitive Level Requirements</h5>
+                            <h5 class="font-semibold text-black mb-2">Cognitive level requirements</h5>
                             <ul id="cognitive-list" class="list-disc list-inside space-y-1">
                                 <li class="text-gray-700 italic">No information provided.</li>
                             </ul>
@@ -177,65 +230,108 @@
 
                         <!-- Accommodation Availability -->
                         <div>
-                            <h5 class="font-semibold text-black mb-2">Accommodation Availability</h5>
+                            <h5 class="font-semibold text-black mb-2">Accommodation availability</h5>
                             <ul id="accommodation-list" class="list-disc list-inside space-y-1">
                                 <li class="text-gray-700 italic">No information provided.</li>
                             </ul>
                         </div>
                     </div>
+                </section>
 
-                <div id="box-qualifications" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Qualifications <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="qualifications-content">🔊</button></h4>
-                    <div id="qualifications-content" class="text-gray-700">
-                        <p class="text-gray-500 italic">No information provided.</p>
+                <!-- QUALIFICATIONS -->
+                <section id="box-qualifications" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h2 class="text-2xl font-bold text-slate-900">Qualifications</h2>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('qualifications-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
-                </div>
+                    <div id="qualifications-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-li:text-base">
+                        <p class="text-gray-500 italic">No qualifications information provided yet.</p>
+                    </div>
+                </section>
+
             </div>
 
+            <!-- RIGHT COLUMN - SIDEBAR -->
+            <div class="space-y-8">
+
+                <!-- ABOUT THIS ROLE / JOB OVERVIEW -->
+                <aside id="box-about-role" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Job overview</h3>
+                                  <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('box-about-role').innerText)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+                    </div>
+
+                    <div class="space-y-5">
+                        <!-- Capacity Progress -->
+                        <div>
+                            <p class="text-sm font-semibold text-slate-600 mb-2">Applications received</p>
+                            <div class="w-full bg-slate-200 h-3 rounded-full">
+                                <div id="capacity-bar" class="bg-blue-600 h-3 rounded-full w-0 transition-all" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Applications received progress"></div>
+                            </div>
+                            <p class="text-base font-semibold text-slate-900 mt-2">
+                                <span id="applied-count">0</span> of <span id="openings-count">0</span> positions filled
+                            </p>
+                        </div>
+
+                        <!-- Details -->
+                        <div class="border-t border-slate-200 pt-5 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-base font-medium text-slate-600">Apply before:</span>
+                                <span id="apply-before" class="font-semibold text-slate-900">—</span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-base font-medium text-slate-600">Posted:</span>
+                                <span id="job-posted-date" class="font-semibold text-slate-900">—</span>
+                            </div>
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-base font-medium text-slate-600">Work type:</span>
+                                <span id="job-type-sidebar" class="font-semibold text-slate-900">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- REQUIRED SKILLS -->
+                <section id="box-skills" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Skills needed</h3>
+                         <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('box-skills').innerText)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+                    </div>
+                    <div id="skills-container" class="flex flex-wrap gap-3">
+                        <span id="skills-placeholder" class="text-gray-500 italic">No skills available yet.</span>
+                    </div>
+                </section>
+
+                <!-- HIRING MANAGER -->
+                <section id="box-hiring-manager" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Hiring manager</h3>
+                          <button type="button"
+            class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+            aria-label="Read hiring manager section aloud"
+            onclick="speakText(document.getElementById('box-hiring-manager').innerText)">
             
-
-            <!-- RIGHT COLUMN -->
-            <div class="space-y-6">
-
-                <!-- About this role -->
-                <div id="box-about-role" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">About this Role <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-about-role">🔊</button></h4>
-                    <div class="h-5 bg-gray-200 mb-2">
-                        <div id="capacity-bar" class="h-5 bg-[#88BF02] w-0"></div>
+            <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+            Listen
+        </button>
                     </div>
-                    <p class="text-lg font-semibold mb-3">
-                        <span id="applied-count" class="text-black">0 applied</span>
-                        <span class="text-gray-600"> of </span>
-                        <span id="openings-count" class="text-gray-600 font-semibold">0 capacity</span>
-                    </p>
-                    <div class="grid grid-cols-2 gap-y-2 text-base">
-                        <p class="text-gray-500 font-medium">Apply Before</p>
-                        <p id="apply-before" class="text-right text-gray-800 font-semibold">-</p>
-
-                        <p class="text-gray-500 font-medium">Job Posted On</p>
-                        <p id="job-post-date" class="text-right text-gray-800 font-semibold">-</p>
-
-                        <p class="text-gray-500 font-medium">Job Type</p>
-                        <p id="job-type" class="text-right text-gray-800 font-semibold">-</p>
-                    </div>
-                </div>
-
-                <!-- Required Skills -->
-                <div id="box-skills" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Required Skills <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-skills">🔊</button></h4>
-                    <div id="skills-container" class="flex flex-wrap gap-4"></div>
-                </div>
-
-                <!-- Job Positions removed per request -->
-
-                <!-- Job Program -->
-                <div id="box-program" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Job Program <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-program">🔊</button></h4>
-                    <p class="text-[#88BF02] border border-[#88BF02] px-3 py-1 rounded-md font-semibold inline-block">No Job Program</p>
-                </div>
-
-                <div id="box-hiring-manager" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Hiring Manager <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-hiring-manager">🔊</button></h4>
 
                     <!-- Managers list: only show names -->
                     <div id="managers-list-container">
@@ -248,34 +344,64 @@
                             </li>
                         </ul>
                     </div>
-                </div>
+                </section>
 
-                <!-- Contact Details -->
-                                <div id="box-contact" class="border border-gray-300 bg-white rounded-none p-6 shadow-md">
-                    <h4 class="text-base sm:text-lg lg:text-xl font-bold text-black mb-3">Contact Details <button class="tts-btn ml-2 bg-[#1E40AF] text-white rounded-full px-2 py-1 hover:bg-[#2563EB] focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-contact">🔊</button></h4>
-                    <p id="contact-address" class="text-sm font-regular text-gray-600 flex items-start gap-4">
-                        <i class="ri-map-pin-line text-black text-lg"></i>
-                        Not yet provided
-                    </p>
-                    <p id="contact-phone" class="mt-2 text-sm font-regular text-gray-600 flex items-start gap-4">
-                        <i class="ri-phone-line text-black text-lg"></i> Not available
-                    </p>
-                    <p id="contact-email" class="mt-2 text-sm font-regular text-gray-600 flex items-start gap-4">
-                        <i class="ri-mail-line text-black text-lg"></i> No email provided
-                    </p>
-                    <p id="contact-industry" class="mt-2  text-sm font-regular text-gray-600 flex items-start gap-4">
-                        <i class="ri-building-4-line text-black text-lg"></i> Not specified
-                    </p>
-                    <a id="company-website" href="#" target="_blank" class="mt-2  text-blue-500 text-sm flex items-center gap-4 hover:underline">
-                        <i class="ri-link text-black text-lg"></i> <span id="company-website-text">No website available</span>
-                    </a>
-                    <a id="company-map" href="#" target="_blank" class="mt-2  text-blue-500 text-sm flex items-center gap-4 hover:underline">
-                        <i class="ri-map-2-line text-black text-lg"></i> <span id="company-map-text">Google Maps</span>
-                    </a>
-                </div>
+                <!-- CONTACT DETAILS -->
+                <section id="box-contact" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm">
+                    <div class="flex justify-between items-start mb-5">
+                        <h3 class="text-xl font-bold text-slate-900">Contact details</h3>
+                          <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('box-contact').innerText)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+                    </div>
+
+                    <div class="space-y-4 text-slate-700">
+
+                        <div class="flex gap-3 items-start">
+                            <img src="https://img.icons8.com/color/24/marker.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
+                            <span id="contact-address" class="text-lg">Location not provided</span>
+                        </div>
+
+                        <div class="flex gap-3 items-start">
+                            <img src="https://img.icons8.com/color/24/phone.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
+                            <a id="contact-phone" href="tel:" class="text-lg hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">Not available</a>
+                        </div>
+
+                        <div class="flex gap-3 items-start">
+                            <img src="https://img.icons8.com/color/24/new-post.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
+                            <a id="contact-email" href="mailto:" class="text-lg hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">No email</a>
+                        </div>
+
+                        {{-- <div class="flex gap-3 items-start">
+                            <img src="https://img.icons8.com/color/24/building.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
+                            <span id="contact-industry" class="text-lg">Not specified</span>
+                        </div> --}}
+
+                        <div class="flex gap-3 items-start">
+                            <img src="https://img.icons8.com/color/24/link.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
+                            <a id="company-website" href="#" target="_blank" class="text-lg text-blue-700 hover:text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
+                                <span id="company-website-text">No website available</span>
+                            </a>
+                        </div>
+
+                        {{-- <div class="flex gap-3 items-start">
+                            <img src="https://img.icons8.com/color/24/map.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
+                            <a id="company-map" href="#" target="_blank" class="text-lg text-blue-700 hover:text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
+                                <span id="company-map-text">Google Maps</span>
+                            </a>
+                        </div> --}}
+
+                    </div>
+                </section>
+
             </div>
         </div>
-    </div>
+    </main>
+
+</div>
     <!-- BACK TO TOP BUTTON -->
     <button id="backToTopBtn"
         class="hidden fixed bottom-8 right-8 bg-[#1E40AF] text-white px-6 py-4 rounded-full shadow-xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110 flex items-center gap-3 text-2xl font-semibold"
@@ -291,6 +417,61 @@
     </button>
 
     <script>
+        function updateSaveButtonState(button, saved) {
+            if (!button) return;
+            button.classList.toggle('border-blue-700', !saved);
+            button.classList.toggle('bg-transparent', !saved);
+            button.classList.toggle('text-blue-700', !saved);
+            button.classList.toggle('hover:bg-blue-700', !saved);
+            button.classList.toggle('hover:text-white', !saved);
+            button.classList.toggle('border-transparent', saved);
+            button.classList.toggle('bg-emerald-600', saved);
+            button.classList.toggle('text-white', saved);
+            button.classList.toggle('hover:bg-emerald-700', saved);
+            button.setAttribute('aria-pressed', saved ? 'true' : 'false');
+            const label = button.querySelector('span');
+            if (label) {
+                label.textContent = saved ? 'Saved' : 'Save job';
+            }
+        }
+
+        function saveJob(jobId, button) {
+            if (!jobId || !button) return;
+            const savedKey = 'savedJobIds';
+            const savedJobs = JSON.parse(localStorage.getItem(savedKey) || '[]');
+            const existingIndex = savedJobs.indexOf(jobId);
+            const willSave = existingIndex === -1;
+            const nextSaved = willSave ? [...savedJobs, jobId] : savedJobs.filter(id => id !== jobId);
+            localStorage.setItem(savedKey, JSON.stringify(nextSaved));
+            updateSaveButtonState(button, willSave);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const jobId = '{{ $job_id }}';
+            const saveButton = document.querySelector('button[data-job-id="' + jobId + '"]');
+            if (jobId && saveButton) {
+                const savedJobs = JSON.parse(localStorage.getItem('savedJobIds') || '[]');
+                updateSaveButtonState(saveButton, savedJobs.includes(jobId));
+            }
+
+            document.querySelectorAll('.tts-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    let text = '';
+                    if (this.dataset.target) {
+                        const target = document.getElementById(this.dataset.target);
+                        if (target) {
+                            text = target.textContent || target.innerText || '';
+                        }
+                    } else if (this.dataset.text) {
+                        text = this.dataset.text;
+                    }
+                    if (text.trim()) {
+                        speakText(text.trim());
+                    }
+                });
+            });
+        });
+
         // Show/hide the Back to Top button
         const backToTopBtn = document.getElementById("backToTopBtn");
         window.addEventListener("scroll", () => {
@@ -514,32 +695,44 @@
                 const capEl = document.getElementById('openings-count');
                 const appliedEl = document.getElementById('applied-count');
                 const bar = document.getElementById('capacity-bar');
-                if (capEl) capEl.textContent = openings + ' capacity';
-                if (appliedEl) appliedEl.textContent = applied + ' applied';
+                if (capEl) capEl.textContent = applied;
+                if (appliedEl) appliedEl.textContent = applied;
                 if (bar) {
                     const pct = openings > 0 ? Math.min(100, Math.round((applied / openings) * 100)) : 0;
                     bar.style.width = pct + '%';
+                    bar.setAttribute('aria-valuenow', String(pct));
                 }
 
-                // Dates & type (format dates to "Month day, Year")
+                // Dates & type
                 const applyBeforeEl = document.getElementById('apply-before');
-                const jobPostDateEl = document.getElementById('job-post-date');
-                if (applyBeforeEl) applyBeforeEl.textContent = j.apply_before ? formatNiceDateOrOriginal(j.apply_before) : '-';
-                if (jobPostDateEl) jobPostDateEl.textContent = j.job_post_date ? formatNiceDateOrOriginal(j.job_post_date) : '-';
-                document.getElementById('job-type').textContent = safeText(j.job_type, '-');
+                const jobPostDateEl = document.getElementById('job-posted-date');
+                const jobTypeSidebarEl = document.getElementById('job-type-sidebar');
+                const jobTypeEl = document.getElementById('job-type');
+                
+                if (applyBeforeEl) applyBeforeEl.textContent = j.apply_before ? formatNiceDateOrOriginal(j.apply_before) : '—';
+                if (jobPostDateEl) jobPostDateEl.textContent = j.job_post_date ? formatNiceDateOrOriginal(j.job_post_date) : '—';
+                if (jobTypeSidebarEl) jobTypeSidebarEl.textContent = safeText(j.job_type, '—');
+                if (jobTypeEl) jobTypeEl.textContent = safeText(j.job_type, 'Work type');
 
                 // Skills
                 const skillsContainer = document.getElementById('skills-container');
-                skillsContainer.innerHTML = '';
-                if (j.skills && j.skills.length) {
-                    j.skills.forEach(s => {
-                        const span = document.createElement('span');
-                        span.className = 'text-[#2563EB] border border-[#2563EB] text-sm font-semibold px-3 py-1 rounded-md';
-                        span.textContent = s;
-                        skillsContainer.appendChild(span);
-                    });
-                } else {
-                    skillsContainer.innerHTML = '<span class="text-gray-500">No skills listed</span>';
+                if (skillsContainer) {
+                    skillsContainer.innerHTML = '';
+                    if (j.skills && j.skills.length) {
+                        j.skills.forEach(s => {
+                            const span = document.createElement('span');
+                            span.className = 'inline-flex items-center px-4 py-2 bg-blue-100 text-blue-700 text-base font-semibold rounded-full whitespace-nowrap';
+                            span.textContent = s;
+                            span.setAttribute('role', 'listitem');
+                            skillsContainer.appendChild(span);
+                        });
+                    } else {
+                        const placeholder = document.createElement('span');
+                        placeholder.id = 'skills-placeholder';
+                        placeholder.className = 'text-gray-500 italic';
+                        placeholder.textContent = 'No skills available yet.';
+                        skillsContainer.appendChild(placeholder);
+                    }
                 }
 
                 // Job positions (element may be removed)
@@ -573,9 +766,7 @@
                     const first = j.managers[0];
                     const firstFull = (first.full_name ?? ((first.first_name || '') + ' ' + (first.last_name || ''))).trim() || first.FIRST_NAME || '';
                     const mgrNameEl = document.getElementById('manager-name');
-                    if (mgrNameEl) mgrNameEl.textContent = safeText(firstFull, 'Hiring Manager');
-                    const mgrRoleEl = document.getElementById('manager-role');
-                    if (mgrRoleEl) mgrRoleEl.textContent = '';
+                    if (mgrNameEl) mgrNameEl.textContent = '';
                 } else if (payload.manager) {
                     const m = payload.manager;
                     const full = (typeof m === 'string') ? m : ((m.full_name ?? ((m.first_name || '') + ' ' + (m.last_name || ''))).trim() || m.FIRST_NAME || '');
@@ -585,40 +776,45 @@
                         '</div>' +
                         '<span class="font-medium text-base text-gray-800">' + escapeHtml(full) + '</span>' +
                     '</li>';
-                    const mgrNameEl = document.getElementById('manager-name');
-                    if (mgrNameEl) mgrNameEl.textContent = safeText(full, 'Hiring Manager');
-                    const mgrRoleEl = document.getElementById('manager-role');
-                    if (mgrRoleEl) mgrRoleEl.textContent = '';
                 }
 
                 // Contact details
                 if (j.address) {
                     const addrEl = document.getElementById('contact-address');
-                    if (addrEl && addrEl.lastChild) addrEl.lastChild.textContent = ' ' + j.address;
+                    if (addrEl) addrEl.textContent = j.address;
                 }
                 if (j.phone) {
                     const phoneEl = document.getElementById('contact-phone');
-                    if (phoneEl && phoneEl.lastChild) phoneEl.lastChild.textContent = ' ' + j.phone;
+                    if (phoneEl) {
+                        phoneEl.href = 'tel:' + encodeURIComponent(j.phone);
+                        phoneEl.textContent = j.phone;
+                    }
                 }
                 if (j.email) {
                     const emailEl = document.getElementById('contact-email');
-                    if (emailEl && emailEl.lastChild) emailEl.lastChild.textContent = ' ' + j.email;
+                    if (emailEl) {
+                        emailEl.href = 'mailto:' + j.email;
+                        emailEl.textContent = j.email;
+                    }
                 }
                 if (j.company && j.company.industry) {
                     const indEl = document.getElementById('contact-industry');
-                    if (indEl && indEl.lastChild) indEl.lastChild.textContent = ' ' + j.company.industry;
+                    if (indEl) indEl.textContent = j.company.industry;
                 }
 
                 // website & map
                 const websiteA = document.getElementById('company-website');
                 const websiteText = document.getElementById('company-website-text');
-                if (j.website_link) {
+                if (j.website_link && websiteA && websiteText) {
                     websiteA.href = j.website_link;
                     websiteText.textContent = j.website_link;
-                } else if (j.company && (j.company.website || j.company.website_link)) {
+                } else if (j.company && (j.company.website || j.company.website_link) && websiteA && websiteText) {
                     const w = j.company.website || j.company.website_link;
                     websiteA.href = w;
                     websiteText.textContent = w;
+                } else if (websiteA) {
+                    websiteA.style.display = 'none';
+                }
                 } else {
                     websiteA.style.display = 'none';
                 }
@@ -644,30 +840,6 @@
         document.addEventListener('DOMContentLoaded', fetchJob);
     })();
 </script>
-
-    {{-- <script type="module">
-        (async function() {
-            try {
-                const mod = await import("{{ asset('js/job-application-firebase.js') }}");
-                console.debug('Auth guard: waiting for sign-in resolution (7s)');
-                const signed = await mod.isSignedIn(7000);
-                console.debug('Auth guard: isSignedIn ->', signed);
-                if (!signed) {
-                    if (window.__SERVER_AUTH) {
-                        console.info('Auth guard: server session present, not redirecting');
-                        return;
-                    }
-                    const current = window.location.pathname + window.location.search;
-                    console.info('Auth guard: not signed, redirecting to login');
-                    window.location.href = 'login?redirect=' + encodeURIComponent(current);
-                    return;
-                }
-                // signed-in users proceed; no further client setup required here
-            } catch (err) {
-                console.error('Auth guard failed on job details', err);
-            }
-        })();
-    </script> --}}
 <script>
 function speakText(text) {
     if ('speechSynthesis' in window) {
@@ -678,23 +850,5 @@ function speakText(text) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.tts-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            let text = '';
-            if (this.dataset.target) {
-                const target = document.getElementById(this.dataset.target);
-                if (target) {
-                    text = target.textContent || target.innerText || '';
-                }
-            } else if (this.dataset.text) {
-                text = this.dataset.text;
-            }
-            if (text.trim()) {
-                speakText(text.trim());
-            }
-        });
-    });
-});
 </script>
 @endsection

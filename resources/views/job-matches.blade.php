@@ -27,193 +27,331 @@
                 font-size: 1.125rem; 
             }
         }
+        .save-btn {
+            background-color: #6B7280 !important;
+            color: white !important;
+            transition: all 0.3s ease !important;
+        }
+        .save-btn:hover:not(:disabled) {
+            background-color: #4B5563 !important;
+        }
+        .save-btn:disabled {
+            opacity: 1 !important;
+            cursor: default !important;
+        }
+        .save-btn.saved {
+            background-color: #22C55E !important;
+        }
+        .save-btn.saved:hover {
+            background-color: #16A34A !important;
+        }
+        .save-btn.saved:disabled {
+            opacity: 1 !important;
+        }
     </style>
 
-    <!-- Hero Section -->
-    <section class="relative bg-[#FCD34D] flex items-center justify-center py-12 sm:py-16 px-4 sm:px-8 lg:px-20 rounded-b-3xl">
-        <div class="flex flex-col lg:flex-row items-center justify-center text-center lg:text-left gap-8 sm:gap-10 max-w-5xl w-full">
+       <!-- Hero Section -->
+<section class="bg-sky-50 py-16 sm:py-20 border-b border-sky-100" role="region" aria-labelledby="hero-heading">
+    <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
 
-            <div class="flex-shrink-0 flex justify-center">
-                <img src="{{ asset('image/jobsicon.png') }}" alt="Job Search Icon" class="w-24 sm:w-32 lg:w-40 xl:w-52">
-            </div>
+        <div class="grid gap-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
 
-            <!-- Text Content -->
-            <div class="flex flex-col items-center lg:items-start">
-                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1E3A8A] drop-shadow-md">
-                    Job Recommended For You
-                </h1>
-                <p class="text-lg sm:text-xl lg:text-2xl text-[#1E3A8A] mt-4 italic font-medium">
-                    (Mga Trabahong Para sa Iyo)
+            <!-- LEFT CONTENT -->
+            <div class="space-y-6 text-center lg:text-left">
+
+                <p class="text-base font-bold uppercase tracking-[0.35em] text-blue-700">
+                    Find your next job
                 </p>
-                <button type="button" class="mt-5 lg:mt-0 lg:absolute lg:top-4 lg:right-4 inline-flex items-center gap-2 bg-[#1E40AF] hover:bg-blue-700 text-white text-sm sm:text-base lg:text-lg font-semibold px-4 py-1 rounded-full shadow-md tts-btn transition-transform hover:scale-105 focus:ring-2 focus:ring-blue-400" 
-                data-tts-en="These are jobs recommended for you based on your profile and preferences." data-tts-tl="Ito ang mga trabahong inirerekomenda para sa iyo batay sa iyong profile at gusto." aria-label="Play audio for recommended jobs section">🔊</button>
-            </div>
 
-        </div>
-    </section>
+                <h1 id="hero-heading" class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight">
+                    Jobs recommended <br> for you
+                </h1>
 
-    <section class="max-w-7xl mx-auto mt-8 sm:mt-12 px-4 sm:px-6 lg:px-8">
-        <!-- Title -->
-        <h3
-            class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#1E3A8A] mb-6 sm:mb-8 text-center tracking-wide flex items-center justify-center gap-3">
-            <!-- <img src="https://img.icons8.com/ios-filled/50/1E3A8A/search--v1.png" alt="Search Icon" class="w-10 h-10"> -->
-            Filter Jobs
-        </h3>
-
-                <!-- Instruction -->
-        <div class="relative mt-8 sm:mt-12 bg-blue-50 border-l-8 border-blue-500 rounded-2xl p-4 sm:p-6 lg:p-8 text-center shadow-md">
-            <p class="text-lg sm:text-xl font-bold text-[#1E3A8A] mb-2 flex items-center justify-center gap-2">
-                <img src="https://img.icons8.com/color/48/compass--v1.png" alt="Compass Icon" class="w-6 h-6 sm:w-7 sm:h-7">
-                How to use the filter:
-            </p>
-            <p class="text-base sm:text-lg text-gray-800 font-medium leading-relaxed">
-                Click the dropdowns above and choose what you like — the system will show jobs that match your choice.
-            </p>
-            <p class="text-sm sm:text-base text-gray-700 italic mt-1">
-                (Piliin ang mga opsyon sa itaas. Ipapakita ng system ang mga trabahong akma sa iyong pinili.)
-            </p>
-            <button type="button" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400" 
-             data-tts-en="How to use the filter: Click the dropdowns above and choose what you like — the system will show jobs that match your choice." 
-             data-tts-tl="Piliin ang mga opsyon sa itaas. Ipapakita ng system ang mga trabahong akma sa iyong pinili." aria-label="Play audio for filter instructions">🔊</button>
-        </div>
+                <p id="hero-description" class="text-lg sm:text-xl text-slate-700 leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                    These jobs match your profile. You can explore them and apply when you're ready.
+                </p>
 
 
-        <!-- Filter Form -->
-        <form method="GET" class="mt-6 sm:mt-8 w-full space-y-4 sm:space-y-6">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
-                <!-- Filter Dropdown (Industry) -->
-                {{-- <div class="relative w-full">
-                    <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Industry</label>
-                    <select name="industry"
-                        class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
-                        <option value="">Select Industry</option>
-                        <option value="Healthcare" {{ request('industry') == 'Healthcare' ? 'selected' : '' }}>Healthcare
-                        </option>
-                        <option value="Retail" {{ request('industry') == 'Retail' ? 'selected' : '' }}>Retail
-                        </option>
-                        <option value="Food Service" {{ request('industry') == 'Food Service' ? 'selected' : '' }}>Food
-                            Service
-                        </option>
-                        <option value="Education" {{ request('education') == 'Education' ? 'selected' : '' }}>Education
-                        </option>
-                        <option value="Hospitality" {{ request('hospitality') == 'Hospitality' ? 'selected' : '' }}>
-                            Hospitality
-                        </option>
-                        <option value="Manufacturing" {{ request('industry') == 'Manufacturing' ? 'selected' : '' }}>
-                            Manufacturing
-                        </option>
-                        <option value="Transportation" {{ request('industry') == 'Transportation' ? 'selected' : '' }}>
-                            Transportation
-                        </option>
-                        <option value="Cleaning" {{ request('industry') == 'Cleaning' ? 'selected' : '' }}>Cleaning</option>
-                        <option value="Office" {{ request('office') == 'Office' ? 'selected' : '' }}>Office</option>
-                        <option value="Construction" {{ request('industry') == 'Construction' ? 'selected' : '' }}>
-                            Construction
-                        </option>
-                        <option value="Creative"{{ request('creative') == 'Creative' ? 'selected' : '' }}>Creative</option>
-                        <option value="Packing" {{ request('industry') == 'Packing' ? 'selected' : '' }}>Packing</option>
-                        <option value="Other" {{ request('other') == 'Other' ? 'selected' : '' }}>Other</option>
-                    </select>
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="w-7 h-7 text-blue-600 absolute right-5 top-[70%] transform -translate-y-1/2 pointer-events-none"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div> --}}
+                <!-- TTS BUTTON -->
+                <div class="flex justify-center lg:justify-start">
+                    <button type="button"
+                        data-target="tts-hero"
+                       class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+                        aria-label="Read hero section aloud" onclick="speakText(document.getElementById('tts-hero').textContent)">
 
-                <!-- Job Fit Level -->
-                {{-- <div class="relative w-full">
-                    <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Job Fit Level</label>
-                    <select name="fit_level" onchange="this.form.submit()"
-                        class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
-                        <option value="">Select Level</option>
-                        <option value="Excellent Fit" {{ request('fit_level') == 'Excellent Fit' ? 'selected' : '' }}>
-                            Excellent Fit</option>
-                        <option value="Good Fit" {{ request('fit_level') == 'Good Fit' ? 'selected' : '' }}>Good Fit
-                        </option>
-                    </select>
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="w-7 h-7 text-blue-600 absolute right-5 top-[70%] transform -translate-y-1/2 pointer-events-none"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div> --}}
-
-                <!-- Job Type -->
-                <div class="relative w-full">
-                    <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Job Type</label>
-                    <select name="growth_potential" id="job-type"
-                        class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
-                        <option value="">Select Job Type</option>
-                        <option value="Full-Time"
-                            {{ request('growth_potential') == 'Full-Time' ? 'selected' : '' }}>Full-Time</option>
-                        <option value="Part-Time"
-                            {{ request('growth_potential') == 'Part-Time' ? 'selected' : '' }}>Part-Time
-                        </option>
-                        <option value="Contract"
-                            {{ request('growth_potential') == 'Contract' ? 'selected' : '' }}>Contract
-                        </option>
-                         <option value="Program"
-                            {{ request('growth_potential') == 'Program' ? 'selected' : '' }}>Program
-                        </option>
-                    </select>
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="w-7 h-7 text-blue-600 absolute right-5 top-[70%] transform -translate-y-1/2 pointer-events-none"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-
-                <!-- Work Environment -->
-                <div class="relative w-full">
-                    <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Work Environment</label>
-                    <select name="work_environment" id="work-env"
-                        class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200 pr-12">
-                        <option value="">Select Environment</option>
-                        <option value="Friendly Team" {{ request('work_environment') == 'Friendly Team' ? 'selected' : '' }}>Friendly Team</option>
-                        <option value="Buddy Helper" {{ request('work_environment') == 'Buddy Helper' ? 'selected' : '' }}>Buddy Helper</option>
-                        <option value="Simple Instructions" {{ request('work_environment') == 'Simple Instructions' ? 'selected' : '' }}>Simple Instructions</option>
-                        <option value="Safe and Light Work" {{ request('work_environment') == 'Safe and Light Work' ? 'selected' : '' }}>Safe and Light Work</option>
-                        <option value="No Heavy Lifting/No Pharmacy Task" {{ request('work_environment') == 'No Heavy Lifting/No Pharmacy Task' ? 'selected' : '' }}>No Heavy Lifting/No Pharmacy Task</option>
-                    </select>
-                    <svg xmlns="http://www.w3.org/2000/svg"
-                        class="w-7 h-7 text-blue-600 absolute right-5 top-[70%] transform -translate-y-1/2 pointer-events-none"
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" />
-                    </svg>
-                </div>
-
-                <!-- Location (textbox) -->
-                <div class="relative w-full">
-                    <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Location</label>
-                    <input
-                        name="location"
-                        id = "address-location"
-                        type="text"
-                        value="{{ request('location') }}"
-                        placeholder="City or area (e.g. Taguig City)"
-                        class="w-full appearance-none px-6 py-4 rounded-2xl bg-white border-4 border-blue-600 text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200"
-                    />
-                </div>
-
-                <!-- Search Bar -->
-                <div class="mt-4 relative w-full sm:col-span-2 lg:col-span-3">
-                <label class="block text-lg font-semibold text-[#1E3A8A] mb-2">Search Job Title</label>
-                <div class="relative">
-                    <!-- Give the input extra right padding so text never sits under the button -->
-                    <input id="searchJobTitle" type="text" name="search" value="{{ request('search') }}" placeholder="Search by job title (e.g. Sales Assistant, Barista)"
-                        class="w-full appearance-none px-6 pr-20 py-4 rounded-2xl bg-white border-4 border-blue-600 
-                        text-gray-800 text-lg font-semibold shadow-lg hover:border-blue-700 
-                        focus:ring-4 focus:ring-blue-300 focus:outline-none transition-all duration-200" />
-
-                    <!-- Clickable search button positioned inside the input area -->
-                    <button id="searchBtn" type="button" aria-label="Search"
-                        class="absolute right-3 top-1/2 transform -translate-y-1/2 z-20 w-12 h-12 flex items-center justify-center bg-white rounded-full text-blue-600 hover:bg-blue-50 focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z" />
-                        </svg>
+                        <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4" aria-hidden="true">
+                        Listen
                     </button>
                 </div>
+                <div id="tts-hero" class="sr-only">Jobs recommended for you. These jobs match your profile. You can explore them and apply when you're ready.</div>
+
+            </div>
+
+            <!-- RIGHT IMAGE -->
+            <div class="flex justify-center">
+
+                <div class="rounded-[2rem] bg-gradient-to-br from-sky-100 to-white p-6 shadow-xl">
+                    <img src="{{ asset('image/herosection.png') }}"
+                        alt="People working together in a supportive workplace"
+                        class="w-full max-w-md h-[320px] object-cover rounded-[1.5rem] shadow-lg">
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</section>
+
+    <!-- Filter Section -->
+    <section class="bg-white py-12 sm:py-16" role="region" aria-labelledby="filter-heading">
+        <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
+            <div role="form" aria-label="Job search filters" class="rounded-[2rem] bg-white border border-sky-200 shadow-sm p-6 sm:p-10 space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <div>
+                        <h2 id="filter-heading" class="text-2xl sm:text-3xl font-bold text-slate-900">Filter jobs</h2>
+                        <p class="mt-2 text-sm sm:text-base text-slate-600">Choose your preferences to find jobs that match you.</p>
+                    </div>
+                    <button type="button" data-target="tts-filter" class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+                    aria-label="Read filter section aloud" onclick="speakText(document.getElementById('tts-filter').textContent)">
+
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png"
+                        alt=""
+                        aria-hidden="true"
+                        class="w-4 h-4">
+
+                    <span>Listen</span>
+                    </button>
+                </div>
+                <div id="tts-filter" class="sr-only">Filter Jobs section. Choose your preferences to find jobs that match you.</div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 w-full">
+
+                    <!-- Location -->
+                            <div class="space-y-3">
+                            <label for="address-location" class="text-xl font-semibold text-slate-900">City or area</label>
+
+                            <div class="relative">
+                                <img src="https://img.icons8.com/ios-filled/20/marker.png"
+                                    class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400">
+
+                                <input id="address-location"
+                                    name="location"
+                                    type="text"
+                                    autocomplete="off"
+                                    placeholder="e.g. Taguig City"
+                                    value="{{ request('location') }}"
+                                    aria-describedby="location-help"
+                                    class="mt-2 w-full appearance-none rounded-2xl border border-slate-300 bg-white px-12 py-4 text-lg text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 transition">
+
+                                <div id="location-suggestions"
+                                    class="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-slate-300 bg-white shadow-lg max-h-60 overflow-y-auto hidden z-10">
+
+                                    <button type="button" class="suggestion-item" data-value="Makati City">Makati City</button>
+                                    <button type="button" class="suggestion-item" data-value="Taguig City">Taguig City</button>
+                                    <button type="button" class="suggestion-item" data-value="Pasig City">Pasig City</button>
+                                    <button type="button" class="suggestion-item" data-value="Quezon City">Quezon City</button>
+                                    <button type="button" class="suggestion-item" data-value="Mandaluyong City">Mandaluyong City</button>
+                                    <button type="button" class="suggestion-item" data-value="Parañaque City">Parañaque City</button>
+                                </div>
+                            </div>
+
+                                <!-- Helper -->
+                                <p id="location-help" class="text-sm text-slate-600">
+                                    Type the city where you want to work or pick from our list.
+                                </p>
+
+                            </div>
+                
+                            <!-- Work Type -->
+                            <div class="space-y-3 w-full">
+
+                                <!-- Label -->
+                                <label for="job-type" class="text-xl font-semibold text-slate-900">
+                                    Work type
+                                </label>
+
+                                <!-- Select Wrapper -->
+                                <div class="relative">
+
+                                    <!-- Left Icon (Icons8 like homepage) -->
+                                    <img src="https://img.icons8.com/ios-filled/20/briefcase.png"
+                                        alt=""
+                                        aria-hidden="true"
+                                        class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400">
+
+                                    <!-- Select -->
+                                    <select name="growth_potential" id="job-type"
+                                        aria-describedby="work-type-help"
+                                        class="mt-2 w-full appearance-none rounded-2xl border border-slate-300 bg-white px-12 py-4 text-lg text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 transition">
+
+                                        <option value="" disabled selected hidden>Choose work type</option>
+
+                                        <option value="Full-Time"
+                                            {{ request('growth_potential') == 'Full-Time' ? 'selected' : '' }}>
+                                            Full-time 
+                                        </option>
+
+                                        <option value="Part-Time"
+                                            {{ request('growth_potential') == 'Part-Time' ? 'selected' : '' }}>
+                                            Part-time 
+                                        </option>
+
+                                        <option value="Contract"
+                                            {{ request('growth_potential') == 'Contract' ? 'selected' : '' }}>
+                                            Contract 
+                                        </option>
+
+                                        <option value="Program"
+                                            {{ request('growth_potential') == 'Program' ? 'selected' : '' }}>
+                                            Training / Program
+                                        </option>
+
+                                    </select>
+
+                                    <!-- Dropdown Arrow -->
+                                    <img src="https://img.icons8.com/ios-filled/20/expand-arrow.png"
+                                        alt=""
+                                        aria-hidden="true"
+                                        class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 opacity-60">
+
+                                </div>
+
+                                <!-- Helper Text -->
+                                <p id="work-type-help" class="text-sm text-slate-600">
+                                    Select the type of employment you're looking for.
+                                </p>
+
+                            </div>
+
+                            <!-- Work Environment -->
+                            <div class="space-y-3 w-full">
+
+                                <!-- Label -->
+                                <label for="work-env" class="text-xl font-semibold text-slate-900">
+                                    Work environment
+                                </label>
+
+                                <!-- Select Wrapper -->
+                                <div class="relative">
+
+                                    <!-- Left Icon -->
+                                    <img src="https://img.icons8.com/ios-filled/20/groups.png"
+                                        alt=""
+                                        aria-hidden="true"
+                                        class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400">
+
+                                    <!-- Select -->
+                                    <select name="work_environment" id="work-env"
+                                        aria-describedby="work-environment-help"
+                                        class="mt-2 w-full appearance-none rounded-2xl border border-slate-300 bg-white px-12 py-4 text-lg text-slate-900 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-200 focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 transition">
+
+                                        <option value="" disabled selected hidden>Choose work environment</option>
+
+                                        <option value="Friendly Team" {{ request('work_environment') == 'Friendly Team' ? 'selected' : '' }}>
+                                            Friendly team (supportive coworkers)
+                                        </option>
+
+                                        <option value="Buddy Helper" {{ request('work_environment') == 'Buddy Helper' ? 'selected' : '' }}>
+                                            With a buddy/helper
+                                        </option>
+
+                                        <option value="Simple Instructions" {{ request('work_environment') == 'Simple Instructions' ? 'selected' : '' }}>
+                                            Simple and clear instructions
+                                        </option>
+
+                                        <option value="Safe and Light Work" {{ request('work_environment') == 'Safe and Light Work' ? 'selected' : '' }}>
+                                            Safe and light tasks
+                                        </option>
+
+                                        <option value="No Heavy Lifting/No Pharmacy Task" {{ request('work_environment') == 'No Heavy Lifting/No Pharmacy Task' ? 'selected' : '' }}>
+                                            No heavy lifting tasks
+                                        </option>
+
+                                    </select>
+
+                                    <!-- Dropdown Arrow -->
+                                    <img src="https://img.icons8.com/ios-filled/20/expand-arrow.png"
+                                        alt=""
+                                        aria-hidden="true"
+                                        class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 h-5 w-5 opacity-60">
+                                </div>
+
+                                <!-- Helper -->
+                                <p id="work-environment-help" class="text-sm text-slate-600">
+                                    Pick a workplace that feels good to you.
+                                </p>
+
+                            </div>
+
+
+
+                        <!-- Job Title Search -->
+                        <div class="space-y-3 sm:col-span-2 lg:col-span-3">
+
+                            <label for="searchJobTitle" class="text-xl font-semibold text-slate-900">
+                                Job title or role
+                            </label>
+
+                            <div class="relative">
+
+                                {{-- <!-- LEFT ICON -->
+                                <img src=""
+                                    alt=""
+                                    aria-hidden="true"
+                                    class="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"> --}}
+
+                                <!-- INPUT -->
+                                <input id="searchJobTitle"
+                                    type="text"
+                                    name="search"
+                                    autocomplete="off"
+                                    value="{{ request('search') }}"
+                                    placeholder="Service Crew, Barista, Office Assistant..."
+                                    aria-describedby="search-help"
+                                    class="w-full rounded-2xl border border-slate-300 bg-white 
+                                        px-12 pr-16 py-4 text-lg text-slate-900 shadow-sm
+                                        focus:border-blue-500 focus:ring-2 focus:ring-blue-200 
+                                        focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 transition-all">
+
+                                            <!-- SEARCH BUTTON (YOUR SVG ICON) -->
+                                            <button id="searchBtn"
+                                                type="button"
+                                                aria-label="Search jobs"
+                                                class="absolute right-2 top-1/2 -translate-y-1/2 
+                                                    w-10 h-10 flex items-center justify-center 
+                                                    rounded-full bg-blue-700 text-white 
+                                                    hover:bg-blue-800 transition shadow-sm focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+                                                <svg xmlns="http://www.w3.org/2000/svg" 
+                                                    class="w-5 h-5" 
+                                                    fill="none" 
+                                                    viewBox="0 0 24 24" 
+                                                    stroke="currentColor" 
+                                                    stroke-width="2">
+                                                    <path stroke-linecap="round" 
+                                                        stroke-linejoin="round" 
+                                                        d="M21 21l-4.35-4.35m1.85-5.4a7.25 7.25 0 11-14.5 0 7.25 7.25 0 0114.5 0z" />
+                                                </svg>
+                                            </button>
+
+                                            <!-- SUGGESTIONS -->
+                                            <div id="job-title-suggestions"
+                                                class="absolute top-full left-0 right-0 mt-2 rounded-2xl border border-slate-300 bg-white shadow-lg max-h-60 overflow-y-auto hidden z-10">
+
+                                                <button type="button" class="suggestion-item" data-value="Service Crew">Service Crew</button>
+                                                <button type="button" class="suggestion-item" data-value="Barista">Barista</button>
+                                                <button type="button" class="suggestion-item" data-value="Kitchen Helper">Kitchen Helper</button>
+                                                <button type="button" class="suggestion-item" data-value="Office Assistant">Office Assistant</button>
+                                                <button type="button" class="suggestion-item" data-value="Housekeeping">Housekeeping</button>
+                                                <button type="button" class="suggestion-item" data-value="Cashier">Cashier</button>
+
+                                            </div>
+                                        </div>
+
+                                        <p id="search-help" class="text-sm text-slate-600">
+                                            Type the job you want or pick from our list.
+                                        </p>
+                                    </div>
             </div>
 
             </div>
@@ -819,63 +957,57 @@ foreach (['accuracy', 'precision', 'recall', 'f1'] as $k) {
     </section> -->
 
     <!-- Job Match Notice -->
-    <section class="bg-[#10B981] text-white mx-4 sm:mx-6 lg:mx-20 rounded-2xl p-6 sm:p-8 mt-6 sm:mt-8 shadow-lg">
-        <div class="flex flex-col sm:flex-row justify-between items-center gap-4">
-
-            <div class="flex items-center gap-3 text-center sm:text-left">
-                <div
-                    class="flex items-center justify-center bg-white w-10 h-10 sm:w-12 sm:h-12 rounded-full shadow-md border-4 border-[#0EA5E9] overflow-hidden">
-                    <img src="image/bulb.png" alt="Bulb Icon" class="w-6 h-6 sm:w-8 sm:h-8 object-contain">
+    <section class="bg-blue-50 py-12 sm:py-16 border-l-4 border-blue-600" role="region" aria-labelledby="match-heading">
+        <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div class="space-y-2">
+                    <h2 id="match-heading" class="text-2xl sm:text-3xl font-bold text-slate-900">Jobs matched to your skills and preferences</h2>
+                    <p class="text-sm sm:text-base text-slate-600">Discover positions that align with your profile and preferences.</p>
                 </div>
-
-                <div>
-                    <p class="text-lg sm:text-2xl font-bold">Jobs Matched to Your Skills & Preferences</p>
-                    <p class="text-sm sm:text-base italic mt-1">
-                        (Ang mga trabahong ito ay tumutugma sa iyong kakayahan at kagustuhan!)
-                    </p>
+                
+                <div class="inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm sm:text-base font-semibold text-white bg-blue-600 whitespace-nowrap">
+                    <span role="status" aria-live="polite" id="all-matches">Loading matches</span>
                 </div>
             </div>
-            <div
-                class="inline-flex items-center gap-2 rounded-full px-4 py-2 sm:px-6 sm:py-2 text-sm sm:text-lg font-semibold text-white border-2 border-white bg-[#10B981]">
-                <img src="https://img.icons8.com/emoji/48/star-emoji.png" alt="Star icon" class="w-5 h-5 sm:w-7 sm:h-7" />
-
-                <!-- Text -->
-                <span id='all-matches'>All Matches (🔃)</span>
-            </div>
+        </div>
     </section>
 
-    <!-- Recommended Job Section -->
-            <section class="bg-[#E8F3FF] px-4 sm:px-8 lg:px-20 py-8 sm:py-12 rounded-none">
-                <h2 class="text-2xl sm:text-3xl font-bold text-[#1E3A8A] mb-4 sm:mb-6">Recommended Job</h2>
-                <p class="text-gray-600 mb-4 sm:mb-6 text-base sm:text-lg">
-                    Recommended companies based on application history, preferences, and recent platform activity.
-              </p>
-       <!--Job Card -->
-       <div id="job-container" class="space-y-10"></div>
+    <!-- Recommended Jobs Section -->
+    <section class="bg-white py-12 sm:py-16" role="region" aria-labelledby="recommended-heading">
+        <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div>
+                    <h2 id="recommended-heading" class="text-2xl sm:text-3xl font-bold text-slate-900">Recommended jobs</h2>
+                    <p class="mt-2 text-sm sm:text-base text-slate-600">Recommended jobs based on application history and recent platform activity.</p>
+                </div>
+                <button type="button" data-target="tts-recommended" class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    aria-label="Read recommended jobs section aloud" onclick="speakText(document.getElementById('tts-recommended').textContent)">
 
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png"
+                        alt=""
+                        aria-hidden="true"
+                        class="w-4 h-4">
+
+                    <span>Listen</span>
+                    </button>
+            </div>
+            <div id="tts-recommended" class="sr-only">Recommended Jobs section. Recommended jobs based on application history and recent platform activity.</div>
+
+            <div id="job-container" class="grid grid-cols-1 gap-6 sm:gap-8 mt-8">
+                <!-- Jobs will be rendered here -->
+            </div>
+        </div>
+    </section>
+
+    
        <!-- Loading Modal (shown while jobs are fetched) -->
-       <div id="jobLoadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+       <div id="jobLoadingModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden" role="status" aria-live="polite" aria-label="Loading jobs, please wait">
            <div class="bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
-               <div class="border-4 border-blue-500 border-t-transparent rounded-full w-14 h-14 animate-spin mb-4"></div>
+               <div class="border-4 border-blue-500 border-t-transparent rounded-full w-14 h-14 animate-spin mb-4" aria-hidden="true"></div>
                <p id="jobLoadingMessage" class="text-gray-800 font-medium">Loading jobs, please wait...</p>
            </div>
        </div>
 
-       <style>
-       /* Saved button styling: gray background and disable hover change */
-       .save-btn.saved {
-           background-color: #9CA3AF !important; /* tailwind gray-400 */
-           color: #ffffff !important;
-           border-color: #9CA3AF !important;
-           cursor: default !important;
-       }
-       .save-btn.saved:hover {
-           background-color: #9CA3AF !important;
-       }
-       .save-btn.saved:disabled {
-           opacity: 1 !important;
-       }
-       </style>
 <script>
 // Expose Laravel-authenticated user id to client JS (null when not authenticated)
 window.LARAVEL_USER_ID = @json(auth()->check() ? auth()->id() : null);
@@ -983,73 +1115,46 @@ function loadJobs() {
             // Disable Apply only when the requesting user already applied for this job.
             const userApplied = !!job.user_applied;
             const applyDisabled = userApplied;
-            const applyBtnClass = applyDisabled ? 'bg-gray-400 text-white text-sm sm:text-base lg:text-xl font-bold rounded-md px-6 sm:px-8 lg:px-10 py-3 sm:py-4 cursor-not-allowed transition w-full sm:w-auto' : 'bg-[#2563EB] text-white text-sm sm:text-base lg:text-xl font-bold rounded-md px-6 sm:px-8 lg:px-10 py-3 sm:py-4 hover:bg-[#1e4fc5] transition w-full sm:w-auto';
+            const applyBtnClass = applyDisabled ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700';
             const applyBtnAttr = applyDisabled ? 'disabled' : `onclick="location.href='/job-application-1?job_id=${encodeURIComponent(job.id)}'"`;
-            const applyBtnText = applyDisabled ? '🚫 Applied' : '🚀 Apply Now';
+            const applyBtnText = applyDisabled ? '🚫 Applied' : '🚀 Apply';
 
             const cardHTML = `
-            <div data-job-id="${job.id}" class="bg-white border-4 border-blue-300 rounded-3xl shadow-xl p-4 sm:p-6 lg:p-10 mb-6 sm:mb-8 lg:mb-10 max-w-full mx-auto hover:shadow-2xl transition-all duration-300">
-                <div class="flex flex-col lg:flex-row justify-between items-start gap-4 sm:gap-6 lg:gap-10">
-                    <div class="flex items-start gap-4 sm:gap-6">
-                        <div class="w-20 h-20 sm:w-24 sm:h-24 lg:w-36 lg:h-36 rounded-3xl border-4 border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
-                            <img src="${escapeHtml(logoSrc)}" alt="${escapeHtml(job.company_name)} logo" class="w-full h-full object-cover">
+            <div data-job-id="${job.id}" class="bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden hover:shadow-lg hover:border-slate-300 transition">
+                <div class="p-6 pb-4">
+                    <div class="flex items-start gap-4">
+                        <div class="flex-shrink-0 rounded-xl bg-blue-50 p-2 shadow-sm">
+                            <img src="${escapeHtml(logoSrc)}" alt="${escapeHtml(job.company_name)} logo" class="h-14 w-14 object-cover rounded-lg">
                         </div>
-                        <div>
-                            <h2 class="text-xl sm:text-2xl lg:text-4xl font-extrabold text-gray-900 mb-2">${escapeHtml(job.job_role)}</h2>
-                            <p class="text-lg sm:text-xl lg:text-2xl text-gray-800 font-semibold mb-2">${escapeHtml(job.company_name)}</p>
-                            <p class="flex items-center text-sm sm:text-base lg:text-xl text-gray-700 gap-2">
-                                <img src="https://img.icons8.com/color/48/marker--v1.png" alt="Location" class="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6">
-                                ${escapeHtml(job.address)}
+                        <div class="min-w-0 flex-1">
+                            <h2 class="text-lg sm:text-xl font-bold text-gray-900 leading-tight">${escapeHtml(job.job_role)}</h2>
+                            <p class="text-sm sm:text-base text-gray-600 mt-1">${escapeHtml(job.company_name)}</p>
+                            <p class="text-xs sm:text-sm text-gray-500 mt-2 flex items-center gap-2">
+                                <img src="https://img.icons8.com/color/48/marker--v1.png" alt="" aria-hidden="true" class="w-4 h-4 flex-shrink-0">
+                                <span>${escapeHtml(job.address)}</span>
                             </p>
                         </div>
                     </div>
-                <a href="/whythisjob?job_id=${encodeURIComponent(job.id)}" class="text-[#2563EB] text-lg sm:text-xl lg:text-2xl font-bold underline hover:underline self-center lg:self-start whitespace-nowrap mt-4 sm:mt-6 lg:mt-0">Why this job matches you?</a>
                 </div>
 
-                <hr class="my-6 sm:my-8 border-gray-300">
+                <div id="tts-job-${escapeHtml(job.id)}" class="sr-only">${escapeHtml(job.job_role)}. ${escapeHtml(job.company_name)}. ${escapeHtml(job.address)}. ${escapeHtml(job.description).slice(0, 280)}</div>
 
-                <div>
-                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1E40AF] mb-4">Job Description</h3>
-                    <p class="text-gray-800 text-base sm:text-lg lg:text-2xl leading-relaxed max-w-6xl">
-                        ${escapeHtml(job.description).replace(/\n/g, '<br>')}
-                    </p>
-                </div>
+                <div class="border-t border-slate-100"></div>
 
-                ${job.skills && job.skills.length > 0 ? `
-                <div class="mt-6 sm:mt-8">
-                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1E40AF] mb-4">Required Skills</h3>
-                    <div class="flex flex-wrap gap-2 sm:gap-4">
-                        ${job.skills.map(skill => `<span class="bg-blue-200 text-blue-900 text-sm sm:text-base lg:text-lg font-semibold px-3 sm:px-4 lg:px-5 py-1 sm:py-2 rounded-full">${escapeHtml(skill)}</span>`).join('')}
-                    </div>
-                </div>` : ''}
-
-                <div class="mt-6 sm:mt-8">
-                    <h3 class="text-xl sm:text-2xl lg:text-3xl font-bold text-[#1E40AF] mb-4">Job Type</h3>
-                    <div class="flex flex-wrap gap-2 sm:gap-4">
-                        <span class="border-2 border-[#2563EB] text-[#2563EB] text-sm sm:text-base lg:text-lg px-4 sm:px-5 lg:px-6 py-1 sm:py-2 rounded-md font-bold bg-blue-50">
-                            ${escapeHtml(job.job_type)}
-                        </span>
-                    </div>
-                </div>
-
-                <div class="mt-8 sm:mt-10 w-full">
-                    <p class="text-lg sm:text-xl font-semibold text-gray-800 mb-2 text-center">Number of Applicants</p>
-                    <div class="h-4 sm:h-5 bg-gray-200 rounded-md overflow-hidden">
-                        <div class="h-full bg-[#88BF02]" style="width: ${progress}%;"></div>
-                    </div>
-                    <p class="text-base sm:text-lg text-gray-700 mt-2 text-center">
-                        <strong>${appliedNum} applied</strong> out of ${openingsNum} openings
-                    </p>
-                </div>
-
-                <div class="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6 mt-8 sm:mt-10">
-                    <button onclick="location.href='/job-details?job_id=${encodeURIComponent(job.id)}'" class="bg-[#55BEBB] text-white text-lg sm:text-xl font-bold rounded-md px-6 sm:px-8 lg:px-10 py-3 sm:py-4 hover:bg-[#47a4a1] transition w-full sm:w-auto">
-                        📝 See Details
+                <div class="p-6 pt-4 flex flex-col gap-2 sm:flex-row sm:gap-2 lg:gap-3">
+                    <button type="button" data-target="tts-job-${escapeHtml(job.id)}" class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" aria-label="Read job details aloud">
+                        🔊
                     </button>
-                    <button ${applyBtnAttr} class="${applyBtnClass} w-full sm:w-auto" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
+
+                    <a href="/job-details?job_id=${encodeURIComponent(job.id)}" class="flex-1 px-3 py-2 text-xs sm:text-sm font-semibold text-center rounded-lg bg-[#55BEBB] text-white shadow-sm hover:bg-[#47a4a1] transition-all whitespace-nowrap">
+                        📝 Details
+                    </a>
+
+                    <button ${applyBtnAttr} class="flex-1 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg shadow-sm transition-all whitespace-nowrap ${applyBtnClass}" title="${applyDisabled ? 'You already applied' : 'Apply for this job'}">
                         ${applyBtnText}
                     </button>
-                    <button onclick="saveJob('${job.id}', this)" class="bg-[#008000] save-btn text-white text-lg sm:text-xl font-bold rounded-md px-6 sm:px-8 lg:px-10 py-3 sm:py-4 hover:bg-[#006400] transition w-full sm:w-auto" data-job-id="${job.id}">
+
+                    <button onclick="saveJob('${job.id}', this)" class="flex-1 px-3 py-2 text-xs sm:text-sm font-semibold rounded-lg text-white shadow-sm transition-all whitespace-nowrap save-btn" data-job-id="${job.id}" title="Save this job">
                         💾 Save
                     </button>
                 </div>
@@ -1199,86 +1304,238 @@ function saveJob(jobId, btn) {
 document.getElementById('searchBtn')?.addEventListener('click', loadJobs);
 document.getElementById('work-env')?.addEventListener('change', loadJobs);
 document.querySelector('select[name="growth_potential"]')?.addEventListener('change', loadJobs);
+
+// Text-to-Speech functionality
+function speakText(targetId) {
+    if (!('speechSynthesis' in window)) {
+        alert('Speech synthesis not supported in this browser.');
+        return;
+    }
+    
+    const target = document.getElementById(targetId);
+    if (!target) {
+        console.warn('Target element not found:', targetId);
+        return;
+    }
+    
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    // Clone the target and remove button elements
+    const contentDiv = document.createElement('div');
+    const cloned = target.cloneNode(true);
+    cloned.querySelectorAll('button').forEach(b => b.remove());
+    contentDiv.appendChild(cloned);
+    
+    const text = contentDiv.innerText || contentDiv.textContent || '';
+    if (!text.trim()) {
+        console.warn('No text content found in target');
+        return;
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    // Update UI to show speaking state
+    const button = document.querySelector(`[data-target="${targetId}"]`);
+    if (button) {
+        button.classList.add('speaking');
+        utterance.onend = () => button.classList.remove('speaking');
+        utterance.onerror = () => button.classList.remove('speaking');
+    }
+    
+    window.speechSynthesis.speak(utterance);
+}
+
+// Add click event listeners to all TTS buttons
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.tts-btn[data-target]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            speakText(btn.dataset.target);
+        });
+    });
+});
+
+// Re-attach TTS listeners when job container is updated
+const originalSetInnerHTML = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'innerHTML').set;
+Object.defineProperty(HTMLElement.prototype, 'innerHTML', {
+    set: function(html) {
+        originalSetInnerHTML.call(this, html);
+        if (this.id === 'job-container') {
+            document.querySelectorAll('.tts-btn[data-target]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    speakText(btn.dataset.target);
+                });
+            });
+        }
+    }
+});
 </script>
 
-        <!-- Instruction Section Wrapper -->
-        <div class="mt-6 sm:mt-8 space-y-4 sm:space-y-6 lg:space-y-8">
+<script>
+function setupSuggestions(inputId, containerId) {
+    const input = document.getElementById(inputId);
+    const container = document.getElementById(containerId);
 
-            <!-- Apply Button Instruction -->
-            <div class="relative bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl border-l-8 border-[#2563EB] p-4 sm:p-6 lg:p-8 shadow-lg">
-                <div class="flex items-start gap-3 sm:gap-4">
+    if (!input || !container) return;
 
-                    <div
-    class="flex items-center justify-center bg-white w-12 h-12 sm:w-16 sm:h-16 rounded-full shadow-md border-4 border-[#2563EB] overflow-hidden flex-shrink-0">
-    <img src="https://img.icons8.com/color/96/resume.png" alt="Application Icon"
-        class="w-8 h-8 sm:w-10 sm:h-10 object-contain">
+    input.addEventListener('focus', () => container.classList.remove('hidden'));
+    input.addEventListener('input', () => container.classList.remove('hidden'));
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => container.classList.add('hidden'), 200);
+    });
+
+    container.querySelectorAll('.suggestion-item').forEach(btn => {
+        btn.classList.add(
+            "w-full","text-left","px-4","py-3","text-sm",
+            "hover:bg-blue-50","border-b","border-slate-200","last:border-b-0"
+        );
+
+        btn.addEventListener('click', () => {
+            input.value = btn.dataset.value;
+            container.classList.add('hidden');
+        });
+    });
+}
+
+// initialize all
+setupSuggestions('job-type', 'job-type-suggestions');
+setupSuggestions('work-env', 'work-env-suggestions');
+setupSuggestions('address-location', 'location-suggestions');
+setupSuggestions('searchJobTitle', 'job-title-suggestions');
+</script>
+
+  <!-- Instruction Section Wrapper -->
+<section class="bg-slate-50 py-12 sm:py-16 lg:py-20">
+
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Inner Container (card-style section) -->
+        <div class="bg-white border border-slate-200 rounded-3xl shadow-sm p-6 sm:p-10 lg:p-12">
+
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">
+                        How to use
+                    </h2>
+                    <p class="text-slate-600 mt-1">
+                        Follow these simple steps to explore jobs
+                    </p>
+                </div>
+
+                <!-- TTS BUTTON -->
+                <button type="button"
+                    onclick="speakText(document.getElementById('tts-instructions').textContent)"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300">
+
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+            </div>
+
+            <!-- GRID -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        <!-- CARD 1 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition flex flex-col justify-between">
+            <div class="space-y-4">
+                <div class="w-14 h-14 rounded-xl bg-blue-100 flex items-center justify-center">
+                    <img src="https://img.icons8.com/color/48/resume.png" class="w-8 h-8">
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-900">
+                    Apply for a job
+                </h3>
+
+                <p class="text-slate-700">
+                    Click <span class="text-blue-600 font-semibold">Apply</span> to send your application.
+                </p>
+
+                <p class="text-sm text-slate-500 italic">
+                    (Pindutin ang Apply upang mag apply sa trabaho.)
+                </p>
+            </div>
+
+            <button onclick="speakText('Click Apply to send your application')"
+                class="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold hover:bg-blue-800 transition">
+                
+                <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                Listen
+            </button>
+        </div>
+
+        <!-- CARD 2 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition flex flex-col justify-between">
+            <div class="space-y-4">
+                <div class="w-14 h-14 rounded-xl bg-teal-100 flex items-center justify-center">
+                    <img src="https://img.icons8.com/color/48/info--v1.png" class="w-8 h-8">
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-900">
+                    View job details
+                </h3>
+
+                <p class="text-slate-700">
+                    Click <span class="text-teal-600 font-semibold">Details</span> to learn more.
+                </p>
+
+                <p class="text-sm text-slate-500 italic">
+                    (Pindutin ang Details upang makita ang impormasyon.)
+                </p>
+            </div>
+
+            <button onclick="speakText('Click Details to learn more about the job')"
+                class="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold hover:bg-blue-800 transition">
+                
+                <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                Listen
+            </button>
+        </div>
+
+        <!-- CARD 3 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 hover:shadow-md transition flex flex-col justify-between">
+            <div class="space-y-4">
+                <div class="w-14 h-14 rounded-xl bg-green-100 flex items-center justify-center">
+                    <img src="https://img.icons8.com/color/48/bookmark-ribbon.png" class="w-8 h-8">
+                </div>
+
+                <h3 class="text-lg font-bold text-slate-900">
+                    Save jobs
+                </h3>
+
+                <p class="text-slate-700">
+                    Click <span class="text-green-600 font-semibold">Save</span> to keep jobs for later.
+                </p>
+
+                <p class="text-sm text-slate-500 italic">
+                    (Pindutin ang Save upang mai-save ito.)
+                </p>
+            </div>
+
+            <button onclick="speakText('Click Save to keep a job for later')"
+                class="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold hover:bg-blue-800 transition">
+                
+                <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                Listen
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Hidden TTS -->
+    <div id="tts-instructions" class="sr-only">
+        Apply for a job. Click Apply to send your application.
+        View job details. Click Details to learn more.
+        Save jobs. Click Save to keep a job for later.
+    </div>
+
 </div>
-
-                    <div class="flex-1">
-                         <p class="text-lg sm:text-xl text-gray-900 font-semibold leading-snug">
-                            Click the <span class="text-[#2563EB] font-bold">“Apply”</span> button to apply for 
-                            the job.
-                        </p>
-                        <p class="text-sm sm:text-base text-gray-700 italic mt-2">
-                            (Pindutin ang <span class="font-semibold text-[#2563EB]">“Apply”</span> upang mag apply sa trabaho.)
-                    </div>
-                </div>
-                <button type="button" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400" 
-                 data-tts-en="Click the Apply button to apply for the job." 
-                 data-tts-tl="Pindutin ang Apply upang mag apply sa trabaho." aria-label="Play audio for Apply instruction">🔊</button>
-            </div>
-
-            <!-- Details Instruction -->
-            <div class="relative bg-gradient-to-r from-[#E0F7F6] to-[#C6F0EF] rounded-2xl border-l-8 border-[#55BEBB] p-4 sm:p-6 lg:p-8 shadow-lg">
-                <div class="flex items-start gap-3 sm:gap-4">
-                    <div
-                        class="flex items-center justify-center bg-white w-12 h-12 sm:w-16 sm:h-16 rounded-full shadow-md border-4 border-[#55BEBB] overflow-hidden flex-shrink-0">
-                        <img src="https://img.icons8.com/color/96/info--v1.png" alt="Info Icon"
-                            class="w-8 h-8 sm:w-10 sm:h-10 object-contain">
-                    </div>
-
-                    <div class="flex-1">
-                        <p class="text-lg sm:text-xl text-gray-900 font-semibold leading-snug">
-                            Click the <span class="text-[#55BEBB] font-bold">“Details”</span> button to learn more about
-                            this job.
-                        </p>
-                        <p class="text-sm sm:text-base text-gray-700 italic mt-2">
-                            (Pindutin ang <span class="font-semibold text-[#55BEBB]">“Details”</span> upang makita ang
-                            karagdagang impormasyon tungkol sa trabaho.)
-                        </p>
-                    </div>
-                </div>
-                <button type="button" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-teal-400" 
-                 data-tts-en="Click the Details button to learn more about this job." 
-                 data-tts-tl="Pindutin ang Details upang makita ang karagdagang impormasyon tungkol sa trabaho." aria-label="Play audio for Details instruction">🔊</button>
-            </div>
-
-            <!-- Saved Jobs Box -->
-            <div class="relative bg-gradient-to-r from-green-50 to-green-100 rounded-2xl border-l-8 border-green-500 p-4 sm:p-6 lg:p-8 shadow-lg">
-                <div class="flex items-start gap-3 sm:gap-4">
-                    <div
-                        class="flex items-center justify-center bg-white w-12 h-12 sm:w-16 sm:h-16 rounded-full shadow-md border-4 border-green-500 overflow-hidden flex-shrink-0">
-                        <img src="https://img.icons8.com/color/96/save-as.png" alt="Saved Jobs Icon"
-                            class="w-8 h-8 sm:w-10 sm:h-10 object-contain">
-                    </div>
-
-                    <div class="flex-1">
-                        <a href="#" class="text-green-700 font-bold text-lg sm:text-2xl hover:underline">Saved Jobs</a>
-                        <p class="text-base sm:text-lg text-gray-900 mt-3 leading-snug">
-                            Click <span class="text-green-700 font-bold">“Save”</span> on any job listing to keep it for
-                            later.
-                        </p>
-                        <p class="text-sm sm:text-base text-gray-700 italic mt-2">
-                            (Pindutin ang <span class="font-semibold text-green-700">“Save”</span> button sa anumang
-                            trabaho upang mai-save ito para sa susunod.)
-                        </p>
-                    </div>
-                </div>
-                <button type="button" class="absolute top-2 right-2 sm:top-4 sm:right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-green-400" 
-                 data-tts-en="Click Save on any job listing to keep it for later." 
-                 data-tts-tl="Pindutin ang Save button sa anumang trabaho upang mai-save ito para sa susunod." aria-label="Play audio for Save instruction">🔊</button>
-            </div>
-
 
             <!-- BACK TO TOP BUTTON -->
             <button id="backToTopBtn"
