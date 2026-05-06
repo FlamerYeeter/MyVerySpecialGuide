@@ -4,218 +4,316 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Applicant Registration: Personal Information</title>
+    <title>Account Registration</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
     <style>
-    /* Floating animations */
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+    :root {
+      color-scheme: light;
     }
-    .animate-float-slow { animation: float 5s ease-in-out infinite; }
-    .animate-float-medium { animation: float 3.5s ease-in-out infinite; }
-    .animate-float-fast { animation: float 2.5s ease-in-out infinite; }
-    .tts-btn.speaking {
-        background-color: #2563eb !important;
-        box-shadow: 0 6px 16px rgba(37, 99, 235, 0.18);
-        transform: scale(1.03);
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      min-height: 100vh;
+      line-height: 1.6;
     }
-    
-    /* OCR Loading Spinner */
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    button, input, select, textarea {
+      font: inherit;
     }
-    .ocr-spinner {
-      border: 4px solid #e5e7eb;
-      border-top: 4px solid #2E2EFF;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
     }
-        .ocr-loading-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 16px;
-            background-color: #f0f4ff;
-            border: 1px solid #2E2EFF;
-            border-radius: 8px;
-            margin-top: 12px;
-            width: 100%;
-            box-sizing: border-box;
-        }
-    .ocr-loading-text {
-      font-size: 14px;
-      color: #1e40af;
-      font-weight: 500;
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
+      outline: 3px solid #2563eb;
+      outline-offset: 3px;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.24);
     }
-        /* Layout & Typography improvements */
-        .main-container h1 { font-size: clamp(1.6rem, 3.6vw, 2.8rem); line-height: 1.05; }
-        .main-container h2, .main-container h3 { font-size: clamp(1.05rem, 2.2vw, 1.4rem); }
-        .main-container .text-gray-600.italic { font-size: 0.92rem; }
-        .main-container .bg-white.rounded-2xl { padding: 1.25rem; }
-        .main-container .upload-error { font-size: 0.92rem; }
-        /* Make TTS buttons consistent */
-        .tts-btn { padding: 0.55rem 0.6rem; border-radius: 9999px; }
-        /* Improve spacing inside form groups */
-        .main-container .grid > div { display:block; }
-
-        /* Responsive adjustments */
-        @media (max-width: 640px) {
-                body { font-size: 15px; }
-                .main-container { padding: 0.6rem; }
-                .main-container h1 { text-align: center; margin-bottom: 0.5rem; }
-                .main-container h3 { text-align: center; }
-                /* make labels and helper text slightly larger for readability */
-                .main-container label, .main-container p, .main-container .text-gray-600 { font-size: 15px; }
-                /* Ensure TTS buttons are touch-friendly */
-                .tts-btn { padding: 0.6rem; font-size: 1.05rem; }
-                /* Ensure inputs stretch and maintain balanced padding */
-                .main-container input[type="text"],
-                .main-container input[type="email"],
-                .main-container input[type="tel"],
-                .main-container input[type="date"],
-                .main-container select,
-                .main-container textarea { font-size: 15px; padding: 0.6rem 0.75rem; }
-        }
-        /* Section card consistency */
-        .main-container .section-card {
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            gap: 0.75rem;
-            min-height: 360px;
-            padding: 1.25rem; 
-        }
-        /* Slightly smaller on medium screens */
-        @media (max-width: 1024px) {
-            .main-container .section-card { min-height: 320px; }
-        }
-        /* On small screens make section cards match the instruction blue card size */
-        @media (max-width: 640px) {
-            .main-container .section-card { min-height: 300px; padding: 0.9rem; }
-            /* make section cards visually wider on small screens to use more horizontal space; keep info-card at original size */
-            .main-container .section-card {
-                width: calc(100% + 2rem);
-                max-width: none;
-                margin-left: -1rem;
-                margin-right: -1rem;
-            }
-        }
-        </style>
+    input, select, textarea {
+      min-height: 3rem;
+      border-width: 1px;
+      border-style: solid;
+      border-color: #cbd5e1;
+    }
+    .main-container h1 {
+      font-size: clamp(1.8rem, 3.6vw, 3rem);
+      line-height: 1.05;
+    }
+    .main-container h2, .main-container h3 {
+      font-size: clamp(1.2rem, 2.2vw, 1.6rem);
+    }
+    .main-container .text-gray-600.italic {
+      font-size: 0.95rem;
+    }
+    .main-container .bg-white.rounded-2xl {
+      padding: 1.25rem;
+    }
+    .main-container .upload-error {
+      font-size: 0.95rem;
+      min-height: 1.25rem;
+    }
+    .tts-btn {
+      padding: 0.65rem 0.75rem;
+      border-radius: 9999px;
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .tts-btn:hover,
+    .tts-btn:focus-visible {
+      transform: scale(1.05);
+    }
+    .help-text {
+      font-size: 0.95rem;
+      color: #475569;
+    }
+    .help-text.italic {
+      font-style: italic;
+    }
+    .card-note {
+      font-size: 0.95rem;
+      color: #334155;
+    }
+    .button-primary {
+      transition: transform 0.2s ease, background-color 0.2s ease;
+    }
+    .button-primary:hover {
+      transform: translateY(-1px);
+    }
+    .button-primary:focus-visible {
+      outline: 3px solid #2563eb;
+      outline-offset: 3px;
+    }
+    .section-card,
+    .resume-card,
+    .pwdid-card,
+    .medical-card,
+    .fit-card {
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 0.75rem;
+      min-height: auto;
+      padding: 1.25rem;
+      background-color: #ffffff;
+      border-radius: 1.5rem;
+      border: 1px solid #e2e8f0;
+    }
+    .section-card {
+      box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
+    }
+    .info-card,
+    .resume-card,
+    .pwdid-card,
+    .medical-card,
+    .fit-card {
+      background-color: #eff6ff;
+      border-color: #bfdbfe;
+    }
+    @media (max-width: 640px) {
+      body {
+        font-size: 15px;
+      }
+      .main-container {
+        padding: 0.75rem;
+      }
+      .section-card {
+        width: calc(100% + 2rem);
+        max-width: none;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        padding: 1rem;
+      }
+      .tts-btn {
+        padding: 0.8rem;
+        font-size: 1rem;
+      }
+      input, select, textarea {
+        font-size: 1rem;
+        padding: 0.75rem 0.9rem;
+      }
+    }
+    </style>
 
 </head>
 
-<body class="bg-white flex justify-center sm:items-center items-start min-h-screen p-4 sm:p-6 relative overflow-auto">
+<body class="bg-slate-50">
 
-    <!-- Floating Mascots -->
-    <img src="image/obj4.png" alt="Yellow Mascot"
-        class="hidden sm:block fixed left-2 sm:left-6 lg:left-10 top-1/3 w-20 sm:w-28 md:w-32 opacity-90 animate-float-slow z-0">
-    <img src="image/obj7.png" alt="Triangle Mascot"
-        class="hidden sm:block fixed left-2 sm:left-6 lg:left-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-28 opacity-90 animate-float-medium z-0">
-    <img src="image/obj3.png" alt="Blue Mascot"
-        class="hidden sm:block fixed right-2 sm:right-6 lg:right-10 top-1/4 w-20 sm:w-28 md:w-32 opacity-90 animate-float-fast z-0">
-    <img src="image/obj8.png" alt="Twin Mascot"
-        class="hidden sm:block fixed right-2 sm:right-6 lg:right-8 bottom-16 sm:bottom-24 lg:bottom-28 w-16 sm:w-24 md:w-32 opacity-90 animate-float-medium z-0">
+    <!-- Skip to main content link -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded-md z-50 focus:outline-none focus:ring-2 focus:ring-blue-300">Skip to main content</a>
 
-    <!-- Back Button -->
-    <button
-        class="fixed left-2 top-2 sm:left-4 sm:top-4 bg-[#2E2EFF] text-white px-4 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-semibold shadow-lg hover:bg-blue-700 active:scale-95 transition z-[9999]"
-        onclick="(history.length>1 ? history.back() : window.location.href='{{ route('dataprivacy') }}')">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="white"
-            class="w-6 h-6" >
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        Back
-    </button>
+    <!-- BACK BUTTON -->
+    <nav class="bg-sky-50 border-b border-sky-100 py-4 px-6 sm:px-10 lg:px-12">
+        <div class="max-w-7xl mx-auto">
+            <a href="{{ route('dataprivacy') }}"
+               class="inline-flex items-center gap-3 text-blue-700 font-semibold text-base sm:text-lg hover:text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+               aria-label="Go back">
+                <img src="https://img.icons8.com/ios-filled/24/1E40AF/left.png" alt="" aria-hidden="true"/>
+                <span>Back</span>
+            </a>
+        </div>
+    </nav>
 
-    <!-- Main Container -->
-    <div
-        class="bg-[#FEF2C7] w-full max-w-5xl rounded-3xl shadow-2xl p-6 sm:p-10 md:p-12 relative z-10 border-4 border-blue-200">
 
-        <!-- Header -->
-        <div class="text-center mt-4">
-            <h1 class="text-3xl sm:text-5xl font-extrabold text-blue-700 mb-4 drop-shadow-md">Registration</h1>
-            <img src="image/obj6.png" alt="Pink Object" class="mx-auto w-20 sm:w-32 mb-4">
+    <!-- JOB HEADER -->
+    <main id="main-content" role="main" aria-labelledby="job-title" class="main-container max-w-7xl mx-auto w-full px-6 sm:px-10 lg:px-12 py-8 sm:py-10">
 
-        <!-- Information Note -->
-        <div
-            class="info-card mt-2 sm:mt-2 max-w-4xl mx-auto bg-blue-50 p-4 sm:p-6 rounded-2xl border-2 sm:border-4 border-blue-300 shadow sm:shadow-md relative">
+        <!-- HEADER CARD -->
+        <article class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm mb-8">
 
-              <!-- Desktop Audio Button -->
-                <button type="button" aria-label="Play audio for info section"
-                    class="hidden sm:block absolute top-1/2 right-5 -translate-y-1/2 bg-[#1E40AF] hover:bg-blue-700 text-white 
-                         text-lg sm:text-xl p-3 rounded-full shadow-lg transition-transform hover:scale-110 
-                            focus:ring-2 focus:ring-blue-400 tts-btn"
-                            data-tts-en="Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a ⭐ must be filled in. Thank you!"
-                            data-tts-tl="Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
-                            ang mga field na may ⭐ ay kinakailangang sagutan. Salamat!">
-                            🔊
-                </button>
+            <div class="flex flex-col lg:flex-row justify-between gap-8 items-start lg:items-center">
 
-            <div class="flex flex-col sm:flex-row items-center sm:items-start gap-5 pr-4 sm:pr-16"> 
-                <!-- Info Icon -->
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600 flex-shrink-0 mt-0.5"
-                    fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 11-10 10A10 10 0 0112 2z" />
-                </svg>
+                <!-- COMPANY & JOB INFO -->
+                <div class="flex items-start gap-5 flex-1">
 
-                <!-- Text Content -->
-                <div class="flex-1 text-center sm:text-left">
-                    <p class="text-base sm:text-lg text-gray-700 font-bold leading-relaxed">
-                     Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a ⭐ must be filled in. Thank you!
-                    </p>
-                    <p class="text-gray-700 italic text-sm sm:text-base mt-2">
-                        (Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
-                        ang mga field na may ⭐ ay kinakailangang sagutan. Salamat!)
-                    </p>
-                
-                 <!-- Mobile Audio Button -->
-                    <div class="mt-3 flex justify-center sm:hidden">
-                        <button type="button" aria-label="Play audio for info section"
-                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg 
-                            transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-                            data-tts-en="Please fill out all the required fields completely and accurately. Type your information in the boxes below any field with a star must be filled in. Thank you!"
-                            data-tts-tl="Pakisagutan nang buo at tama ang lahat ng kinakailangang impormasyon. I-type ang iyong sagot sa mga kahon sa ibaba; 
-                            ang mga field na may star ay kinakailangang sagutan. Salamat!">
-                            🔊
+                    <!-- LOGO -->
+                    <div class="flex-shrink-0">
+                        <img id="job-logo-img"
+                             class="w-20 h-20 rounded-xl border border-slate-300 object-cover hidden"
+                             alt="Company logo">
+
+                        <div id="job-logo-fallback"
+                             class="w-20 h-20 bg-sky-100 rounded-xl flex items-center justify-center border border-slate-200">
+                            <i class="ri-user-line text-sky-600 text-3xl" aria-hidden="true"></i>
+                        </div>
+                    </div>
+
+                    <!-- JOB DETAILS -->
+                    <div class="flex-1 min-w-0">
+                        <h1 id="job-title" class="text-3xl sm:text-4xl font-extrabold text-slate-900 mb-4 leading-tight">
+                            Account Registration
+                        </h1>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-2 text-lg text-slate-700">
+                                <span class="font-semibold">Create your account and save your profile</span>
+                            </div>
+
+                            <div class="flex flex-wrap gap-4 text-lg text-slate-600">
+                                <div class="flex items-center gap-2">
+                                    <i class="ri-time-line text-slate-500 text-xl" aria-hidden="true"></i>
+                                    <span>Complete all sections</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-sky-50 border border-sky-100 rounded-3xl p-5 mt-6">
+                        <p class="text-slate-700 text-base sm:text-lg">
+                            <strong>Note:</strong> Fields marked with a star <span aria-hidden="true">⭐</span> are required.
+                        </p>
+                        <p class="text-slate-600 text-sm sm:text-base mt-2">
+                            Please fill in all required fields before moving to the next step.
+                        </p>
+                    </div>
+                </div>
+            </article>
+
+        <!-- FORM CONTENT -->
+        <div class="grid grid-cols-1 gap-8">
+
+            <!-- LEFT COLUMN - FORM SECTIONS -->
+            <div class="space-y-8">
+
+            <!-- Resume Upload Section -->
+            <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+
+                <!-- Section Title with TTS -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl sm:text-2xl font-bold text-blue-600">
+                        Resume Upload
+                    </h3>
+                    <button type="button" aria-label="Play audio for resume upload section"
+                        class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                        data-tts-en="Upload your resume to help auto-fill the registration form."
+                        data-tts-tl="I-upload ang iyong resume upang makatulong sa automatic na paglagay ng mga impormasyon sa pagpaparehistro.">
+                        🔊
                     </button>
                 </div>
+
+                <!-- Instruction -->
+                <p class="text-gray-700 font-semibold text-lg mb-2">
+                    Upload your resume to help fill in your information. 
+                </p>
+                <p class="text-blue-700 text-md mb-2">
+                    If you do not have a resume, that is okay. You can type your details instead.
+                </p>
+                <p class="text-gray-700 italic text-md mb-4">
+                    (Kung walang resume, okay lang. Pwede mong ilagay ang iyong impormasyon sa susunod na mga tanong.)
+                </p>
+
+                <!-- Resume Upload Card -->
+                <div class="mt-4 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 mb-8 resume-card">
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+
+                        <!-- Upload Info -->
+                        <div class="flex-1 text-center sm:text-left">
+                            <p class="text-gray-700 text-lg sm:text-base mb-1">
+                                Upload or capture your resume (PDF, DOC, DOCX, or image).
+                            </p>
+                            <p class="text-gray-700 italic text-sm sm:text-base mb-1">
+                                (Mag-upload o kumuha ng larawan ng iyong resume sa PDF, DOC, DOCX, o image.)
+                            </p>
+                            <p class="text-gray-600 text-sm sm:text-base">
+                                Accepted: <b>.pdf .doc .docx .jpg .jpeg .png</b> • Max size: <b>5MB</b>
+                            </p>
+<div id="resumeDisplay" class="mt-2 help-text" aria-live="polite"></div>
+                        </div>
+
+                        <!-- Upload Button -->
+                        <div class="flex-shrink-0 flex flex-col items-center sm:items-end gap-3">
+                            <div class="w-full sm:w-auto text-center sm:text-right">
+                                <label id="resumeLabel" for="resumeFile" class="inline-flex items-center justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-4 py-2 rounded-lg transition shadow-md cursor-pointer">
+                                    📁 Upload/Capture Resume
+                                </label>
+                                <input id="resumeFile" name="resume" type="file" accept=".pdf,.doc,.docx,image/*" capture="environment" class="hidden" />
+                                <div id="resumeHint" class="text-gray-500 text-sm italic mt-1">Please upload or capture your resume.</div>
+                            </div>
+                            <div class="upload-error text-sm text-red-600 w-full text-center sm:text-right"></div>
+                        </div>
+
+                    </div>
+
+                </div>
+
             </div>
-        </div>
-    </div>
-
-
-
-                <!-- Form -->
-                <form id="registrationForm" class="main-container mt-10 space-y-8 text-center sm:text-left mx-auto w-full max-w-6xl px-4 sm:px-0">
 
 <!-- Personal Information -->
 <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
 
-    <!-- Section Title -->
-    <div class="mb-4">
-        <h3 class="text-xl sm:text-2xl font-bold text-blue-600">
+    <!-- Section Title with TTS -->
+    <div class="flex justify-between items-center mb-4">
+        <h3 id="personal-info-heading" class="text-xl sm:text-2xl font-bold text-blue-600">
             Personal Information
         </h3>
+        <button type="button" aria-label="Play audio for personal information section"
+            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+            data-tts-en="Fill out your personal information including name, birthdate, contact details, and address."
+            data-tts-tl="Punan ang iyong personal na impormasyon kabilang ang pangalan, petsa ng kapanganakan, detalye ng contact, at address.">
+            🔊
+        </button>
     </div>
 
     <!-- English Instruction -->
     <p class="text-gray-700 font-semibold text-lg mb-2">
-        Please upload your PWD ID to help auto-fill some of your information and for verification.<span>⭐</span>
+        Please upload your PWD ID for verification.<span>⭐</span>
     </p>
 
     <!-- Tagalog Instruction -->
     <p class="text-gray-700 italic text-md flex items-center gap-2">
-        (Mag upload ng iyong PWD ID upang makatulong sa automatic na paglagay ng iyong impormasyon at para sa verification.)
+        (Mag upload ng iyong PWD ID para sa verification.)
         <button type="button"
             class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-2 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
-            data-tts-en="Please upload your PWD ID to help auto-fill some of your information and for verification."
-            data-tts-tl="Mag upload ng iyong PWD ID upang makatulong sa automatic na paglagay ng iyong impormasyon at para sa verification.">
+            data-tts-en="Please upload your PWD ID for verification."
+            data-tts-tl="Mag upload ng iyong PWD ID para sa verification.">
             🔊
         </button>
     </p>
@@ -229,18 +327,18 @@
                     <!-- Upload Info -->
                     <div class="flex-1 text-center sm:text-left">
                         <p class="text-gray-700 text-lg sm:text-base mb-1">
-                            Upload an image or PDF of the front and back of your PWD ID.
+                            Upload or capture an image or PDF of the front and back of your PWD ID.
                         </p>
 
                         <p class="text-gray-700 italic text-sm sm:text-base mb-1">
-                            (Mag-upload ng larawan o PDF ng harap at likod ng iyong PWD ID.)
+                            (Mag-upload o kumuha ng larawan o PDF ng harap at likod ng iyong PWD ID.)
                         </p>
 
                         <p class="text-gray-600 text-sm sm:text-base">
                             Accepted: <b>.jpg .jpeg .png .pdf</b> • Max size: <b>5MB</b>
                         </p>
 
-                        <div id="pwdidDisplay" class="mt-2"></div>
+                        <div id="pwdidDisplay" class="mt-2 help-text" aria-live="polite"></div>
                     </div>
 
                     <!-- Upload Button: Front/Back combined (allow 1 or 2 files) -->
@@ -248,11 +346,11 @@
 
                         <div class="w-full sm:w-auto text-center sm:text-right">
                             <label id="pwdidLabel" for="pwdidFile" class="inline-flex items-center justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-4 py-2 rounded-lg transition shadow-md cursor-pointer">
-                                📁 Upload Front/Back of ID (1-2 files)
+                                📁 Upload/Capture Front/Back of ID (1-2 files)
                             </label>
-                            <input id="pwdidFile" name="pwd_id[]" type="file" accept=".jpg,.jpeg,.png,.pdf" multiple class="hidden" />
-                            <div id="pwdidDisplay" class="upload-info text-sm text-gray-700 mt-2 justify-center sm:justify-end"></div>
-                            <p id="pwdidHint" class="text-gray-600 text-xs mt-1">You may upload either the front only, or both front and back (max 2 files).</p>
+                            <input id="pwdidFile" name="pwd_id[]" type="file" accept=".jpg,.jpeg,.png,.pdf" multiple capture="environment" class="hidden" />
+                            <div id="pwdidFileInfo" class="upload-info text-sm text-gray-700 mt-2 justify-center sm:justify-end" aria-live="polite"></div>
+                            <p id="pwdidHint" class="text-gray-600 text-xs mt-1">You may upload or capture either the front only, or both front and back (max 2 files).</p>
                         </div>
 
                         <div class="upload-error text-sm text-red-600 w-full text-center sm:text-right"></div>
@@ -365,15 +463,15 @@
                         <input id="address" name="address" type="hidden"/>
                     
             <!-- Type of Down Syndrome Section -->
-            <div id="type_of_down_syndrome_container" class="mt-8 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 shadow-sm">
+            <fieldset id="type_of_down_syndrome_container" class="mt-8 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 shadow-sm" aria-labelledby="down_syndrome_legend">
+                <legend id="down_syndrome_legend" class="font-semibold text-gray-800 text-sm sm:text-lg">
+                    What is your Karyotype Result? <span aria-hidden="true">⭐</span>
+                </legend>
 
                 <div class="flex items-center justify-between mb-3">
                     <div>
-                        <label class="font-semibold text-gray-800 text-sm sm:text-lg" for="down_syndrome_type">
-                            What is your Karyotype Result? <span>⭐</span>
-                        </label>
                         <p class="mt-2 text-gray-700 text-md">
-                            Please select your karyotype result if you already have medical records or information from your doctor.
+                            Choose the best result from your medical record or doctor's information.
                         </p>
                         <p class="mt-1 text-gray-600 italic text-sm">
                             (Piliin ang iyong karyotype result kung mayroon ka nang medical records o impormasyon mula sa iyong doktor.)
@@ -390,7 +488,7 @@
                 </div>
 
                 <!-- Options: Radio Buttons -->
-                <div class="flex flex-col sm:flex-row sm:gap-6 gap-4" id="down_syndrome_type">
+                <div class="flex flex-col sm:flex-row sm:gap-6 gap-4" role="radiogroup" aria-labelledby="down_syndrome_legend" aria-describedby="down_syndrome_helper">
 
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" id="down_syndrome_Pure" name="down_syndrome_type" value="Pure Trisomy" class="accent-blue-600"/>
@@ -405,7 +503,8 @@
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="radio" id="down_syndrome_Translocation" name="down_syndrome_type" value="Translocation Trisomy" class="accent-blue-600"/>
                         <span class="text-gray-700">Translocation Trisomy 21</span>
-                   </label>
+                    </label>
+
                     <!-- Hidden field to surface selected karyotype into collected form data -->
                     <input id="dsType" name="dsType" type="hidden" value="" />
                     <!-- Legacy/alias hidden fields for server and older pages -->
@@ -415,7 +514,9 @@
                     <input id="TYPES_OF_DS" name="TYPES_OF_DS" type="hidden" value="" />
                     <input id="karyotype" name="karyotype" type="hidden" value="" />
                 </div>
-            </div>
+
+                <p id="down_syndrome_helper" class="sr-only">Select one option that matches your karyotype result.</p>
+            </fieldset>
 
             <!-- Medical Certificate Info Section -->
             <div class="mt-6 text-left flex flex-col gap-2">
@@ -451,17 +552,17 @@
                                 <!-- Info Section inside Card -->
                                 <div class="flex-1 text-center sm:text-left">
                                     <p class="text-gray-700 text-lg sm:text-base mb-1">
-                                        Upload an image or PDF of your Medical Certificate.
+                                        Upload or capture an image or PDF of your Medical Certificate.
                                     </p>
                                     <p class="text-gray-700 italic text-sm sm:text-base mb-1">
-                                        (Mag-upload ng larawan o PDF ng iyong Medical Certificate.)
+                                        (Mag-upload o kumuha ng larawan o PDF ng iyong Medical Certificate.)
                                     </p>
                                     <p class="text-gray-600 text-sm sm:text-base">
                                         Accepted: <b>.jpg .jpeg .png .pdf</b> • Max size: <b>5MB</b>
                                     </p>
 
                                     <!-- File Info Display -->
-                                    <div id="medDisplay" class="mt-2"></div>
+                                    <div id="medDisplay" class="mt-2 help-text" aria-live="polite"></div>
                                 </div>
 
                     <!-- Upload Button Section -->
@@ -471,10 +572,10 @@
                             for="medFile"
                             class="block w-full text-center sm:inline-flex sm:w-auto justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-5 py-3 rounded-lg transition shadow-md"
                         >
-                            📁 Choose File / Pumili ng File
+                            📁 Upload/Capture File / Pumili ng File
                         </label>
 
-                        <input id="medFile" name="medical_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden"/>
+                        <input id="medFile" name="medical_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" capture="environment" class="hidden"/>
 
                         <!-- Upload error / validation -->
                         <div class="upload-error text-sm text-red-600"></div>
@@ -518,17 +619,17 @@
                                                     <!-- Info Section inside Card -->
                                                     <div class="flex-1 text-center sm:text-left">
                                                         <p class="text-gray-700 text-lg sm:text-base mb-1">
-                                                            Upload an image or PDF of your Fit-To-Work Certificate.
+                                                            Upload or capture an image or PDF of your Fit-To-Work Certificate.
                                                         </p>
                                                         <p class="text-gray-700 italic text-sm sm:text-base mb-1">
-                                                            (Mag-upload ng larawan o PDF ng iyong Fit-To-Work Certificate.)
+                                                            (Mag-upload o kumuha ng larawan o PDF ng iyong Fit-To-Work Certificate.)
                                                         </p>
                                                         <p class="text-gray-600 text-sm sm:text-base">
                                                             Accepted: <b>.jpg .jpeg .png .pdf</b> • Max size: <b>5MB</b>
                                                         </p>
 
                                                         <!-- File Info Display -->
-                                                        <div id="fitDisplay" class="mt-2"></div>
+                                                        <div id="fitDisplay" class="mt-2 help-text" aria-live="polite"></div>
                                                     </div>
 
                                         <!-- Upload Button Section -->
@@ -539,12 +640,12 @@
                                                 id="fitLabel"
                                                 class="block w-full text-center sm:inline-flex sm:w-auto justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-5 py-3 rounded-lg transition shadow-md"
                                             >
-                                                📁 Choose File / Pumili ng File
+                                                📁 Upload/Capture File / Pumili ng File
                                             </label>
 
-                                            <input id="fitFile" name="fit_to_work_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" class="hidden"/>
+                                            <input id="fitFile" name="fit_to_work_certificate" type="file" accept=".jpg,.jpeg,.png,.pdf" capture="environment" class="hidden"/>
 
-                                            <div id="fitHint" class="text-gray-500 text-sm italic mt-1">Please upload your Fit-To-Work Certificate.</div>
+                                            <div id="fitHint" class="text-gray-500 text-sm italic mt-1">Please upload or capture your Fit-To-Work Certificate.</div>
 
                                             <!-- Upload error / validation -->
                                             <div class="upload-error text-sm text-red-600"></div>
@@ -834,16 +935,60 @@
             <!-- Parents / Guardian & Spouse Information Card -->
             <div class="section-card mt-8 bg-white rounded-xl shadow-md p-6 border border-gray-200">
 
-                <h2 class="text-xl font-bold text-blue-600 mb-6">
-                    Parents / Guardian Information
+                <h2 class="text-xl font-bold text-blue-600 mb-6 flex justify-between items-center">
+                    Parent / Guardian Information
+                    <button type="button" aria-label="Play audio for parents guardian section"
+                        class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                        data-tts-en="Provide information about your parents or guardian."
+                        data-tts-tl="Magbigay ng impormasyon tungkol sa iyong mga magulang o guardian.">
+                        🔊
+                    </button>
                 </h2>
 
                 <!-- ================= Parents / Guardian ================= -->
-                <h3 class="text-lg font-semibold text-blue-700 mb-4">
-                    Parent / Guardian 
-                </h3>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <!-- Parent / Guardian ID Upload -->
+                <div class="mt-6 bg-blue-50 border-2 border-blue-200 rounded-xl p-5 shadow-sm">
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-4">
+                        <div>
+                            <label class="font-semibold text-gray-800 text-sm sm:text-lg" for="guardianIdFile">
+                                Parent / Guardian ID Upload <span>⭐</span>
+                            </label>
+                            <p class="mt-2 text-gray-700 text-md">
+                                Upload or capture a parent/guardian ID for verification.
+                            </p>
+                            <p class="mt-1 text-gray-600 italic text-sm">
+                                (Mag-upload o kumuha ng larawan ng ID ng magulang/guardian para sa verification.)
+                            </p>
+                        </div>
+                        <button type="button" aria-label="Play audio for guardian ID upload section"
+                            class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                            data-tts-en="Upload or capture a parent or guardian ID for verification."
+                            data-tts-tl="Mag-upload o kumuha ng larawan ng ID ng magulang o guardian para sa verification.">
+                            🔊
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                        <div class="flex-1 text-center sm:text-left">
+                            <p class="text-gray-700 text-lg sm:text-base mb-1">
+                                Accepted: <b>.jpg .jpeg .png .pdf</b> • Max size: <b>5MB</b>
+                            </p>
+                            <div id="guardianIdDisplay" class="mt-2 help-text" aria-live="polite"></div>
+                        </div>
+
+                        <div class="flex-shrink-0 flex flex-col items-center sm:items-end gap-2">
+                            <label id="guardianIdLabel" for="guardianIdFile" class="block w-full text-center sm:inline-flex sm:w-auto justify-center bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-semibold px-4 py-3 rounded-lg transition shadow-md cursor-pointer">
+                                📁 Upload/Capture Parent ID
+                            </label>
+                            <input id="guardianIdFile" name="guardian_id" type="file" accept=".jpg,.jpeg,.png,.pdf" capture="environment" class="hidden" />
+                            <div id="guardianIdHint" class="text-gray-500 text-sm italic mt-1">Please upload or capture a clear parent/guardian ID.</div>
+                            <div class="upload-error text-sm text-red-600"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <!-- Last Name -->
                     <div>
@@ -926,6 +1071,7 @@
 
                 </div>
 
+
                 <!-- Home Address -->
                 <div>
                     <div class="flex items-center justify-between mb-2">
@@ -963,10 +1109,10 @@
                         <input id="guardian_home_address" name="g_home_address" type="hidden"/>
                 </div>
 
-                <!-- Divider -->
-                <div class="border-t my-8"></div>
+                {{-- <!-- Divider -->
+                <div class="border-t my-8"></div> --}}
 
-                <!-- ================= Spouse ================= -->
+                {{-- <!-- ================= Spouse ================= -->
                 <h3 class="text-lg font-semibold text-blue-700 mb-4">
                    Parent / Guardian Spouse Information
                 </h3>
@@ -1085,18 +1231,521 @@
                             </label>
                         </div>
                         <input id="spouse_home_address" name="spouse_home_address" type="hidden"/>
+                </div> --}}
+
+            </div>
+
+            <!-- Education Section -->
+            <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+
+                <!-- Section Title with TTS -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl sm:text-2xl font-bold text-blue-600">
+                        Education
+                    </h3>
+                    <button type="button" aria-label="Play audio for education section"
+                        class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                        data-tts-en="Tell us about your education background."
+                        data-tts-tl="Sabihin sa amin ang tungkol sa iyong background sa edukasyon.">
+                        🔊
+                    </button>
                 </div>
+
+                <p class="text-gray-700 text-sm sm:text-base mb-4">
+                    Please include your school or training history. You may add more than one school or training program if needed.
+                    <span class="italic">(Mangyaring ilahad ang iyong kasaysayan sa paaralan o pagsasanay. Maaari kang magdagdag ng higit sa isang paaralan o programang pagsasanay kung kinakailangan.)</span>
+                </p>
+
+                <!-- Education Item Container -->
+                <div id="educationContainer" class="space-y-6">
+                    <div class="education-item bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div class="flex justify-end mb-4">
+                            <button type="button" onclick="removeEducation(this)"
+                                class="remove-education bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-200 transition"
+                                aria-label="Remove this education entry">
+                                Remove
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/graduation-cap.png" alt="Education level icon" class="w-5 h-5" />
+                                    Education Level
+                                </label>
+                                <select name="education_level[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                    <option value="" disabled selected class="text-gray-400">Select Level</option>
+                                    <option>Elementary</option>
+                                    <option>Highschool</option>
+                                    <option>College</option>
+                                    <option>Vocational / Training</option>
+                                    <option>SPED Program</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/company.png" alt="School icon" class="w-5 h-5" />
+                                    School / Training Center
+                                </label>
+                                <input type="text" name="education_school[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="Enter school name" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/book.png" alt="Course icon" class="w-5 h-5" />
+                                    Course / Program
+                                </label>
+                                <input type="text" name="education_program[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="Example: Food Preparation Training" />
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                                <div>
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Start year icon" class="w-5 h-5" />
+                                        Year Started
+                                    </label>
+                                    <input type="number" name="education_start[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. 2018" min="1900" max="2100" />
+                                </div>
+                                <div>
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/calendar.png" alt="End year icon" class="w-5 h-5" />
+                                        Year Completed
+                                    </label>
+                                    <input type="number" name="education_end[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. 2022" min="1900" max="2100" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-4 text-center">
+                    <button type="button" onclick="addEducation()" class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Another School / Training
+                    </button>
+                </div>
+
+                <div class="mt-8">
+                    <div class="text-left px-2 sm:px-4">
+                        <label class="text-xl sm:text-2xl font-bold text-blue-600 flex items-center justify-between gap-2">
+                            <span>Do you have any certificates or special trainings?</span>
+                            <button type="button"
+                                class="bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-base sm:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
+                                data-tts-en="Do you have any certificates or special trainings?"
+                                data-tts-tl="May mga certificate o special training ka ba?"
+                                aria-label="Play audio for other option">🔊</button>
+                        </label>
+
+                        <p class="text-gray-700 italic text-md flex items-center gap-2">(May mga certificate o special training ka ba?)</p>
+
+                        <div class="flex items-center gap-6 mt-4">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" id="certYes" name="certs" value="yes"
+                                    class="text-blue-600 focus:ring-blue-400 w-5 h-5" />
+                                <span class="text-gray-800 text-sm sm:text-base">Yes</span>
+                            </label>
+
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="radio" id="certNo" name="certs" value="no"
+                                    class="text-blue-600 focus:ring-blue-400 w-5 h-5" />
+                                <span class="text-gray-800 text-sm sm:text-base">No</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div id="cert_section" class="hidden mt-6 bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                        <p class="text-gray-700 text-sm sm:text-base mb-3">
+                            Please upload your certificates or training documents to help verify your qualifications.
+                        </p>
+                        <label class="block text-sm font-semibold text-gray-800 mb-2">Upload Certificate / Training Document</label>
+                        <input id="education_cert_file" name="education_cert_file" type="file" class="w-full text-gray-700" accept=".pdf,.jpg,.jpeg,.png" />
+                        <p class="text-gray-500 italic text-xs mt-2">Supported formats: PDF, JPG, JPEG, PNG.</p>
+                    </div>
+                </div>
+
+                <template id="education_template">
+                    <div class="education-item bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div class="flex justify-end mb-4">
+                            <button type="button" onclick="removeEducation(this)"
+                                class="remove-education bg-red-100 text-red-700 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium hover:bg-red-200 transition"
+                                aria-label="Remove this education entry">
+                                Remove
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/graduation-cap.png" alt="Education level icon" class="w-5 h-5" />
+                                    Education Level
+                                </label>
+                                <select name="education_level[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                    <option value="" disabled selected class="text-gray-400">Select Level</option>
+                                    <option>Elementary</option>
+                                    <option>Highschool</option>
+                                    <option>College</option>
+                                    <option>Vocational / Training</option>
+                                    <option>SPED Program</option>
+                                </select>
+                            </div>
+
+                            <div>
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/company.png" alt="School icon" class="w-5 h-5" />
+                                    School / Training Center
+                                </label>
+                                <input type="text" name="education_school[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="Enter school name" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/book.png" alt="Course icon" class="w-5 h-5" />
+                                    Course / Program
+                                </label>
+                                <input type="text" name="education_program[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="Example: Food Preparation Training" />
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:col-span-2">
+                                <div>
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Start year icon" class="w-5 h-5" />
+                                        Year Started
+                                    </label>
+                                    <input type="number" name="education_start[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. 2018" min="1900" max="2100" />
+                                </div>
+                                <div>
+                                    <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                        <img src="https://img.icons8.com/fluency/24/calendar.png" alt="End year icon" class="w-5 h-5" />
+                                        Year Completed
+                                    </label>
+                                    <input type="number" name="education_end[]" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none" placeholder="e.g. 2022" min="1900" max="2100" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <script>
+                    window.addEducation = function() {
+                        const container = document.getElementById('educationContainer');
+                        const template = document.getElementById('education_template');
+                        if (!container || !template) return;
+                        const clone = template.content.firstElementChild.cloneNode(true);
+                        container.appendChild(clone);
+                    };
+
+                    window.removeEducation = function(button) {
+                        const item = button.closest('.education-item');
+                        const container = document.getElementById('educationContainer');
+                        if (!item || !container) return;
+                        if (container.children.length > 1) {
+                            item.remove();
+                        }
+                    };
+
+                    document.addEventListener('change', function(event) {
+                        if (!event.target.matches('input[name="certs"]')) return;
+                        const certSection = document.getElementById('cert_section');
+                        if (!certSection) return;
+                        certSection.classList.toggle('hidden', event.target.value !== 'yes');
+                    });
+                </script>
+
+            </div>
+
+            <!-- Work Experience Section -->
+            <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
+
+                <!-- Section Title with TTS -->
+                <div class="mb-3 flex items-start justify-between">
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-blue-600">Work Experiences</h3>
+                        <p class="text-gray-600 italic text-sm sm:text-base mt-1">(Add all your work experiences)</p>
+                    </div>
+                    <button type="button" class="hidden sm:inline-block bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-md tts-btn" data-tts-en="Add details about your work experiences. You can add multiple entries." data-tts-tl="Maglagay ng impormasyon tungkol sa iyong mga karanasan sa trabaho." aria-label="Play audio for work experiences">🔊</button>
+                </div>
+
+                <p class="text-gray-700 text-sm sm:text-base mb-4">
+                    Please add your previous work experiences below. Include your job title, employer, location, the period you worked there, and a brief description.
+                </p>
+
+                <div id="job_experiences_container" class="space-y-6">
+                    <div class="job_exp_item bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-sm text-gray-600 italic">Fill in one entry per work experience</div>
+                            <button type="button" onclick="removeJobExperience(this)" class="remove-job text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium transition-colors duration-200">Remove</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/briefcase.png" alt="Job title icon" class="w-5 h-5" />
+                                    Job Title
+                                </label>
+                                <input list="job-title-options" name="job_title[]" class="job_title w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" placeholder="Select or type your job (e.g. Kitchen Helper)" />
+                            </div>
+
+                            <div>
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/company.png" alt="Company icon" class="w-5 h-5" />
+                                    Company Name
+                                </label>
+                                <input name="company_name[]" class="company_name w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" placeholder="e.g., McDonald's" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/map-pin.png" alt="Location icon" class="w-5 h-5" />
+                                    Company Location
+                                </label>
+                                <input type="text" name="company_location[]" class="company_location w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" placeholder="e.g., Taguig City" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Calendar icon" class="w-5 h-5" />
+                                    Work Period
+                                </label>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-2">Start</p>
+                                        <div class="flex gap-2">
+                                            <select name="job_start_month[]" class="job_start_month w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                                <option>Month</option>
+                                                <option>January</option><option>February</option><option>March</option>
+                                                <option>April</option><option>May</option><option>June</option>
+                                                <option>July</option><option>August</option><option>September</option>
+                                                <option>October</option><option>November</option><option>December</option>
+                                            </select>
+                                            <input type="text" name="job_start_year[]" placeholder="Year" class="job_start_year w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-2">End</p>
+                                        <div class="flex gap-2">
+                                            <select name="job_end_month[]" class="job_end_month w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                                <option>Month</option>
+                                                <option>January</option><option>February</option><option>March</option>
+                                                <option>April</option><option>May</option><option>June</option>
+                                                <option>July</option><option>August</option><option>September</option>
+                                                <option>October</option><option>November</option><option>December</option>
+                                            </select>
+                                            <input type="text" name="job_end_year[]" placeholder="Year / Present" class="job_end_year w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/document.png" alt="Document icon" class="w-5 h-5" />
+                                    Job Description
+                                </label>
+                                <textarea name="job_description[]" class="job_description w-full border border-gray-300 rounded-lg p-3 h-20 resize-none focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" placeholder="What you did (e.g. cleaned tables, organized shelves)"></textarea>
+                            </div>
+
+                            <div class="md:col-span-2 mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5">
+                                <div class="flex flex-col gap-3">
+                                    <div class="sm:flex sm:items-start sm:justify-between gap-4">
+                                        <div class="flex-1 min-w-0">
+                                            <label class="text-gray-700 text-md flex items-center gap-2">
+                                                Upload an image or PDF of your Certificates.<span class="font-semibold italic text-sm sm:text-md text-red-600">*required</span>
+                                            </label>
+                                            <p class="text-gray-700 italic text-md mt-1 leading-relaxed">
+                                                (Mag-upload ng larawan o PDF ng iyong Certificates)
+                                            </p>
+                                            <p class="text-gray-600 text-md mt-4 leading-relaxed">
+                                                Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b>
+                                            </p>
+                                            <div class="job_cert_display mt-3 text-sm text-gray-700"></div>
+                                        </div>
+
+                                        <div class="flex-shrink-0">
+                                            <label class="inline-flex items-center justify-center w-full sm:w-auto mt-2 cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+                                                📁 Choose File / Pumili ng File
+                                                <input type="file" name="job_cert_file[]" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <template id="job_exp_template">
+                    <div class="job_exp_item bg-gray-50 border border-gray-200 rounded-xl p-4">
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="text-sm text-gray-600 italic">Fill in one entry per work experience</div>
+                            <button type="button" onclick="removeJobExperience(this)" class="remove-job text-[#A21A1A] text-xs sm:text-sm bg-red-100 hover:bg-red-200 px-3 py-1.5 rounded-lg font-medium transition-colors duration-200">Remove</button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/briefcase.png" alt="Job title icon" class="w-5 h-5" />
+                                    Job Title
+                                </label>
+                                <input list="job-title-options" name="job_title[]" class="job_title w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" placeholder="Select or type your job (e.g. Kitchen Helper)" />
+                            </div>
+
+                            <div>
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/company.png" alt="Company icon" class="w-5 h-5" />
+                                    Company Name
+                                </label>
+                                <input name="company_name[]" class="company_name w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" placeholder="e.g., McDonald's" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/map-pin.png" alt="Location icon" class="w-5 h-5" />
+                                    Company Location
+                                </label>
+                                <input type="text" name="company_location[]" class="company_location w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" placeholder="e.g., Taguig City" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/calendar.png" alt="Calendar icon" class="w-5 h-5" />
+                                    Work Period
+                                </label>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-2">Start</p>
+                                        <div class="flex gap-2">
+                                            <select name="job_start_month[]" class="job_start_month w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                                <option>Month</option>
+                                                <option>January</option><option>February</option><option>March</option>
+                                                <option>April</option><option>May</option><option>June</option>
+                                                <option>July</option><option>August</option><option>September</option>
+                                                <option>October</option><option>November</option><option>December</option>
+                                            </select>
+                                            <input type="text" name="job_start_year[]" placeholder="Year" class="job_start_year w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <p class="text-xs text-gray-600 mb-2">End</p>
+                                        <div class="flex gap-2">
+                                            <select name="job_end_month[]" class="job_end_month w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800">
+                                                <option>Month</option>
+                                                <option>January</option><option>February</option><option>March</option>
+                                                <option>April</option><option>May</option><option>June</option>
+                                                <option>July</option><option>August</option><option>September</option>
+                                                <option>October</option><option>November</option><option>December</option>
+                                            </select>
+                                            <input type="text" name="job_end_year[]" placeholder="Year / Present" class="job_end_year w-1/2 border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="font-semibold text-gray-800 flex items-center gap-2">
+                                    <img src="https://img.icons8.com/fluency/24/document.png" alt="Document icon" class="w-5 h-5" />
+                                    Job Description
+                                </label>
+                                <textarea name="job_description[]" class="job_description w-full border border-gray-300 rounded-lg p-3 h-20 resize-none focus:ring-2 focus:ring-blue-200 focus:outline-none text-gray-800" placeholder="What you did (e.g. cleaned tables, organized shelves)"></textarea>
+                            </div>
+
+                            <div class="md:col-span-2 mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 sm:p-5">
+                                <div class="flex flex-col gap-3">
+                                    <div class="sm:flex sm:items-start sm:justify-between gap-4">
+                                        <div class="flex-1 min-w-0">
+                                            <label class="text-gray-700 text-md flex items-center gap-2">
+                                                Upload an image or PDF of your Certificates.<span class="font-semibold italic text-sm sm:text-md text-red-600">*required</span>
+                                            </label>
+                                            <p class="text-gray-700 italic text-md mt-1 leading-relaxed">
+                                                (Mag-upload ng larawan o PDF ng iyong Certificates)
+                                            </p>
+                                            <p class="text-gray-600 text-md mt-4 leading-relaxed">
+                                                Accepted file types: <b>.jpg, .jpeg, .png, .pdf</b> — Max size: <b>5MB</b>
+                                            </p>
+                                            <div class="job_cert_display mt-3 text-sm text-gray-700"></div>
+                                        </div>
+
+                                        <div class="flex-shrink-0">
+                                            <label class="inline-flex items-center justify-center w-full sm:w-auto mt-2 cursor-pointer bg-[#2E2EFF] hover:bg-blue-700 text-white text-sm sm:text-base font-medium px-4 py-2 sm:px-6 sm:py-3 rounded-lg transition">
+                                                📁 Choose File / Pumili ng File
+                                                <input type="file" name="job_cert_file[]" accept=".jpg,.jpeg,.png,.pdf" class="job_cert_file hidden" />
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="mt-4 text-center">
+                    <button type="button" onclick="addJobExperience()" class="bg-[#2E2EFF] text-white font-medium text-xs sm:text-base px-4 sm:px-6 py-2 sm:py-3 rounded-md hover:bg-blue-600 transition inline-flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 sm:w-6 sm:h-6 mr-2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Add Another Work Experience
+                    </button>
+                </div>
+
+                <datalist id="job-title-options">
+                    <option value="Customer Assistant"></option>
+                    <option value="Merchandising Assistant"></option>
+                    <option value="Stockroom Helper"></option>
+                    <option value="Office Helper"></option>
+                    <option value="Service Crew"></option>
+                    <option value="Store Utility / Cleaner"></option>
+                    <option value="Front Desk Helper"></option>
+                    <option value="Housekeeping Assistant"></option>
+                </datalist>
+
+                <script>
+                    window.addJobExperience = function() {
+                        const container = document.getElementById('job_experiences_container');
+                        const template = document.getElementById('job_exp_template');
+                        if (!container || !template) return;
+                        const clone = template.content.firstElementChild.cloneNode(true);
+                        container.appendChild(clone);
+                    };
+
+                    window.removeJobExperience = function(button) {
+                        const item = button.closest('.job_exp_item');
+                        const container = document.getElementById('job_experiences_container');
+                        if (!item || !container) return;
+                        if (container.children.length > 1) {
+                            item.remove();
+                        }
+                    };
+
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const container = document.getElementById('job_experiences_container');
+                        if (container && container.children.length === 0) {
+                            window.addJobExperience();
+                        }
+                    });
+                </script>
 
             </div>
 
             <!-- Account Details -->
              <div class="section-card bg-white rounded-2xl shadow-md p-6 sm:p-8 border border-gray-200">
 
-                <!-- Section Title -->
-                <div class="mb-4">
+                <!-- Section Title with TTS -->
+                <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl sm:text-2xl font-bold text-blue-600">
                        Account Details
                     </h3>
+                    <button type="button" aria-label="Play audio for account details section"
+                        class="bg-[#1E40AF] hover:bg-blue-700 text-white text-lg p-3 rounded-full shadow-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400 tts-btn"
+                        data-tts-en="Create your account username and password."
+                        data-tts-tl="Gumawa ng iyong username at password para sa account.">
+                        🔊
+                    </button>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1268,6 +1917,8 @@ document.addEventListener('DOMContentLoaded', () => {
     setupUpload('pwdidFile', 'pwdidDisplay', 'pwdidLabel', 'pwdidHint');
     setupUpload('medFile', 'medDisplay', 'medLabel', 'medHint');
     setupUpload('fitFile', 'fitDisplay', 'fitLabel', 'fitHint');
+    setupUpload('guardianIdFile', 'guardianIdDisplay', 'guardianIdLabel', 'guardianIdHint');
+    setupUpload('resumeFile', 'resumeDisplay', 'resumeLabel', 'resumeHint');
     try {
         // Password toggle handlers (Show/Hide text buttons)
         document.querySelectorAll('.toggle-password').forEach(btn => {
@@ -1346,14 +1997,13 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
     try {
         if (!aiData || typeof aiData !== 'object') return;
 
-        // SECURITY: Only allow autofill from PWD ID OCR results.
-        // Do NOT autofill form fields for medical certificates or fit-to-work
-        // documents. These should be reviewed manually.
+        // SECURITY: Do NOT autofill form fields from PWD ID OCR results.
+        // Only allow autofill from resume OCR. PWD ID is for verification only.
         try {
             const ot = String(ocrtype || '').toLowerCase();
             const dt = String(detectedType || '').toLowerCase();
-            if (ot !== 'pwd_id' && dt !== 'pwd_id') {
-                console.info('applyOcrDataToForm: skipping autofill for', ocrtype, detectedType);
+            if (ot.includes('pwd') || dt.includes('pwd')) {
+                console.info('applyOcrDataToForm: skipping autofill for PWD ID', ocrtype, detectedType);
                 return;
             }
         } catch (e) { /* ignore and proceed only if values are present */ }
@@ -2430,11 +3080,11 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                 <button 
                 id="createAccountBtn" 
                 type="button" class="w-full sm:w-auto bg-[#2E2EFF] text-white text-lg sm:text-2xl font-semibold px-6 sm:px-16 md:px-28 py-3 sm:py-4 rounded-2xl shadow-lg hover:bg-blue-600 transition disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-blue-300">
-                    Next →
+                    Next
                 </button>
                 <p class="text-gray-700 text-sm sm:text-base md:text-lg mt-4 text-center leading-relaxed px-4 sm:px-0">
-                    Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue <br class="hidden sm:block">
-                    <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy)</span>
+                    Click <span class="text-[#1E40AF] font-bold">"Next"</span> to continue to the next step <br class="hidden sm:block">
+                    <span class="italic text-[#4B4F58] block sm:inline">(Pindutin ang "Next" upang magpatuloy sa susunod na hakbang)</span>
                 </p>
             </div>
 

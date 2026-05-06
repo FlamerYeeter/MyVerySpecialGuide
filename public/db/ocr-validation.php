@@ -540,6 +540,123 @@ if (!$result['contains_fit_to_work'] && empty($result['contains_unfit_statement'
 
 cleanup(array_merge([$tmpFile], $images, $cleanImages));
 
+// --- Structured extraction (reuse heuristics similar to resume OCR) ---
+function extract_emails_local($text) {
+    preg_match_all('/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/', $text, $m);
+    return array_values(array_unique($m[0] ?? []));
+}
+
+function extract_phones_local($text) {
+    preg_match_all('/(?:\+?\d{1,3}[\s\-\.])?(?:\(\d{2,4}\)|\d{2,4})[\s\-\.]*\d{3,4}[\s\-\.]*\d{3,4}/', $text, $m);
+    return array_values(array_unique(array_filter(array_map(function($s){ return preg_replace('/\s+/', ' ', trim($s)); }, $m[0] ?? []))));
+}
+
+function extract_name_local($text) {
+    if (preg_match('/\bName\s*[:\-]\s*([A-Z][A-Za-z\'\-]+(?:\s+[A-Z][A-Za-z\'\-]+){0,2})/i', $text, $m)) return trim($m[1]);
+    $lines = preg_split('/\r?\n/', $text);
+    foreach ($lines as $line) {
+        $line = trim($line);
+        if ($line === '' || strlen($line) > 60) continue;
+        if (preg_match('/[@\d]/', $line)) continue;
+        if (preg_match('/^[A-Z][A-Za-z\'\-]+(?:\s+[A-Z][A-Za-z\'\-]+){1,2}$/', $line)) return $line;
+    }
+    return null;
+}
+
+function find_sections_local($text, $map) {
+    $patterns = [];
+    foreach ($map as $k => $variants) {
+        $patterns[$k] = '/(^|\n)\s*(?:' . implode('|', array_map('preg_quote', $variants)) . ')\s*[:\-\n]/i';
+    }
+    $matches = [];
+    foreach ($patterns as $name => $pat) {
+        if (preg_match_all($pat, $text, $ms, PREG_OFFSET_CAPTURE)) {
+            foreach ($ms[0] as $m) $matches[] = ['name'=>$name,'pos'=>$m[1],'len'=>strlen($m[0])];
+        }
+    }
+    usort($matches, function($a,$b){ return $a['pos'] <=> $b['pos']; });
+    $out = [];
+    for ($i=0;$i<count($matches);$i++) {
+        $start = $matches[$i]['pos'] + $matches[$i]['len'];
+        $end = isset($matches[$i+1]) ? $matches[$i+1]['pos'] : strlen($text);
+        $block = trim(substr($text, $start, $end - $start));
+        if ($block !== '') $out[$matches[$i]['name']][] = $block;
+    }
+    return $out;
+}
+
+// build raw combined text from per-image raw + parsed
+$rawParts = [];
+foreach ($per_image_results as $p) {
+    if (!empty($p['raw'])) $rawParts[] = $p['raw'];
+    if (!empty($p['parsed']) && is_array($p['parsed'])) $rawParts[] = implode(" \n ", array_map(function($k,$v){ return is_scalar($v)?"$k: $v":"$k: [complex]"; }, array_keys($p['parsed']), $p['parsed']));
+}
+$combinedRaw = strtolower(implode("\n\n", $rawParts));
+
+$section_map_local = [
+    'work_experience' => ['Work Experience','Professional Experience','Employment History','Experience'],
+    'education' => ['Education','Academic Background','Qualifications','Academic Qualifications'],
+    'certifications' => ['Certifications','Certificates','Licenses','Licensed'],
+    'skills' => ['Skills','Technical Skills','Key Skills'],
+];
+
+$found = find_sections_local("\n" . $combinedRaw, $section_map_local);
+
+$normalize = function($blocks) {
+    $out = [];
+    foreach ($blocks as $b) {
+        $parts = preg_split('/\n{2,}|(?=\n\s*[0-9]{4})/', $b);
+        foreach ($parts as $p) { $p = trim($p); if ($p !== '') $out[] = preg_replace('/\s+/', ' ', $p); }
+    }
+    return $out;
+};
+
+$work = isset($found['work_experience']) ? $normalize($found['work_experience']) : [];
+$education = isset($found['education']) ? $normalize($found['education']) : [];
+$certs = isset($found['certifications']) ? $normalize($found['certifications']) : [];
+$skills = isset($found['skills']) ? $normalize($found['skills']) : [];
+
+if (empty($work)) { preg_match_all('/^.*?(?:19|20)\d{2}[^\n]*$/m', $combinedRaw, $m); foreach (($m[0]??[]) as $ln){ $ln=trim($ln); if($ln) $work[]=$ln; } }
+if (empty($education)) { preg_match_all('/^.*\b(Bachelor|B\.Sc|BSc|BA|Master|MSc|Diploma|High School|Secondary)\b.*$/mi', $combinedRaw, $m); foreach (($m[0]??[]) as $ln){ $ln=trim($ln); if($ln) $education[]=$ln; } }
+if (empty($certs)) { preg_match_all('/^.*\b(Certif|Certificate|Certified|Licen)\b.*$/mi', $combinedRaw, $m); foreach (($m[0]??[]) as $ln){ $ln=trim($ln); if($ln) $certs[]=$ln; } }
+
+$emails = extract_emails_local($combinedRaw);
+$phones = extract_phones_local($combinedRaw);
+$nameCand = extract_name_local(implode("\n", $rawParts));
+
+$structured = [
+    'name' => $nameCand,
+    'emails' => array_values(array_unique($emails)),
+    'phones' => array_values(array_unique($phones)),
+    'work_experience' => array_values(array_unique($work)),
+    'education' => array_values(array_unique($education)),
+    'certifications' => array_values(array_unique($certs)),
+    'skills' => array_values(array_unique($skills)),
+    'raw_text' => $combinedRaw,
+    'per_image' => $per_image_results,
+];
+
+// Persist structured to storage/app/resumes
+$projRoot = dirname(__DIR__);
+$resumesDir = $projRoot . DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR . 'app' . DIRECTORY_SEPARATOR . 'resumes';
+if (!is_dir($resumesDir)) @mkdir($resumesDir, 0755, true);
+$uploadId = bin2hex(random_bytes(8));
+$userId = $data['user_id'] ?? null;
+$uploadFilename = $resumesDir . DIRECTORY_SEPARATOR . 'upload_' . $uploadId . '.json';
+file_put_contents($uploadFilename, json_encode(array_merge(['upload_id'=>$uploadId,'user_id'=>$userId,'created_at'=>date('c')], $structured), JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+$saved = file_exists($uploadFilename);
+if ($userId) {
+    $userFile = $resumesDir . DIRECTORY_SEPARATOR . 'user_' . preg_replace('/[^A-Za-z0-9_\-]/','',$userId) . '.json';
+    $index = [];
+    if (file_exists($userFile)) { $idx = json_decode(@file_get_contents($userFile), true); if (is_array($idx)) $index = $idx; }
+    $index[$uploadId] = ['file'=>basename($uploadFilename),'created_at'=>date('c')];
+    file_put_contents($userFile, json_encode($index, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES));
+}
+
+$result['structured'] = $structured;
+$result['upload_id'] = $uploadId;
+$result['saved_path'] = $saved ? ('storage/app/resumes/' . basename($uploadFilename)) : null;
+
 response(true, "Extraction completed", $result);
 
 ?>

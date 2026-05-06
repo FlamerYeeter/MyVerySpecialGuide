@@ -5,16 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>EmpowerPath</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-        }
-    </style>
 
-    @php
+    <script src="https://cdn.tailwindcss.com"></script>
+
+      @php
         // guard Vite manifest so missing build doesn't throw a 500
         $manifestPath = public_path('build/manifest.json');
     @endphp
@@ -31,193 +25,271 @@
 </head>
 
 <body class="font-sans antialiased flex flex-col min-h-screen">
-    <!-- Navigation -->
-    <nav class="w-full bg-white/80 backdrop-blur-md shadow-md">
-        <div class="max-w-8xl mx-auto px-4 sm:px-6 lg:px-12 py-4">
-            <div class="flex items-center justify-between gap-4">
-                <!-- Logo (links to home) -->
-                <a href="{{ route('home') }}" class="flex items-center space-x-3 shrink-0">
-                    <img src="image/logo.png" alt="EmpowerPath Logo"
-                        class="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain">
-                    <span class="text-lg sm:text-xl md:text-2xl font-bold text-blue-700">EmpowerPath</span>
-                </a>
 
-                <!-- Nav Links -->
-                <div class="hidden lg:flex items-center gap-6 ml-auto">
-                    <a href="{{ route('home') }}"
-                        class="{{ request()->routeIs('home') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">Home</a>
-                    <a href="{{ route('about.us') }}"
-                        class="{{ request()->routeIs('about.us') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">About
-                        EmpowerPath</a>
-                    <a href="{{ route('about.ds') }}"
-                        class="{{ request()->routeIs('about.ds') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">About
-                        Down Syndrome</a>
-                    <a href="{{ route('about.dsapi') }}"
-                        class="{{ request()->routeIs('about.dsapi') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base md:text-lg">Down
-                        Syndrome Association</a>
-                    <!-- Sign Up Button -->
-                    <a href="{{ route('register') }}" class="inline-block border-2 border-[#2563EB] text-[#2563EB]
-                           px-8 py-3 rounded-xl text-base font-semibold
-                           hover:bg-[#2563EB]/20 hover:border-[#1D4ED8]
-                           transition-all duration-200 transform hover:scale-105">
-                        Sign Up
-                    </a>
-                </div>
-
-                <div class="flex items-center space-x-4">
-                    @auth
-                        <div class="hidden md:block relative">
-                            <button id="desktopProfileBtn" type="button"
-                                onclick="document.getElementById('desktopProfileMenu').classList.toggle('hidden')"
-                                class="flex items-center gap-2 border px-3 py-1 rounded-full">
-                                <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}" alt="avatar"
-                                    class="w-6 h-6 rounded-full">
-                                <span class="text-sm">{{ Auth::user()->name ?? 'Profile' }}</span>
-                            </button>
-                            <div id="desktopProfileMenu"
-                                class="hidden absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-md shadow-lg py-2 z-50">
-                                <a href="{{ route('user.role') }}"
-                                    class="block px-3 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                                <form method="POST" action="{{ route('logout') }}" class="px-2">
-                                    @csrf
-                                    <button type="submit"
-                                        class="w-full text-left text-sm text-red-600 px-2 py-2 hover:bg-gray-100 rounded">Sign
-                                        Out</button>
-                                </form>
-                            </div>
-                        </div>
-                    @endauth
-
-                    <!-- Responsive Menu Button -->
-                    <button id="menu-toggle" class="lg:hidden text-gray-700 hover:text-blue-600 focus:outline-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="2">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Responsive Dropdown Menu -->
-        <div id="mobile-menu" class="hidden lg:hidden mt-4 rounded-xl bg-white shadow-md px-4 py-4 space-y-3">
-            <a href="{{ route('home') }}"
-                class="block {{ request()->routeIs('home') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">Home</a>
-            <a href="{{ route('about.us') }}"
-                class="block {{ request()->routeIs('about.us') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">About
-                EmpowerPath</a>
-            <a href="{{ route('about.ds') }}"
-                class="block {{ request()->routeIs('about.ds') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">About
-                Down Syndrome</a>
-            <a href="{{ route('about.dsapi') }}"
-                class="block {{ request()->routeIs('about.dsapi') ? 'text-blue-600' : 'text-gray-700' }} hover:text-blue-600 font-medium text-base">Down
-                Syndrome
-                Association</a>
-            <!-- Sign Up Button -->
-            <a href="{{ route('register') }}" class="inline-block border-2 border-[#2563EB] text-[#2563EB]
-                           px-8 py-3 rounded-xl text-base font-semibold
-                           hover:bg-[#2563EB]/20 hover:border-[#1D4ED8]
-                           transition-all duration-200 transform hover:scale-105">
-                Sign Up
-            </a>
-            @auth
-                <a href="{{ route('user.role') }}"
-                    class="block text-gray-700 hover:text-blue-600 font-medium text-base">Profile</a>
-                <form method="POST" action="{{ route('logout') }}" class="px-0">
-                    @csrf
-                    <button type="submit" class="w-full text-left text-red-600 font-medium py-2">Sign Out</button>
-                </form>
-            @endauth
-        </div>
-    </nav>
-
-    <!-- Page Content -->
-    <main class="flex-grow w-full">
-        @yield('content')
-    </main>
-
-    <!-- Footer -->
-    <footer class="bg-white border-t mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-10
-            grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-8
-            text-center md:text-left">
+<!-- NAVIGATION -->
+<nav class="w-full bg-white/80 backdrop-blur-md shadow-md">
+    <div class="max-w-8xl mx-auto px-6 sm:px-8 lg:px-12 py-6">
+        <div class="flex items-center justify-between gap-4">
 
             <!-- Logo -->
-            <div class="flex flex-col items-center md:items-start space-y-3">
-                <img src="{{ asset('image/orglogo.jpg') }}" alt="Logo" class="h-28 w-28 object-contain mx-auto md:mx-0">
+            <a href="{{ route('home') }}" class="flex items-center space-x-3 shrink-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 rounded">
+                <img src="image/logo.png" alt="EmpowerPath Logo"
+                     class="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain">
+                <span class="text-xl sm:text-2xl md:text-3xl font-extrabold text-blue-700">
+                    EmpowerPath
+                </span>
+            </a>
+
+            <!-- Desktop Nav -->
+            <div class="hidden lg:flex items-center gap-8 ml-auto">
+
+                <a href="{{ route('home') }}"
+                   class="{{ request()->routeIs('home') ? 'text-blue-700' : 'text-gray-800' }}
+                          text-lg hover:text-blue-700 font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 rounded px-2 py-2">
+                    Home
+                </a>
+
+                <!-- ABOUT DROPDOWN -->
+                <div class="relative">
+
+                    <button id="aboutMenuBtn"
+                        type="button"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        class="flex items-center gap-2 text-lg text-gray-800 hover:text-blue-700 font-semibold
+                               focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 rounded px-2 py-2">
+
+                        Learn about us
+
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2"
+                             viewBox="0 0 24 24">
+                            <path d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+
+                    <div id="aboutMenu"
+                        class="hidden absolute left-0 mt-2 w-72 bg-white border-2 border-gray-300
+                               rounded-xl shadow-lg py-3 z-50"
+                        role="menu">
+
+                        <a href="{{ route('about.us') }}"
+                           class="block px-6 py-4 text-lg font-medium text-gray-900 hover:bg-blue-50 hover:text-blue-700 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            About EmpowerPath
+                        </a>
+
+                        <a href="{{ route('about.ds') }}"
+                           class="block px-6 py-4 text-lg font-medium text-gray-900 hover:bg-blue-50 hover:text-blue-700 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            About Down Syndrome
+                        </a>
+
+                        <a href="{{ route('about.dsapi') }}"
+                           class="block px-6 py-4 text-lg font-medium text-gray-900 hover:bg-blue-50 hover:text-blue-700 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            Down Syndrome Association
+                        </a>
+
+                    </div>
+                </div>
+
+                <!-- Sign Up -->
+                <a href="{{ route('login') }}"
+                   class="bg-blue-700 text-white px-8 py-3 rounded-full font-bold text-lg hover:bg-blue-800 transition shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                    Log in / Sign up
+                </a>
             </div>
 
-            <!-- Address -->
-            <div>
-                <h3 class="font-semibold text-gray-800 mb-3 text-lg">Address</h3>
-                <p class="text-gray-600 text-sm leading-relaxed">
-                    3rd Floor 295 Fortress Hill Building <br>
-                    Shaw Boulevard Bgy Hagdan Bato Libis,
-                    Mandaluyong, Philippines
-                </p>
-            </div>
+            <!-- RIGHT SIDE -->
+            <div class="flex items-center space-x-4">
 
-            <!-- Socials -->
-            <div>
-                <h3 class="font-semibold text-gray-800 mb-3 text-lg">Socials</h3>
-                <ul class="text-gray-600 text-sm space-y-1">
-                    <li><a href="https://www.facebook.com/downsyndromeassociationofthephilippinesinc"
-                            class="hover:text-blue-500 transition-colors">Facebook</a></li>
-                    <li><a href="dsapi@hotmail.com" class="hover:text-blue-500 transition-colors">Email</a></li>
-                </ul>
-            </div>
+                @auth
+                <div class="hidden md:block relative">
 
-            <!-- About -->
-            <div>
-                <h3 class="font-semibold text-gray-800 mb-3 text-lg">About</h3>
-                <ul class="text-gray-600 text-sm space-y-1">
-                    <li><a href="#" class="hover:text-blue-500 transition-colors">Privacy Policy</a></li>
-                </ul>
-            </div>
+                    <button id="profileBtn"
+                        class="flex items-center gap-3 border-2 border-gray-300 px-5 py-3 rounded-full text-lg font-semibold
+                               focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 hover:bg-blue-50 transition">
 
-            <!-- Go Up Button -->
-            <div class="flex justify-center md:justify-start mt-4 md:mt-0">
-                <button id="goUpBtn" class="flex items-center gap-2 bg-blue-600 text-white font-semibold 
-                       px-4 sm:px-6 py-2 sm:py-4 text-base sm:text-lg rounded-xl shadow-md 
-                       hover:bg-blue-700 active:scale-95 transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-                    </svg>
-                    Go Up
+                        <img src="{{ Auth::user()->photo ?? asset('image/avatar.png') }}"
+                             class="w-9 h-9 rounded-full" alt="avatar">
+
+                        <span class="text-lg font-bold">{{ Auth::user()->name }}</span>
+                    </button>
+
+                    <div id="profileMenu"
+                        class="hidden absolute right-0 mt-2 w-56 bg-white border-2 border-gray-300 rounded-xl shadow-lg py-3 z-50">
+
+                        <a href="{{ route('user.role') }}"
+                           class="block px-6 py-4 text-lg font-medium text-gray-900 hover:bg-blue-50 hover:text-blue-700 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                            My Profile
+                        </a>
+
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button class="w-full text-left px-6 py-4 text-lg font-medium text-red-700 hover:bg-red-50 hover:text-red-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
+                                Sign Out
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+                @endauth
+
+                <!-- Mobile Button -->
+                <button id="menuToggle"
+                        class="lg:hidden text-2xl text-gray-800 font-bold focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 rounded p-2">
+                    ☰
                 </button>
             </div>
 
         </div>
+    </div>
 
-        <!-- Bottom Bar -->
-        <div class="bg-[#2563EB] text-white text-center py-3 text-xs sm:text-sm">
-            © 2025 EmpowerPath. All rights reserved.
+    <!-- MOBILE MENU -->
+    <div id="mobileMenu"
+         class="hidden lg:hidden mt-4 bg-white shadow-md px-6 py-6 space-y-4">
+
+        <a href="{{ route('home') }}" class="block text-xl font-bold py-3 text-gray-900 hover:text-blue-700 hover:bg-blue-50 rounded transition px-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Home</a>
+
+        <!-- MOBILE ABOUT -->
+        <div class="border-t border-gray-200 pt-4">
+            <button id="mobileAboutBtn"
+                class="w-full flex justify-between py-3 px-3 text-xl font-bold text-gray-900 hover:text-blue-700 hover:bg-blue-50 rounded transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                Learn about us <span>▼</span>
+            </button>
+
+            <div id="mobileAboutMenu" class="hidden pl-6 space-y-3 mt-2">
+
+                <a href="{{ route('about.us') }}" class="block text-lg py-3 text-gray-800 hover:text-blue-700 hover:bg-blue-50 rounded transition px-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">About EmpowerPath</a>
+                <a href="{{ route('about.ds') }}" class="block text-lg py-3 text-gray-800 hover:text-blue-700 hover:bg-blue-50 rounded transition px-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">About Down Syndrome</a>
+                <a href="{{ route('about.dsapi') }}" class="block text-lg py-3 text-gray-800 hover:text-blue-700 hover:bg-blue-50 rounded transition px-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">Down Syndrome Association</a>
+
+            </div>
         </div>
-    </footer>
 
+        <div class="border-t border-gray-200 pt-4">
+            <a href="{{ route('login') }}" class="block text-xl font-bold bg-blue-700 text-white py-4 rounded-lg text-center hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+                Log in / Sign up
+            </a>
+        </div>
 
-    <!-- Script for Responsive Menu Toggle -->
-    <script>
-        const menuToggle = document.getElementById('menu-toggle');
-        const mobileMenu = document.getElementById('mobile-menu');
+        @auth
+        <div class="border-t border-gray-200 pt-4 space-y-3">
+            <a href="{{ route('user.role') }}" class="block text-lg font-semibold py-3 text-gray-900 hover:text-blue-700 hover:bg-blue-50 rounded transition px-3 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">My Profile</a>
 
-        menuToggle.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
-        });
-    </script>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button class="text-lg font-semibold text-red-700 hover:text-red-800 hover:bg-red-50 py-3 rounded transition px-3 w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Sign Out</button>
+            </form>
+        </div>
+        @endauth
+    </div>
+</nav>
 
-    <script>
-        const goUpBtn = document.getElementById("goUpBtn");
-        goUpBtn.addEventListener("click", () => {
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            });
-        });
-    </script>
+<!-- MAIN -->
+<main class="flex-grow">
+    @yield('content')
+</main>
 
+<!-- FOOTER -->
+<footer class="bg-white border-t-2 border-gray-200 mt-16">
+    <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-14 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 text-center md:text-left">
+
+        <div>
+            <img src="{{ asset('image/orglogo.jpg') }}" class="h-32 w-32 mx-auto md:mx-0" alt="Organization logo">
+        </div>
+
+        <div>
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">Address</h3>
+            <p class="text-lg text-gray-700 leading-relaxed">
+                3rd Floor 295 Fortress Hill Building<br>
+                Mandaluyong, Philippines
+            </p>
+        </div>
+
+        <div>
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">Socials</h3>
+            <a href="#" class="text-lg text-blue-700 hover:text-blue-800 font-semibold block py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 rounded">Facebook</a>
+        </div>
+
+        <div>
+            <h3 class="text-2xl font-bold mb-4 text-gray-900">About</h3>
+            <a href="#" class="text-lg text-blue-700 hover:text-blue-800 font-semibold block py-2 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 rounded">Privacy Policy</a>
+        </div>
+
+    </div>
+
+    <div class="bg-blue-700 text-white py-6 border-t-2 border-blue-600">
+        <div class="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-lg font-semibold text-center sm:text-left">
+                © 2025 EmpowerPath. All rights reserved.
+            </p>
+            <button id="backToTopBtn" class="inline-flex items-center gap-2 bg-white text-blue-700 px-6 py-3 rounded-full font-bold text-lg hover:bg-blue-50 transition shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path d="M5 15l7-7 7 7"></path>
+                </svg>
+                Back to top
+            </button>
+        </div>
+    </div>
+</footer>
+
+<!-- SCRIPTS -->
+<script>
+const aboutBtn = document.getElementById('aboutMenuBtn');
+const aboutMenu = document.getElementById('aboutMenu');
+const profileBtn = document.getElementById('profileBtn');
+const profileMenu = document.getElementById('profileMenu');
+const menuToggle = document.getElementById('menuToggle');
+const mobileMenu = document.getElementById('mobileMenu');
+const mobileAboutBtn = document.getElementById('mobileAboutBtn');
+const mobileAboutMenu = document.getElementById('mobileAboutMenu');
+
+/* About dropdown */
+aboutBtn?.addEventListener('click', () => {
+    const expanded = aboutBtn.getAttribute('aria-expanded') === 'true';
+    aboutBtn.setAttribute('aria-expanded', !expanded);
+    aboutMenu.classList.toggle('hidden');
+});
+
+/* Profile dropdown */
+profileBtn?.addEventListener('click', () => {
+    profileMenu.classList.toggle('hidden');
+});
+
+/* Mobile menu */
+menuToggle?.addEventListener('click', () => {
+    mobileMenu.classList.toggle('hidden');
+});
+
+/* Mobile about */
+mobileAboutBtn?.addEventListener('click', () => {
+    mobileAboutMenu.classList.toggle('hidden');
+});
+
+/* Outside click */
+document.addEventListener('click', (e) => {
+    if (aboutBtn && !aboutBtn.contains(e.target) && !aboutMenu.contains(e.target)) {
+        aboutMenu.classList.add('hidden');
+        aboutBtn.setAttribute('aria-expanded', 'false');
+    }
+});
+
+/* ESC key */
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        aboutMenu?.classList.add('hidden');
+        profileMenu?.classList.add('hidden');
+        aboutBtn?.setAttribute('aria-expanded', 'false');
+    }
+});
+
+/* Back to top button */
+const backToTopBtn = document.getElementById('backToTopBtn');
+backToTopBtn?.addEventListener('click', () => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});
+</script>
 
 </body>
-
 </html>

@@ -34,6 +34,14 @@ Route::get('/register', function () {
     return view('ds_register_1');
 })->name('register');
 
+Route::get('/hiringjobs', function () {
+    return view('hiring-jobs');
+})->name('hiringjobs');
+
+Route::get('/viewjobdetails', function () {
+    return view('home-job-details');
+})->name('viewjobdetails');
+
 
 /*
 Route::get('/applyassessment', function () {
@@ -45,6 +53,11 @@ Route::get('/applyassessment', function () {
 Route::get('/navigationbuttons', function () {
     return view('navigation-buttons');
 })->name('navigationbuttons');
+
+// Backwards-compatible: accept hyphenated URL and redirect to canonical route
+Route::get('/navigation-buttons', function () {
+    return redirect()->route('navigationbuttons');
+});
 
 // Endpoint for client-side logs (lightweight, accepts JSON {level, message, meta})
 Route::post('/client-log', function (\Illuminate\Http\Request $req) {
