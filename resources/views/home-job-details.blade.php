@@ -115,7 +115,12 @@
                 <section id="box-job-desc" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h2 class="text-2xl font-bold text-slate-900">Job description</h2>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="job-description-content" aria-label="Read job description aloud">🔊</button>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('job-description-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
                     <div id="job-description-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-a:text-blue-700 prose-a:underline">
                         <p class="text-gray-500 italic">No job description provided yet.</p>
@@ -126,7 +131,12 @@
                 <section id="box-why-join" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h2 class="text-2xl font-bold text-slate-900">Why join us?</h2>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="why-join-content" aria-label="Read why join us aloud">🔊</button>
+                       <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('why-join-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
                     <div id="why-join-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-a:text-blue-700 prose-a:underline">
                         <p class="text-gray-500 italic">No information provided yet.</p>
@@ -137,7 +147,12 @@
                 <section id="box-key-resp" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h2 class="text-2xl font-bold text-slate-900">Key responsibilities</h2>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="key-responsibilities-content" aria-label="Read key responsibilities aloud">🔊</button>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('key-responsibilities-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
                     <div id="key-responsibilities-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-li:text-base">
                         <p class="text-gray-500 italic">No responsibilities listed yet.</p>
@@ -148,7 +163,12 @@
                 <section id="box-working-env" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h2 class="text-2xl font-bold text-slate-900">Working environment</h2>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="working-environment-content" aria-label="Read working environment aloud">🔊</button>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('working-environment-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
                     <div id="working-environment-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold">
                         <p class="text-gray-500 italic">No working environment details provided yet.</p>
@@ -159,9 +179,14 @@
                 <section id="box-accessibility" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h2 class="text-2xl font-bold text-slate-900">Accessibility & support requirements</h2>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-accessibility" aria-label="Read accessibility requirements aloud">🔊</button>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('accessibility-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
-                    <div class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-li:text-base">
+                    <div id="accessibility-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-li:text-base">
                         <!-- Section Description -->
                         <p class="text-sm text-gray-600 mb-4">
                             This section helps you understand the workplace conditions, communication methods, and available support 
@@ -206,7 +231,12 @@
                 <section id="box-qualifications" class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h2 class="text-2xl font-bold text-slate-900">Qualifications</h2>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="qualifications-content" aria-label="Read qualifications aloud">🔊</button>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('qualifications-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
                     <div id="qualifications-content" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-4 prose prose-headings:text-lg prose-headings:font-bold prose-li:text-base">
                         <p class="text-gray-500 italic">No qualifications information provided yet.</p>
@@ -222,7 +252,12 @@
                 <aside class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h3 class="text-xl font-bold text-slate-900">Job overview</h3>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-about-role" aria-label="Read job overview aloud">🔊</button>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('about-role-content').textContent)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
 
                     <div class="space-y-5">
@@ -230,7 +265,7 @@
                         <div>
                             <p class="text-sm font-semibold text-slate-600 mb-2">Applications received</p>
                             <div class="w-full bg-slate-200 h-3 rounded-full">
-                                <div id="capacity-bar" class="bg-blue-600 h-3 rounded-full w-0 transition-all" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="Applications received progress"></div>
+                                <div id="capacity-bar" class="bg-blue-600 h-3 rounded-full w-0 transition-all" role="progressbar" aria-valuemin="0" aria-valuemax="100" ariavaluenow="0" aria-label="Applications received progress"></div>
                             </div>
                             <p class="text-base font-semibold text-slate-900 mt-2">
                                 <span id="applied-count">0</span> of <span id="openings-count">0</span> positions filled
@@ -261,7 +296,12 @@
                 <section class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h3 class="text-xl font-bold text-slate-900">Skills needed</h3>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-skills" aria-label="Read skills needed aloud">🔊</button>
+                         <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('box-skills').innerText)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
                     <div id="skills-container" class="flex flex-wrap gap-3">
                         <span id="skills-placeholder" class="text-gray-500 italic">No skills available yet.</span>
@@ -272,7 +312,12 @@
                 <section class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h3 class="text-xl font-bold text-slate-900">Hiring manager</h3>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-hiring-manager" aria-label="Read hiring manager aloud">🔊</button>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('box-hiring-manager').innerText)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
 
                     <!-- Managers list: only show names -->
@@ -292,7 +337,12 @@
                 <section class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-sm">
                     <div class="flex justify-between items-start mb-5">
                         <h3 class="text-xl font-bold text-slate-900">Contact details</h3>
-                        <button class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" data-target="box-contact" aria-label="Read contact details aloud">🔊</button>
+                        <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    onclick="speakText(document.getElementById('box-contact').innerText)">
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
                     </div>
 
                     <div class="space-y-4 text-slate-700">
@@ -312,10 +362,10 @@
                             <a id="contact-email" href="mailto:" class="text-lg hover:text-blue-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">No email</a>
                         </div>
 
-                        <div class="flex gap-3 items-start">
+                        {{-- <div class="flex gap-3 items-start">
                             <img src="https://img.icons8.com/color/24/building.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
                             <span id="contact-industry" class="text-lg">Not specified</span>
-                        </div>
+                        </div> --}}
 
                         <div class="flex gap-3 items-start">
                             <img src="https://img.icons8.com/color/24/link.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
@@ -324,12 +374,12 @@
                             </a>
                         </div>
 
-                        <div class="flex gap-3 items-start">
+                        {{-- <div class="flex gap-3 items-start">
                             <img src="https://img.icons8.com/color/24/map.png" alt="" aria-hidden="true" class="w-6 h-6 flex-shrink-0 mt-1"/>
                             <a id="company-map" href="#" target="_blank" class="text-lg text-blue-700 hover:text-blue-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600">
                                 <span id="company-map-text">Google Maps</span>
                             </a>
-                        </div>
+                        </div> --}}
 
                     </div>
                 </section>
