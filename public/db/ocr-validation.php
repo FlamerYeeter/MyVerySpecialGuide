@@ -7,8 +7,6 @@ ini_set('display_errors', 0);
 // CONFIG
 // ================================
 
-define('MAX_BASE64', 10_000_000); // ~10MB
-
 header("Content-Type: application/json");
 
 // ================================
