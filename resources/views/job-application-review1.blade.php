@@ -1,79 +1,123 @@
 @extends('layouts.includes')
 
 @section('content')
-    <!-- Icon link -->
-    <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+  <!-- Icon link -->
+  <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 
-<!-- Back Button -->
-<div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
-  <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
-        <a href="/jobapplication1" onclick="history.back(); return false;"
-            class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3"
-        stroke="currentColor" class="w-8 h-8 sm:w-10 sm:h-10">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-      </svg>
-      <span>Back to Job Application</span>
-    </a>
-  </div>
-</div>
+  <style>
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid #2563eb !important;
+      outline-offset: 2px !important;
+    }
+    .form-section {
+      transition: box-shadow 0.3s ease;
+    }
+    .form-section:focus-within {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+  </style>
 
 
-    <!-- Applying For -->
-    <section class="max-w-6xl mx-auto mt-14 px-6">
-        <h2 class="text-4xl font-extrabold text-[#1E40AF] mb-10 text-center">You Are Applying For</h2>
-        @php
-            // safe access: use data_get to avoid errors when $job is null / not an array
-            $job = $job ?? null;
-            $jobTitle = data_get($job, 'title', 'Unknown Job');
-            $jobCompany = data_get($job, 'company', 'Unknown Company');
-            $jobAddress = data_get($job, 'location', 'Unknown Location');
-            $jobType = data_get($job, 'type', 'Unknown Description');
-        @endphp
+    <!-- Hero Section -->
+    <section class="bg-sky-50 py-16 sm:py-20 border-b border-sky-100" role="region" aria-labelledby="review-heading">
+      <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
+        <div class="text-center mb-10">
+          <p class="text-base font-bold uppercase tracking-widest text-blue-700 mb-2">Application Review</p>
+          <h1 id="review-heading" class="text-4xl sm:text-5xl font-extrabold text-slate-900">Review Your Application</h1>
+        </div>
 
-      <div
-          class="bg-[#F0F9FF] border-[3px] border-[#1E40AF] rounded-3xl p-10 flex flex-col sm:flex-row items-center gap-10 shadow-lg">
-          <!-- Company Logo / Placeholder -->
-          <div class="flex items-center justify-center">
+        <!-- JOB INFO CARD -->
+        <div class="rounded-3xl border border-sky-200 bg-white shadow-sm p-8 sm:p-10">
+          <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-8 text-center">You are applying for</h2>
+          <div class="grid gap-8 lg:grid-cols-[1fr_2fr] lg:items-center">
+            <!-- Company Logo -->
+            <div class="flex justify-center">
               <img id="jobLogo" src="https://via.placeholder.com/150?text=Logo" alt="Company Logo"
-                  class="w-36 h-36 rounded-2xl border-2 border-gray-300 object-cover">
-          </div>
-
-          <!-- Job Info -->
-          <div class="flex flex-col justify-center leading-snug text-center sm:text-left max-w-3xl">
-              <h3 id="jobTitle" class="text-4xl font-extrabold text-black">Job Title</h3>
-              <p id="jobCompany" class="text-gray-700 text-2xl font-semibold mt-2">Company Name</p>
-              <p id="jobLocation" class="text-gray-600 text-xl mt-1">Location</p>
-              <p id="jobDescription" class="text-gray-600 text-lg mt-3 leading-relaxed">Description</p>
-          </div>
-      </div>
-    </section>
-
-    <section class="max-w-6xl mx-auto p-10 space-y-14">
-
-        <!-- ================= REVIEW PAGE ================= -->
-        <div class="mt-14">
-            <h2 class="text-4xl font-bold text-[#1E40AF] text-center mb-10">Review Your Information</h2>
-            <p class="text-gray-700 text-2xl mb-12 text-center leading-relaxed max-w-5xl mx-auto">
-                Please review all information carefully before submitting. You can edit any section if needed.
-            </p>
-
-            <!-- PERSONAL INFORMATION -->
-            <div id="" class="border-2 bg-white shadow-lg rounded-3xl p-10 relative">
-                <button onclick="editSection('personal')"
-                    class="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-xl text-2xl font-semibold">Edit</button>
-                <h3 class="text-3xl font-bold text-[#1E40AF] border-b-4 border-blue-200 pb-3 mb-8 text-center sm:text-left">
-                    Personal Information</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-lg">
-                    <p><span class="font-semibold">First Name:</span> <span id="rev-firstname"></span></p>
-                    <p><span class="font-semibold">Last Name:</span> <span id="rev-lastname"></span></p>
-                    <p class="sm:col-span-2"><span class="font-semibold">Email:</span> <span id="rev-email"></span></p>
-                    <p><span class="font-semibold">Date of Birth:</span> <span id="rev-birthdate"></span></p>
-                    <p><span class="font-semibold">Phone Number:</span> <span id="rev-phone"></span></p>
-                    <p class="sm:col-span-2"><span class="font-semibold">Complete Address:</span> <span
-                            id="rev-address"></span></p>
-                </div>
+                class="w-40 h-40 rounded-2xl border-2 border-sky-200 object-cover shadow-md">
             </div>
+            <!-- Job Info -->
+            <div class="space-y-4">
+              <h3 id="jobTitle" class="text-3xl sm:text-4xl font-bold text-slate-900">Job Role</h3>
+              <p id="jobCompany" class="text-xl font-semibold text-slate-700">Company Name</p>
+              <p id="jobLocation" class="flex items-center gap-2 text-lg text-slate-600">
+                <img src="https://img.icons8.com/color/24/marker.png" alt="" aria-hidden="true" class="w-5 h-5">
+                Location
+              </p>
+              <p id="jobDescription" class="text-base text-slate-600 leading-relaxed">Description</p>
+            </div>
+          </div>
+        </div>
+    </section>
+<!-- Back Button -->
+<div class="bg-sky-50 py-6">
+  <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 flex justify-center">
+
+    <a href="/job-application-1"
+      class="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-white px-6 py-3 text-blue-700 font-semibold shadow-sm transition hover:bg-blue-50 hover:border-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+
+      <!-- Icons8 Back Icon -->
+      <img src="https://img.icons8.com/ios-filled/24/1E40AF/left.png"
+        alt=""
+        aria-hidden="true"
+        class="w-5 h-5">
+
+      <span>Back to application</span>
+    </a>
+
+  </div>
+      </div>
+
+
+    <!-- Review Content -->
+    <section class="bg-white py-12 sm:py-16">
+      <div class="max-w-6xl mx-auto px-6 sm:px-10 lg:px-12 space-y-8">
+        <div class="text-center mb-12">
+          <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+            Review Your Information
+          </h2>
+          <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+            Please review all information carefully before submitting. You can return to the application to make changes.
+          </p>
+        </div>
+
+        <!-- PERSONAL INFORMATION -->
+        <div class="form-section border border-sky-200 bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl sm:text-3xl font-bold text-slate-900">
+              Personal Information
+            </h3>
+            <a href="/job-application-1{{ request('job_id') ? ('?job_id=' . urlencode(request('job_id'))) : '' }}"
+              class="text-sm font-semibold bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+              Edit
+            </a>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 text-base">
+            <div>
+              <p class="text-sm font-semibold text-slate-700 mb-1">First Name</p>
+              <p class="text-slate-900" id="rev-firstname">—</p>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-700 mb-1">Last Name</p>
+              <p class="text-slate-900" id="rev-lastname">—</p>
+            </div>
+            <div class="sm:col-span-2">
+              <p class="text-sm font-semibold text-slate-700 mb-1">Email Address</p>
+              <p class="text-slate-900" id="rev-email">—</p>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-700 mb-1">Date of Birth</p>
+              <p class="text-slate-900" id="rev-birthdate">—</p>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-slate-700 mb-1">Phone Number</p>
+              <p class="text-slate-900" id="rev-phone">—</p>
+            </div>
+            <div class="sm:col-span-2">
+              <p class="text-sm font-semibold text-slate-700 mb-1">Complete Address</p>
+              <p class="text-slate-900" id="rev-address">—</p>
+            </div>
+          </div>
+        </div>
 
             <!-- EDUCATION + CERTIFICATIONS -->
             {{-- <div id="" class="border-2 bg-white shadow-lg rounded-3xl p-10 relative mt-6">
@@ -113,65 +157,64 @@
                 <div id="rev-work-container" class="space-y-6 text-lg"></div>
             </div>--}}
 
-            <!-- REQUIRED DOCUMENTS -->
-            <div id="" class="border-2 bg-white shadow-lg rounded-3xl p-10 relative mt-6">
-                <button onclick="editSection('docs')"
-                    class="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white px-12 py-2 rounded-xl text-2xl font-semibold">Edit</button>
-                <h3 class="text-3xl font-bold text-[#1E40AF] border-b-4 border-blue-200 pb-3 mb-8 text-center sm:text-left">
-                    Required Documents</h3>
+        <!-- REQUIRED DOCUMENTS -->
+        <div class="form-section border border-sky-200 bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
+          <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl sm:text-3xl font-bold text-slate-900">
+              Required Documents
+            </h3>
+            <a href="/job-application-1{{ request('job_id') ? ('?job_id=' . urlencode(request('job_id'))) : '' }}"
+              class="text-sm font-semibold bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+              Edit
+            </a>
+          </div>
 
-                <!-- Rendered slots (same UI as application1) -->
-                <div id="rev-required-slots" class="space-y-4"></div>
+          <!-- Rendered slots (same UI as application1) -->
+          <div id="rev-required-slots" class="space-y-4"></div>
 
-                <!-- Fallback list (kept for compatibility) -->
-                <ul id="rev-doc-list" class="list-disc list-inside text-lg space-y-1 hidden"></ul>
-            </div>
-
-            <!-- File preview modal for review page -->
-            <div id="reviewFileModal" class="hidden fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full overflow-hidden relative">
-                <button id="reviewFileModalClose" class="absolute top-3 right-3 bg-gray-200 px-3 py-1 rounded">✕</button>
-                <div id="reviewFileModalContent" class="p-4 min-h-[320px] flex items-center justify-center"></div>
-            </div>
-            </div>
-
-            <!-- FINAL CONFIRMATION INFO BOX -->
-            <div id=""
-                class="border-l-4 border-green-500 bg-green-100 rounded-2xl p-8 shadow-md mt-8 max-w-4xl mx-auto">
-                <h3 class="text-2xl font-bold text-green-700 mb-4">Final Confirmation</h3>
-                <p class="text-[18px] text-green-800 mb-4">
-                    By submitting this application, you confirm that all information provided is accurate and complete.
-                </p>
-                <label class="flex items-center gap-2 text-green-800 text-lg">
-                    <input type="checkbox" id="confirmCheck" class="w-5 h-5">
-                    I confirm that all information provided is accurate and I agree to the
-                    <a href="#" class="underline text-green-900">terms and conditions</a>.
-                </label>
-            </div>
-
-            <!-- FINAL SUBMIT BUTTON -->
-            <div class="flex justify-center mt-6">
-                <button type="button" id="reviewSubmitBtn"
-                    class="bg-[#1E40AF] text-white text-3xl font-bold px-16 py-6 rounded-2xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition disabled:opacity-50"
-                    disabled>
-                    Submit Application
-                </button>
-            </div>
+          <!-- Fallback list (kept for compatibility) -->
+          <ul id="rev-doc-list" class="list-disc list-inside text-base space-y-2 hidden text-slate-900"></ul>
         </div>
 
-        <!-- BACK TO TOP BUTTON -->
-        <button id="backToTopBtn"
-            class="hidden fixed bottom-8 right-8 bg-[#1E40AF] text-white px-6 py-4 rounded-full shadow-xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110 flex items-center gap-3 text-2xl font-semibold"
-            onclick="scrollToTop()" aria-label="Back to top">
+        <!-- File preview modal for review page -->
+        <div id="reviewFileModal" class="hidden fixed inset-0 z-[2000] flex items-center justify-center bg-black/80 p-4">
+          <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full overflow-hidden relative">
+            <button id="reviewFileModalClose" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl" aria-label="Close modal">✕</button>
+            <div id="reviewFileModalContent" class="p-4 min-h-[320px] flex items-center justify-center"></div>
+          </div>
+        </div>
 
-            <!-- Up Arrow Icon -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="3">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-            </svg>
+        <!-- FINAL CONFIRMATION INFO BOX -->
+        <div class="border border-sky-200 bg-sky-50 rounded-2xl p-8 shadow-sm">
+          <h3 class="text-2xl font-bold text-slate-900 mb-4">Final Confirmation</h3>
+          <p class="text-base text-slate-700 mb-6">
+            By submitting this application, you confirm that all information provided is accurate and complete.
+          </p>
+          <label class="flex items-center gap-3">
+            <input type="checkbox" id="confirmCheck" class="w-5 h-5 border border-slate-300 rounded accent-blue-600" aria-required="true">
+            <span class="text-base text-slate-900">I confirm that all information provided is accurate and I agree to the <a href="#" class="underline text-blue-700 hover:text-blue-800">terms and conditions</a>.</span>
+          </label>
+        </div>
 
-            <span>Back to Top</span>
-        </button>
+        <!-- FINAL SUBMIT BUTTON -->
+        <div class="flex justify-center pt-8">
+          <button type="button" id="reviewSubmitBtn"
+            class="inline-block px-10 py-4 bg-blue-700 text-white font-semibold rounded-xl hover:bg-blue-800 transition shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled>
+            Submit Application
+          </button>
+        </div>
+      </div>
+    </section>
+
+    {{-- <!-- BACK TO TOP BUTTON -->
+    <button id="backToTopBtn"
+      class="hidden fixed bottom-8 right-8 bg-blue-700 text-white p-4 rounded-full shadow-lg hover:bg-blue-800 transition transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+      onclick="scrollToTop()" aria-label="Back to top">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+      </svg>
+    </button> --}}
 
 <script>
     // Enable submit button only when checkbox is checked
@@ -181,6 +224,21 @@
     confirmCheck.addEventListener('change', () => {
         submitBtn.disabled = !confirmCheck.checked;
     });
+
+    // Show/hide back to top button on scroll
+    const backToTopBtn = document.getElementById("backToTopBtn");
+    window.addEventListener("scroll", () => {
+        if (window.scrollY > 300) {
+            backToTopBtn.classList.remove("hidden");
+        } else {
+            backToTopBtn.classList.add("hidden");
+        }
+    });
+
+    // Smooth scroll to top
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
 
     // helper: convert dataURL to Blob
     function dataURLtoBlob(dataurl) {
@@ -612,7 +670,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const viewBtn = document.createElement('button');
         viewBtn.type = 'button';
-        viewBtn.className = 'bg-gray-700 text-white text-sm px-3 py-1 rounded-md';
+        viewBtn.className = 'bg-gray-700 text-white text-sm px-3 py-1.5 rounded-md font-semibold hover:bg-gray-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300';
         viewBtn.textContent = 'View';
         viewBtn.disabled = !item.data;
         viewBtn.addEventListener('click', function (e) {
@@ -623,7 +681,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
-        removeBtn.className = 'bg-red-500 text-white text-sm px-3 py-1 rounded-md';
+        removeBtn.className = 'bg-red-500 text-white text-sm px-3 py-1.5 rounded-md font-semibold hover:bg-red-600 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-300';
         removeBtn.textContent = 'Remove';
         removeBtn.addEventListener('click', function (e) {
             e.preventDefault();
@@ -681,14 +739,14 @@ document.addEventListener('DOMContentLoaded', function () {
     </section>
     </div>
     <!-- Post-submit choice modal -->
-    <div id="postSubmitModal" class="hidden fixed inset-0 z-[3000] flex items-center justify-center bg-black/60 p-4">
+    <div id="postSubmitModal" class="hidden fixed inset-0 z-[3000] flex items-center justify-center bg-black/80 p-4">
         <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 relative">
-            <button id="postSubmitModalClose" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900">✕</button>
-            <h3 class="text-2xl font-bold text-gray-900 mb-3">Application Submitted</h3>
-            <p class="text-gray-700 mb-6">Do you want to apply for another job?</p>
+            <button id="postSubmitModalClose" class="absolute top-3 right-3 text-gray-600 hover:text-gray-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">✕</button>
+            <h3 class="text-2xl font-bold text-slate-900 mb-3">Application Submitted</h3>
+            <p class="text-slate-700 text-base mb-6">Do you want to apply for another job?</p>
             <div class="flex justify-end gap-3">
-                <button id="postSubmitNo" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300">No — View my applications</button>
-                <button id="postSubmitYes" class="bg-[#1E40AF] text-white px-4 py-2 rounded-lg hover:bg-blue-900">Yes — Show job matches</button>
+                <button id="postSubmitNo" class="bg-slate-200 text-slate-900 px-4 py-2 rounded-lg font-semibold hover:bg-slate-300 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">No — View applications</button>
+                <button id="postSubmitYes" class="bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">Yes — Browse jobs</button>
             </div>
         </div>
     </div>

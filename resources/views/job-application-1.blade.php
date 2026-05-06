@@ -4,25 +4,69 @@
   <!-- Icon link -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
 
+  <style>
+    input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 2px solid #2563eb !important;
+      outline-offset: 2px !important;
+    }
+    .form-section {
+      transition: box-shadow 0.3s ease;
+    }
+    .form-section:focus-within {
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+  </style>
 
-  <!-- Back Button -->
-  <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
-    <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
-      <a href="/job-details"
-        class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"
-          class="w-8 h-8 sm:w-10 sm:h-10">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-        </svg>
-        <span>Back to Job Details</span>
-      </a>
+  <!-- Hero Section -->
+  <section class="bg-sky-50 py-16 sm:py-20 border-b border-sky-100" role="region" aria-labelledby="application-heading">
+    <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
+      <div class="text-center mb-10">
+        <p class="text-base font-bold uppercase tracking-widest text-blue-700 mb-2">Job Application</p>
+        <h1 id="application-heading" class="text-4xl sm:text-5xl font-extrabold text-slate-900">Submit Your Application</h1>
+      </div>
+
+      <!-- JOB INFO CARD -->
+      <div class="rounded-3xl border border-sky-200 bg-white shadow-sm p-8 sm:p-10">
+        <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-8 text-center">You are applying for</h2>
+        <div class="grid gap-8 lg:grid-cols-[1fr_2fr] lg:items-center">
+          <!-- Company Logo -->
+          <div class="flex justify-center">
+            <img id="jobLogo" src="https://via.placeholder.com/150?text=Logo" alt="Company Logo"
+              class="w-40 h-40 rounded-2xl border-2 border-sky-200 object-cover shadow-md">
+          </div>
+          <!-- Job Info -->
+          <div class="space-y-4">
+            <h3 id="jobTitle" class="text-3xl sm:text-4xl font-bold text-slate-900">Job Role</h3>
+            <p id="jobCompany" class="text-xl font-semibold text-slate-700">Company Name</p>
+            <p id="jobLocation" class="flex items-center gap-2 text-lg text-slate-600">
+              <img src="https://img.icons8.com/color/24/marker.png" alt="" aria-hidden="true" class="w-5 h-5">
+              Location
+            </p>
+            <p id="jobDescription" class="text-base text-slate-600 leading-relaxed">Description</p>
+          </div>
+        </div>
+      </div>
     </div>
+  </section>
+
+<!-- Back Button -->
+<div class="bg-sky-50 py-6">
+  <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 flex justify-center">
+
+    <a href="/job-details"
+      class="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-white px-6 py-3 text-blue-700 font-semibold shadow-sm transition hover:bg-blue-50 hover:border-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+
+      <!-- Icons8 Back Icon -->
+      <img src="https://img.icons8.com/ios-filled/24/1E40AF/left.png"
+        alt=""
+        aria-hidden="true"
+        class="w-5 h-5">
+
+      <span>Back to job details</span>
+    </a>
+
   </div>
-
-
-  <!-- JOB INFO CARD -->
-  <section class="max-w-6xl mx-auto mt-14 px-6">
-    <h2 class="text-4xl font-extrabold text-[#1E40AF] mb-10 text-center">You Are Applying For</h2>
+</div>
     @php
       // We no longer use CSV files here — the page will request jobs from
       // public/db/get-jobs.php on the client. Keep only job_id for JS.
@@ -99,88 +143,81 @@
      @endphp
 
 
-    <div
-      class="bg-[#F0F9FF] border-[3px] border-[#1E40AF] rounded-3xl p-10 flex flex-col sm:flex-row items-center gap-10 shadow-lg">
-      <!-- Company Logo / Placeholder -->
-      <div class="flex items-center justify-center">
-        <img id="jobLogo" src="https://via.placeholder.com/150?text=Logo" alt="Company Logo"
-          class="w-36 h-36 rounded-2xl border-2 border-gray-300 object-cover">
-      </div>
-
-      <!-- Job Info -->
-      <div class="flex flex-col justify-center leading-snug text-center sm:text-left max-w-3xl">
-        <h3 id="jobTitle" class="text-4xl font-extrabold text-black">Job Title</h3>
-        <p id="jobCompany" class="text-gray-700 text-2xl font-semibold mt-2">Company Name</p>
-        <p id="jobLocation" class="text-gray-600 text-xl mt-1">Location</p>
-        <p id="jobDescription" class="text-gray-600 text-lg mt-3 leading-relaxed">Description</p>
-      </div>
-    </div>
-  </section>
-
-
   <!-- JOB APPLICATION FORM -->
-  <section class="max-w-6xl mx-auto p-10 mt-8 space-y-8">
-    <h2 class="text-4xl font-extrabold text-[#1E40AF] mb-6 text-center">
-      Job Application Form
-    </h2>
-    <p class="text-gray-700 text-2xl mb-12 text-center leading-relaxed max-w-4xl mx-auto">
-      Please fill out this form carefully. All questions marked with
-      <span class="text-red-500 font-bold">*</span> are required.
-    </p>
-
-    <form class="space-y-14" id="mainForm">
-
-      <!-- ================= PERSONAL INFORMATION ================= -->
-      <div class="border-2 border-blue-200 bg-white shadow-lg rounded-3xl p-10 mb-10">
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 border-b-4 border-blue-200 pb-3">
-          <h3 class="text-3xl font-semibold text-[#1E40AF] mb-4 sm:mb-0">Personal Information</h3>
-          <button type="button" id="autofillPersonal"
-            class="bg-blue-600 text-white font-semibold px-8 py-2 text-lg rounded-xl hover:bg-blue-900 transition shadow">
-            Autofill from Profile
-          </button>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-          <div>
-            <label class="block font-bold text-2xl text-gray-800 mb-2">First Name <span
-                class="text-red-500">*</span></label>
-            <input type="text" name="firstName"
-              class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
-          </div>
-          <div>
-            <label class="block font-bold text-2xl text-gray-800 mb-2">Last Name <span
-                class="text-red-500">*</span></label>
-            <input type="text" name="lastName"
-              class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
-          </div>
-          <div class="sm:col-span-2">
-            <label class="block font-bold text-2xl text-gray-800 mb-2">Email Address <span
-                class="text-red-500">*</span></label>
-            <input type="email" name="email"
-              class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
-          </div>
-          <div>
-            <label class="block font-bold text-2xl text-gray-800 mb-2">Date of Birth <span
-                class="text-red-500">*</span></label>
-            <input type="date" name="date_of_birth" id="date_of_birth"
-              class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
-          </div>
-          <div>
-            <label class="block font-bold text-2xl text-gray-800 mb-2">Phone Number <span
-                class="text-red-500">*</span></label>
-            <input type="tel" name="phone"
-              class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
-          </div>
-          <div class="sm:col-span-2">
-            <label class="block font-bold text-2xl text-gray-800 mb-2">Complete Address <span
-                class="text-red-500">*</span></label>
-            <input type="text" name="address"
-              class="w-full border-2 border-gray-300 rounded-xl p-5 text-2xl focus:ring-4 focus:ring-blue-200 focus:border-[#1E40AF]">
-          </div>
-        </div>
+  <section class="bg-white py-12 sm:py-16">
+    <div class="max-w-6xl mx-auto px-6 sm:px-10 lg:px-12 space-y-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+          Application Form
+        </h2>
+        <p class="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+          Please fill out all fields marked with <span class="font-semibold text-slate-900">*</span> are required. We'll use this information to process your application.
+        </p>
       </div>
 
-      <!-- ================= EDUCATION ================= -->
+      <form class="space-y-8" id="mainForm">
+
+        <!-- PERSONAL INFORMATION SECTION -->
+        <div class="form-section border border-sky-200 bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
+          <h3 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-6 flex items-center justify-between">
+            Personal Information
+            <button type="button" id="autofillPersonal"
+              class="text-sm font-semibold bg-blue-700 text-white px-4 py-2 rounded-lg hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+              Autofill
+            </button>
+          </h3>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label for="firstName" class="block text-sm font-semibold text-slate-900 mb-2">
+                First Name <span class="text-red-600">*</span>
+              </label>
+              <input id="firstName" type="text" name="firstName" required
+                class="w-full px-4 py-3 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 transition bg-white shadow-sm focus-visible:ring-2 focus-visible:ring-blue-200"
+                placeholder="Enter your first name" aria-required="true">
+            </div>
+            <div>
+              <label for="lastName" class="block text-sm font-semibold text-slate-900 mb-2">
+                Last Name <span class="text-red-600">*</span>
+              </label>
+              <input id="lastName" type="text" name="lastName" required
+                class="w-full px-4 py-3 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 transition bg-white shadow-sm focus-visible:ring-2 focus-visible:ring-blue-200"
+                placeholder="Enter your last name" aria-required="true">
+            </div>
+            <div class="sm:col-span-2">
+              <label for="email" class="block text-sm font-semibold text-slate-900 mb-2">
+                Email Address <span class="text-red-600">*</span>
+              </label>
+              <input id="email" type="email" name="email" required
+                class="w-full px-4 py-3 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 transition bg-white shadow-sm focus-visible:ring-2 focus-visible:ring-blue-200"
+                placeholder="your@email.com" aria-required="true">
+            </div>
+            <div>
+              <label for="date_of_birth" class="block text-sm font-semibold text-slate-900 mb-2">
+                Date of Birth <span class="text-red-600">*</span>
+              </label>
+              <input id="date_of_birth" type="date" name="date_of_birth" required
+                class="w-full px-4 py-3 border border-slate-300 rounded-lg text-slate-900 bg-white shadow-sm focus-visible:ring-2 focus-visible:ring-blue-200"
+                aria-required="true">
+            </div>
+            <div>
+              <label for="phone" class="block text-sm font-semibold text-slate-900 mb-2">
+                Phone Number <span class="text-red-600">*</span>
+              </label>
+              <input id="phone" type="tel" name="phone" required
+                class="w-full px-4 py-3 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 transition bg-white shadow-sm focus-visible:ring-2 focus-visible:ring-blue-200"
+                placeholder="Your phone number" aria-required="true">
+            </div>
+            <div class="sm:col-span-2">
+              <label for="address" class="block text-sm font-semibold text-slate-900 mb-2">
+                Complete Address <span class="text-red-600">*</span>
+              </label>
+              <input id="address" type="text" name="address" required
+                class="w-full px-4 py-3 border border-slate-300 rounded-lg text-slate-900 placeholder-slate-400 transition bg-white shadow-sm focus-visible:ring-2 focus-visible:ring-blue-200"
+                placeholder="Street, City, Province, Zip Code" aria-required="true">
+            </div>
+          </div>
+        </div>
       {{--<div class="border-2 border-blue-200 bg-white shadow-lg rounded-3xl p-10 mb-10">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 border-b-4 border-blue-200 pb-3">
           <h3 class="text-3xl font-bold text-[#1E40AF] mb-4 sm:mb-0">Education</h3>
@@ -278,106 +315,92 @@
         </div>
       </div>--}}
 
-      <!-- ================= REQUIRED DOCUMENTS ================= -->
-      <div class="border-2 border-blue-200 bg-white shadow-lg rounded-3xl p-10 mb-10">
-
-        <!-- HEADER -->
-        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-8 border-b-4 border-blue-200 pb-3">
-          <h3 class="text-3xl font-bold text-[#1E40AF] mb-4 sm:mb-0">
-            Required Documents
-          </h3>
-        </div>
-
-        <p class="text-gray-700 font-bold text-lg mb-6">
-          Kindly upload the required documents: Medical Certificate, PWD ID, and Resume in PDF, DOC, DOCX, JPG, PNG.
-
+      <!-- REQUIRED DOCUMENTS SECTION -->
+      <div class="form-section border border-sky-200 bg-white rounded-2xl p-6 sm:p-8 shadow-sm">
+        <h3 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-6">Required Documents</h3>
+        <p class="text-base text-slate-600 mb-8">
+          Please upload: <strong>Medical Certificate</strong>, <strong>PWD ID</strong>, and <strong>Resume</strong> in PDF, DOC, DOCX, JPG, or PNG format.
         </p>
 
-        <!-- CHECKLIST (Aligned in a Row) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-          <label class="flex flex-col items-center gap-3 cursor-pointer text-center">
-            <span class="text-xl text-gray-800 font-semibold h-14 flex items-center">Example Medical Certificate</span>
+        <!-- Document Samples Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <div class="flex flex-col items-center text-center">
+            <span class="font-semibold text-slate-900 text-sm mb-3 block">Medical Certificate Example</span>
             <img src="{{ asset('image/Medical_Certificate_Sample.png') }}" alt="Medical Certificate Sample"
-              onclick="openImageModal(this.src)"
-              class="w-full max-w-[280px] h-auto border border-gray-300 rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition">
-          </label>
+              onclick="openImageModal(this.src)" role="button" tabindex="0"
+              class="w-full max-w-xs h-auto border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition"
+              onkeydown="if(event.key==='Enter') openImageModal(this.src)">
+          </div>
 
-          <label class="flex flex-col items-center gap-3 cursor-pointer text-center">
-            <span class="text-xl text-gray-800 font-semibold h-14 flex items-center">Example Resume / CV</span>
-            <img src="{{ asset('image/Resume_Sample.png') }}" alt="Resume Sample" onclick="openImageModal(this.src)"
-              class="w-full max-w-[280px] h-auto border border-gray-300 rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition">
-          </label>
+          <div class="flex flex-col items-center text-center">
+            <span class="font-semibold text-slate-900 text-sm mb-3 block">Resume / CV Example</span>
+            <img src="{{ asset('image/Resume_Sample.png') }}" alt="Resume Sample"
+              onclick="openImageModal(this.src)" role="button" tabindex="0"
+              class="w-full max-w-xs h-auto border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition"
+              onkeydown="if(event.key==='Enter') openImageModal(this.src)">
+          </div>
 
-          <label class="flex flex-col items-center gap-3 cursor-pointer text-center">
-            <span class="text-xl text-gray-800 font-semibold h-14 flex items-center">Example PWD ID</span>
-            <img src="{{ asset('image/PWD_ID_Sample.png') }}" alt="PWD ID Sample" onclick="openImageModal(this.src)"
-              class="w-full max-w-[280px] h-auto border border-gray-300 rounded-lg shadow-sm cursor-pointer hover:opacity-80 transition">
-          </label>
+          <div class="flex flex-col items-center text-center">
+            <span class="font-semibold text-slate-900 text-sm mb-3 block">PWD ID Example</span>
+            <img src="{{ asset('image/PWD_ID_Sample.png') }}" alt="PWD ID Sample"
+              onclick="openImageModal(this.src)" role="button" tabindex="0"
+              class="w-full max-w-xs h-auto border border-slate-300 rounded-lg shadow-sm cursor-pointer hover:shadow-md hover:scale-105 transition"
+              onkeydown="if(event.key==='Enter') openImageModal(this.src)">
+          </div>
         </div>
 
-        <!-- SINGLE UPLOAD BOX -->
-        <div id="bigUploadBox" class="border-2 border-dashed border-[#1E40AF] rounded-2xl p-8 text-center 
-                                                      bg-[#F0F9FF] hover:bg-blue-50 transition">
-
-          <div id="bigUploadContent" class="cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-[#1E40AF] mx-auto mb-4" fill="none"
-              viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M7 16V4a2 2 0 012-2h6a2 2 0 012 2v12m-6 4l-4-4m4 4l4-4m-4 4V10" />
+        <!-- Upload Box -->
+        <div id="bigUploadBox" class="border-2 border-dashed border-blue-300 rounded-2xl p-8 text-center bg-blue-50 hover:bg-blue-100 transition cursor-pointer">
+          <div id="bigUploadContent">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-16 h-16 text-blue-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
             </svg>
-
-            <!-- the inner clickable content — hide/show independently from the dashed box -->
-            <p class="text-2xl font-semibold text-[#1E40AF]">Click here to upload all documents</p>
-            <p class="text-gray-600 text-lg mt-2">
-              (PDF, DOC, DOCX, JPG, PNG — Max size: 15MB each)
-            </p>
-            <p class="text-gray-600 text-lg font-semibold mt-2">You may upload up to 3 files</p>
+            <p class="text-lg font-semibold text-blue-900 mb-2">Upload all documents</p>
+            <p class="text-sm text-slate-600">PDF, DOC, DOCX, JPG, PNG — Max 15MB each, up to 3 files</p>
           </div>
           <div id="requiredFilesSlots" class="mt-6 grid grid-cols-1 gap-4 max-w-3xl mx-auto"></div>
         </div>
-        <!-- HIDDEN FILE INPUT -->
-        <input type="file" id="allDocuments" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
+        <input type="file" id="allDocuments" class="hidden" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple aria-label="Upload required documents">
       </div>
-      <!-- ================= SUBMIT BUTTON ================= -->
-      <div class="flex justify-center mt-6">
-        {{-- Preserve job_id when navigating to the review page (if present) --}}
+
+      <!-- SUBMIT BUTTON -->
+      <div class="flex justify-center pt-8">
         <a href="/job-application-review1{{ $job_id ? ('?job_id=' . urlencode($job_id)) : '' }}"
-          class="bg-[#1E40AF] text-white text-3xl font-bold px-16 py-6 rounded-2xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition inline-block text-center">
-          Click to Review Application
+          class="inline-block px-10 py-4 bg-blue-700 text-white font-semibold rounded-xl hover:bg-blue-800 transition shadow-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+          Review Application
         </a>
       </div>
     </form>
-
-    <!-- BACK TO TOP BUTTON -->
-    <button id="backToTopBtn"
-      class="hidden fixed bottom-8 right-8 bg-[#1E40AF] text-white px-6 py-4 rounded-full shadow-xl hover:bg-blue-900 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110 flex items-center gap-3 text-2xl font-semibold"
-      onclick="scrollToTop()" aria-label="Back to top">
-
-      <!-- Up Arrow Icon -->
-      <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"
-        stroke-width="3">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
-      </svg>
-
-      <span>Back to Top</span>
-    </button>
-
-    <!-- ================= MODALS ================= -->
-    <div id="imageModal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-      <div class="relative">
-        <img id="modalImage" src="" class="max-w-full max-h-[80vh] rounded-lg shadow-lg">
-        <button onclick="closeModal('imageModal')"
-          class="absolute top-2 right-2 text-white text-3xl font-bold bg-black bg-opacity-50 px-3 py-1 rounded-lg">✕</button>
-      </div>
     </div>
+  </section>
 
-    <div id="pdfModal" class="hidden fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 p-4">
-      <div class="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col">
-        <iframe id="pdfFrame" class="w-full h-full rounded-b-lg" frameborder="0"></iframe>
-        <button onclick="closeModal('pdfModal')"
-          class="absolute top-2 right-2 text-white text-3xl font-bold bg-black bg-opacity-50 px-3 py-1 rounded-lg z-10">✕</button>
-      </div>
+  <!-- BACK TO TOP BUTTON -->
+  <button id="backToTopBtn"
+    class="hidden fixed bottom-8 right-8 bg-blue-700 text-white p-4 rounded-full shadow-lg hover:bg-blue-800 transition transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
+    onclick="scrollToTop()" aria-label="Back to top">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" />
+    </svg>
+  </button>
+
+  <!-- IMAGE MODAL -->
+  <div id="imageModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="relative">
+      <img id="modalImage" src="" alt="Document preview" class="max-w-full max-h-[80vh] rounded-lg shadow-lg">
+      <button onclick="closeModal('imageModal')" aria-label="Close modal"
+        class="absolute -top-10 right-0 text-white text-3xl font-bold hover:text-gray-300 transition">✕</button>
     </div>
+  </div>
+
+  <!-- PDF MODAL -->
+  <div id="pdfModal" class="hidden fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+    <div class="relative bg-white rounded-lg shadow-2xl w-full max-w-4xl h-[80vh] flex flex-col">
+      <iframe id="pdfFrame" class="w-full h-full rounded-b-lg" frameborder="0" title="PDF viewer"></iframe>
+      <button onclick="closeModal('pdfModal')" aria-label="Close PDF viewer"
+        class="absolute -top-10 right-0 text-white text-3xl font-bold hover:text-gray-300 transition">✕</button>
+    </div>
+  </div>
+
 
     {{--
     <script>

@@ -25,7 +25,7 @@
             </p>
             <div class="mt-6 inline-flex items-center justify-center gap-3">
                 <button type="button"
-                class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
                 aria-label="Read hero section aloud"
                 onclick="speakText(document.getElementById('tts-hero').textContent)">
 
@@ -159,7 +159,7 @@
                 <p class="mt-2 text-sm sm:text-base text-slate-600">Review the jobs you have saved and apply when you’re ready.</p>
             </div>
              <button type="button"
-            class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+            class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300"
             aria-label="Read saved jobs section aloud"
             onclick="speakText(
                 document.getElementById('saved-jobs-heading').textContent + '. ' + 
@@ -272,7 +272,7 @@
 
                                         <!-- Action Buttons -->
                                         <div class="p-6 pt-4 flex flex-col gap-2 sm:flex-row sm:gap-2 lg:gap-3">
-                                            <button type="button" data-target="tts-${safeJid}" class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition transform hover:scale-110" aria-label="Read saved job details aloud">
+                                            <button type="button" data-target="tts-${safeJid}" class="tts-btn flex-shrink-0 bg-blue-600 text-white rounded-full px-3 py-2 hover:bg-blue-700 transition transform hover:scale-110 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300" aria-label="Read saved job details aloud">
                                                 🔊
                                             </button>
 
