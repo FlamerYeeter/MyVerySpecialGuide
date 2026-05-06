@@ -3,6 +3,19 @@
 @section('content')
 
 <link href="https://cdn.jsdelivr.net/npm/remixicon@4.3.0/fonts/remixicon.css" rel="stylesheet">
+    <style>
+        /* Ensure saved state shows green consistently */
+        .save-btn.saved, .save-btn.saved:enabled {
+            background-color: #22C55E !important;
+            border-color: transparent !important;
+            color: #ffffff !important;
+        }
+        .save-btn.saved:hover {
+            background-color: #16A34A !important;
+            color: #ffffff !important;
+        }
+        .save-btn.saved img { filter: none !important; }
+    </style>
 
     @php
         $job = null;
@@ -83,14 +96,14 @@
 
                 <!-- ACTION BUTTONS -->
                 <div class="w-full lg:w-auto flex flex-col sm:flex-row gap-3">
-                    <button id="apply-now-btn" href="{{ url('/job-application-1') . '?job_id=' . urlencode($job_id) }}"
+                    <a id="apply-now-btn" href="{{ url('/job-application-1') . '?job_id=' . urlencode($job_id) }}"
                        class="inline-flex items-center justify-center gap-3 bg-gradient-to-r from-blue-600 to-blue-800 text-white px-10 py-5 rounded-2xl font-bold text-2xl hover:from-blue-700 hover:to-blue-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 ring-4 ring-blue-300 ring-opacity-30"
                        aria-label="Apply Now - Main Action">
                         <img src="https://img.icons8.com/fluency/32/ffffff/rocket.png" alt="" aria-hidden="true"/>
                         <span>Apply Now</span>
-                    </button>
+                    </a>
 
-                    <button onclick="saveJob('{{ $job_id }}', this)" type="button" data-job-id="{{ $job_id }}" class="inline-flex items-center justify-center gap-3 rounded-full border border-blue-700 bg-transparent px-8 py-4 text-lg font-bold text-blue-700 shadow-lg transition hover:bg-blue-700 hover:text-white hover:shadow-xl active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                        <button onclick="saveJob('{{ $job_id }}', this)" type="button" data-job-id="{{ $job_id }}" class="save-btn inline-flex items-center justify-center gap-3 rounded-full border border-blue-700 bg-transparent px-8 py-4 text-lg font-bold text-blue-700 shadow-lg transition hover:bg-blue-700 hover:text-white hover:shadow-xl active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
                             aria-label="Save this job">
                         <img src="https://img.icons8.com/fluency/24/1E40AF/bookmark-ribbon.png" alt="" aria-hidden="true"/>
                         <span>Save job</span>
@@ -436,14 +449,40 @@
         }
 
         function saveJob(jobId, button) {
-            if (!jobId || !button) return;
-            const savedKey = 'savedJobIds';
-            const savedJobs = JSON.parse(localStorage.getItem(savedKey) || '[]');
-            const existingIndex = savedJobs.indexOf(jobId);
-            const willSave = existingIndex === -1;
-            const nextSaved = willSave ? [...savedJobs, jobId] : savedJobs.filter(id => id !== jobId);
-            localStorage.setItem(savedKey, JSON.stringify(nextSaved));
-            updateSaveButtonState(button, willSave);
+            if (!jobId) return alert('Missing job id');
+            const el = button || document.querySelector('[data-job-id="' + jobId + '"] .save-btn') || null;
+            try { if (el) el.disabled = true; } catch(e){}
+            const body = { job_id: String(jobId) };
+            fetch('/db/save-job.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            }).then(r => r.json()).then(j => {
+                if (!j) throw new Error('No response');
+                if (j.success) {
+                    if (el) {
+                        try {
+                            el.disabled = true;
+                            const span = el.querySelector('span');
+                            if (span) span.textContent = 'Saved';
+                            el.classList.add('saved');
+                        } catch (e) { /* ignore UI update errors */ }
+                    }
+                    return;
+                }
+                // handle unauthenticated
+                if (j.message && (j.message === 'Not authenticated (missing session user_id)' || j.error === 'Not authenticated')) {
+                    window.location.href = '/login';
+                    return;
+                }
+                alert('Failed to save job: ' + (j.message || JSON.stringify(j)));
+                if (el) el.disabled = false;
+            }).catch(err => {
+                console.error('saveJob error', err);
+                alert('Failed to save job. Try again.');
+                if (el) el.disabled = false;
+            });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
@@ -490,6 +529,11 @@
             });
         }
     </script>
+
+<script>
+    // expose Laravel user id to client JS for authenticated checks
+    window.LARAVEL_USER_ID = @json(auth()->check() ? auth()->id() : null);
+</script>
 
 <script type="module">
     (function () {
@@ -670,6 +714,55 @@
                 setHtml('looking-for-content', j.who_we_are_looking_for);
                 setHtml('working-environment-content', j.working_environment);
                 setHtml('qualifications-content', j.qualifications);
+
+                // After rendering, check whether the requesting user has already applied or saved this job
+                (function checkAppliedAndSavedOnce() {
+                    const jid = j.id || jobId || null;
+                    if (!jid) return;
+                    const userIdForApps = (typeof window !== 'undefined' && window.LARAVEL_USER_ID) ? String(window.LARAVEL_USER_ID) : localStorage.getItem('user_id');
+
+                    // check applications
+                    if (userIdForApps) {
+                        fetch('/db/get-applications.php?guardian_id=' + encodeURIComponent(userIdForApps), { credentials: 'same-origin' })
+                        .then(r => r.json()).then(a => {
+                            try {
+                                if (a && a.success && Array.isArray(a.applications)) {
+                                    const applied = a.applications.some(x => String(x.job_posting_id || x.job_id || x.posting_id) === String(jid));
+                                    if (applied) {
+                                        const applyBtn = document.getElementById('apply-now-btn');
+                                        if (applyBtn) {
+                                            const appliedEl = document.createElement('button');
+                                            appliedEl.className = 'inline-flex items-center justify-center gap-3 rounded-2xl bg-gray-400 text-white px-10 py-5 font-bold text-2xl';
+                                            appliedEl.disabled = true;
+                                            appliedEl.setAttribute('aria-label','Applied');
+                                            appliedEl.innerHTML = '<img src="https://img.icons8.com/ios-glyphs/24/ffffff/cancel.png" alt=""> <span>Applied</span>';
+                                            applyBtn.replaceWith(appliedEl);
+                                        }
+                                    }
+                                }
+                            } catch (e) { /* ignore */ }
+                        }).catch(()=>{/*ignore*/});
+                    }
+
+                    // check saved jobs
+                    fetch('/db/saved-jobs.php', { credentials: 'same-origin' }).then(r => r.json()).then(s => {
+                        try {
+                            if (s && s.success && Array.isArray(s.saved)) {
+                                const savedSet = new Set(s.saved.map(x => String(x.job_id)));
+                                if (savedSet.has(String(jid))) {
+                                    const saveBtn = document.querySelector('button[data-job-id="' + jid + '"]');
+                                    if (saveBtn) {
+                                        try {
+                                            saveBtn.disabled = true;
+                                            saveBtn.classList.add('saved');
+                                            const span = saveBtn.querySelector('span'); if (span) span.textContent = 'Saved';
+                                        } catch (e) { /* ignore UI errors */ }
+                                    }
+                                }
+                            }
+                        } catch (e) { /* ignore */ }
+                    }).catch(()=>{/*ignore*/});
+                })();
 
                 // Accessibility lists helper
                 function populateList(id, values) {

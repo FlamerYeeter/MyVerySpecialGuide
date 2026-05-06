@@ -275,6 +275,16 @@ foreach ($user_profile_tokens as $t) {
   if (mb_stripos($lt, 'blind') !== false || mb_stripos($lt, 'vision') !== false) $user_conditions[] = 'blind';
   if (mb_stripos($lt, 'mobility') !== false || mb_stripos($lt, 'wheelchair') !== false) $user_conditions[] = 'limited_mobility';
 }
+// If no profile tokens but client provided `job_prefs`, use them as lightweight seeds (helps cold-start)
+if (empty($user_profile_tokens) && !empty($data['job_prefs']) && is_array($data['job_prefs'])) {
+  foreach ($data['job_prefs'] as $p) {
+    $v = normalize_token($p);
+    if ($v === '') continue;
+    $user_profile_tokens[] = map_synonym($v, $SYNONYMS);
+    $user_profile_tokens[] = $v;
+  }
+  $user_profile_tokens = array_values(array_unique($user_profile_tokens));
+}
 // also accept explicit profile payload in JSON body
 if (!empty($data['profile']) && is_array($data['profile'])) {
   // flatten
@@ -672,7 +682,29 @@ if (count($rows) > 0) {
 
         // Blend: 65% content, 25% accessibility, 10% collaborative (align with SQL side)
         $accessScoreRaw = min(1.0, $access_matches_php / 4.0);
+
+        // Cold-start handling: compute recency-normalized score and combine with collaborative popularity
+        $recency_norm = 0.0;
+        if (!empty($row['JOB_POST_DATE'])) {
+          $post_ts = false;
+          // try parse common date formats
+          $post_ts = strtotime((string)$row['JOB_POST_DATE']);
+          if ($post_ts !== false) {
+            $days = max(0, (time() - $post_ts) / 86400.0);
+            // fresh jobs get score near 1, older jobs decay over ~90 days
+            $recency_norm = max(0.0, 1.0 - ($days / 90.0));
+          }
+        }
+        $cold_recency_weight = 0.6;
+        $cold_pop_weight = 0.4;
+        $cold_score_raw = ($cold_recency_weight * $recency_norm) + ($cold_pop_weight * $collabScoreRaw);
+
         $computedScore = round((0.65 * $contentScoreRaw + 0.25 * $accessScoreRaw + 0.1 * $collabScoreRaw) * 100, 2);
+        // If no content/access signals (true cold-start), promote by cold_score_raw
+        if ($contentScoreRaw < 0.01 && $accessScoreRaw < 0.01) {
+          $fallback = round($cold_score_raw * 100, 2);
+          if ($fallback > $computedScore) $computedScore = $fallback;
+        }
 
         $jobs[] = [
             'id'                    => $jobId,
