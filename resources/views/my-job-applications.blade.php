@@ -28,153 +28,186 @@
     </style>
 
     <!-- NOTE: THIS IS STILL IN PROGRESS, I'M NOT SURE PANO AANUHIN YAN -->
-    <!-- Back Button -->
-    <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
-        <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
-            <a href="/job-matches"
-                class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"
-                    class="w-8 h-8 sm:w-10 sm:h-10">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                <span>Back to Jobs</span>
-            </a>
-        </div>
-    </div>
 
-    <!-- HERO SECTION -->
-    <section class="relative bg-[#D78203] flex items-center justify-center py-10 sm:py-14 lg:py-16 px-4 sm:px-8 lg:px-20 shadow-md rounded-b-3xl">
-        <div class="relative flex flex-col items-center justify-center text-center max-w-4xl mx-auto gap-4 sm:gap-6">
-            <button type="button" class="absolute top-4 right-4 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 sm:p-3 rounded-full shadow-md tts-btn text-sm sm:text-base lg:text-lg transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                data-tts-en="Track your application progress and manage your job applications on this page." 
-                data-tts-tl="Subaybayan ang progreso ng iyong aplikasyon at pamahalaan ang mga aplikasyon mo sa page na ito." 
-                aria-label="Play audio for My Job Application hero section">🔊</button>
+    <!-- Hero Section -->
+    <section class="bg-sky-50 py-12 sm:py-16" role="region" aria-labelledby="hero-heading">
+        <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 text-center">
 
-            <img src="{{ asset('image/my-job-app.png') }}" alt="Brain Icon" class="w-20 h-20 sm:w-24 sm:h-24 mb-2 sm:mb-3 animate-bounce-slow">
-            <h2 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-wide drop-shadow-md">
-                My Job Application
-            </h2>
-            <p class="text-base sm:text-lg lg:text-xl text-white/90 mt-2 max-w-2xl">
-                Track your application progress and manage your job applications
+            <p class="text-base font-bold uppercase tracking-widest text-blue-700">
+                Your applications
             </p>
+
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-slate-900 mt-2" id="hero-heading">
+                Job Applications
+            </h1>
+
+            <div class="mx-auto max-w-2xl">
+                <p class="text-lg sm:text-xl text-slate-700 mt-4">
+                    Track and manage all your job applications in one place. View progress, withdraw applications, and get feedback.
+                </p>
+                <div class="mt-6 inline-flex items-center justify-center gap-3">
+                    <button type="button"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    aria-label="Read hero section aloud"
+                    onclick="speakText(document.getElementById('tts-hero').textContent)">
+
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+                </div>
+            </div>
+
+            <!-- COUNT BUTTON -->
+            <div class="mt-6">
+                <button type="button" id="applicationsCountBtn"
+                    aria-label="Applications count"
+                    class="inline-flex items-center justify-center gap-3 rounded-full bg-blue-700 px-8 py-4 text-white text-lg font-bold shadow-lg hover:bg-blue-800 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-300">
+                    <img src="https://img.icons8.com/ios-filled/50/D22B2B/briefcase.png" class="w-6 h-6" alt="" aria-hidden="true">
+                    <span id="applicationsCountText" role="status" aria-live="polite">Loading...</span>
+                </button>
+            </div>
+            <div class="mt-4">
+                <p id="applicationsOverviewCountText" class="text-sm sm:text-base text-slate-700">Loading application overview…</p>
+            </div>
+
+            <div class="pt-6">
+                <a href="/job-matches"
+                    class="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-white px-6 py-3 text-blue-700 font-semibold shadow-sm transition hover:bg-blue-50 hover:border-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+
+                    <!-- Icons8 Back Icon -->
+                    <img src="https://img.icons8.com/ios-filled/24/1E40AF/left.png"
+                        alt=""
+                        aria-hidden="true"
+                        class="w-5 h-5">
+
+                    <span>Back to jobs</span>
+                </a>
+            </div>
+
         </div>
+        <div id="tts-hero" class="sr-only">Your applications. My Job Applications. Track and manage all your job applications in one place. View progress, withdraw applications, and get feedback.</div>
     </section>
 
-    <!-- APPLICATION STATS -->
-    <section class="max-w-6xl mx-auto mt-10 px-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-        <div class="relative bg-[#FFF6E5] border-4 border-[#FFD27F] rounded-3xl shadow-md p-6">
-            <button type="button" class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-xs sm:text-sm transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                data-tts-en="Pending applications. These are applications awaiting a response from the employer."
-                data-tts-tl="Mga pending na aplikasyon. Ito ay mga aplikasyon na naghihintay ng tugon mula sa employer."
-                aria-label="Play audio for pending applications">🔊</button>
-            <img src="https://img.icons8.com/emoji/48/hourglass-not-done.png" alt="Pending Icon" class="mx-auto mb-2">
-            <h3 class="text-4xl font-extrabold text-[#D78203]"><span id="statPendingCount">-</span></h3>
-            <p class="text-lg font-semibold text-gray-800 mt-1">Pending</p>
-        </div>
-
-        <div class="relative bg-[#E9FFE9] border-4 border-[#8BE18B] rounded-3xl shadow-md p-6">
-            <button type="button" class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-xs sm:text-sm transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                data-tts-en="Applications under review. The employer is currently reviewing your qualifications and experience."
-                data-tts-tl="Mga aplikasyon na nasa review. Ang employer ay kasalukuyang nag-review ng iyong mga qualification at karanasan."
-                aria-label="Play audio for applications under review">🔊</button>
-            <img src="https://img.icons8.com/emoji/48/check-mark-emoji.png" alt="Review Icon" class="mx-auto mb-2">
-            <h3 class="text-4xl font-extrabold text-[#1F8B24]"><span id="statReviewedCount">-</span></h3>
-            <p class="text-lg font-semibold text-gray-800 mt-1">Under Review</p>
-        </div>
-
-        <div class="relative bg-[#E8F3FF] border-4 border-[#7FBFFF] rounded-3xl shadow-md p-6">
-            <button type="button" class="absolute top-3 right-3 bg-[#1E40AF] hover:bg-blue-700 text-white p-2 rounded-full shadow-md tts-btn text-xs sm:text-sm transition-transform hover:scale-110 focus:ring-2 focus:ring-blue-400"
-                data-tts-en="Total applications. This is the total number of job applications you have submitted."
-                data-tts-tl="Kabuuang aplikasyon. Ito ang kabuuang bilang ng mga job application na iyong napadala."
-                aria-label="Play audio for total applications">🔊</button>
-            <img src="https://img.icons8.com/emoji/48/file-folder-emoji.png" alt="Applications Icon" class="mx-auto mb-2">
-            <h3 class="text-4xl font-extrabold text-[#007BFF]"><span id="statTotalCount">-</span></h3>
-            <p class="text-lg font-semibold text-gray-800 mt-1">Total Applications</p>
-        </div>
-    </section>
-
-    <!-- SEARCH & FILTER  -->
-    <section class="max-w-6xl mx-auto mt-10 px-6">
-        <div
-            class="bg-white border-4 border-blue-200 rounded-3xl shadow-md p-6 
-              flex flex-col sm:flex-row items-center justify-between gap-4">
-
+    <!-- Search and Filter Section -->
+    <section class="bg-white rounded-3xl shadow-lg p-6 mb-8 max-w-6xl mx-auto" role="form" aria-labelledby="filter-heading">
+        <h2 id="filter-heading" class="text-2xl font-bold text-gray-900 mb-6 text-center">Filter Your Applications</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- Search Input -->
-            <div
-                class="flex items-center border-2 border-gray-300 rounded-full px-4 py-3 
-                w-full sm:max-w-lg bg-gray-50">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500 mr-3" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.65 6.65a7.5 7.5 0 010 10.6z" />
+            <div class="relative">
+                <label for="appSearchInput" class="block text-sm font-medium text-gray-700 mb-1">Search Applications</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.65 6.65a7.5 7.5 0 010 10.6z" />
+                        </svg>
+                    </div>
+                    <input id="appSearchInput" type="text" placeholder="e.g. Software Engineer" class="w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" aria-describedby="search-help">
+                </div>
+                <p id="search-help" class="mt-1 text-sm text-gray-500">Enter job title, company, or location</p>
+            </div>
+
+            <!-- Status Dropdown -->
+            <div class="relative">
+                <label for="appStatusSelect" class="block text-sm font-medium text-gray-700 mb-1">Application Status</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <select id="appStatusSelect" class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg appearance-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" aria-describedby="status-help">
+                        <option value="" disabled selected hidden>Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="reviewed">Under Review</option>
+                        <option value="feedback">Feedback</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+                <p id="status-help" class="mt-1 text-sm text-gray-500">Filter by application status</p>
+            </div>
+
+            <!-- Date Dropdown -->
+            <div class="relative">
+                <label for="appDateSelect" class="block text-sm font-medium text-gray-700 mb-1">Date Applied</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                    </div>
+                    <select id="appDateSelect" class="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg appearance-none focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2" aria-describedby="date-help">
+                        <option value="" disabled selected hidden>Date</option>
+                        <option value="today">Today</option>
+                        <option value="this_week">This Week</option>
+                        <option value="this_month">This Month</option>
+                        <option value="all_time">All Time</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                </div>
+                <p id="date-help" class="mt-1 text-sm text-gray-500">Filter by application date</p>
+            </div>
+        </div>
+        <div class="text-center mt-6">
+            <button id="filterBtn" class="bg-blue-600 text-white px-8 py-3 rounded-full font-semibold hover:bg-blue-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">Apply Filters</button>
+        </div>
+        <div class="text-center mt-4">
+            <button class="tts-btn bg-gray-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-gray-700 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-500 focus-visible:ring-offset-2" data-tts-en="Filter your applications. Search by job title, company, or location. Filter by status and date applied." data-tts-tl="I-filter ang iyong mga aplikasyon. Maghanap ayon sa titulo ng trabaho, kumpanya, o lokasyon. I-filter ayon sa status at petsa ng aplikasyon." data-target="tts-filter">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M13.5 4.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM9 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM12 12a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" />
                 </svg>
-                <input id="appSearchInput" type="text" placeholder="Search your application"
-                    class="w-full bg-transparent text-lg focus:outline-none text-gray-700 font-medium">
-            </div>
-
-            <!-- Dropdowns -->
-            <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
-
-                <!-- Status Dropdown -->
-                <div class="relative w-full sm:w-48">
-                    <select id="appStatusSelect"
-                        class="appearance-none text-blue-800 px-5 py-3 rounded-full text-lg font-semibold
-               shadow-sm hover:bg-gray-50 transition w-full
-               border-2 border-gray-300 bg-gray-50 outline-none focus:ring-0">
-                        <option value="" selected class="bg-white text-gray-700">Status</option>
-                        <option value="pending" class="bg-white text-gray-800">Pending</option>
-                        <option value="reviewed" class="bg-white text-gray-800">Under Review</option>
-                        <option value="feedback" class="bg-white text-gray-800">Feedback</option>
-                    </select>
-
-                    <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                        <svg class="w-5 h-5 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </div>
-                </div>
-
-                <!-- Date Dropdown -->
-                <div class="relative w-full sm:w-48">
-                    <select id="appDateSelect"
-                        class="appearance-none text-blue-800 px-5 py-3 rounded-full text-lg font-semibold
-               shadow-sm hover:bg-gray-50 transition w-full
-               border-2 border-gray-300 bg-gray-50 outline-none focus:ring-0">
-                        <option value=""  selected class="bg-white text-gray-700">Date</option>
-                        <option value="today" class="bg-white text-gray-800">Today</option>
-                        <option value="this_week" class="bg-white text-gray-800">This Week</option>
-                        <option value="this_month" class="bg-white text-gray-800">This Month</option>
-                        <option value="all_time" class="bg-white text-gray-800">All Time</option>
-                    </select>
-
-                    <div class="pointer-events-none absolute inset-y-0 right-4 flex items-center">
-                        <svg class="w-5 h-5 text-blue-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </div>
-                </div>
-
-            </div>
+                Listen to Filter Options
+            </button>
         </div>
     </section>
 
-        <!-- JOB APPLICATIONS LIST -->
-        <section class="max-w-6xl mx-auto mt-8 px-4 sm:px-6 lg:px-8 mb-16">
-                <div id="applicationsList" class="space-y-6">
-                        <div class="text-center text-gray-500 py-8">Loading applications...</div>
+        <!-- Job Applications List -->
+        <section class="bg-white py-12 sm:py-16" id="job-applications" role="region" aria-labelledby="applications-heading">
+            <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+                <div>
+                    <h2 id="applications-heading" class="text-2xl sm:text-3xl font-bold text-slate-900">Your applications</h2>
+                    <p class="mt-2 text-sm sm:text-base text-slate-600">Review your job applications and track their progress.</p>
                 </div>
+                 <button type="button"
+                class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                aria-label="Read applications section aloud"
+                onclick="speakText(
+                    document.getElementById('applications-heading').textContent + '. ' + 
+                    document.getElementById('applications-description').textContent
+                )">
+
+                <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                Listen
+            </button>
+            </div>
+            <div id="applicationsList" class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 grid gap-10 lg:grid-cols-1">
+                <p class="col-span-1 text-center text-slate-600 text-base">Loading applications...</p>
+            </div>
+            <div id="applications-description" class="sr-only">Your applications section. Review your job applications and track their progress.</div>
         </section>
 
         <script>
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+        </script>
+
+         <script>
         (function(){
             const container = document.getElementById('applicationsList');
-            const searchInput = document.getElementById('appSearchInput');
-            const dateSelect = document.getElementById('appDateSelect');
-            const statusSelect = document.getElementById('appStatusSelect');
 
-            const esc = s => String(s === null || s === undefined ? '' : s)
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+@@ -178,36 +213,6 @@ class="appearance-none text-blue-800 px-5 py-3 rounded-full text-lg font-semibol
 
             let allApps = [];
 
@@ -207,6 +240,30 @@
                     if (elReviewed) elReviewed.textContent = underReview;
                 } catch (e) { console.debug('updateStats failed', e); }
             }
+
+            function tryParseDate(v){
+                if (!v) return null;
+                let d = new Date(v);
+
+
+@@ -323,7 +328,25 @@ function renderFiltered(){
+                }
+
+                if (!apps || apps.length === 0){
+                    container.innerHTML = `<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded text-center">No applications match your filters.</div>`;
+
+        <script>
+        (function(){
+            const container = document.getElementById('applicationsList');
+            const searchInput = document.getElementById('appSearchInput');
+            const dateSelect = document.getElementById('appDateSelect');
+            const statusSelect = document.getElementById('appStatusSelect');
+
+            const esc = s => String(s === null || s === undefined ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+            let allApps = [];
 
             function tryParseDate(v){
                 if (!v) return null;
@@ -323,7 +380,25 @@
                 }
 
                 if (!apps || apps.length === 0){
-                    container.innerHTML = `<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded text-center">No applications match your filters.</div>`;
+                    const q = (searchInput && searchInput.value || '').trim().toLowerCase();
+                    const dateFilter = dateSelect ? dateSelect.value : 'all_time';
+                    const statusFilter = statusSelect ? statusSelect.value : '';
+                    const noFilters = !q && dateFilter === 'all_time' && !statusFilter;
+                    if (noFilters && allApps.length === 0) {
+                        container.innerHTML = `
+                            <div class="col-span-1 bg-blue-50 border-2 border-blue-200 rounded-2xl p-8 sm:p-12 text-center">
+                                <div class="mb-4 text-5xl" aria-hidden="true">📋</div>
+                                <p class="text-lg sm:text-xl font-bold text-gray-900 mb-2">No application yet</p>
+                                <p class="text-slate-600">Start applying to jobs to see your applications here.</p>
+                            </div>`;
+                    } else {
+                        container.innerHTML = `
+                            <div class="col-span-1 bg-blue-50 border-2 border-blue-200 rounded-2xl p-8 sm:p-12 text-center">
+                                <div class="mb-4 text-5xl" aria-hidden="true">📋</div>
+                                <p class="text-lg sm:text-xl font-bold text-gray-900 mb-2">No applications match your filters</p>
+                                <p class="text-slate-600">Try adjusting your search or filter criteria.</p>
+                            </div>`;
+                    }
                     return;
                 }
 
@@ -399,21 +474,49 @@
 
             async function fetchAndRender(){
                 try{
-                    container.innerHTML = '<div class="text-center text-gray-500 py-8">Loading applicationsâ€¦</div>';
-                    const res = await fetch('/db/get-applications.php');
+                    console.log('Starting fetch for applications');
+                    container.innerHTML = '<p class="col-span-1 text-center text-slate-600 text-base">Loading applications…</p>';
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                    const res = await fetch('/db/get-applications.php', { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    console.log('Fetch response:', res);
                     const j = await res.json();
+                    console.log('JSON response:', j);
                     if (!j || !j.success){
-                        container.innerHTML = `<div class="p-6 text-center text-red-600">${esc((j && j.error) || 'Failed to load applications')}</div>`;
+                        container.innerHTML = `
+                            <div class="col-span-1 bg-red-50 border-2 border-red-200 rounded-2xl p-8 sm:p-12 text-center">
+                                <div class="mb-4 text-5xl" aria-hidden="true">❌</div>
+                                <p class="text-lg sm:text-xl font-bold text-red-900 mb-2">Failed to load applications</p>
+                                <p class="text-red-600">${esc((j && j.error) || 'Please try again later.')}</p>
+                            </div>`;
                         return;
                     }
                         allApps = j.applications || [];
-                        // update stat cards
-                        // update stat cards
-                        updateStats();
+                        // update hero count button
+                        const btnTextEl = document.getElementById('applicationsCountText');
+                        const overviewCountEl = document.getElementById('applicationsOverviewCountText');
+                        const totalApps = allApps.length;
+                        const countText = totalApps === 0 ? 'No applications yet' : `${totalApps} Application${totalApps !== 1 ? 's' : ''}`;
+                        if (btnTextEl) {
+                            btnTextEl.textContent = countText;
+                        }
+                        if (overviewCountEl) {
+                            overviewCountEl.textContent = totalApps === 0 ? 'No applications yet' : `Application overview: ${countText}`;
+                        }
                         renderFiltered();
                 }catch(err){
-                    container.innerHTML = `<div class="p-6 text-center text-red-600">Error loading applications</div>`;
                     console.error('load applications error', err);
+                    let errorMsg = 'Please try again later.';
+                    if (err.name === 'AbortError') {
+                        errorMsg = 'Request timed out. Please check your connection.';
+                    }
+                    container.innerHTML = `
+                        <div class="col-span-1 bg-red-50 border-2 border-red-200 rounded-2xl p-8 sm:p-12 text-center">
+                            <div class="mb-4 text-5xl" aria-hidden="true">❌</div>
+                            <p class="text-lg sm:text-xl font-bold text-red-900 mb-2">Error loading applications</p>
+                            <p class="text-red-600">${errorMsg}</p>
+                        </div>`;
                 }
             }
 
@@ -430,6 +533,10 @@
             }
             if (statusSelect){
                 statusSelect.addEventListener('change', () => renderFiltered());
+            }
+            const filterBtn = document.getElementById('filterBtn');
+            if (filterBtn){
+                filterBtn.addEventListener('click', () => renderFiltered());
             }
 
             // Delegated handler for Withdraw buttons (asks confirmation, calls PHP endpoint)
@@ -454,13 +561,11 @@
                             if (j.deleted) {
                                 allApps = (allApps || []).filter(a => String(a.id) !== String(appId));
                                 renderFiltered();
-                                updateStats();
                                 return;
                             }
                             // update local model and re-render (fallback)
                             allApps = (allApps || []).map(a => { if (String(a.id) === String(appId)) a.status = (j.status || 'withdrawn'); return a; });
                             renderFiltered();
-                            updateStats();
                         } else {
                             // If server returned allowed_statuses, offer a sensible retry
                             if (j && Array.isArray(j.allowed_statuses) && j.allowed_statuses.length){
