@@ -220,7 +220,7 @@ if (@oci_execute($stid)) {
 oci_free_statement($stid);
 
 // Fetch job postings (aggregate job_profile text for basic matching)
-$sql = "SELECT jp.ID, jp.COMPANY_NAME, jp.JOB_DESCRIPTION, jp.ADDRESS, jp.JOB_TYPE, jp.WORKING_ENVIRONMENT, jp.COMPANY_IMAGE, jp.EMPLOYEE_CAPACITY, jp.APPLY_BEFORE, jp.JOB_POST_DATE, jp.COMP_REQ, jp.SENSOR_REQ, jp.COG_LVL_REQ, jp.ACCOM_AVAIL, " .
+$sql = "SELECT jp.ID, jp.COMPANY_NAME, jp.JOB_ROLE, jp.JOB_DESCRIPTION, jp.ADDRESS, jp.JOB_TYPE, jp.WORKING_ENVIRONMENT, jp.COMPANY_IMAGE, jp.EMPLOYEE_CAPACITY, jp.APPLY_BEFORE, jp.JOB_POST_DATE, jp.COMP_REQ, jp.SENSOR_REQ, jp.COG_LVL_REQ, jp.ACCOM_AVAIL, " .
   "(SELECT RTRIM(XMLAGG(XMLELEMENT(e, LOWER(jp2.VALUE) || ' ') ORDER BY jp2.ID).getClobVal(), ' ') " .
   "  FROM MVSG.JOB_PROFILE jp2 WHERE jp2.JOB_POSTING_ID = jp.ID AND jp2.VALUE IS NOT NULL) AS JOB_PROFILE_TEXT " .
   "FROM MVSG.JOB_POSTINGS jp";
@@ -239,10 +239,11 @@ $jobs = [];
 while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_LOBS)) {
     $jobId = $row['ID'];
     $job_profile_text = mb_strtolower(safe_db_string($row['JOB_PROFILE_TEXT'] ?? ''));
-    // `JOB_ROLE` column removed; use `JOB_TYPE` as the canonical short label instead
-    $role = mb_strtolower(safe_db_string($row['JOB_TYPE'] ?? ''));
-    $desc = mb_strtolower(safe_db_string($row['JOB_DESCRIPTION'] ?? ''));
-    $fields_text = $job_profile_text . ' ' . $role . ' ' . $desc . ' ' . mb_strtolower((string)($row['WORKING_ENVIRONMENT'] ?? ''));
+    $roleRaw = safe_db_string($row['JOB_ROLE'] ?? $row['JOB_TYPE'] ?? '');
+    $role = mb_strtolower($roleRaw);
+    $desc = safe_db_string($row['JOB_DESCRIPTION'] ?? '');
+    $desc_lc = mb_strtolower($desc);
+    $fields_text = $job_profile_text . ' ' . $role . ' ' . $desc_lc . ' ' . mb_strtolower((string)($row['WORKING_ENVIRONMENT'] ?? ''));
 
     // content matches: count how many input tokens appear in fields
     $content_matches = 0;
@@ -360,7 +361,7 @@ while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_LOBS)) {
       'id' => $jobId,
       'company_name' => $row['COMPANY_NAME'] ?? null,
       // Provide job title (compatibility with frontend expectations). Use first part of description if no explicit title column.
-      'job_role' => mb_substr($desc,0,120) ?: null,
+      'job_role' => $roleRaw !== '' ? $roleRaw : (mb_substr($desc,0,120) ?: null),
       'description' => $row['JOB_DESCRIPTION'] ?? '',
       'job_type' => $row['JOB_TYPE'] ?? null,
       'address' => $row['ADDRESS'] ?? null,

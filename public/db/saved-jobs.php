@@ -21,7 +21,7 @@ try {
       SELECT sj.JOB_ID,
              sj.CREATED_AT,
              jp.ID                AS JP_ID,
-             NVL(jp.JOB_TITLE, jp.JOB_DESCRIPTION) AS JOB_TITLE,
+             NVL(jp.JOB_ROLE, jp.JOB_DESCRIPTION) AS JOB_ROLE,
              jp.COMPANY_NAME      AS COMPANY_NAME,
              jp.ADDRESS           AS LOCATION,
                          jp.JOB_DESCRIPTION   AS DESCRIPTION,
@@ -84,7 +84,7 @@ try {
         $rows[] = [
             'job_id'      => $r['JOB_ID'] ?? $r['JP_ID'] ?? null,
             'created_at'  => isset($r['CREATED_AT']) ? (string)$r['CREATED_AT'] : null,
-            'job_role'    => $r['JOB_TITLE'] ?? null,
+            'job_role'    => $r['JOB_ROLE'] ?? null,
             'company_name'=> $r['COMPANY_NAME'] ?? null,
             'address'     => $r['LOCATION'] ?? null,
             'description' => $r['DESCRIPTION'] ?? null,

@@ -815,9 +815,6 @@
                 } else if (websiteA) {
                     websiteA.style.display = 'none';
                 }
-                } else {
-                    websiteA.style.display = 'none';
-                }
 
                 const mapA = document.getElementById('company-map');
                 if (j.map_link) {

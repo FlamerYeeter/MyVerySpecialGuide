@@ -40,10 +40,10 @@ if (!$conn) {
 
 // Build lightweight SQL (avoid blobs and heavy joins)
 // Use a subquery so filters are applied before limiting rows with ROWNUM
-$inner = "SELECT ID, COMPANY_NAME, JOB_DESCRIPTION, ADDRESS, JOB_TYPE, EMPLOYEE_CAPACITY, APPLY_BEFORE, TO_CHAR(JOB_POST_DATE,'YYYY-MM-DD\"T\"HH24:MI:SS') AS JOB_POST_DATE, COMPANY_IMAGE FROM MVSG.JOB_POSTINGS WHERE 1=1";
+$inner = "SELECT ID, COMPANY_NAME, NVL(JOB_ROLE, JOB_DESCRIPTION) AS JOB_ROLE, JOB_DESCRIPTION, ADDRESS, JOB_TYPE, EMPLOYEE_CAPACITY, APPLY_BEFORE, TO_CHAR(JOB_POST_DATE,'YYYY-MM-DD\"T\"HH24:MI:SS') AS JOB_POST_DATE, COMPANY_IMAGE FROM MVSG.JOB_POSTINGS WHERE 1=1";
 // Apply simple filters if provided
-if ($title !== null) $inner .= " AND LOWER(JOB_DESCRIPTION) LIKE :title_like";
-if ($location !== null) $inner .= " AND LOWER(ADDRESS) LIKE :location_like";
+if ($title !== null) $inner .= " AND (LOWER(NVL(JOB_ROLE, JOB_DESCRIPTION)) LIKE :title_like OR LOWER(NVL(JOB_TYPE,'')) LIKE :title_like OR LOWER(NVL(COMPANY_NAME,'')) LIKE :title_like)";
+if ($location !== null) $inner .= " AND LOWER(NVL(ADDRESS,'')) LIKE :location_like";
 $inner .= " ORDER BY JOB_POST_DATE DESC";
 
 $sql = "SELECT * FROM (" . $inner . ") WHERE ROWNUM <= :limit";
@@ -101,7 +101,7 @@ while ($row = oci_fetch_array($stid, OCI_ASSOC+OCI_RETURN_LOBS)) {
     $jobs[] = [
         'id' => isset($row['ID']) ? $row['ID'] : null,
         'company_name' => $row['COMPANY_NAME'] ?? null,
-        // `JOB_ROLE` removed from schema; expose job_type and description instead
+        'job_role' => $row['JOB_ROLE'] ?? ($row['JOB_DESCRIPTION'] ?? null),
         'description' => $row['JOB_DESCRIPTION'] ?? null,
         'address' => $row['ADDRESS'] ?? null,
         'job_type' => $row['JOB_TYPE'] ?? null,

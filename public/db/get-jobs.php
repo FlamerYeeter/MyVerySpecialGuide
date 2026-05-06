@@ -388,7 +388,7 @@ WITH
       SELECT 
         jp.ID,
         jp.COMPANY_NAME,
-        /* JOB_ROLE removed */
+        NVL(jp.JOB_ROLE, jp.JOB_DESCRIPTION) AS JOB_ROLE,
         jp.JOB_DESCRIPTION,
           jp.ADDRESS,
           jp.JOB_TYPE,
@@ -409,7 +409,7 @@ WITH
       SELECT 
         jp.ID,
         jp.COMPANY_NAME,
-        /* JOB_ROLE removed */
+        NVL(jp.JOB_ROLE, jp.JOB_DESCRIPTION) AS JOB_ROLE,
         jp.JOB_DESCRIPTION,
           jp.ADDRESS,
           jp.JOB_TYPE,
@@ -438,7 +438,7 @@ LEFT JOIN content_match cm ON cm.job_id = bj.ID
 LEFT JOIN co_counts cc ON cc.job_id = bj.ID
 LEFT JOIN max_co mc ON 1=1
 WHERE bj.rn = 1
-AND (:title IS NULL OR (LOWER(NVL(bj.JOB_TYPE,'')) LIKE :title_like OR LOWER(bj.JOB_DESCRIPTION) LIKE :title_like))
+AND (:title IS NULL OR (LOWER(NVL(bj.JOB_ROLE,'')) LIKE :title_like OR LOWER(NVL(bj.JOB_TYPE,'')) LIKE :title_like OR LOWER(bj.JOB_DESCRIPTION) LIKE :title_like))
 AND (:location IS NULL OR LOWER(bj.ADDRESS) LIKE :location_like)
 AND (:work_env IS NULL OR LOWER(NVL(bj.WORKING_ENVIRONMENT,'')) LIKE :work_env_like OR LOWER(NVL(bj.JOB_TYPE,'')) LIKE :work_env_like)
 AND (:job_type IS NULL OR LOWER(bj.JOB_TYPE) LIKE :job_type_like)
@@ -678,7 +678,8 @@ if (count($rows) > 0) {
             'id'                    => $jobId,
             'company_name'          => $row['COMPANY_NAME'] ?? null,
             // `job_role` removed — use job_type
-            'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),
+              'job_role'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_ROLE'] ?? ($row['JOB_TYPE'] ?? null)),
+              'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),
             'description'           => $row['JOB_DESCRIPTION'] ?? '',
             'address'               => $row['ADDRESS'] ?? null,
             'job_type'              => !empty($jobTypes) ? $jobTypes[0] : ($row['JOB_TYPE'] ?? null),

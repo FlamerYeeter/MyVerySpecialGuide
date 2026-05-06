@@ -2742,6 +2742,9 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
                 // Determine storage keys & OCR type
                 let nameKey, dataKey, typeKey, ocrtype;
+                // local flags to handle uploads that the server does not accept as dedicated types
+                let isFitUpload = false;
+                let isGuardianUpload = false;
                 if (String(inputId).toLowerCase().includes('proo')) {
                     nameKey = 'admin_uploaded_proof_name';
                     dataKey = 'admin_uploaded_proof_data';
@@ -2756,13 +2759,17 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                     nameKey = 'admin_uploaded_fit_name';
                     dataKey = 'admin_uploaded_fit_data';
                     typeKey = 'admin_uploaded_fit_type';
-                    ocrtype = 'fit_to_work';
+                    // server-side OCR validator currently rejects a raw 'fit_to_work' type
+                    // so send as 'medical_certificate' (accepted) and mark locally as a Fit-To-Work upload
+                    ocrtype = 'medical_certificate';
+                    isFitUpload = true;
                 } else if (String(inputId).toLowerCase().includes('guardian')) {
                     nameKey = 'admin_uploaded_guardian_name';
                     dataKey = 'admin_uploaded_guardian_data';
                     typeKey = 'admin_uploaded_guardian_type';
-                    // Treat guardian ID uploads as their own OCR type to avoid medical 3-month rules
-                    ocrtype = 'guardian_id';
+                    // server does not accept 'guardian_id' — request personal ID parsing using 'pwd_id'
+                    ocrtype = 'pwd_id';
+                    isGuardianUpload = true;
                 } else if (String(inputId).toLowerCase().includes('resume')) {
                     nameKey = 'admin_uploaded_resume_name';
                     dataKey = 'admin_uploaded_resume_data';
@@ -2921,7 +2928,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         const detectedType = result.data?.ocrtype;
                         const aiData = result.data?.ai_data || {};
 
-                    if (detectedType === 'pwd_id' && ocrtype === 'pwd_id') {
+                    if (detectedType === 'pwd_id' && ocrtype === 'pwd_id' && !isGuardianUpload) {
                         // Validate detected disability against selected form values.
                         let pwdDisplayEl = document.getElementById('pwdidDisplay');
                         let errorBox = null;
@@ -3073,8 +3080,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             confirmText: 'Confirm & Continue'
                         });
                     
-                    // Parent / Guardian ID: treat as its own OCR type and show a guardian-specific modal
-                    } else if (detectedType === 'guardian_id' && ocrtype === 'guardian_id') {
+                    // Parent / Guardian ID: handle guardian uploads using local flag
+                    } else if (isGuardianUpload) {
                         try {
                             applyOcrDataToGuardianForm(aiData);
                             try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
@@ -3096,7 +3103,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             showOcrModal({ type: 'success', title: 'Parent / Guardian ID Processed', message: 'Document processed.', confirmText: 'Confirm & Continue' });
                         }
 
-                    } else if (detectedType === 'fit_to_work' && ocrtype === 'fit_to_work') {
+                    } else if (isFitUpload) {
                         // Fit-To-Work specific handling: require explicit fit-to-work text/statement
                         let fitDisplayEl = document.getElementById('fitDisplay') || document.getElementById('medDisplay');
                         let errorBox = null;
@@ -3121,6 +3128,18 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
                             try { resetDisplay(); } catch(e){}
                             alert('The uploaded Fit-To-Work document does not indicate fitness to work. Please upload a valid Fit-To-Work certificate.');
+                            isProcessing = false;
+                            return;
+                        }
+
+                        // Also enforce the 3-month validity rule on Fit-To-Work certificates
+                        const isDateValid = validateMedicalCertificateDate(aiData.date, errorBox, 'Fit-To-Work certificate');
+                        if (!isDateValid) {
+                            const loading2 = document.getElementById(`ocr-loading-${inputId}`);
+                            if (loading2) loading2.remove();
+                            try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                            try { resetDisplay(); } catch(e){}
+                            showOcrModal({ type: 'error', title: 'Fit-To-Work Rejected', message: 'Detected Fit-To-Work date is older than 3 months or missing.', details: [ { label: 'Detected Date', value: aiData.date || 'Unknown' } ], confirmText: 'OK' });
                             isProcessing = false;
                             return;
                         }
