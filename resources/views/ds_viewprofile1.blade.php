@@ -215,58 +215,7 @@
                             </select>
                         </div>
 
-                        <!-- Spouse Information -->
-                        <div class="mt-8 border-t border-gray-100 pt-6">
-                            <h4 class="text-xl font-semibold text-gray-800 mb-4">Spouse Information</h4>
-                            <div class="grid md:grid-cols-2 gap-8">
-                                <div>
-                                    <label for="spouse_first_name" class="block text-lg font-semibold mb-2">First Name</label>
-                                    <input id="spouse_first_name" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                                </div>
-                                <div>
-                                    <label for="spouse_last_name" class="block text-lg font-semibold mb-2">Last Name</label>
-                                    <input id="spouse_last_name" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                                </div>
-                            </div>
-                            <div class="grid md:grid-cols-2 gap-8 mt-4">
-                                <div>
-                                    <label for="spouse_middle_name" class="block text-lg font-semibold mb-2">Middle Name</label>
-                                    <input id="spouse_middle_name" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                                </div>
-                                <div>
-                                    <label for="spouse_email" class="block text-lg font-semibold mb-2">Email</label>
-                                    <input id="spouse_email" type="email" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                                </div>
-                            </div>
-                            <div class="grid md:grid-cols-2 gap-8 mt-4">
-                                <div>
-                                    <label for="spouse_cell_number" class="block text-lg font-semibold mb-2">Cell Number</label>
-                                    <input id="spouse_cell_number" type="tel" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                                </div>
-                                <div>
-                                    <label for="spouse_home_number" class="block text-lg font-semibold mb-2">Home Number</label>
-                                    <input id="spouse_home_number" type="tel" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                                </div>
-                            </div>
-                            <div class="grid md:grid-cols-2 gap-8 mt-4">
-                                <div>
-                                    <label for="spouse_work_number" class="block text-lg font-semibold mb-2">Work Number</label>
-                                    <input id="spouse_work_number" type="tel" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                                </div>
-                                <div>
-                                    <label for="spouse_work_address" class="block text-lg font-semibold mb-2">Home Address</label>
-                                    <input id="spouse_work_address" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                                </div>
-                            </div>
-                            <div class="mt-4">
-                                <label for="spouse_birthdate" class="block text-lg font-semibold mb-2">Spouse Birthdate</label>
-                                <input id="spouse_birthdate" type="date" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                            </div>
-                            <div class="mt-4">
-                                <label for="spouse_relationship" class="block text-lg font-semibold mb-2">Spouse Relationship to User</label>
-                                <input id="spouse_relationship" type="text" disabled class="w-full border border-gray-300 rounded-xl px-5 py-4 text-lg shadow-sm select-none">
-                            </div>
-                        </div>
+                        <!-- Spouse Information removed per request -->
 
                         <!-- Edit -->
                         <div class="flex flex-col items-end mt-10 space-y-2">
@@ -330,6 +279,22 @@
                         <h3 class="text-3xl font-bold text-blue-800 mb-8">Uploaded Files</h3>
 
                         <div class="grid md:grid-cols-2 gap-8">
+
+                            <!-- Resume -->
+                            <div>
+                                <label class="block text-lg font-semibold mb-2">
+                                    Resume / CV
+                                </label>
+                                <div id="r_resume"
+                                    class="border border-gray-300 rounded-xl px-5 py-4 bg-gray-50 text-gray-700 shadow-sm">
+                                    No file uploaded
+                                </div>
+
+                                <!-- file input (hidden until edit) -->
+                                <div class="mt-3">
+                                    <input id="resume_input" type="file" accept=".pdf,.doc,.docx,image/*" class="hidden w-full border border-gray-300 rounded-xl px-5 py-3 text-sm" />
+                                </div>
+                            </div>
 
                             <!-- Membership -->
                             <div>
@@ -682,17 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
             set('g_work_number', u.GUARDIAN_WORK_NUMBER);
             set('g_work_address', u.GUARDIAN_WORK_ADDRESS);
 
-            // Spouse
-            set('spouse_first_name', u.SPOUSE_FIRST_NAME);
-            set('spouse_middle_name', u.SPOUSE_MIDDLE_NAME);
-            set('spouse_last_name', u.SPOUSE_LAST_NAME);
-            set('spouse_email', u.SPOUSE_EMAIL);
-            set('spouse_cell_number', u.SPOUSE_CELL_NUMBER);
-            set('spouse_home_number', u.SPOUSE_HOME_NUMBER);
-            set('spouse_work_number', u.SPOUSE_WORK_NUMBER);
-            set('spouse_work_address', u.SPOUSE_WORK_ADDRESS);
-            set('spouse_birthdate', u.SPOUSE_BIRTHDATE);
-            set('spouse_relationship', u.SPOUSE_RELATIONSHIP_TO_USER);
+            // Spouse fields removed from view (no-op)
 
             // Relationship dropdown
             const relVal = (u.RELATIONSHIP_TO_USER || '').trim();
@@ -737,6 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const proofEl = document.getElementById('r_proof');
             const medEl = document.getElementById('r_medical');
             const certEl = document.getElementById('r_certificates');
+            const resumeEl = document.getElementById('r_resume');
 
             // Helper: decide whether server reports a file exists. We accept multiple possible shapes.
             function fileExistsAccordingToServer(type) {
@@ -770,6 +726,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     no.className = 'text-gray-600';
                     no.textContent = 'No file uploaded';
                     proofEl.appendChild(no);
+                }
+            }
+
+            if (resumeEl) {
+                resumeEl.innerHTML = '';
+                if (fileExistsAccordingToServer('resume')) {
+                    resumeEl.appendChild(makeServerLink('resume', 'View / Download', 'resume.pdf'));
+                } else {
+                    const no = document.createElement('div');
+                    no.className = 'text-gray-600';
+                    no.textContent = 'No file uploaded';
+                    resumeEl.appendChild(no);
                 }
             }
 
@@ -811,7 +779,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const fieldIds = [
         "first_name","last_name","middle_name","date_of_birth","email","phone","address","r_dsType1","r_cddType1Other",
         "g_first_name","g_middle_name","g_last_name","g_birthdate","g_email","g_phone","g_cell_number","g_home_number","g_work_number","g_work_address","guardian_relationship",
-        "spouse_first_name","spouse_middle_name","spouse_last_name","spouse_email","spouse_cell_number","spouse_home_number","spouse_work_number","spouse_work_address","spouse_birthdate","spouse_relationship",
         "job_preference"
     ];
 
@@ -1054,14 +1021,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const proofInput = document.getElementById('proof_input');
     const medInput = document.getElementById('med_input');
     const fitInput = document.getElementById('fit_input');
+    const resumeInput = document.getElementById('resume_input');
     const proofEl = document.getElementById('r_proof');
     const medEl = document.getElementById('r_medical');
     const certEl = document.getElementById('r_certificates');
+    const resumeEl = document.getElementById('r_resume');
 
     if (!editBtn || !saveBtn || !cancelBtn) return;
 
     function setEditing(on) {
         if (on) {
+            if (resumeInput) resumeInput.classList.remove('hidden');
             proofInput.classList.remove('hidden');
             medInput.classList.remove('hidden');
             if (fitInput) fitInput.classList.remove('hidden');
@@ -1069,12 +1039,14 @@ document.addEventListener('DOMContentLoaded', () => {
             cancelBtn.classList.remove('hidden');
             editBtn.classList.add('hidden');
         } else {
+            if (resumeInput) resumeInput.classList.add('hidden');
             proofInput.classList.add('hidden');
             medInput.classList.add('hidden');
             if (fitInput) fitInput.classList.add('hidden');
             saveBtn.classList.add('hidden');
             cancelBtn.classList.add('hidden');
             editBtn.classList.remove('hidden');
+            if (resumeInput) resumeInput.value = '';
             proofInput.value = '';
             medInput.value = '';
             if (fitInput) fitInput.value = '';
@@ -1100,12 +1072,13 @@ document.addEventListener('DOMContentLoaded', () => {
         saveBtn.textContent = 'Saving...';
 
         const fd = new FormData();
+        if (resumeInput && resumeInput.files && resumeInput.files[0]) fd.append('resume', resumeInput.files[0]);
         if (proofInput.files && proofInput.files[0]) fd.append('proof', proofInput.files[0]);
         if (medInput.files && medInput.files[0]) fd.append('med', medInput.files[0]);
         if (fitInput && fitInput.files && fitInput.files[0]) fd.append('other', fitInput.files[0]);
 
         // if no files selected, cancel
-        if (!fd.has('proof') && !fd.has('med') && !fd.has('other')) {
+        if (!fd.has('resume') && !fd.has('proof') && !fd.has('med') && !fd.has('other')) {
             alert('Please choose at least one file to upload.');
             saveBtn.disabled = false;
             saveBtn.textContent = 'Save';
@@ -1122,6 +1095,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.debug('editprofile-files response', j);
             if (j && j.success) {
                 // update links (server-streamed endpoint serves current files)
+                if (resumeEl) {
+                    resumeEl.innerHTML = '';
+                    resumeEl.appendChild(makeDownloadLink('resume','View / Download','resume.pdf'));
+                }
                 if (proofEl) {
                     proofEl.innerHTML = '';
                     proofEl.appendChild(makeDownloadLink('proof','View / Download','proof.pdf'));

@@ -26,6 +26,42 @@ if (empty($guardian_id)) {
     exit;
 }
 
+// Debug shortcut: return request/session/headers and a lightweight DB connect test
+if (!empty($_GET['debug']) && $_GET['debug'] === '1') {
+    $hdrs = function_exists('getallheaders') ? getallheaders() : [];
+    $connTest = null;
+    $conn = getOracleConnection();
+    if ($conn) {
+        $stidT = @oci_parse($conn, 'SELECT 1 FROM DUAL');
+        if ($stidT && @oci_execute($stidT)) {
+            $connTest = ['ok' => true];
+        } else {
+            $eT = oci_error($stidT) ?: oci_error($conn);
+            $connTest = ['ok' => false, 'error' => $eT];
+        }
+        @oci_free_statement($stidT);
+        // do not close shared connection here
+    } else {
+        $connTest = ['ok' => false, 'error' => 'no-connection'];
+    }
+
+    echo json_encode([
+        'success' => true,
+        'guardian_id' => $guardian_id,
+        'get' => $_GET,
+        'cookie' => $_COOKIE,
+        'session' => isset($_SESSION) ? $_SESSION : null,
+        'headers' => $hdrs,
+        'db_test' => $connTest,
+    ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
+// We only needed the session to read `user_id` above; close it to avoid session-file locking
+if (session_status() === PHP_SESSION_ACTIVE) {
+    session_write_close();
+}
+
 $conn = getOracleConnection();
 if (!$conn) {
     http_response_code(500);
@@ -58,15 +94,26 @@ FROM MVSG.APPLICATIONS a
 LEFT JOIN MVSG.JOB_POSTINGS jp ON jp.ID = a.JOB_POSTING_ID
 WHERE a.GUARDIAN_ID = :guardian_id
 ORDER BY a.CREATED_AT DESC
+FETCH FIRST 500 ROWS ONLY
 ";
 
 $stid = oci_parse($conn, $sql);
+// Request OCI to prefetch rows to reduce round-trips for larger result sets
+if (function_exists('oci_set_prefetch')) {
+    @oci_set_prefetch($stid, 100);
+}
+// Measure query time for diagnostics
+$qStart = microtime(true);
 oci_bind_by_name($stid, ':guardian_id', $guardian_id, -1);
 if (!@oci_execute($stid)) {
     $e = oci_error($stid) ?: oci_error($conn);
     http_response_code(500);
     echo json_encode(['success' => false, 'error' => 'Query failed', 'oci' => $e]);
     exit;
+}
+$qElapsed = microtime(true) - $qStart;
+if ($qElapsed > 1.0) {
+    error_log('get-applications: query time ' . round($qElapsed,3) . 's for guardian_id=' . $guardian_id);
 }
 
 $applications = [];
@@ -86,7 +133,9 @@ while ($row = oci_fetch_assoc($stid)) {
         // Use JOB_CAPACITY status exclusively (no fallback to APPLICATIONS.STATUS)
         'status' => $row['JC_STATUS'] ?? null,
         'company_name' => $row['COMPANY_NAME'] ?? null,
+        // historical clients may expect `job_title`; provide alias to `job_role`
         'job_role' => $row['JOB_ROLE'] ?? null,
+        'job_title' => $row['JOB_ROLE'] ?? null,
         'job_address' => $row['JOB_ADDRESS'] ?? null,
     ];
 }

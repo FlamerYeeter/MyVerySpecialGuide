@@ -19,7 +19,8 @@ if (!$conn) {
 $allowedCols = [
     'proof' => 'PWD_ID',
     'med'   => 'MED_CERTIFICATES',
-    'other' => 'CERTIFICATES'
+    'other' => 'CERTIFICATES',
+    'resume' => 'PROOF_OF_MEMBERSHIP'
 ];
 
 $allowedMime = [
@@ -28,6 +29,8 @@ $allowedMime = [
     'image/jpeg',
     'image/jpg'
 ];
+$allowedMime[] = 'application/msword';
+$allowedMime[] = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
 $maxBytes = 10 * 1024 * 1024; // 10 MB
 
 $results = [];

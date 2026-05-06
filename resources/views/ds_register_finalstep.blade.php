@@ -483,10 +483,11 @@
       // to `certificates` entries or `job_experiences` entries so the server receives base64 blobs.
       ;(function rehydrateFilesIntoPayload(payload){
         try {
-          function parseLS(key){ try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : null; } catch(e){ return null; } }
+          function parseLS(key){ try { const raw = localStorage.getItem(key); if (!raw) return null; try { return JSON.parse(raw); } catch(e) { return raw; } } catch(e){ return null; } }
 
           const eduCertKeys = ['uploadedCertificates_education','education_certificates','uploadedCertificates','uploadedProofs_proof','uploadedProofs','uploadedProofData','uploadedProofData1','uploadedProofs1'];
-          const workCertKeys = ['uploadedWorkExp_file','uploadedResume_file','uploadedWorkExpFiles','uploadedWorkExp','uploadedResume'];
+          // Include admin upload keys so the adminapprove/resume uploader (which stores under admin_uploaded_resume_*) is discovered
+          const workCertKeys = ['uploadedWorkExp_file','uploadedResume_file','uploadedWorkExpFiles','uploadedWorkExp','uploadedResume','admin_uploaded_resume_data','admin_uploaded_resume_name','admin_uploaded_resume_type'];
 
           function gatherFiles(keys){
             const out = [];
@@ -544,6 +545,26 @@
               }
             }
             payload.job_experiences = JSON.stringify(jobs);
+            // Also restore admin-uploaded resume (adminapprove page stores under admin_uploaded_resume_*)
+            try {
+              const adminResumeData = parseLS('admin_uploaded_resume_data');
+              if (adminResumeData) {
+                // ensure we always attach a raw data:... string (or JSON string when array/object)
+                const asString = (typeof adminResumeData === 'string' && adminResumeData.indexOf('data:') === 0) ? adminResumeData : (typeof adminResumeData === 'string' ? adminResumeData : JSON.stringify(adminResumeData));
+                payload.admin_uploaded_resume_data = asString;
+                // also copy into several alternate keys the server accepts so nothing is missed
+                payload.uploadedResume_file = payload.uploadedResume_file || asString;
+                payload.uploadedResume = payload.uploadedResume || asString;
+                payload.uploaded_resume_data = payload.uploaded_resume_data || asString;
+                payload.uploadedResumeData = payload.uploadedResumeData || asString;
+                payload.resume = payload.resume || asString;
+                payload.resume_data = payload.resume_data || asString;
+              }
+              const adminResumeName = localStorage.getItem('admin_uploaded_resume_name');
+              if (adminResumeName) payload.admin_uploaded_resume_name = adminResumeName;
+              const adminResumeType = localStorage.getItem('admin_uploaded_resume_type');
+              if (adminResumeType) payload.admin_uploaded_resume_type = adminResumeType;
+            } catch(e) { /* ignore */ }
           } catch(e){ console.warn('rehydrate jobs failed', e); }
         } catch(e){ console.warn('rehydrateFilesIntoPayload failed', e); }
       })(window.__mvsg_registration_payload);

@@ -170,9 +170,13 @@ $medRaw = $data['admin_uploaded_med_data'] ?? null;
 $pwdRaw = $data['admin_uploaded_pwd_data'] ?? null;
 // Fit-To-Work certificate candidates (frontend name: fit_to_work_certificate)
 $fitRaw = $data['fit_to_work_certificate'] ?? $data['fit_certificate'] ?? $data['fitFileData'] ?? $data['admin_uploaded_fit_data'] ?? $data['fitness_certificate'] ?? null;
+// Resume candidates: accept many possible keys (admin page, legacy keys, finalstep keys)
+$resumeRaw = $data['admin_uploaded_resume_data'] ?? $data['uploadedResume_file'] ?? $data['uploadedResume'] ?? $data['uploaded_resume_data'] ?? $data['uploadedResumeData'] ?? $data['resume'] ?? $data['resume_data'] ?? null;
+
 $medcerts = base64ToBlob($medRaw);
 $pwdid    = base64ToBlob($pwdRaw);
 $fitBlob  = base64ToBlob($fitRaw);
+$resumeBlob = base64ToBlob($resumeRaw);
 
 $medBlob = $medcerts;
 $pwdBlob = $pwdid;
@@ -319,7 +323,7 @@ $gm = $user_info['g_middle_name'] ?? $user_info['guardian_middle_name'] ?? $user
 $g_birth_raw = $user_info['g_birthdate'] ?? $user_info['guardian_birthdate'] ?? $user_info['g_birth_date'] ?? $data['g_birthdate'] ?? null;
 $g_home = $user_info['g_home_phone'] ?? $user_info['guardian_home_phone'] ?? $user_info['g_home_number'] ?? $data['g_home_phone'] ?? null;
 $g_work = $user_info['g_work_phone'] ?? $user_info['guardian_work_phone'] ?? $user_info['g_work_number'] ?? $data['g_work_phone'] ?? null;
-$g_work_address = $user_info['g_work_address'] ?? $user_info['guardian_work_address'] ?? $data['g_work_address'] ?? null;
+$g_work_address = $user_info['g_work_address'] ?? $user_info['guardian_work_address'] ?? $data['g_work_address'] ?? $data['guardian_work_address'] ?? null;
 
 // Accept uppercase guardian contact keys
 $g_home = $g_home ?? ($user_info['GUARDIAN_HOME_NUMBER'] ?? $data['GUARDIAN_HOME_NUMBER'] ?? null);
@@ -688,10 +692,11 @@ oci_bind_by_name($stid1, ':ug_rowid', $ug_rowid, 256);
 }
 // After successful execute, obtain LOB locators using SELECT ... FOR UPDATE and write med/pwd blobs
 if ($allGood) {
-    if ((($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0) || ($pwdBlob !== null && is_string($pwdBlob) && strlen($pwdBlob) > 0)) || ($fitBlob !== null && is_string($fitBlob) && strlen($fitBlob) > 0)) {
+    if ((($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0) || ($pwdBlob !== null && is_string($pwdBlob) && strlen($pwdBlob) > 0)) || ($fitBlob !== null && is_string($fitBlob) && strlen($fitBlob) > 0) || ($resumeBlob !== null && is_string($resumeBlob) && strlen($resumeBlob) > 0)) {
             try {
             // include CERTIFICATES so we can write Fit-To-Work certificate into user_guardian
-            $sel = "SELECT med_certificates, certificates, pwd_id FROM user_guardian WHERE ROWID = :rid FOR UPDATE";
+            // include PROOF_OF_MEMBERSHIP so we can persist uploaded resumes into that BLOB
+            $sel = "SELECT med_certificates, certificates, pwd_id, proof_of_membership FROM user_guardian WHERE ROWID = :rid FOR UPDATE";
             $selt = oci_parse($conn, $sel);
             oci_bind_by_name($selt, ':rid', $ug_rowid);
             if (oci_execute($selt, OCI_NO_AUTO_COMMIT)) {
@@ -699,6 +704,7 @@ if ($allGood) {
                     $lob_med_sel = oci_result($selt, 'MED_CERTIFICATES');
                     $lob_cert_sel = oci_result($selt, 'CERTIFICATES');
                     $lob_pwd_sel = oci_result($selt, 'PWD_ID');
+                    $lob_proof_sel = oci_result($selt, 'PROOF_OF_MEMBERSHIP');
                     if ($medBlob !== null && is_string($medBlob) && strlen($medBlob) > 0 && $lob_med_sel && is_object($lob_med_sel)) {
                         try {
                             if (method_exists($lob_med_sel, 'write')) $lob_med_sel->write($medBlob);
@@ -735,8 +741,24 @@ if ($allGood) {
                             write_debug_error('temp_debug_fit_certificate_blob_error.json', ['error'=> (is_object($e)? (method_exists($e,'getMessage')?$e->getMessage():(string)$e) : (string)$e), 'time'=>date('c')]);
                             try { if (!empty($fitRaw)) { $savedf = saveBase64File($fitRaw); if ($savedf) $fallback_saved_files[] = ['type'=>'fit','file'=>$savedf]; write_debug_error('temp_debug_fit_certificate_blob_fallback_saved.json', ['file'=>$savedf,'time'=>date('c')]); } } catch (Exception $ee) { write_debug_error('temp_debug_fit_certificate_blob_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
                         }
+                        
                     }
                 }
+
+                    // Resume -> store into PROOF_OF_MEMBERSHIP (repurposed)
+                    if ($resumeBlob !== null && is_string($resumeBlob) && strlen($resumeBlob) > 0 && isset($lob_proof_sel) && $lob_proof_sel && is_object($lob_proof_sel)) {
+                        try {
+                            if (method_exists($lob_proof_sel, 'write')) $lob_proof_sel->write($resumeBlob);
+                            elseif (method_exists($lob_proof_sel, 'writeTemporary')) $lob_proof_sel->writeTemporary($resumeBlob, OCI_TEMP_BLOB);
+                            elseif (method_exists($lob_proof_sel, 'saveTemporary')) $lob_proof_sel->saveTemporary($resumeBlob, OCI_TEMP_BLOB);
+                            else $lob_proof_sel->write($resumeBlob);
+                            write_debug_error('temp_debug_resume_blob_written.json', ['size_bytes'=>strlen($resumeBlob),'time'=>date('c')]);
+                        } catch (Exception $e) {
+                            write_debug_error('temp_debug_resume_blob_error.json', ['error'=> (is_object($e)? (method_exists($e,'getMessage')?$e->getMessage():(string)$e) : (string)$e), 'time'=>date('c')]);
+                            try { if (!empty($resumeRaw)) { $savedr = saveBase64File($resumeRaw, '../uploads/'); if ($savedr) $fallback_saved_files[] = ['type'=>'resume','file'=>$savedr]; write_debug_error('temp_debug_resume_blob_fallback_saved.json', ['file'=>$savedr,'time'=>date('c')]); } } catch (Exception $ee) { write_debug_error('temp_debug_resume_blob_fallback_error.json', ['error'=> (string)$ee,'time'=>date('c')]); }
+                        }
+                    }
+
                 oci_free_statement($selt);
             }
         } catch (Exception $e) { write_debug_error('temp_debug_med_pwd_forupdate_error.json', ['error'=> (string)$e, 'time'=>date('c')]); }

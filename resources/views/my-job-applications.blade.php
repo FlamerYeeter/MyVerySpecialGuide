@@ -203,11 +203,16 @@
         }
         </script>
 
-         <script>
+        <script>
         (function(){
             const container = document.getElementById('applicationsList');
+            const searchInput = document.getElementById('appSearchInput');
+            const dateSelect = document.getElementById('appDateSelect');
+            const statusSelect = document.getElementById('appStatusSelect');
 
-@@ -178,36 +213,6 @@ class="appearance-none text-blue-800 px-5 py-3 rounded-full text-lg font-semibol
+            const esc = s => String(s === null || s === undefined ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
             let allApps = [];
 
@@ -224,46 +229,6 @@
                     return s;
                 } catch (e) { return (raw || '').toString(); }
             }
-
-            // Update the stat cards based on current `allApps`
-            function updateStats() {
-                try {
-                    const apps = allApps || [];
-                    const total = apps.length || 0;
-                    const pending = apps.filter(a => normalizeStatus(a.status) === 'pending').length;
-                    const underReview = apps.filter(a => normalizeStatus(a.status) === 'reviewed').length;
-                    const elTotal = document.getElementById('statTotalCount');
-                    const elPending = document.getElementById('statPendingCount');
-                    const elReviewed = document.getElementById('statReviewedCount');
-                    if (elTotal) elTotal.textContent = total;
-                    if (elPending) elPending.textContent = pending;
-                    if (elReviewed) elReviewed.textContent = underReview;
-                } catch (e) { console.debug('updateStats failed', e); }
-            }
-
-            function tryParseDate(v){
-                if (!v) return null;
-                let d = new Date(v);
-
-
-@@ -323,7 +328,25 @@ function renderFiltered(){
-                }
-
-                if (!apps || apps.length === 0){
-                    container.innerHTML = `<div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 p-6 rounded text-center">No applications match your filters.</div>`;
-
-        <script>
-        (function(){
-            const container = document.getElementById('applicationsList');
-            const searchInput = document.getElementById('appSearchInput');
-            const dateSelect = document.getElementById('appDateSelect');
-            const statusSelect = document.getElementById('appStatusSelect');
-
-            const esc = s => String(s === null || s === undefined ? '' : s)
-                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-
-            let allApps = [];
 
             function tryParseDate(v){
                 if (!v) return null;
@@ -478,7 +443,8 @@
                     container.innerHTML = '<p class="col-span-1 text-center text-slate-600 text-base">Loading applications…</p>';
                     const controller = new AbortController();
                     const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-                    const res = await fetch('/db/get-applications.php', { signal: controller.signal });
+                    // include credentials so same-origin session cookie is sent to the API
+                    const res = await fetch('/db/get-applications.php', { signal: controller.signal, credentials: 'same-origin' });
                     clearTimeout(timeoutId);
                     console.log('Fetch response:', res);
                     const j = await res.json();
