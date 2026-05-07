@@ -115,6 +115,11 @@ if (!empty($row['PROOF_OF_MEMBERSHIP'])) {
     $files['proof_of_membership'] = base64_encode($row['PROOF_OF_MEMBERSHIP']);
     $file_lengths['proof_of_membership_len'] = strlen($row['PROOF_OF_MEMBERSHIP']);
 }
+// Provide a conventional alias 'resume' so frontends can look for a resume blob
+if (!empty($row['PROOF_OF_MEMBERSHIP'])) {
+    $files['resume'] = base64_encode($row['PROOF_OF_MEMBERSHIP']);
+    $file_lengths['resume_len'] = strlen($row['PROOF_OF_MEMBERSHIP']);
+}
 
 // remove raw blobs from $row to keep JSON smaller (they are in $files now)
 // remove raw blobs from $row to keep JSON smaller (they are in $files now)

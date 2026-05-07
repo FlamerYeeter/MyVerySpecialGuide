@@ -385,11 +385,56 @@ $emails = extract_emails($raw);
 $phones = extract_phones($raw);
 $name = extract_name_candidate($raw);
 
+// --- Address extraction heuristics ---
+function extract_address_candidate($text) {
+    $lines = preg_split('/\r?\n/', $text);
+    $candidates = [];
+    // keywords commonly found in Filipino addresses
+    $addrKeywords = ['brgy','barangay','street','st.','road','rd.','blk','lot','purok','zone','city','municipality','province','poblacion'];
+
+    // collect lines containing any keyword
+    foreach ($lines as $i => $ln) {
+        $s = trim($ln);
+        if ($s === '') continue;
+        foreach ($addrKeywords as $kw) {
+            if (stripos($s, $kw) !== false) { $candidates[] = ['line'=>$s,'idx'=>$i]; break; }
+        }
+    }
+
+    // If found candidates, prefer the longest (more detailed) or the one nearest to contact block
+    if (count($candidates)) {
+        usort($candidates, function($a,$b){ return strlen($b['line']) <=> strlen($a['line']); });
+        return $candidates[0]['line'];
+    }
+
+    // fallback: look for a line above an email or phone occurrence
+    foreach ($lines as $i => $ln) {
+        if (preg_match('/[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}/', $ln) || preg_match('/\d{7,}/', preg_replace('/\D/', '', $ln))) {
+            // check up to 3 lines above
+            for ($k = 1; $k <= 3; $k++) {
+                if (!isset($lines[$i-$k])) break;
+                $cand = trim($lines[$i-$k]);
+                if ($cand !== '' && strlen($cand) > 6) return $cand;
+            }
+        }
+    }
+
+    // last resort: look for a line with a number followed by street-like tokens
+    foreach ($lines as $ln) {
+        if (preg_match('/\b\d{1,4}\b.*\b(street|st\.|road|rd\.|blk|lot|brgy|barangay)\b/i', $ln)) return trim($ln);
+    }
+
+    return null;
+}
+
+$addressCandidate = extract_address_candidate($raw);
+
 // Build structured payload
 $structured = [
     'name' => $name,
     'emails' => $emails,
     'phones' => $phones,
+    'address' => $addressCandidate,
     'work_experience' => array_values(array_unique($work)),
     'education' => array_values(array_unique($education)),
     'certifications' => array_values(array_unique($certs)),

@@ -15,6 +15,7 @@ $colMap = [
     'proof' => ['col'=>'PWD_ID','name'=>'proof.pdf'],
     'med'   => ['col'=>'MED_CERTIFICATES','name'=>'medical.pdf'],
     'other' => ['col'=>'CERTIFICATES','name'=>'certificates.pdf'],
+    'resume' => ['col'=>'PROOF_OF_MEMBERSHIP','name'=>'resume.pdf'],
 ];
 if (!isset($colMap[$type])) {
     header('HTTP/1.1 400 Bad Request');
