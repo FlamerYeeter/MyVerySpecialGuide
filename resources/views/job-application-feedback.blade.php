@@ -60,88 +60,163 @@
 @endphp
 
 
-    <!-- Back Button -->
-    <div class="bg-yellow-400 w-full py-5 px-4 sm:px-8 lg:px-20">
-        <div class="flex justify-start items-center space-x-3 max-w-7xl mx-auto">
+<main class="overflow-x-hidden flex flex-col flex-1 min-h-0">
+
+<!-- HERO HEADER (MATCHED STYLE) -->
+<section class="bg-sky-50 py-12 sm:py-16 border-b border-sky-100" role="region" aria-labelledby="hero-heading">
+    <div class="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12 text-center">
+
+        <p class="text-base font-bold uppercase tracking-widest text-blue-700">
+            Application Status
+        </p>
+
+        <h1 id="hero-heading" class="text-4xl sm:text-5xl font-extrabold text-slate-900 mt-2">
+            Application Feedback
+        </h1>
+
+        <div class="mx-auto max-w-2xl">
+            <p class="text-lg sm:text-xl text-slate-700 mt-4">
+                Check the result of your job application and see feedback from the company.
+            </p>
+
+            <!-- TTS BUTTON -->
+            <div class="mt-6 inline-flex items-center justify-center">
+                <button type="button"
+                    onclick="speakText(document.getElementById('tts-hero').textContent)"
+                    class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-5 py-2.5 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                    aria-label="Read application feedback aloud">
+
+                    <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+                    Listen
+                </button>
+            </div>
+        </div>
+
+        <!-- BACK BUTTON (MATCHED STYLE + CENTERED) -->
+        <div class="pt-6 flex justify-center">
             <a href="/my-job-applications"
-                class="flex items-center space-x-3 text-[#1E40AF] font-bold text-2xl sm:text-3xl hover:underline focus:outline-none transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"
-                    class="w-8 h-8 sm:w-10 sm:h-10">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                </svg>
-                <span>Back</span>
+                class="inline-flex items-center gap-3 rounded-full border-2 border-blue-200 bg-white px-6 py-3 text-blue-700 font-semibold shadow-sm transition hover:bg-blue-50 hover:border-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">
+
+                <img src="https://img.icons8.com/ios-filled/24/1E40AF/left.png"
+                    alt="" aria-hidden="true"
+                    class="w-5 h-5">
+
+                <span>Back to applications</span>
             </a>
         </div>
+
     </div>
 
-<!-- Main Content -->
-  <div class="max-w-4xl mx-auto px-4 py-10 space-y-8">
+    <!-- Hidden TTS -->
+    <div id="tts-hero" class="sr-only">
+        Application Feedback. Check the result of your job application and see feedback from the company.
+    </div>
+</section>
 
-<!-- Feedback Message -->
-<div class="bg-blue-50 border border-blue-200 rounded-3xl p-10 shadow-lg max-w-6xl mx-auto">
+<!-- MAIN CONTENT -->
+<div class="max-w-4xl mx-auto px-4 py-10">
 
-  <!-- Header -->
-  <div class="flex items-center gap-4 mb-6">
-    <img 
-      src="https://img.icons8.com/ios-filled/50/2563eb/document.png" 
-      alt="Application document icon"
-      class="w-12 h-12"
-    />
-    <h3 class="font-semibold text-blue-800 text-3xl">
-      Application Feedback
-    </h3>
-  </div>
+    <!-- FEEDBACK CARD -->
+    <div class="bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 shadow-sm">
 
-  <!-- Status & Support Labels -->
-  <div class="flex flex-wrap gap-5 mb-10">
-    <!-- Application Decision (use HR_DECISION only) -->
-    <div class="flex items-center gap-3 rounded-full px-6 py-3" style="background: #fff6f6; border: 1px solid #fecaca;">
-      <span class="text-xl font-semibold text-red-800">
-        Decision: {{ $feedback['HR_DECISION'] ?? 'No decision yet' }}
-      </span>
+        <!-- HEADER -->
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-4">
+                <img src="https://img.icons8.com/ios-filled/50/2563eb/document.png"
+                    alt="Application document icon"
+                    class="w-10 h-10">
+
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900">
+                    Your Result
+                </h2>
+            </div>
+
+            <!-- TTS -->
+            <button type="button"
+                onclick="speakText(document.getElementById('tts-feedback').textContent)"
+                class="inline-flex items-center gap-2 rounded-full bg-blue-700 px-4 py-2 text-white font-semibold shadow hover:bg-blue-800 transition focus:ring-4 focus:ring-blue-300"
+                aria-label="Read feedback aloud">
+
+                <img src="https://img.icons8.com/ios-filled/18/ffffff/speaker.png" class="w-4 h-4">
+            </button>
+        </div>
+
+        <!-- STATUS BADGES -->
+        <div class="flex flex-wrap gap-3 mb-8">
+
+            <!-- Decision -->
+            <div class="rounded-full px-5 py-2 text-sm sm:text-base font-semibold bg-red-50 border border-red-200 text-red-700">
+                Decision: {{ $feedback['HR_DECISION'] ?? 'No decision yet' }}
+            </div>
+
+            <!-- Support Level -->
+            <div class="rounded-full px-5 py-2 text-sm sm:text-base font-semibold bg-green-50 border border-green-200 text-green-700">
+                Support Level: {{ $feedback['CATEGORY_LEVEL'] ?? 'Pending' }}
+            </div>
+
+        </div>
+
+        <!-- FEEDBACK TEXT -->
+        <div id="tts-feedback" class="text-slate-700 text-lg sm:text-xl leading-relaxed space-y-5">
+
+            @if ($feedback && (trim(($feedback['HR_DECISION'] ?? '') . ($feedback['OVERALL_SUMMARY'] ?? '')) !== ''))
+
+                @if (!empty($feedback['OVERALL_SUMMARY']))
+                    <p class="whitespace-pre-line">
+                        {{ $feedback['OVERALL_SUMMARY'] }}
+                    </p>
+                @else
+
+                    <p>
+                        Thank you for applying for the
+                        <strong>{{ $application['JOB_ROLE'] ?? 'the position' }}</strong>
+                        at <strong>{{ $application['COMPANY_NAME'] ?? '' }}</strong>.
+                    </p>
+
+                    @if (!empty($feedback['HR_DECISION']))
+                        <p>
+                            Decision:
+                            <strong>{{ $feedback['HR_DECISION'] }}</strong>
+                        </p>
+                    @endif
+
+                    @if (!empty($feedback['ROLE']))
+                        <p>
+                            Role noted:
+                            <strong>{{ $feedback['ROLE'] }}</strong>
+                        </p>
+                    @endif
+
+                    <p>
+                        Thank you for applying. We will contact you with next steps if applicable.
+                    </p>
+
+                @endif
+
+            @else
+                <p class="italic text-gray-500">
+                    Feedback has not been provided by the company yet. Please check back later.
+                </p>
+            @endif
+
+        </div>
+
     </div>
 
-    <!-- Support Level (use CATEGORY_LEVEL only; show Pending when null) -->
-    <div class="flex items-center gap-3 rounded-full px-6 py-3" style="background: #f0fdf4; border: 1px solid #bbf7d0;">
-      <span class="text-xl font-semibold text-green-800">
-        Support Level: {{ $feedback['CATEGORY_LEVEL'] ?? 'Pending' }}
-      </span>
-    </div>
-
-  </div>
-
-  <!-- Message -->
-  @if ($feedback && (trim(($feedback['HR_DECISION'] ?? '') . ($feedback['OVERALL_SUMMARY'] ?? '')) !== ''))
-    @if (!empty($feedback['OVERALL_SUMMARY']))
-      <!-- When the company provided an overall summary, display the message body inline (no box).
-           Keep the "Hello NAME" greeting above and the main closing below. -->
-      <div class="mb-6">
-        <div class="text-2xl text-gray-700 leading-loose whitespace-pre-line mb-6">{{ $feedback['OVERALL_SUMMARY'] }}</div>
-      </div>
-    @else
-      <p class="text-2xl text-gray-700 leading-loose mb-6">
-        Thank you for applying for the <strong>{{ $application['JOB_ROLE'] ?? 'the position' }}</strong> at
-        <strong>{{ $application['COMPANY_NAME'] ?? '' }}</strong>.
-      </p>
-
-      @if (!empty($feedback['HR_DECISION']))
-        <p class="text-2xl text-gray-700 leading-loose mb-6">
-          We reviewed your application carefully. Decision: <strong>{{ $feedback['HR_DECISION'] }}</strong>.
-        </p>
-      @endif
-
-      @if (!empty($feedback['ROLE']))
-        <p class="text-2xl text-gray-700 leading-loose mb-6">Role noted: <strong>{{ $feedback['ROLE'] }}</strong></p>
-      @endif
-
-      <p class="text-2xl text-gray-700 leading-loose mb-8">Thank you for applying. We will contact you with next steps if applicable.</p>
-    @endif
-  @else
-    <p class="text-2xl text-gray-700 leading-loose mb-6">Feedback has not been provided by the company yet. Please check back later.</p>
-  @endif
-
-  <!-- Closing and greeting removed per user request -->
 </div>
+
+
+<!-- TTS SCRIPT -->
+<script>
+function speakText(text) {
+    if ('speechSynthesis' in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        speechSynthesis.speak(utterance);
+    }
+}
+</script>
+
+</main>
 
 
 
