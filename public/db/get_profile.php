@@ -124,6 +124,57 @@ if (!empty($row['PROOF_OF_MEMBERSHIP'])) {
 // remove raw blobs from $row to keep JSON smaller (they are in $files now)
 // remove raw blobs from $row to keep JSON smaller (they are in $files now)
 unset($row['PWD_ID'], $row['MED_CERTIFICATES'], $row['CERTIFICATES'], $row['PROOF_OF_MEMBERSHIP']);
+// Enhance $files entries: attach mime, filename and data_url when possible so clients can render correctly
+function detect_mime_ext_for_blob($binary, $defaultBase='file') {
+    if ($binary === null || $binary === '') return null;
+    // Try basic magic bytes detection (small, fast)
+    $sample = substr($binary, 0, 512);
+    // PDF
+    if (strpos($sample, '%PDF') === 0) return ['mime'=>'application/pdf','ext'=>'pdf'];
+    // PNG
+    if (substr($sample,0,4) === "\x89PNG") return ['mime'=>'image/png','ext'=>'png'];
+    // JPEG
+    if (strlen($sample) >= 3 && ord($sample[0])===0xFF && ord($sample[1])===0xD8 && ord($sample[2])===0xFF) return ['mime'=>'image/jpeg','ext'=>'jpg'];
+    // GIF
+    if (strpos($sample,'GIF8') === 0) return ['mime'=>'image/gif','ext'=>'gif'];
+    // DOCX/ZIP (PK)
+    if (substr($sample,0,2) === "PK") {
+        if (strpos($binary,'[Content_Types].xml') !== false || strpos($binary,'word/') !== false) return ['mime'=>'application/vnd.openxmlformats-officedocument.wordprocessingml.document','ext'=>'docx'];
+        return ['mime'=>'application/zip','ext'=>'zip'];
+    }
+    // old DOC (OLE)
+    if (strlen($sample) >= 8 && ord($sample[0])===0xD0 && ord($sample[1])===0xCF && ord($sample[2])===0x11) return ['mime'=>'application/msword','ext'=>'doc'];
+    // fallback to finfo
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->buffer($binary) ?: 'application/octet-stream';
+    $map = ['application/pdf'=>'pdf','image/png'=>'png','image/jpeg'=>'jpg','image/gif'=>'gif','application/zip'=>'zip','application/msword'=>'doc','application/vnd.openxmlformats-officedocument.wordprocessingml.document'=>'docx'];
+    $ext = isset($map[$mime]) ? $map[$mime] : 'bin';
+    return ['mime'=>$mime,'ext'=>$ext];
+}
+
+// Convert existing base64 strings in $files into richer objects { data, data_url, mime, filename }
+$usernameSafe = '';
+if (!empty($row['USERNAME'])) $usernameSafe = preg_replace('/[^A-Za-z0-9_\-]/','_', $row['USERNAME']) . '_';
+foreach (['proof','med','other','other_certs','resume','proof_of_membership','other'] as $k) {
+    if (!empty($files[$k]) && is_string($files[$k])) {
+        $b64 = $files[$k];
+        $binary = base64_decode($b64, true);
+        if ($binary !== false && $binary !== null) {
+            $det = detect_mime_ext_for_blob($binary, $k);
+            $mime = $det['mime'];
+            $ext = $det['ext'];
+            $filename = $usernameSafe . $k . '.' . $ext;
+            $files[$k] = [
+                'data' => $b64,
+                'data_url' => 'data:' . $mime . ';base64,' . $b64,
+                'mime' => $mime,
+                'filename' => $filename
+            ];
+        } else {
+            // leave as-is if not decodable
+        }
+    }
+}
 $parseMaybeJson = function($v) {
     if ($v === null) return '';
     if (is_array($v) || is_object($v)) return $v;

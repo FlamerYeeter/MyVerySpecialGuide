@@ -453,6 +453,7 @@ INSERT INTO user_guardian (
     med_certificates,
     certificates,
     pwd_id,
+    proof_of_membership,
     date_of_birth
 ) VALUES (
     :id,
@@ -495,6 +496,7 @@ INSERT INTO user_guardian (
     :types_of_ds,
     :cdd_type,
     :username,
+    EMPTY_BLOB(),
     EMPTY_BLOB(),
     EMPTY_BLOB(),
     EMPTY_BLOB(),

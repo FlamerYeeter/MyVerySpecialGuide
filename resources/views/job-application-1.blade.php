@@ -1299,6 +1299,34 @@
               await tryAssignDoc('resume', ['RESUME', 'resume', 'cv', 'resume_url', 'resume_data']);
               await tryAssignDoc('pwd', ['PWD_ID', 'pwd_id', 'pwd', 'pwd_id_url', 'pwd_data']);
 
+              // Also accept binary blobs returned under top-level `files` (get_profile.php uses this)
+              try {
+                const f = json.files || {};
+                if (f.med) {
+                  let dataUrl = null; let filename = 'medical.bin'; let mime = 'application/octet-stream';
+                  if (typeof f.med === 'object') { dataUrl = f.med.data_url || (f.med.data ? ('data:' + (f.med.mime||mime) + ';base64,' + f.med.data) : null); filename = f.med.filename || filename; mime = f.med.mime || mime; }
+                  else if (typeof f.med === 'string') { dataUrl = 'data:application/octet-stream;base64,' + f.med; }
+                  if (dataUrl && window.uploaderAssignFromData) window.uploaderAssignFromData('medical', filename, dataUrl, mime);
+                  const chk = document.getElementById('chk_medical'); if (chk) chk.checked = true;
+                }
+                // resume may be under 'resume' or 'proof_of_membership'
+                const resumeBlob = f.resume || f.proof_of_membership || null;
+                if (resumeBlob) {
+                  let dataUrl = null; let filename = 'resume.bin'; let mime = 'application/octet-stream';
+                  if (typeof resumeBlob === 'object') { dataUrl = resumeBlob.data_url || (resumeBlob.data ? ('data:' + (resumeBlob.mime||mime) + ';base64,' + resumeBlob.data) : null); filename = resumeBlob.filename || filename; mime = resumeBlob.mime || mime; }
+                  else if (typeof resumeBlob === 'string') { dataUrl = 'data:application/octet-stream;base64,' + resumeBlob; }
+                  if (dataUrl && window.uploaderAssignFromData) window.uploaderAssignFromData('resume', filename, dataUrl, mime);
+                  const chk = document.getElementById('chk_resume'); if (chk) chk.checked = true;
+                }
+                if (f.proof) {
+                  let dataUrl = null; let filename = 'pwd_id.bin'; let mime = 'application/octet-stream';
+                  if (typeof f.proof === 'object') { dataUrl = f.proof.data_url || (f.proof.data ? ('data:' + (f.proof.mime||mime) + ';base64,' + f.proof.data) : null); filename = f.proof.filename || filename; mime = f.proof.mime || mime; }
+                  else if (typeof f.proof === 'string') { dataUrl = 'data:application/octet-stream;base64,' + f.proof; }
+                  if (dataUrl && window.uploaderAssignFromData) window.uploaderAssignFromData('pwd', filename, dataUrl, mime);
+                  const chk = document.getElementById('chk_pwd'); if (chk) chk.checked = true;
+                }
+              } catch (e) { console.warn('autofill files assignment failed', e); }
+
           } catch (err) {
             console.error('Autofill failed', err);
             alert('Could not load profile. Please make sure you are logged in.');

@@ -68,18 +68,73 @@ if (!$row || empty($row['FILEBLOB'])) {
     exit;
 }
 $data = $row['FILEBLOB'];
-// detect MIME type from binary data and choose a sensible filename/extension
-$finfo = new finfo(FILEINFO_MIME_TYPE);
-$mime = $finfo->buffer($data) ?: 'application/octet-stream';
-$extMap = [
-    'application/pdf' => 'pdf',
-    'image/png'       => 'png',
-    'image/jpeg'      => 'jpg',
-    'image/gif'       => 'gif',
-];
-$ext = isset($extMap[$mime]) ? $extMap[$mime] : 'bin';
-$baseName = pathinfo($colMap[$type]['name'], PATHINFO_FILENAME);
+
+// Helper: try to detect common file types using magic bytes or common wrappers
+function detect_mime_and_ext($data) {
+    if ($data === null || $data === '') return ['mime' => 'application/octet-stream', 'ext' => 'bin'];
+    // If the blob looks like a data: URI
+    if (is_string($data) && strlen($data) > 5 && strpos($data, 'data:') === 0) {
+        if (preg_match('#^data:([^;]+);base64,(.*)$#s', $data, $m)) {
+            $b64 = $m[2];
+            $decoded = base64_decode($b64, true);
+            if ($decoded !== false) $data = $decoded;
+        }
+    }
+    // If the blob is ASCII base64 (no binary bytes) try to decode
+    $sample = substr($data, 0, 200);
+    if (preg_match('#^[A-Za-z0-9+/=\s]+$#', $sample) && strlen($data) > 200) {
+        $maybe = @base64_decode(preg_replace('/\s+/', '', $data), true);
+        if ($maybe !== false && strlen($maybe) > 0) $data = $maybe;
+    }
+
+    // Check magic bytes
+    $bytes = substr($data, 0, 8);
+    // PDF
+    if (strpos($bytes, '%PDF') === 0) return ['mime' => 'application/pdf', 'ext' => 'pdf'];
+    // PNG
+    if (substr($bytes,0,4) === "\x89PNG") return ['mime' => 'image/png', 'ext' => 'png'];
+    // JPG
+    if (strlen($bytes) >= 3 && ord($bytes[0]) === 0xFF && ord($bytes[1]) === 0xD8 && ord($bytes[2]) === 0xFF) return ['mime' => 'image/jpeg', 'ext' => 'jpg'];
+    // GIF
+    if (strpos($bytes, 'GIF8') === 0) return ['mime' => 'image/gif', 'ext' => 'gif'];
+    // ZIP-based (DOCX) - PK\x03\x04
+    if (substr($bytes,0,2) === "PK") {
+        // attempt to detect DOCX by looking for word/ in blob
+        if (strpos($data, '[Content_Types].xml') !== false || strpos($data, 'word/') !== false) return ['mime' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'ext' => 'docx'];
+        return ['mime' => 'application/zip', 'ext' => 'zip'];
+    }
+    // OLE Compound File (old DOC)
+    if (strlen($bytes) >= 8 && ord($bytes[0]) === 0xD0 && ord($bytes[1]) === 0xCF && ord($bytes[2]) === 0x11) return ['mime' => 'application/msword', 'ext' => 'doc'];
+
+    // Fallback to finfo
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime = $finfo->buffer($data) ?: 'application/octet-stream';
+    $extMap = [
+        'application/pdf' => 'pdf',
+        'image/png'       => 'png',
+        'image/jpeg'      => 'jpg',
+        'image/gif'       => 'gif',
+        'application/zip' => 'zip',
+        'application/msword' => 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx'
+    ];
+    $ext = isset($extMap[$mime]) ? $extMap[$mime] : 'bin';
+    return ['mime' => $mime, 'ext' => $ext];
+}
+
+$det = detect_mime_and_ext($data);
+$mime = $det['mime'];
+$ext = $det['ext'];
+
+// Create a helpful filename: prefer username if present
+$userPart = '';
+if (!empty($row['USERNAME'])) {
+    // sanitize username for filesystem
+    $userPart = preg_replace('/[^A-Za-z0-9_\-]/', '_', $row['USERNAME']) . '_';
+}
+$baseName = $userPart . pathinfo($colMap[$type]['name'], PATHINFO_FILENAME);
 $filename = $baseName . '.' . $ext;
+
 header('Content-Type: ' . $mime);
 header('Content-Length: ' . strlen($data));
 header('Content-Disposition: inline; filename="' . $filename . '"');
