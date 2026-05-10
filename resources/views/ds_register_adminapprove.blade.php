@@ -2271,9 +2271,13 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
         try {
             // Education: populate first education entry if present
             if (Array.isArray(aiData.education) && aiData.education.length) {
-                // ensure at least one education block exists
-                try { if (typeof window.addEducation === 'function') window.addEducation(); } catch(e){}
                 const eduContainer = document.getElementById('educationContainer');
+                // ensure at least one education block exists, but avoid creating a blank one if form already has entries
+                try {
+                    if (eduContainer && eduContainer.children.length === 0 && typeof window.addEducation === 'function') {
+                        window.addEducation();
+                    }
+                } catch(e){}
                 if (eduContainer) {
                     // target first set of inputs
                     const levelEl = eduContainer.querySelector('select[name="education_level[]"]');
@@ -2300,10 +2304,15 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
                 }
             }
 
-            // Work experience: populate first job entry
+            // Work experience: populate first job entry — join unstructured lines into one description
             if (Array.isArray(aiData.work_experience) && aiData.work_experience.length) {
-                try { if (typeof window.addJobExperience === 'function') window.addJobExperience(); } catch(e){}
                 const jobContainer = document.getElementById('job_experiences_container');
+                // only add a job entry if none exists to avoid blank entries
+                try {
+                    if (jobContainer && jobContainer.children.length === 0 && typeof window.addJobExperience === 'function') {
+                        window.addJobExperience();
+                    }
+                } catch(e){}
                 if (jobContainer) {
                     const first = jobContainer.querySelector('.job_exp_item') || jobContainer.firstElementChild;
                     if (first) {
@@ -2311,14 +2320,59 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
                         const companyEl = first.querySelector('input[name="company_name[]"]') || first.querySelector('.company_name');
                         const locEl = first.querySelector('input[name="company_location[]"]') || first.querySelector('.company_location');
                         const descEl = first.querySelector('textarea[name="job_description[]"]') || first.querySelector('.job_description');
-                        const w0 = String(aiData.work_experience[0] || '').trim();
+                        // join all unstructured work_experience lines and try to extract company, location and years
+                        const allLines = aiData.work_experience.map(s => String(s||'').trim()).filter(Boolean);
+                        const combined = allLines.join('\n');
+                        const w0 = allLines[0] || '';
                         if (titleEl && !titleEl.value) {
-                            // try to extract a short job title from the line (first 4 words)
                             const parts = w0.split(/[,\-\n]/)[0].split(/\s+/).slice(0,4).join(' ');
                             titleEl.value = parts;
                         }
-                        if (companyEl && !companyEl.value) companyEl.value = aiData.company_name || '';
-                        if (descEl && !descEl.value) descEl.value = w0;
+
+                        // attempt to parse subsequent lines for company, location and year range
+                        let company = aiData.company_name || '';
+                        let location = '';
+                        let startYear = '';
+                        let endYear = '';
+                        const descLines = [];
+                        for (let li = 1; li < allLines.length; li++) {
+                            const line = allLines[li];
+                            // year detection
+                            const years = (line.match(/(19|20)\d{2}/g) || []).map(s=>s.trim());
+                            if (years.length) {
+                                startYear = years[0] || '';
+                                endYear = years[1] || years[0] || '';
+                                continue;
+                            }
+                            // company + location separator heuristics (em-dash, en-dash, hyphen, comma)
+                            const sepMatch = line.match(/\s+[—–\-]\s+|\s*,\s*/);
+                            if (sepMatch) {
+                                // split by first separator into two parts
+                                const parts = line.split(/\s+[—–\-]\s+|\s*,\s*/);
+                                if (!company) company = parts[0].trim();
+                                if (parts[1]) location = parts[1].trim();
+                                continue;
+                            }
+                            // company-like keywords
+                            if (!company && /\b(Inc|Ltd|Co|Store|Company|Corporation|LLC|Shop|Services|Enterprise)\b/i.test(line)) {
+                                company = line;
+                                continue;
+                            }
+                            // otherwise treat as part of description
+                            descLines.push(line);
+                        }
+
+                        if (companyEl && !companyEl.value) companyEl.value = company || '';
+                        if (locEl && !locEl.value) locEl.value = location || '';
+                        if (descEl && !descEl.value) descEl.value = (descLines.length ? descLines.join('\n') : combined || w0);
+
+                        // try to populate start/end year inputs if present within this job item
+                        try {
+                            const startYearEl = first.querySelector('input[name="job_start_year[]"], input.job_start_year');
+                            const endYearEl = first.querySelector('input[name="job_end_year[]"], input.job_end_year');
+                            if (startYear && startYearEl && !startYearEl.value) startYearEl.value = startYear;
+                            if (endYear && endYearEl && !endYearEl.value) endYearEl.value = endYear;
+                        } catch(e){}
                     }
                 }
             }
@@ -2331,6 +2385,294 @@ function applyOcrDataToForm(aiData, detectedType, ocrtype) {
                 const jobCertDisp = document.querySelector('.job_cert_display');
                 if (jobCertDisp && !jobCertDisp.textContent) jobCertDisp.textContent = certs;
             }
+
+            // --- Map structured fields (new in OCR) ---
+            // Work experience structured mapping (fills multiple entries)
+            if (Array.isArray(aiData.work_experience_structured) && aiData.work_experience_structured.length) {
+                try { if (typeof window.addJobExperience === 'function') {
+                    const need = aiData.work_experience_structured.length;
+                    const existingTitles = document.querySelectorAll('input[name="job_title[]"]');
+                    for (let i = existingTitles.length; i < need; i++) window.addJobExperience();
+                } } catch(e) {}
+
+                const titleNodes = Array.from(document.querySelectorAll('input[name="job_title[]"], input.job_title'));
+                const companyNodes = Array.from(document.querySelectorAll('input[name="company_name[]"], input.company_name'));
+                const locNodes = Array.from(document.querySelectorAll('input[name="company_location[]"], input.company_location'));
+                const descNodes = Array.from(document.querySelectorAll('textarea[name="job_description[]"], textarea.job_description'));
+                const startMonthNodes = Array.from(document.querySelectorAll('select[name="job_start_month[]"], select.job_start_month'));
+                const startYearNodes = Array.from(document.querySelectorAll('input[name="job_start_year[]"], input.job_start_year'));
+                const endMonthNodes = Array.from(document.querySelectorAll('select[name="job_end_month[]"], select.job_end_month'));
+                const endYearNodes = Array.from(document.querySelectorAll('input[name="job_end_year[]"], input.job_end_year'));
+
+                const monthNames = { '01':'January','02':'February','03':'March','04':'April','05':'May','06':'June','07':'July','08':'August','09':'September','10':'October','11':'November','12':'December' };
+
+                // Pre-merge structured entries that look like continuations (to avoid split entries)
+                try {
+                    const wes = aiData.work_experience_structured.slice();
+                    for (let j = 0; j < wes.length - 1; j++) {
+                        const a = wes[j];
+                        const b = wes[j+1];
+                        const aTitle = (a.title||'').trim();
+                        const aCompany = (a.company||'').trim();
+                        const bTitle = (b.title||'').trim();
+                        const bCompany = (b.company||'').trim();
+                        const aDesc = (a.description||'').trim();
+                        const bDesc = (b.description||b.raw||'').trim();
+                        let shouldMerge = false;
+                        if ((!bTitle && !bCompany) || (!aCompany && bCompany) ) shouldMerge = true;
+                        if (aDesc && bDesc && (aDesc.length + bDesc.length) < 240) shouldMerge = true;
+                        if (shouldMerge) {
+                            a.description = (a.description||'') + '\n' + (b.description||b.raw||'');
+                            a.raw = (a.raw||'') + '\n' + (b.raw||'');
+                            wes.splice(j+1, 1);
+                            j--; // re-evaluate current index with new next
+                        }
+                    }
+                    wes.forEach((we, idx) => {
+                        try {
+                            if (titleNodes[idx] && !titleNodes[idx].value) titleNodes[idx].value = we.title || '';
+                            // if company contains a location (e.g. "Company — Cavite"), split it
+                            try {
+                                let comp = we.company || '';
+                                let loc = we.location || '';
+                                if (comp && /[—–\-]/.test(comp)) {
+                                    const parts = comp.split(/[—–\-]/).map(p => p.trim()).filter(Boolean);
+                                    if (parts.length >= 2) { comp = parts[0]; if (!loc) loc = parts.slice(1).join(' '); }
+                                } else if (!comp && we.raw && /[—–\-]/.test(we.raw)) {
+                                    const m = we.raw.split(/\n/).map(r=>r.trim()).filter(Boolean);
+                                    for (let x of m) {
+                                        if (/[—–\-]/.test(x)) { const p = x.split(/[—–\-]/).map(s=>s.trim()); comp = comp || p[0]; loc = loc || (p[1]||''); break; }
+                                    }
+                                }
+                                if (companyNodes[idx] && !companyNodes[idx].value) companyNodes[idx].value = comp || '';
+                                if (locNodes[idx] && !locNodes[idx].value) locNodes[idx].value = loc || '';
+                            } catch(e) { if (companyNodes[idx] && !companyNodes[idx].value) companyNodes[idx].value = we.company || ''; if (locNodes[idx] && !locNodes[idx].value) locNodes[idx].value = we.location || ''; }
+                            if (descNodes[idx] && !descNodes[idx].value) descNodes[idx].value = we.description || we.raw || '';
+
+                            // set start month/year
+                            if (startYearNodes[idx] && !startYearNodes[idx].value) {
+                                if (we.start_year) startYearNodes[idx].value = we.start_year;
+                                else if (we.start_iso) startYearNodes[idx].value = (we.start_iso||'').slice(0,4);
+                            }
+                            if (startMonthNodes[idx] && !startMonthNodes[idx].value) {
+                                if (we.start_month) {
+                                    const m = (''+we.start_month).padStart(2,'0');
+                                    const name = monthNames[m] || null;
+                                    if (name) startMonthNodes[idx].value = name;
+                                } else if (we.start_iso) {
+                                    const mm = (we.start_iso||'').slice(5,7);
+                                    const name = monthNames[mm] || null;
+                                    if (name) startMonthNodes[idx].value = name;
+                                }
+                            }
+
+                            // set end month/year
+                            if (endYearNodes[idx] && !endYearNodes[idx].value) {
+                                if (we.end_year) endYearNodes[idx].value = we.end_year;
+                                else if (we.end_iso) endYearNodes[idx].value = (we.end_iso||'').slice(0,4);
+                            }
+                            if (endMonthNodes[idx] && !endMonthNodes[idx].value) {
+                                if (we.end_month) {
+                                    const m = (''+we.end_month).padStart(2,'0');
+                                    const name = monthNames[m] || null;
+                                    if (name) endMonthNodes[idx].value = name;
+                                } else if (we.end_iso) {
+                                    const mm = (we.end_iso||'').slice(5,7);
+                                    const name = monthNames[mm] || null;
+                                    if (name) endMonthNodes[idx].value = name;
+                                }
+                            }
+                        } catch(e) {}
+                    });
+                } catch(e) {
+                    // fallback to direct mapping
+                    aiData.work_experience_structured.forEach((we, idx) => {
+                        try {
+                            if (titleNodes[idx] && !titleNodes[idx].value) titleNodes[idx].value = we.title || '';
+                            if (companyNodes[idx] && !companyNodes[idx].value) companyNodes[idx].value = we.company || '';
+                            if (locNodes[idx] && !locNodes[idx].value) locNodes[idx].value = we.location || '';
+                            if (descNodes[idx] && !descNodes[idx].value) descNodes[idx].value = we.description || we.raw || '';
+
+                            if (startYearNodes[idx] && !startYearNodes[idx].value) {
+                                if (we.start_year) startYearNodes[idx].value = we.start_year;
+                                else if (we.start_iso) startYearNodes[idx].value = (we.start_iso||'').slice(0,4);
+                            }
+                            if (startMonthNodes[idx] && !startMonthNodes[idx].value) {
+                                if (we.start_month) {
+                                    const m = (''+we.start_month).padStart(2,'0');
+                                    const name = monthNames[m] || null;
+                                    if (name) startMonthNodes[idx].value = name;
+                                } else if (we.start_iso) {
+                                    const mm = (we.start_iso||'').slice(5,7);
+                                    const name = monthNames[mm] || null;
+                                    if (name) startMonthNodes[idx].value = name;
+                                }
+                            }
+                            if (endYearNodes[idx] && !endYearNodes[idx].value) {
+                                if (we.end_year) endYearNodes[idx].value = we.end_year;
+                                else if (we.end_iso) endYearNodes[idx].value = (we.end_iso||'').slice(0,4);
+                            }
+                            if (endMonthNodes[idx] && !endMonthNodes[idx].value) {
+                                if (we.end_month) {
+                                    const m = (''+we.end_month).padStart(2,'0');
+                                    const name = monthNames[m] || null;
+                                    if (name) endMonthNodes[idx].value = name;
+                                } else if (we.end_iso) {
+                                    const mm = (we.end_iso||'').slice(5,7);
+                                    const name = monthNames[mm] || null;
+                                    if (name) endMonthNodes[idx].value = name;
+                                }
+                            }
+                        } catch(e) {}
+                    });
+                }
+            }
+
+            // Helper: determine education level option text from program or school keywords
+            function determineEducationLevel(text) {
+                if (!text) return '';
+                const s = String(text).toLowerCase();
+                if (/\b(sped|special education|special education program)\b/i.test(text)) return 'SPED Program';
+                if (/\b(college|university|bs\.|bachelor|bsc|ba\.|ba )\b/i.test(s)) return 'College';
+                if (/\b(highschool|high school|secondary|senior high|jr high|junior high)\b/i.test(s)) return 'Highschool';
+                if (/\b(elementary|primary|grade)\b/i.test(s)) return 'Elementary';
+                if (/\b(vocational|training|tesda|certificate|short course|technical)\b/i.test(s)) return 'Vocational / Training';
+                return '';
+            }
+
+            // Education structured mapping
+            if (Array.isArray(aiData.education_structured) && aiData.education_structured.length) {
+                const schoolNodes = Array.from(document.querySelectorAll('input[name="education_school[]"], input[name*="school"], input[name*="education_school"], input[name*="school_name"]'));
+                const programNodes = Array.from(document.querySelectorAll('input[name="education_program[]"], input[name*="course"], input[name*="program"]'));
+                const startNodes = Array.from(document.querySelectorAll('input[name="education_start[]"], input[name*="year_started"], input[name*="education_start_year"]'));
+                const endNodes = Array.from(document.querySelectorAll('input[name="education_end[]"], input[name*="year_completed"], input[name*="education_end_year"]'));
+
+                aiData.education_structured.forEach((ed, idx) => {
+                    try {
+                        if (schoolNodes[idx] && !schoolNodes[idx].value) schoolNodes[idx].value = ed.school || '';
+                        if (programNodes[idx] && !programNodes[idx].value) programNodes[idx].value = ed.degree || '';
+                        // set education level select for this item if present
+                        try {
+                            const container = schoolNodes[idx] ? schoolNodes[idx].closest('.education-item') : null;
+                            const selectEl = container ? container.querySelector('select[name="education_level[]"]') : document.querySelector('select[name="education_level[]"]');
+                            const lvl = determineEducationLevel((ed.degree||'') + ' ' + (ed.school||''));
+                            if (selectEl && lvl) {
+                                // set by matching option text
+                                const opt = Array.from(selectEl.options).find(o => String(o.text||o.value).trim().toLowerCase() === lvl.toLowerCase());
+                                if (opt) selectEl.value = opt.value || opt.text;
+                                else selectEl.value = lvl;
+                            }
+                        } catch(e){}
+                        if (startNodes[idx] && ed.start_year) startNodes[idx].value = ed.start_year;
+                        if (endNodes[idx] && ed.end_year) endNodes[idx].value = ed.end_year;
+                    } catch(e) {}
+                });
+
+                // Persist a canonical education draft to localStorage (mirror ds_register_education behavior)
+                try {
+                    function saveEducationDraft() {
+                        try {
+                            const eduObj = {};
+                            const eduLevelEl = document.querySelector('select[name="edu_level"], input[name="edu_level"], select[id="edu_level"], input[id="edu_level"]');
+                            eduObj.edu_level = eduLevelEl ? (eduLevelEl.value || '') : '';
+                            const schoolEl = document.querySelector('input[name="school_name"], input[id="school_name"], input[name*="school"]');
+                            eduObj.school_name = schoolEl ? (schoolEl.value || '') : '';
+                            const programEl = document.querySelector('input[name="education_program[]"], input[name*="course"], input[name*="program"], input[id*="program"]');
+                            eduObj.course = programEl ? (programEl.value || '') : '';
+
+                            // read hidden serialized certificates if present
+                            try {
+                                const raw = document.getElementById('certificates') ? document.getElementById('certificates').value : null;
+                                eduObj.certificates = raw ? JSON.parse(raw || '[]') : [];
+                            } catch (e) { eduObj.certificates = []; }
+
+                            eduObj.certs = (Array.isArray(eduObj.certificates) && eduObj.certificates.length) ? 'yes' : 'no';
+
+                            localStorage.setItem('education_profile', JSON.stringify(eduObj));
+                            localStorage.setItem('edu_level', eduObj.edu_level || '');
+                            localStorage.setItem('school_name', eduObj.school_name || '');
+                            localStorage.setItem('review_certs', eduObj.certs || 'no');
+                            localStorage.setItem('education_certificates', JSON.stringify(eduObj.certificates || []));
+                        } catch (err) { console.warn('saveEducationDraft failed', err); }
+                    }
+
+                    // attach listeners so edits persist
+                    const watchNodes = [].concat(schoolNodes || [], programNodes || [], startNodes || [], endNodes || []);
+                    watchNodes.forEach(n => { try { if (n) n.addEventListener('input', saveEducationDraft); } catch(e){} });
+
+                    // call once after OCR fill
+                    saveEducationDraft();
+                    // also populate top-level hidden canonical `job`/draft key used by Final Step
+                    try { localStorage.setItem('education_profile', JSON.stringify(eduObj)); } catch(e) {}
+                } catch(e) { console.warn('education draft persist init failed', e); }
+            }
+
+            // If unstructured education lines present, try to fill primary education fields
+            if (Array.isArray(aiData.education) && aiData.education.length) {
+                try {
+                    const lines = aiData.education.map(s => String(s||'').trim()).filter(Boolean);
+                    if (lines.length) {
+                        const schoolNodes = Array.from(document.querySelectorAll('input[name="education_school[]"], input[name*="school"], input[name*="school_name"]'));
+                        const programNodes = Array.from(document.querySelectorAll('input[name="education_program[]"], input[name*="program"], input[name*="course"]'));
+                        const startNodes = Array.from(document.querySelectorAll('input[name="education_start[]"], input[name*="year_started"], input[name*="education_start_year"]'));
+                        const endNodes = Array.from(document.querySelectorAll('input[name="education_end[]"], input[name*="year_completed"], input[name*="education_end_year"]'));
+                        // Common pattern: program line then school line then year line
+                        let program = lines[0] || '';
+                        let school = lines[1] || lines[0] || '';
+                        let yearsLine = lines.find(l => /(19|20)\d{2}/.test(l)) || '';
+                        // if first line looks like a school (contains 'School' or 'Center' or 'College'), swap
+                        if (/\b(School|Center|College|University|Institute|Learning)\b/i.test(program) && program && school && program !== school) {
+                            const tmp = program; program = school; school = tmp;
+                        }
+                        if (schoolNodes[0] && !schoolNodes[0].value) schoolNodes[0].value = school;
+                        if (programNodes[0] && !programNodes[0].value) programNodes[0].value = program;
+                        // set education level select for the first education item
+                        try {
+                            const selectEl = document.querySelector('select[name="education_level[]"]');
+                            const lvl = determineEducationLevel(program + ' ' + school + ' ' + (yearsLine||''));
+                            if (selectEl && lvl) {
+                                const opt = Array.from(selectEl.options).find(o => String(o.text||o.value).trim().toLowerCase() === lvl.toLowerCase());
+                                if (opt) selectEl.value = opt.value || opt.text;
+                                else selectEl.value = lvl;
+                            }
+                        } catch(e){}
+                        if (yearsLine) {
+                            const ys = yearsLine.match(/(19|20)\d{2}/g) || [];
+                            if (ys[0] && startNodes[0] && !startNodes[0].value) startNodes[0].value = ys[0];
+                            if (ys[1] && endNodes[0] && !endNodes[0].value) endNodes[0].value = ys[1];
+                        }
+                        // update canonical localStorage draft
+                        try { saveEducationDraft(); } catch(e) {}
+                    }
+                } catch(e) { console.warn('unstructured education fill failed', e); }
+            }
+
+            // Summary / profile
+            if (aiData.summary) {
+                const summaryEl = document.querySelector('textarea[name="summary"], textarea[id*="summary"], textarea[name*="profile"], textarea[id*="personal_profile"]');
+                if (summaryEl && !summaryEl.value) summaryEl.value = aiData.summary;
+                const resumeDisplay = document.getElementById('resumeDisplay');
+                if (resumeDisplay && !resumeDisplay.textContent) resumeDisplay.textContent = aiData.summary;
+            }
+
+            // Skills & languages
+            if (Array.isArray(aiData.skills) && aiData.skills.length) {
+                const skillsEl = document.querySelector('input[name="skills"], textarea[name="skills"], input[name*="skills_list"], input[id*="skills"]');
+                if (skillsEl && !skillsEl.value) skillsEl.value = aiData.skills.join(', ');
+            }
+            if (Array.isArray(aiData.languages) && aiData.languages.length) {
+                const langEl = document.querySelector('input[name="languages"], textarea[name="languages"], input[name*="language"], input[id*="languages"]');
+                if (langEl && !langEl.value) langEl.value = aiData.languages.join(', ');
+            }
+
+            // Hide empty sections per presence flags
+            try {
+                const hideIfEmpty = (flag, selectors) => { if (typeof flag === 'boolean' && flag === false) selectors.forEach(s => document.querySelectorAll(s).forEach(el => el.style.display='none')); };
+                hideIfEmpty(aiData.has_work_experience, ['[data-section="work_experience"]', '#work_experience_section', '.work-experience-section', '#workExperience']);
+                hideIfEmpty(aiData.has_education, ['[data-section="education"]', '#education_section', '.education-section', '#Education']);
+                hideIfEmpty(aiData.has_skills, ['[data-section="skills"]', '#skills_section', '.skills-section']);
+                hideIfEmpty(aiData.has_certifications, ['[data-section="certifications"]', '#certifications_section', '.certifications-section']);
+            } catch(e) { /* non-fatal */ }
         } catch(e) { console.warn('resume-field-mapping failed', e); }
 
         // Disability -> intelligent mapping:
@@ -2439,10 +2781,15 @@ function applyOcrDataToGuardianForm(aiData) {
             const firstEl = document.getElementById('guardian_first');
             const midEl = document.getElementById('guardian_middle');
 
-            const full = aiData.name || aiData.full_name || aiData.fullName || null;
-            const first = aiData.first_name || aiData.given_name || aiData.givenName || aiData.firstname || null;
-            const last = aiData.last_name || aiData.family_name || aiData.familyName || aiData.surname || null;
-            const middle = aiData.middle_name || aiData.middle || aiData.mname || aiData.mi || null;
+            // accept many possible shapes: aiData.guardian, aiData.guardianInfo, or flat keys
+            let src = aiData;
+            if (aiData.guardian && typeof aiData.guardian === 'object') src = aiData.guardian;
+            else if (aiData.guardianInfo && typeof aiData.guardianInfo === 'object') src = aiData.guardianInfo;
+
+            const full = src.name || src.full_name || src.fullName || aiData.name || aiData.full_name || null;
+            const first = src.first_name || src.given_name || src.givenName || src.firstname || aiData.first_name || null;
+            const last = src.last_name || src.family_name || src.familyName || src.surname || aiData.last_name || null;
+            const middle = src.middle_name || src.middle || src.mname || src.mi || aiData.middle_name || null;
 
             if (first && firstEl) firstEl.value = String(first).trim();
             if (last && lastEl) lastEl.value = String(last).trim();
@@ -2466,7 +2813,11 @@ function applyOcrDataToGuardianForm(aiData) {
         // Email
         try {
             const emailEl = document.getElementById('guardian_email');
-            const email = (aiData.emails && aiData.emails.length) ? aiData.emails[0] : (aiData.email || aiData.email_address || aiData.emailAddress || null);
+            let email = null;
+            if (aiData.guardian && aiData.guardian.emails && aiData.guardian.emails.length) email = aiData.guardian.emails[0];
+            else if (aiData.guardian && aiData.guardian.email) email = aiData.guardian.email;
+            else if (aiData.emails && aiData.emails.length) email = aiData.emails[0];
+            else email = aiData.email || aiData.email_address || aiData.emailAddress || null;
             if (emailEl && !emailEl.value && email) emailEl.value = String(email).trim();
         } catch(e){}
 
@@ -2474,7 +2825,9 @@ function applyOcrDataToGuardianForm(aiData) {
         try {
             const phoneEl = document.getElementById('guardian_phone');
             let phone = null;
-            if (Array.isArray(aiData.phones) && aiData.phones.length) phone = aiData.phones[0];
+            if (aiData.guardian && Array.isArray(aiData.guardian.phones) && aiData.guardian.phones.length) phone = aiData.guardian.phones[0];
+            else if (aiData.guardian && aiData.guardian.phone) phone = aiData.guardian.phone;
+            else if (Array.isArray(aiData.phones) && aiData.phones.length) phone = aiData.phones[0];
             else phone = aiData.phone || aiData.mobile || aiData.contact || null;
             if (phone && phoneEl) phoneEl.value = String(phone).replace(/[^\d+]/g, '');
         } catch(e){}

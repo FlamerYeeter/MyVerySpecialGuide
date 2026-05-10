@@ -359,6 +359,359 @@ $education = isset($found_sections['education']) ? $normalize_blocks($found_sect
 $certs = isset($found_sections['certifications']) ? $normalize_blocks($found_sections['certifications']) : [];
 $skills = isset($found_sections['skills']) ? $normalize_blocks($found_sections['skills']) : [];
 
+// --- Improved parsing helpers for structured extraction ---
+function parse_date_range_from_text($s) {
+    // Try patterns like 'Jan 2018 - Feb 2020', '2018 – Present', '2016 to 2019', '2017-2018'
+    $s = trim($s);
+    $patterns = [
+        '/(?P<start>\b(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)[\.\s-]*\d{4})\s*(?:-|–|—|to|until|until)\s*(?P<end>Present|present|\b(?:Jan(?:uary)?|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[\.\s-]*\d{4})/i',
+        '/(?P<start>\b\d{4})\s*(?:-|–|—|to|until)\s*(?P<end>Present|present|\d{4})/i',
+        '/(?P<start>\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{4})/i'
+    ];
+    foreach ($patterns as $pat) {
+        if (preg_match($pat, $s, $m)) {
+            return [ 'start' => $m['start'] ?? null, 'end' => $m['end'] ?? null ];
+        }
+    }
+    return null;
+}
+
+function split_title_company($line) {
+    // common separators
+    $seps = [' at ', ' @ ', ' - ', ' – ', ' — ', '|'];
+    foreach ($seps as $sep) {
+        if (stripos($line, $sep) !== false) {
+            $parts = preg_split('/' . preg_quote($sep, '/') . '/i', $line, 2);
+            if (count($parts) === 2) return [trim($parts[0]), trim($parts[1])];
+        }
+    }
+    // fallback: if comma counts and first part short, treat as title, company
+    $parts = explode(',', $line, 3);
+    if (count($parts) >= 2) {
+        if (strlen(trim($parts[0])) < 60) return [trim($parts[0]), trim($parts[1])];
+    }
+    return [trim($line), ''];
+}
+
+function parse_work_experience_blocks($blocks) {
+    $out = [];
+    $count = count($blocks);
+    for ($i = 0; $i < $count; $i++) {
+        $blk = $blocks[$i];
+        $lines = preg_split('/\r?\n/', $blk);
+        // collect non-empty trimmed lines
+        $clean = [];
+        foreach ($lines as $ln) { $t = trim($ln); if ($t !== '') $clean[] = $t; }
+        if (empty($clean)) continue;
+
+        $firstLine = $clean[0];
+
+        // Heuristics to detect continuation-only blocks
+        $containsDate = (bool) parse_date_range_from_text($firstLine);
+        $hasTitleCompanySep = (stripos($firstLine, ' at ') !== false || stripos($firstLine, ' @ ') !== false || stripos($firstLine, ' - ') !== false || stripos($firstLine, ' – ') !== false || stripos($firstLine, ',') !== false);
+        $startsWithBullet = preg_match('/^[\*\+\-•\u2022\.]/u', $firstLine);
+        $startsLower = preg_match('/^[a-z]/', $firstLine);
+
+        $isContinuation = false;
+        if ($startsWithBullet) $isContinuation = true;
+        elseif (!$containsDate && !$hasTitleCompanySep && ($startsLower || mb_strlen($firstLine) < 80)) $isContinuation = true;
+
+        // Aggressive: if block is very short (1 line) and next block looks like continuation/description, merge now
+        if (!$isContinuation && count($clean) === 1 && ($i + 1) < $count) {
+            // peek next block
+            $nextLines = preg_split('/\r?\n/', $blocks[$i+1]);
+            $nextFirst = null;
+            foreach ($nextLines as $nl) { $t = trim($nl); if ($t !== '') { $nextFirst = $t; break; } }
+            if ($nextFirst !== null) {
+                $nextContainsDate = (bool) parse_date_range_from_text($nextFirst);
+                $nextStartsWithBullet = preg_match('/^[\*\+\-•\u2022\.]/u', $nextFirst);
+                // company-like heuristics: presence of 'Inc|Ltd|Co|Corporation|LLC|Company' or many TitleCase words
+                $company_like = preg_match('/\b(Inc|Ltd|Co|Corporation|LLC|Company|Limited|Corporation|S\.A\.|Pty)\b/i', $nextFirst);
+                $titlecase_words = preg_match('/^(?:[A-Z][a-z]{2,}\s*){1,4}$/', $nextFirst);
+                if (!$nextContainsDate && ($nextStartsWithBullet || $company_like || $titlecase_words || mb_strlen($nextFirst) < 60)) {
+                    // merge current and next block into one and advance index
+                    $blk = $blk . "\n" . $blocks[$i+1];
+                    $clean[] = $nextFirst;
+                    $i++; // skip next as it's merged
+                }
+            }
+        }
+
+        // If this block is a continuation and we have a previous entry, append
+        if ($isContinuation && !empty($out)) {
+            $appendParts = $clean;
+            $toAdd = implode("\n", $appendParts);
+            if ($toAdd !== '') {
+                if (!empty($out[count($out)-1]['description'])) $out[count($out)-1]['description'] .= "\n" . $toAdd;
+                else $out[count($out)-1]['description'] = $toAdd;
+                // also append raw
+                $out[count($out)-1]['raw'] .= "\n" . $blk;
+            }
+            continue;
+        }
+
+        // Parse this (possibly merged) block as a new work entry
+        // find header line index among clean lines
+        $headerIdx = 0; // choose first non-empty by default
+        $header = $clean[$headerIdx];
+        // try to find a date line adjacent to header
+        $dateRange = parse_date_range_from_text($header);
+        if (!$dateRange && isset($clean[$headerIdx+1])) $dateRange = parse_date_range_from_text($clean[$headerIdx+1]);
+        $start = $dateRange['start'] ?? null; $end = $dateRange['end'] ?? null;
+        $hdrNoDate = $header;
+        if ($dateRange) {
+            if (!empty($dateRange['start'])) $hdrNoDate = preg_replace('/' . preg_quote($dateRange['start'], '/') . '/i', '', $hdrNoDate);
+            if (!empty($dateRange['end'])) $hdrNoDate = str_ireplace($dateRange['end'], '', $hdrNoDate);
+            $hdrNoDate = trim($hdrNoDate);
+        }
+        list($title, $company) = split_title_company($hdrNoDate ?: $header);
+
+        // collect description from remaining clean lines (skip date-only lines)
+        $descParts = [];
+        for ($j = $headerIdx+1; $j < count($clean); $j++) {
+            $tln = $clean[$j];
+            if (parse_date_range_from_text($tln)) continue;
+            $descParts[] = $tln;
+        }
+
+        $description = $descParts ? implode("\n", $descParts) : null;
+
+        // Normalize description: if lines are not predominantly bullets, join into single paragraph
+        if ($description) {
+            $linesDesc = preg_split('/\r?\n/', $description);
+            $bulletCount = 0; $total = 0; $trimmed = [];
+            foreach ($linesDesc as $ld) { $t = trim($ld); if ($t==='') continue; $total++; if (preg_match('/^[\*\+\-•\u2022\.]/u', $t)) $bulletCount++; $trimmed[] = $t; }
+            if ($total > 0 && $bulletCount / $total < 0.5) {
+                // join with space to make a single flowing description
+                $description = implode(' ', $trimmed);
+            } else {
+                // keep bullets/lines but normalize spacing
+                $description = implode("\n", $trimmed);
+            }
+        }
+
+        $entry = ['title' => $title ?: null, 'company' => $company ?: null, 'start' => $start, 'end' => $end, 'description' => $description, 'raw' => $blk];
+        $out[] = $entry;
+    }
+    // Post-process: merge adjacent entries that likely belong together
+    $merged = [];
+    $n = count($out);
+    for ($k = 0; $k < $n; $k++) {
+        $cur = $out[$k];
+        // look ahead to next
+        if ($k + 1 < $n) {
+            $next = $out[$k+1];
+            $shouldMerge = false;
+            // If next has no title and no company -> continuation
+            if ((empty($next['title']) || trim($next['title']) === '') && (empty($next['company']) || trim($next['company']) === '')) $shouldMerge = true;
+            // If current has no company but next has company -> likely header split
+            if ((empty($cur['company']) || trim($cur['company']) === '') && !empty($next['company'])) $shouldMerge = true;
+            // If both have descriptions and combined length is small, merge
+            $lenA = isset($cur['description']) ? mb_strlen($cur['description']) : 0;
+            $lenB = isset($next['description']) ? mb_strlen($next['description']) : 0;
+            if ($lenA > 0 && $lenB > 0 && ($lenA + $lenB) < 240) $shouldMerge = true;
+
+            if ($shouldMerge) {
+                // merge next into current
+                $aDesc = $cur['description'] ?? '';
+                $bDesc = $next['description'] ?? $next['raw'] ?? '';
+                $combined = trim($aDesc === '' ? $bDesc : ($aDesc . "\n" . $bDesc));
+                $cur['description'] = $combined ?: null;
+                $cur['raw'] = trim(($cur['raw'] ?? '') . "\n" . ($next['raw'] ?? ''));
+                // consume next by skipping increment of k (advance extra)
+                $k++;
+            }
+        }
+        $merged[] = $cur;
+    }
+
+    return array_values($merged);
+}
+
+// Normalize many human date formats into ISO-ish YYYY-MM-DD where possible
+function normalize_date_string($s) {
+    if (!$s) return null;
+    $s = trim($s);
+    // common patterns: Jan 2018, Jan 1, 2018, 2018
+    if (preg_match('/(\d{4})/', $s, $m) && preg_match('/^\s*\d{4}\s*$/', $s)) return $m[1] . '-01-01';
+    // try strtotime fallback
+    $ts = strtotime($s);
+    if ($ts !== false) return date('Y-m-d', $ts);
+    return null;
+}
+
+function extract_year_month_components($s) {
+    // Returns ['year'=>YYYY|null, 'month'=>MM|null, 'iso'=>YYYY-MM-DD|null]
+    $out = ['year' => null, 'month' => null, 'iso' => null];
+    if (!$s) return $out;
+    $s = trim($s);
+    // common month names
+    if (preg_match('/\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\b\s*(\d{4})/i', $s, $m)) {
+        $monthName = $m[1]; $year = $m[2];
+        $dt = strtotime($monthName . ' 1 ' . $year);
+        if ($dt !== false) {
+            $out['year'] = date('Y', $dt);
+            $out['month'] = date('m', $dt);
+            $out['iso'] = date('Y-m-d', $dt);
+            return $out;
+        }
+    }
+    // month name with month abbrev and year e.g. 'Mar 2019'
+    if (preg_match('/\b([A-Za-z]{3,9})\.?(?:\s+)?(\d{4})\b/', $s, $m)) {
+        $dt = strtotime($m[1] . ' 1 ' . $m[2]);
+        if ($dt !== false) { $out['year'] = date('Y', $dt); $out['month'] = date('m', $dt); $out['iso'] = date('Y-m-d', $dt); return $out; }
+    }
+    // plain year or year ranges: capture first year
+    if (preg_match('/(19|20)\d{2}/', $s, $m2)) {
+        $out['year'] = $m2[0]; $out['iso'] = $out['year'] . '-01-01';
+        return $out;
+    }
+    // try strtotime as fallback
+    $ts = strtotime($s);
+    if ($ts !== false) { $out['year'] = date('Y', $ts); $out['month'] = date('m', $ts); $out['iso'] = date('Y-m-d', $ts); }
+    return $out;
+}
+
+function extract_dob($text) {
+    if (!$text) return null;
+    // look for labels: Date of birth, DOB, Birthdate, Born
+    if (preg_match('/\b(Date of Birth|DOB|Birthdate|Born)[:\s\-]*([A-Za-z0-9,\/\-\.\s]+)\b/i', $text, $m)) {
+        $cand = trim($m[2]);
+        $iso = normalize_date_string($cand);
+        return $iso ?: $cand;
+    }
+    // fallback: any isolated date-looking token near the top of the document
+    if (preg_match('/\b(\d{1,2}[\/-]\d{1,2}[\/-]\d{2,4}|[A-Za-z]{3,9}\s+\d{1,2},?\s+\d{4})\b/', $text, $m)) {
+        $iso = normalize_date_string($m[1]);
+        return $iso ?: $m[1];
+    }
+    return null;
+}
+
+function extract_summary($text) {
+    // Return the leading paragraph before the first recognized section heading
+    $text = trim($text);
+    if ($text === '') return null;
+    $headings = ['experience','education','skills','certifications','certificates','work experience','professional experience','employment history','summary','objective','profile'];
+    $parts = preg_split('/\r?\n{2,}/', $text, 4);
+    foreach ($parts as $p) {
+        $low = strtolower($p);
+        $isHeading = false;
+        foreach ($headings as $h) if (strpos($low, $h) !== false) { $isHeading = true; break; }
+        if (!$isHeading && strlen(trim($p)) > 30) return preg_replace('/\s+/', ' ', trim($p));
+    }
+    return null;
+}
+
+function extract_education_entries($blocks) {
+    $out = [];
+    foreach ($blocks as $b) {
+        $lines = preg_split('/\r?\n/', trim($b));
+        $header = trim($lines[0] ?? '');
+        // degrees and years
+        $degree = null; $school = null; $year = null;
+        if (preg_match('/\b(Bachelor|B\.|BSc|BA|BS|Master|M\.|MSc|MBA|Associate|Diploma|High School|Secondary|PhD|Doctor)\b/i', $header, $m)) {
+            $degree = trim($header);
+        }
+        // try capture year
+        if (preg_match('/(19|20)\d{2}/', $b, $m2)) $year = $m2[0];
+        // attempt to split by comma: school usually after comma
+        $parts = preg_split('/,\s*/', $header, 2);
+        if (count($parts) === 2) { $school = trim($parts[1]); if (!$degree) $degree = trim($parts[0]); }
+        if (!$school && isset($lines[1])) $school = trim($lines[1]);
+        $out[] = ['degree' => $degree ?: null, 'school' => $school ?: null, 'year' => $year ?: null, 'raw' => $b];
+    }
+    return $out;
+}
+
+function extract_skills($skillBlocks, $fullText) {
+    $out = [];
+    // first, use explicit skills blocks
+    foreach ($skillBlocks as $b) {
+        $candidates = preg_split('/[,;\/\|\n]+/', $b);
+        foreach ($candidates as $c) { $t = trim($c); if ($t) $out[] = $t; }
+    }
+    // also search for 'Skills:' inline
+    if (preg_match('/Skills?\s*[:\-]\s*([A-Za-z0-9\,\/\-\+\.# ]{10,})/i', $fullText, $m)) {
+        $candidates = preg_split('/[,;\/\|]+/', $m[1]);
+        foreach ($candidates as $c) { $t = trim($c); if ($t) $out[] = $t; }
+    }
+    // dedupe and normalize
+    $out = array_values(array_unique(array_map(function($s){ return preg_replace('/\s+/', ' ', trim($s)); }, $out)));
+    return $out;
+}
+
+function extract_languages($text) {
+    $out = [];
+    if (preg_match('/Languages?\s*[:\-]\s*([A-Za-z0-9,\/\s]+)$/mi', $text, $m)) {
+        $cand = preg_split('/[,;\/\|]+/', $m[1]);
+        foreach ($cand as $c) { $t = trim($c); if ($t) $out[] = $t; }
+    } else {
+        // look for single-line mentions e.g. 'English (fluent)'
+        preg_match_all('/\b(English|Filipino|Tagalog|Cebuano|Spanish|Chinese|Mandarin|Japanese|Korean|French|German)\b/i', $text, $m2);
+        foreach (($m2[0] ?? []) as $l) $out[] = trim($l);
+    }
+    return array_values(array_unique($out));
+}
+
+function parse_certifications_blocks($blocks) {
+    $out = [];
+    foreach ($blocks as $blk) {
+        $lines = preg_split('/[\r\n]+|\u2022|•|\-\s+/', $blk);
+        foreach ($lines as $ln) {
+            $ln = trim($ln);
+            if ($ln === '') continue;
+            // look for keywords
+            if (preg_match('/\b(certif|certificate|certified|license|licensed|licen)\b/i', $ln)) {
+                // clean common bullets and dates
+                $ln2 = preg_replace('/\s{2,}/', ' ', preg_replace('/\(.*?\)/', '', $ln));
+                $out[] = trim($ln2);
+            }
+        }
+    }
+    // also try to pick up one-line certifications from the whole text if none found
+    if (empty($out)) {
+        // look for lines that include 'Certified' or 'Certificate' anywhere
+        preg_match_all('/^.*\b(Certificate|Certified|Licensed|License|Diploma)\b.*$/mi', implode("\n", $blocks), $m);
+        foreach (($m[0] ?? []) as $ln) { $ln = trim($ln); if ($ln) $out[] = $ln; }
+    }
+    return array_values(array_unique($out));
+}
+
+// Convert work/education/certs candidates into richer structures
+$work_structured = parse_work_experience_blocks($work);
+$certs_structured = parse_certifications_blocks($certs);
+
+// Normalize start/end dates into year/month/iso for work entries
+foreach ($work_structured as $i => $w) {
+    $startComp = extract_year_month_components($w['start'] ?? null);
+    $endComp = extract_year_month_components($w['end'] ?? null);
+    $work_structured[$i]['start_year'] = $startComp['year'];
+    $work_structured[$i]['start_month'] = $startComp['month'];
+    $work_structured[$i]['start_iso'] = $startComp['iso'];
+    $work_structured[$i]['end_year'] = $endComp['year'];
+    $work_structured[$i]['end_month'] = $endComp['month'];
+    $work_structured[$i]['end_iso'] = $endComp['iso'];
+}
+
+// Normalize education structured years
+$education_structured = isset($education_structured) ? $education_structured : [];
+foreach ($education_structured as $i => $e) {
+    // some education entries may include a year range in raw or degree
+    $yearFound = null;
+    if (!empty($e['year'])) $yearFound = $e['year'];
+    else if (preg_match('/(19|20)\d{2}\s*(?:[\-–]\s*(?:19|20)\d{2})?/', $e['raw'] ?? '', $m)) $yearFound = $m[0];
+    if ($yearFound) {
+        if (preg_match('/(19|20)\d{2}/', $yearFound, $m2)) {
+            $education_structured[$i]['year_completed'] = $m2[0];
+        }
+        if (preg_match('/(19|20)\d{2}\s*[\-–]\s*(19|20)\d{2}/', $yearFound, $mm)) {
+            $education_structured[$i]['year_started'] = $mm[1];
+            $education_structured[$i]['year_completed'] = $mm[2];
+        }
+    }
+}
+
 // Fallback heuristics if sections not found
 if (empty($work)) {
     // try to extract lines containing year ranges
@@ -384,6 +737,15 @@ if (empty($skills)) {
 $emails = extract_emails($raw);
 $phones = extract_phones($raw);
 $name = extract_name_candidate($raw);
+
+// Additional top-level extractions
+$dob = extract_dob($raw);
+$summary = extract_summary($raw);
+
+// education structured entries and improved skills/languages
+$education_structured = extract_education_entries($education);
+$skills_list = extract_skills($skills, $raw);
+$languages = extract_languages($raw);
 
 // --- Address extraction heuristics ---
 function extract_address_candidate($text) {
@@ -432,16 +794,31 @@ $addressCandidate = extract_address_candidate($raw);
 // Build structured payload
 $structured = [
     'name' => $name,
+    'date_of_birth' => $dob,
     'emails' => $emails,
     'phones' => $phones,
     'address' => $addressCandidate,
+    // provide both raw arrays and structured parsed arrays
     'work_experience' => array_values(array_unique($work)),
+    'work_experience_structured' => $work_structured,
     'education' => array_values(array_unique($education)),
+    'education_structured' => $education_structured,
     'certifications' => array_values(array_unique($certs)),
-    'skills' => array_values(array_unique($skills)),
+    'certifications_structured' => $certs_structured,
+    'skills' => $skills_list,
+    'languages' => $languages,
+    'summary' => $summary,
     'raw_text' => $raw,
     'pages' => $perPage,
 ];
+
+// Add presence flags so client can hide empty sections
+$structured['has_work_experience'] = !empty($structured['work_experience_structured']) || !empty($structured['work_experience']);
+$structured['has_certifications'] = !empty($structured['certifications_structured']) || !empty($structured['certifications']);
+// additional presence flags
+$structured['has_education'] = !empty($structured['education_structured']) || !empty($structured['education']);
+$structured['has_skills'] = !empty($structured['skills']);
+$structured['has_languages'] = !empty($structured['languages']);
 
 // Persist extracted JSON to storage/app/resumes
 $projRoot = dirname(__DIR__); // public/db -> public -> project root

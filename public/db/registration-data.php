@@ -145,8 +145,7 @@ try {
     @file_put_contents($dbgPath, json_encode($dbgPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 } catch (Exception $e) { /* ignore debug failures */ }
 // (debug dumps removed) -- server now accepts multiple guardian/spouse key aliases
-// Robustly extract education level and school name (accept JSON object or plain string)
-$education_level_raw = $data['education'] ?? null;
+$education_level_raw = $data['education'] ?? ($user_info['education'] ?? null);
 $edu_level = null;
 $school_name = null;
 if ($education_level_raw !== null) {
@@ -160,8 +159,8 @@ if ($education_level_raw !== null) {
      }
  }
  // also accept explicit top-level keys if present
-$edu_level    = $edu_level ?? ($data['edu_level'] ?? $data['education_level'] ?? null);
-$school_name  = $school_name ?? ($data['school_name'] ?? $data['school'] ?? null);
+$edu_level    = $edu_level ?? ($data['edu_level'] ?? $data['education_level'] ?? $user_info['edu_level'] ?? $user_info['education_level'] ?? null);
+$school_name  = $school_name ?? ($data['school_name'] ?? $data['school'] ?? $user_info['school_name'] ?? $user_info['school'] ?? null);
 $is_graduate       = $data['review_certs'] ?? null;
 $license_type      = $data['selected_work_year'] ?? null;
 $status            = $data['workplace'] ?? null;
@@ -529,8 +528,15 @@ $maybeEduSources = [
     'edu_entries', 'edu_list'
 ];
 foreach ($maybeEduSources as $k) {
-    if (!empty($data[$k])) {
+    // Accept top-level or nested (rpi_personal / rpi_personal1) locations
+    $raw = null;
+    if (array_key_exists($k, $data) && $data[$k] !== null && $data[$k] !== '') {
         $raw = $data[$k];
+    } elseif (is_array($user_info) && array_key_exists($k, $user_info) && $user_info[$k] !== null && $user_info[$k] !== '') {
+        $raw = $user_info[$k];
+    }
+    if ($raw !== null && $raw !== '') {
+        // found candidate
         $decoded = is_string($raw) ? json_decode($raw, true) : $raw;
         if (is_array($decoded)) {
             // If it's an associative object with nested entries
