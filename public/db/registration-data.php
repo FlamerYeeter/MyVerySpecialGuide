@@ -85,7 +85,18 @@ function base64ToBlob($input) {
 
 // ——— READ & VALIDATE JSON ———
 $json = file_get_contents('php://input');
-$data = json_decode($json, true);
+// When running under CLI (tests) php://input may be empty — fall back to STDIN so
+// we can run local CLI tests without changing production behavior.
+if (empty($json)) {
+    $json = stream_get_contents(STDIN);
+}
+// Be defensive: if $json is already an array (some callers may pass decoded payload), accept it.
+if (is_array($json)) {
+    $data = $json;
+} else {
+    $data = json_decode((string)$json, true);
+}
+
 if (!$data) {
     http_response_code(400);
     die(json_encode(['success' => false, 'error' => 'Invalid JSON']));
@@ -149,15 +160,22 @@ $education_level_raw = $data['education'] ?? ($user_info['education'] ?? null);
 $edu_level = null;
 $school_name = null;
 if ($education_level_raw !== null) {
-    $decoded = json_decode($education_level_raw, true);
-     if (is_array($decoded)) {
-         $edu_level  = $decoded['edu_level'] ?? $decoded['education_level'] ?? $decoded['level'] ?? null;
-         $school_name = $decoded['school_name'] ?? $decoded['school'] ?? null;
-     } else {
-         // plain string (e.g. "Vocational/Training")
-         $edu_level = is_string($education_level_raw) ? $education_level_raw : null;
-     }
- }
+    if (is_string($education_level_raw)) {
+        $decoded = json_decode($education_level_raw, true);
+    } elseif (is_array($education_level_raw)) {
+        $decoded = $education_level_raw;
+    } else {
+        $decoded = null;
+    }
+
+    if (is_array($decoded)) {
+        $edu_level  = $decoded['edu_level'] ?? $decoded['education_level'] ?? $decoded['level'] ?? null;
+        $school_name = $decoded['school_name'] ?? $decoded['school'] ?? null;
+    } else {
+        // plain string (e.g. "Vocational/Training")
+        $edu_level = is_string($education_level_raw) ? $education_level_raw : null;
+    }
+}
  // also accept explicit top-level keys if present
 $edu_level    = $edu_level ?? ($data['edu_level'] ?? $data['education_level'] ?? $user_info['edu_level'] ?? $user_info['education_level'] ?? null);
 $school_name  = $school_name ?? ($data['school_name'] ?? $data['school'] ?? $user_info['school_name'] ?? $user_info['school'] ?? null);
@@ -586,6 +604,23 @@ $school_json = json_for_db($school_array);
 $education_course_json = json_for_db($education_course_array);
 $year_start_json = json_for_db($year_start_array);
 $year_end_json = json_for_db($year_end_array);
+// Debug: persist parsed education values to help diagnose missing fields
+try {
+    $dbgEdu = __DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'temp_debug_parsed_education.json';
+    @file_put_contents($dbgEdu, json_encode([
+        'received_at' => date('c'),
+        'education_level_raw' => $education_level_raw,
+        'edu_level' => $edu_level,
+        'school_name' => $school_name,
+        'education_array' => $education_array,
+        'school_array' => $school_array,
+        'education_json' => $education_json,
+        'school_json' => $school_json,
+        'bind_education' => $bind_education ?? null,
+        'bind_school' => $bind_school ?? null,
+        'top_level_keys' => array_keys($data)
+    ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+} catch (Exception $e) { /* ignore debug failures */ }
 // Prepare bind variables (OCI requires a variable passed by reference)
 $bind_education = $education_json ?? $edu_level;
 $bind_school = $school_json ?? $school_name;

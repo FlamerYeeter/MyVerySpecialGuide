@@ -1,8 +1,11 @@
 {
-    "received_at": "2026-04-08T14:24:15+02:00",
-    "raw_json": "{\r\n  \"email\": \"user20260408-202342@test.com\",\r\n  \"username\": \"user7468\"\r\n}",
+    "received_at": "2026-05-10T23:24:53+02:00",
+    "raw_json": "{\r\n  \"education\": null,\r\n  \"education_profile\": null,\r\n  \"job_experiences\": null,\r\n  \"rpi_personal\": null,\r\n  \"rpi_personal1\": \"{\\\"firstName\\\":\\\"Test\\\",\\\"lastName\\\":\\\"User\\\",\\\"education\\\":{\\\"edu_level\\\":\\\"College\\\",\\\"school_name\\\":\\\"Test University\\\"}}\"\r\n}\r\n\r\n",
     "decoded_keys": [
-        "email",
-        "username"
+        "education",
+        "education_profile",
+        "job_experiences",
+        "rpi_personal",
+        "rpi_personal1"
     ]
 }

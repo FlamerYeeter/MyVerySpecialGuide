@@ -3426,6 +3426,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             type: 'success',
                             title: 'Scan Successful',
                             message: 'We’ve successfully processed the uploaded PWD ID.',
+                            // include the parsed AI data so modal can surface id_number
+                            aiData: aiData,
                             details: [
                                 { label: 'Disability', value: aiData.type_of_disability || 'Unknown' }
                             ],
@@ -5434,18 +5436,53 @@ document.addEventListener('DOMContentLoaded', function() {
         titleEl.textContent = opts.title || (type === 'error' ? 'Scan Failed' : 'Scan Successful');
         messageEl.textContent = opts.message || (type === 'error' ? 'We couldn’t complete the scan.' : 'We’ve successfully processed the uploaded PWD ID.');
 
-        if (Array.isArray(opts.details) && opts.details.length) {
-            detailsEl.innerHTML = opts.details.map(detail => `
-                <div class="rounded-2xl bg-slate-50 p-3">
-                    <div class="text-xs uppercase tracking-wide text-slate-500">${detail.label}</div>
-                    <div class="mt-1 text-sm font-medium text-slate-900">${detail.value}</div>
-                </div>
-            `).join('');
-            detailsEl.classList.remove('hidden');
-        } else {
-            detailsEl.classList.add('hidden');
-            detailsEl.innerHTML = '';
-        }
+        // Build details array (prefer explicit opts.details) and inject detected ID when available
+        (function(){
+            const escapeHtml = (s) => String(s === null || s === undefined ? '' : s)
+                .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+
+            const detailsArr = Array.isArray(opts.details) ? opts.details.slice() : [];
+
+            // Look for common ID fields in aiData (pwd-specific sources)
+            const ai = opts.aiData || opts.ai || null;
+            let foundId = null;
+            if (ai) {
+                const idCandidates = [ai.id_number, ai.pwd_number, ai.idno, ai.identification_number, ai.identity_number, ai.card_number];
+                foundId = idCandidates.find(v => v !== undefined && v !== null && String(v).trim() !== '') || null;
+            }
+
+            // If no aiData ID, inspect provided details for ID-like entries (label contains "id" or value matches alphanumeric pattern)
+            if (!foundId && Array.isArray(detailsArr) && detailsArr.length) {
+                for (const d of detailsArr) {
+                    try {
+                        const lab = (d && d.label) ? String(d.label).toLowerCase() : '';
+                        const val = (d && d.value) ? String(d.value).trim() : '';
+                        if (lab.includes('id') && val) { foundId = val; break; }
+                        // common ID patterns: sequence of 4+ alphanum chars (avoid short numbers like dates)
+                        if (val && /[A-Za-z0-9\-]{4,}/.test(val) && !/\b\d{1,2}[:\/\-]\d{1,2}[:\/\-]\d{2,4}\b/.test(val)) { foundId = val; break; }
+                    } catch (e) { /* ignore */ }
+                }
+            }
+
+            if (foundId) {
+                const hasId = detailsArr.some(d => (d && d.label && String(d.label).toLowerCase().includes('id')) || (d && d.value && String(d.value).includes(String(foundId))));
+                if (!hasId) detailsArr.unshift({ label: 'ID Number', value: escapeHtml(String(foundId)) });
+            }
+
+            if (detailsArr.length) {
+                detailsEl.innerHTML = detailsArr.map(detail => `
+                    <div class="rounded-2xl bg-slate-50 p-3">
+                        <div class="text-xs uppercase tracking-wide text-slate-500">${escapeHtml(detail.label)}</div>
+                        <div class="mt-1 text-sm font-medium text-slate-900">${escapeHtml(detail.value)}</div>
+                    </div>
+                `).join('');
+                detailsEl.classList.remove('hidden');
+            } else {
+                detailsEl.classList.add('hidden');
+                detailsEl.innerHTML = '';
+            }
+        })();
 
         noteEl.textContent = opts.note || 'Please review the information for accuracy.';
         primaryBtn.textContent = opts.confirmText || (opts.showRetry ? 'Try Again' : 'Confirm & Continue');

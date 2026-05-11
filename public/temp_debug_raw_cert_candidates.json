@@ -10,8 +10,11 @@
         "NULL"
     ],
     "sample_keys": [
-        "email",
-        "username"
+        "education",
+        "education_profile",
+        "job_experiences",
+        "rpi_personal",
+        "rpi_personal1"
     ],
-    "time": "2026-04-08T14:24:15+02:00"
+    "time": "2026-05-10T23:24:55+02:00"
 }

@@ -1,0 +1,26 @@
+{
+    "received_at": "2026-05-10T23:24:54+02:00",
+    "education_level_raw": {
+        "edu_level": "College",
+        "school_name": "Test University"
+    },
+    "edu_level": "College",
+    "school_name": "Test University",
+    "education_array": [
+        "College"
+    ],
+    "school_array": [
+        "Test University"
+    ],
+    "education_json": "[\"College\"]",
+    "school_json": "[\"Test University\"]",
+    "bind_education": null,
+    "bind_school": null,
+    "top_level_keys": [
+        "education",
+        "education_profile",
+        "job_experiences",
+        "rpi_personal",
+        "rpi_personal1"
+    ]
+}

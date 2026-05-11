@@ -1,12 +1,19 @@
 {
-    "received_at": "2026-04-08T14:24:15+02:00",
+    "received_at": "2026-05-10T23:24:53+02:00",
     "top_level_keys": [
-        "email",
-        "username"
+        "education",
+        "education_profile",
+        "job_experiences",
+        "rpi_personal",
+        "rpi_personal1"
     ],
     "has_rpi_personal": false,
-    "has_rpi_personal1": false,
-    "user_info_keys": [],
+    "has_rpi_personal1": true,
+    "user_info_keys": [
+        "firstName",
+        "lastName",
+        "education"
+    ],
     "sample_values": {
         "g_phone": null,
         "guardian_phone": null,
