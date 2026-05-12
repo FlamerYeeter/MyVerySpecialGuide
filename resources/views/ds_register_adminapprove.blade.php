@@ -1986,6 +1986,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.formatDateWords = function(raw) {
     if (!raw && raw !== 0) return '';
     const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    // Try native Date parse first (handles many ISO and text formats)
     try {
         const d = new Date(raw);
         if (!Number.isNaN(d.getTime())) {
@@ -1995,15 +1996,76 @@ window.formatDateWords = function(raw) {
             return `${mm} ${dd}, ${yyyy}`;
         }
     } catch(e) {}
-    const m = String(raw).match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (m) {
-        const yyyy = m[1];
-        const mmIdx = parseInt(m[2],10) - 1;
-        const dd = parseInt(m[3],10);
-        const mm = months[mmIdx] || m[2];
+
+    const s = String(raw).trim();
+    // ISO-like yyyy-mm-dd
+    const mIso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (mIso) {
+        const yyyy = mIso[1];
+        const mmIdx = parseInt(mIso[2],10) - 1;
+        const dd = parseInt(mIso[3],10);
+        const mm = months[mmIdx] || mIso[2];
         return `${mm} ${dd}, ${yyyy}`;
     }
-    return String(raw).slice(0,10);
+
+    // Common numeric formats: assume dd/mm/yyyy or dd-mm-yyyy (Philippine-style)
+    const mDMY = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (mDMY) {
+        let day = parseInt(mDMY[1],10);
+        let mon = parseInt(mDMY[2],10);
+        const year = parseInt(mDMY[3],10);
+        // Heuristic: if first part > 12, treat as day; otherwise assume day-first (dd/mm/yyyy)
+        if (day <= 12 && mon > 12) {
+            // unlikely, swap to keep valid month
+            const tmp = day; day = mon; mon = tmp;
+        }
+        const mm = months[(mon - 1)] || mon;
+        return `${mm} ${day}, ${year}`;
+    }
+
+    // Numeric US-style mm/dd/yyyy
+    const mMDY = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+    if (mMDY) {
+        const mon = parseInt(mMDY[1],10);
+        const day = parseInt(mMDY[2],10);
+        const year = parseInt(mMDY[3],10);
+        if (mon >=1 && mon <=12 && day >=1 && day <=31) {
+            const mm = months[(mon - 1)] || mon;
+            return `${mm} ${day}, ${year}`;
+        }
+    }
+
+    // Month name formats: e.g. "February 24, 2004" or "24 February 2004"
+    try {
+        const monthNames = {
+            jan:1, feb:2, mar:3, apr:4, may:5, jun:6, jul:7, aug:8, sep:9, sept:9, oct:10, nov:11, dec:12
+        };
+        // Normalize: remove extra dots and unify spaces
+        const t = s.replace(/\./g,'').replace(/\s+/g,' ').trim();
+
+        // Pattern: MonthName DD, YYYY  (e.g., February 24, 2004) or MonthName D YYYY
+        const pat1 = t.match(/^([A-Za-z]+)\s+(\d{1,2})(?:st|nd|rd|th)?,?\s*(\d{4})$/i);
+        if (pat1) {
+            const mStr = pat1[1].toLowerCase().slice(0,3);
+            const mon = monthNames[mStr] || NaN;
+            const day = parseInt(pat1[2],10);
+            const year = parseInt(pat1[3],10);
+            if (!Number.isNaN(mon)) return `${months[mon-1]} ${day}, ${year}`;
+        }
+
+        // Pattern: DD MonthName YYYY (e.g., 24 February 2004 or 24th Feb 2004)
+        const pat2 = t.match(/^(\d{1,2})(?:st|nd|rd|th)?[\s,\-]+([A-Za-z]+),?\s*(\d{4})$/i);
+        if (pat2) {
+            const day = parseInt(pat2[1],10);
+            const mStr = pat2[2].toLowerCase().slice(0,3);
+            const mon = monthNames[mStr] || NaN;
+            const year = parseInt(pat2[3],10);
+            if (!Number.isNaN(mon)) return `${months[mon-1]} ${day}, ${year}`;
+        }
+    } catch(e) {}
+
+    // Fallback: return first 10 chars
+    return s.slice(0,10);
 }
 
 // Apply OCR'd AI data into matching form fields when possible
@@ -3145,6 +3207,14 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
                 console.log("[upload] File read completed");
 
+                // Defer PWD icon verification to the OCR service; do not run client-side detection here.
+                // Do not show the verification hint for guardian uploads (they reuse 'pwd_id' for parsing).
+                try {
+                    if (ocrtype === 'pwd_id' && !isGuardianUpload) {
+                        try { const errEl = fileInput.parentNode && fileInput.parentNode.querySelector('.upload-error'); if (errEl) errEl.textContent = 'Verifying PWD icon via OCR...'; } catch(e){}
+                    }
+                } catch (e) { console.warn('pwd icon early-guard noop failed', e); }
+
                 // Save to localStorage
                 localStorage.setItem(nameKey, file.name);
                 localStorage.setItem(dataKey, dataUrl);
@@ -3243,6 +3313,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
 
                     let response;
                     try {
+                        // show global OCR overlay
+                        try { if (typeof window.showOcrOverlay === 'function') window.showOcrOverlay('Scanning document...'); } catch(e){}
                         response = await fetch('db/ocr-validation.php', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -3252,6 +3324,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         // Remove loading indicator on network error
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
+                        try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                         console.error('[upload] Fetch failed:', fetchErr);
                         showOcrModal({
                             type: 'error',
@@ -3271,6 +3344,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         // Remove loading indicator on JSON parse error
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
+                        try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                         console.warn("Invalid JSON from server", jsonErr);
                         result = { message: 'Invalid response format' };
                     }
@@ -3382,21 +3456,74 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         }
 
                         const pwdSide = detectPwdSide(aiData, result.data);
-                        // show a small badge in the PWD display area and persist the side
-                        try {
-                            if (pwdDisplayEl) {
-                                let badge = pwdDisplayEl.querySelector('.pwd-side-badge');
-                                if (!badge) {
-                                    badge = document.createElement('div');
-                                    badge.className = 'pwd-side-badge mt-2 inline-block px-2 py-1 text-xs font-medium rounded-full bg-slate-100 text-slate-700';
-                                    pwdDisplayEl.appendChild(badge);
+                        // PWD side detection retained internally but UI badge removed per request
+
+                        // If OCR couldn't detect a meaningful disability (unknown/empty),
+                        // require a clear server-side icon flag or explicit PWD keywords in OCR text.
+                        (function(){
+                            try {
+                                const detNorm = (String(detectedDisability||'').trim()).toLowerCase();
+                                const missingDisability = (!detectedDisability || detNorm === 'unknown' || detNorm.indexOf('unknown') !== -1 || detNorm === 'undetected' || detNorm === 'not detected' || detNorm === 'null');
+
+                                // Robust server-icon detection: search common flag names in multiple locations
+                                const meta = result.data || {};
+                                function findIconFlag(obj) {
+                                    if (!obj || typeof obj !== 'object') return null;
+                                    const keys = ['contains_pwd_icon','has_pwd_icon','detected_pwd_icon','icon_detected','contains_icon','containsPWDIcon','pwd_icon','hasIcon'];
+                                    for (const k of keys) {
+                                        if (typeof obj[k] !== 'undefined') return !!obj[k];
+                                    }
+                                    return null;
                                 }
-                                badge.textContent = pwdSide === 'front' ? 'Front' : (pwdSide === 'back' ? 'Back' : 'Side: Unknown');
-                            }
-                            if (typeof nameKey !== 'undefined' && nameKey) {
-                                try { localStorage.setItem(nameKey + '_side', pwdSide); } catch(e){}
-                            }
-                        } catch (e) {}
+
+                                let serverSaysHasIcon = findIconFlag(meta);
+                                // also check nested ai_data and per-image metadata
+                                try {
+                                    if (serverSaysHasIcon !== true && meta.ai_data) serverSaysHasIcon = findIconFlag(meta.ai_data) ?? serverSaysHasIcon;
+                                } catch(e){}
+                                try {
+                                    if (serverSaysHasIcon !== true && meta.per_image && typeof meta.per_image === 'object') {
+                                        for (const p in meta.per_image) {
+                                            if (!Object.prototype.hasOwnProperty.call(meta.per_image,p)) continue;
+                                            const v = findIconFlag(meta.per_image[p]);
+                                            if (v === true) { serverSaysHasIcon = true; break; }
+                                            if (v === false && serverSaysHasIcon === null) serverSaysHasIcon = false;
+                                        }
+                                    }
+                                } catch(e){}
+
+                                const combinedText = (JSON.stringify(aiData || '') + ' ' + JSON.stringify(result.data || '')).toLowerCase();
+                                const pwdKeywords = /\b(pwd|pwd id|pwdid|wheelchair|person with disability|persons with disability|people with disabilities|pwds?)\b/;
+                                const hasKeywords = pwdKeywords.test(combinedText);
+
+                                console.debug('[ocr] server icon flag:', serverSaysHasIcon, 'detectedDisability:', detectedDisability, 'hasKeywords:', hasKeywords, 'meta:', result.data);
+
+                                // Reject when neither the server nor OCR text provides a PWD indicator
+                                if (missingDisability && serverSaysHasIcon !== true && !hasKeywords) {
+                                    const loading = document.getElementById(`ocr-loading-${inputId}`);
+                                    if (loading) loading.remove();
+                                    if (errorBox) errorBox.textContent = 'Unable to verify PWD status from the uploaded ID. Upload rejected.';
+                                    try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                                    try { resetDisplay(); } catch(e){}
+                                    try {
+                                        showOcrModal({
+                                            type: 'error',
+                                            title: 'Scan Rejected',
+                                            message: 'Uploaded image appears not to be a valid PWD ID. Please upload a clearer or different PWD ID.',
+                                            confirmText: 'OK'
+                                        });
+                                    } catch(e) { try{ alert('Unable to detect a valid PWD ID from the upload.'); }catch(_){} }
+                                    try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
+                                    isProcessing = false;
+                                    return;
+                                }
+
+                                // If missing disability but server/icon or keywords present, accept but show a warning to review.
+                                if (missingDisability && (serverSaysHasIcon === true || hasKeywords)) {
+                                    try { if (errorBox) errorBox.textContent = 'No explicit disability detected; please review the uploaded ID details.'; } catch(e){}
+                                }
+                            } catch(e) { console.warn('pwd verification check failed', e); }
+                        })();
 
                         if (!isMatch) {
                             // Don't block the upload for missing/mismatched disability — treat as a bonus.
@@ -3407,21 +3534,93 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                                 warnMsg = `Detected disability "${detectedDisability}" does not match the selected disability. The upload will still be accepted; please review the extracted info.`;
                             }
                             if (errorBox) errorBox.textContent = warnMsg;
+                            try {
+                                showOcrModal({
+                                    type: 'error',
+                                    title: 'Invalid Scan',
+                                    message: 'Uploaded ID appears to be invalid and will not be accepted.',
+                                    showRetry: true,
+                                    confirmText: 'Retry'
+                                });
+                            } catch (e) { console.warn('showOcrModal failed for non-matching scan', e); }
                             try { console.warn('[upload] Non-blocking PWD mismatch:', warnMsg); } catch(e){}
                             try { const loading = document.getElementById(`ocr-loading-${inputId}`); if (loading) loading.remove(); } catch(e){}
-                            // continue (do not reject)
+                            try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
+                            // Treat non-matching scans as invalid: clean up and stop processing
+                            try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
+                            try { resetDisplay(); } catch(e){}
+                            isProcessing = false;
+                            return;
                         }
 
                         // If match, autofill and persist
                         applyOcrDataToForm(aiData, detectedType, ocrtype);
                         try { localStorage.setItem('education_ocr', JSON.stringify({ data: aiData })); } catch(e){}
-                        // Remove loading indicator
+                        // Remove loading indicator and hide overlay
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
+                        try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                         if (pwdDisplayEl) {
                             const _e = pwdDisplayEl.querySelector('.ocr-error');
                             if (_e) _e.textContent = '';
                         }
+                        // Try to extract a 'date issued' value from AI/server results
+                        // Robust extraction: check common keys first, then scan free-form text for 'date issued' patterns
+                        function extractDateIssued(ai, meta) {
+                            try {
+                                const candidates = [];
+                                const keyNames = ['issue_date','issued_date','date_issued','date issued','dateofissue','date_of_issue','issued','issuance_date','issueDate','issuedDate','issuanceDate','issue'];
+                                for (const k of keyNames) {
+                                    if (ai && (ai[k] || ai[k] === 0)) return ai[k];
+                                    if (meta && (meta[k] || meta[k] === 0)) return meta[k];
+                                }
+
+                                // Search flat fields in ai for any value that looks like a date
+                                if (ai && typeof ai === 'object') {
+                                    for (const k in ai) {
+                                        if (!Object.prototype.hasOwnProperty.call(ai,k)) continue;
+                                        const v = ai[k];
+                                        if (!v) continue;
+                                        const s = String(v);
+                                        if (/\b(date\s*(issued|of issue|issued on)|date issued|date of issue)[:\s]/i.test(k + ' ' + s)) return s;
+                                        if (/\d{4}[\-\/]\d{2}[\-\/]\d{2}|\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\b/i.test(s)) {
+                                            // candidate value
+                                            candidates.push(s);
+                                        }
+                                    }
+                                }
+
+                                // Look into meta/raw combined text
+                                const big = (JSON.stringify(ai || '') + ' ' + JSON.stringify(meta || '')).replace(/\\\s+/g,' ');
+                                const m = big.match(/(?:date\s*(?:issued|of issue|issued on|issued:?)[:\s]*)([^\\n\\r,]{3,60})/i);
+                                if (m && m[1]) return m[1].trim();
+
+                                // fallback to first candidate that looks date-like
+                                if (candidates.length) return candidates[0];
+                            } catch(e){}
+                            return null;
+                        }
+
+                        let _dateIssuedRaw = extractDateIssued(aiData, result.data);
+                        if (!_dateIssuedRaw) {
+                            // also try some generic aiData.summary or aiData.raw_text fields
+                            try {
+                                const txtFields = ['raw_text','raw_text_pages','text','ocr_text','ocr_text_raw','summary','result','content','ocrResult'];
+                                for (const f of txtFields) {
+                                    const v = aiData && aiData[f] ? aiData[f] : (result.data && result.data[f] ? result.data[f] : null);
+                                    if (v && typeof v === 'string') {
+                                        const m2 = String(v).match(/(?:date\s*(?:issued|of issue|issued on|issued:?)[:\s]*)([^\n\r,]{3,60})/i);
+                                        if (m2 && m2[1]) { _dateIssuedRaw = m2[1].trim(); break; }
+                                    }
+                                }
+                            } catch(e){}
+                        }
+
+                        let _dateIssuedFormatted = '';
+                        try {
+                            if (_dateIssuedRaw) _dateIssuedFormatted = window.formatDateWords(_dateIssuedRaw) || String(_dateIssuedRaw);
+                        } catch(e) { _dateIssuedFormatted = String(_dateIssuedRaw || ''); }
+
                         showOcrModal({
                             type: 'success',
                             title: 'Scan Successful',
@@ -3429,7 +3628,8 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             // include the parsed AI data so modal can surface id_number
                             aiData: aiData,
                             details: [
-                                { label: 'Disability', value: aiData.type_of_disability || 'Unknown' }
+                                { label: 'Disability', value: aiData.type_of_disability || 'Unknown' },
+                                { label: 'Date Issued', value: _dateIssuedFormatted || 'Unknown' }
                             ],
                             note: 'Please review the information for accuracy.',
                             confirmText: 'Confirm & Continue'
@@ -3443,6 +3643,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         } catch(e) { console.warn('guardian-id mapping failed', e); }
                         const loadingGuardian = document.getElementById(`ocr-loading-${inputId}`);
                         if (loadingGuardian) loadingGuardian.remove();
+                        try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                         try {
                             showOcrModal({
                                 type: 'success',
@@ -3479,6 +3680,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         if (!containsFit) {
                             const loading = document.getElementById(`ocr-loading-${inputId}`);
                             if (loading) loading.remove();
+                            try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                             if (errorBox) errorBox.textContent = "Fit-To-Work statement not detected in this document. Upload rejected.";
                             try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
                             try { resetDisplay(); } catch(e){}
@@ -3492,6 +3694,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         if (!isDateValid) {
                             const loading2 = document.getElementById(`ocr-loading-${inputId}`);
                             if (loading2) loading2.remove();
+                            try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                             try { localStorage.removeItem(nameKey); localStorage.removeItem(dataKey); localStorage.removeItem(typeKey); } catch(e){}
                             try { resetDisplay(); } catch(e){}
                             showOcrModal({ type: 'error', title: 'Fit-To-Work Rejected', message: 'Detected Fit-To-Work date is older than 3 months or missing.', details: [ { label: 'Detected Date', value: aiData.date || 'Unknown' } ], confirmText: 'OK' });
@@ -3510,6 +3713,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         try {
                             const storedName = localStorage.getItem(nameKey) || null;
                             const fname = storedName || (fileInput && fileInput.files && fileInput.files[0] && fileInput.files[0].name) || 'uploaded document';
+                            try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                             showOcrModal({
                                 type: 'success',
                                 title: 'Fit-To-Work Processed',
@@ -3522,6 +3726,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                                 confirmText: 'Confirm & Continue'
                             });
                         } catch(e) {
+                            try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                             showOcrModal({
                                 type: 'success',
                                 title: 'Fit-To-Work Processed',
@@ -3557,6 +3762,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         if (loading) loading.remove();
                         
                         if (isValid) {
+                            try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                             showOcrModal({
                                 type: 'success',
                                 title: 'Medical Certificate Accepted',
@@ -3572,6 +3778,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                             if (errorBox && errorBox.textContent) {
                                 console.warn('Rejected medical certificate date (older than 3 months):', aiData.date);
                             }
+                            try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                             showOcrModal({
                                 type: 'error',
                                 title: 'Medical Certificate Rejected',
@@ -3587,6 +3794,7 @@ function setupUpload(inputId, displayId, labelId, hintId) {
                         // Remove loading indicator and show result modal (membership)
                         const loading = document.getElementById(`ocr-loading-${inputId}`);
                         if (loading) loading.remove();
+                        try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                         showOcrModal({
                             type: 'success',
                             title: 'Membership Proof Processed',
@@ -4134,12 +4342,44 @@ document.addEventListener('DOMContentLoaded', function() {
     </script>
 
     <!-- 🔹 Modal (Shared for both uploads) -->
+    <!-- Global OCR Loading Overlay (hidden by default) -->
+    <div id="ocrGlobalOverlay" class="hidden fixed inset-0 z-[110000] flex items-center justify-center" aria-hidden="true" style="backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);">
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative z-10 flex flex-col items-center gap-3 p-4">
+            <div class="ocr-overlay-spinner w-16 h-16 rounded-full border-4 border-t-transparent border-white/90 animate-spin"></div>
+            <div class="ocr-loading-message text-white text-lg font-medium">Processing document...</div>
+        </div>
+    </div>
+
     <div id="fileModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[100000]" style="z-index:100000;">
     <div class="bg-white rounded-lg shadow-lg p-4 max-w-3xl w-[90%] relative">
         <button id="closeModalBtn" type="button" style="z-index:100001;pointer-events:auto;" class="absolute top-2 right-3 text-gray-500 hover:text-gray-800 text-2xl">×</button>
         <div id="modalContent" class="p-2 text-center"></div>
     </div>
     </div>
+
+    <script>
+        // Global OCR overlay controls
+        window.showOcrOverlay = function(message) {
+            try {
+                const ov = document.getElementById('ocrGlobalOverlay');
+                if (!ov) return;
+                const msg = ov.querySelector('.ocr-loading-message');
+                if (msg) msg.textContent = message || 'Processing document...';
+                ov.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } catch(e) { console.warn('showOcrOverlay failed', e); }
+        };
+
+        window.hideOcrOverlay = function() {
+            try {
+                const ov = document.getElementById('ocrGlobalOverlay');
+                if (!ov) return;
+                ov.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            } catch(e) { console.warn('hideOcrOverlay failed', e); }
+        };
+    </script>
 
     <script>
     (function(){
@@ -5228,10 +5468,14 @@ document.addEventListener('DOMContentLoaded', function() {
             const fd = new FormData(); fd.append('file', file);
             try { const uid = (typeof window !== 'undefined' && window.LARAVEL_USER_ID) ? String(window.LARAVEL_USER_ID) : (localStorage.getItem('user_id') || ''); if (uid) fd.append('user_id', uid); } catch(e){}
 
+            try { if (typeof window.showOcrOverlay === 'function') window.showOcrOverlay('Processing resume (OCR)...'); } catch(e){}
             const res = await fetch('/db/resume-ocr.php', { method: 'POST', credentials: 'same-origin', body: fd });
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const json = await res.json();
-            if (!json || json.success !== true) throw new Error(json && json.message ? json.message : 'OCR failed');
+            if (!json || json.success !== true) {
+                try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
+                throw new Error(json && json.message ? json.message : 'OCR failed');
+            }
 
             const aiData = json.data || json.structured || null;
             if (aiData && typeof applyOcrDataToForm === 'function') {
@@ -5258,6 +5502,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                         note.textContent = txt;
                         const loading = resumeDisplay.querySelector('.ocr-loading-container'); if (loading) loading.style.display = 'none';
+                        try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
                     } else {
                         const loading = resumeDisplay.querySelector && resumeDisplay.querySelector('.ocr-loading-container'); if (loading) loading.style.display = 'none';
                         resumeDisplay.textContent = txt;
@@ -5281,6 +5526,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
         } catch (err) {
+            try { if (typeof window.hideOcrOverlay === 'function') window.hideOcrOverlay(); } catch(e){}
             console.error('Resume OCR error', err);
             if (resumeDisplay) {
                 const fnameEl = resumeDisplay.querySelector && resumeDisplay.querySelector('.filename');
